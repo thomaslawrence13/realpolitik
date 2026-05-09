@@ -1,0 +1,121 @@
+import type { Alignment, CountryProfile, DriverScore, ProbabilitySet, ScenarioSnapshot, SimulatedCountry, Tier } from './types';
+
+const tierValue: Record<Tier, number> = {
+  low: 18,
+  medium: 50,
+  high: 82,
+};
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+const normalize = (probabilities: ProbabilitySet): ProbabilitySet => {
+  const total = probabilities.blocA + probabilities.blocB + probabilities.nonAligned;
+
+  return {
+    blocA: Math.round((probabilities.blocA / total) * 100),
+    blocB: Math.round((probabilities.blocB / total) * 100),
+    nonAligned: Math.round((probabilities.nonAligned / total) * 100),
+  };
+};
+
+const classifyRisk = (risk: number): Tier => {
+  if (risk >= 67) return 'high';
+  if (risk >= 34) return 'medium';
+  return 'low';
+};
+
+const resolveAlignment = (probabilities: ProbabilitySet, risk: number): Alignment => {
+  const entries = Object.entries(probabilities).sort((a, b) => b[1] - a[1]);
+  const [topLabel, topValue] = entries[0] as [keyof ProbabilitySet, number];
+  const secondValue = entries[1]?.[1] ?? 0;
+
+  if (risk >= 72 && topValue - secondValue < 15) {
+    return 'unstable';
+  }
+
+  return topLabel;
+};
+
+const buildHistory = (
+  profile: CountryProfile,
+  activeIndex: number,
+): ScenarioSnapshot[] => {
+  const historyOffsets = [-2, -1, 0].filter((offset) => activeIndex + offset >= 0);
+
+  return historyOffsets.map((offset) => {
+    const snapshot = simulateCountry(profile, activeIndex + offset, false);
+
+    return {
+      label: `${2026 + activeIndex + offset}`,
+      alignment: snapshot.alignment,
+      confidence: snapshot.confidence,
+    };
+  });
+};
+
+export const simulateCountry = (
+  profile: CountryProfile,
+  timelineIndex: number,
+  includeHistory = true,
+): SimulatedCountry => {
+  const momentum = timelineIndex * 1.8;
+  const trade = tierValue[profile.tradeExposure];
+  const military = tierValue[profile.militaryTreatyLevel];
+  const conflict = tierValue[profile.conflictPressure];
+  const sanctions = tierValue[profile.sanctionsExposure];
+  const regime = profile.regimeType === 'democracy' ? 12 : profile.regimeType === 'hybrid' ? 2 : -9;
+
+  const blocA =
+    profile.leaningBlocA +
+    military * 0.2 +
+    (100 - sanctions) * 0.06 +
+    regime +
+    momentum * 0.3 -
+    conflict * 0.07;
+
+  const blocB =
+    profile.leaningBlocB +
+    sanctions * 0.13 +
+    conflict * 0.1 +
+    (100 - profile.cohesion) * 0.08 +
+    momentum * 0.08;
+
+  const nonAligned =
+    profile.leaningNonAligned +
+    trade * 0.13 +
+    profile.cohesion * 0.09 -
+    military * 0.05 -
+    momentum * 0.12;
+
+  const probabilities = normalize({
+    blocA: Math.max(1, blocA),
+    blocB: Math.max(1, blocB),
+    nonAligned: Math.max(1, nonAligned),
+  });
+
+  const sorted = Object.values(probabilities).sort((a, b) => b - a);
+  const confidence = clamp(sorted[0] - sorted[1] + 52, 41, 96);
+  const risk = clamp(profile.baselineRisk + conflict * 0.18 + sanctions * 0.08 - profile.cohesion * 0.12 + timelineIndex * 1.1, 8, 97);
+
+  const drivers: DriverScore[] = [
+    { label: 'Alliance commitments', value: Math.round(military * 0.9), direction: 'blocA' },
+    { label: 'Trade exposure', value: Math.round(trade * 0.85), direction: 'nonAligned' },
+    { label: 'Conflict pressure', value: Math.round(conflict * 0.95), direction: 'risk' },
+    { label: 'Sanctions exposure', value: Math.round(sanctions * 0.85), direction: 'blocB' },
+    { label: 'Domestic cohesion', value: profile.cohesion, direction: 'nonAligned' },
+  ].sort((a, b) => b.value - a.value);
+
+  const alignment = resolveAlignment(probabilities, risk);
+
+  return {
+    profile,
+    alignment,
+    confidence,
+    risk,
+    probabilities,
+    drivers,
+    history: includeHistory ? buildHistory(profile, timelineIndex) : [],
+  };
+};
+
+export const getRiskTier = classifyRisk;
