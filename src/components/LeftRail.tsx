@@ -48,6 +48,12 @@ const groupOptions: ReadonlyArray<{ value: GroupMode; label: string }> = [
   { value: 'none', label: 'None' },
 ];
 
+const RISK_GROUP_RANK = {
+  high: 0,
+  medium: 1,
+  low: 2,
+} as const;
+
 const defaultFilters: Filters = {
   allianceNetwork: 'all',
   tradeExposure: 'all',
@@ -126,9 +132,9 @@ export function LeftRail({
 
     const rank = (label: string) => {
       if (groupMode !== 'risk') return 0;
-      if (label === 'High') return 0;
-      if (label === 'Medium') return 1;
-      return 2;
+      if (label === 'High') return RISK_GROUP_RANK.high;
+      if (label === 'Medium') return RISK_GROUP_RANK.medium;
+      return RISK_GROUP_RANK.low;
     };
 
     return [...groups.entries()]

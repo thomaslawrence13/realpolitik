@@ -49,6 +49,11 @@ const defaultFilters: Filters = {
 
 const baselineWeightSet = getSimulationWeightSet('baseline');
 const weightSetOptions = Object.values(simulationWeightSets);
+const TIMELINE_AUTO_PLAY_INTERVAL_MS = 1200;
+const MIN_DRAWER_HEIGHT = 180;
+const MAX_DRAWER_HEIGHT_RATIO = 0.65;
+
+const maxDrawerHeight = () => Math.floor(window.innerHeight * MAX_DRAWER_HEIGHT_RATIO);
 
 const clampInput = (key: keyof ScenarioInputs, value: number): number => {
   if (key === 'treatyShift') return Math.min(60, Math.max(-60, value));
@@ -169,7 +174,7 @@ export default function App() {
         }
         return current + 1;
       });
-    }, 1200);
+    }, TIMELINE_AUTO_PLAY_INTERVAL_MS);
     return () => clearInterval(id);
   }, [isPlaying, scenarioTimeline.length]);
 
@@ -188,7 +193,7 @@ export default function App() {
     const startH = drawerHeight;
     const onMove = (event: MouseEvent) => {
       const delta = startClientY - event.clientY;
-      setDrawerHeight(Math.max(180, Math.min(Math.floor(window.innerHeight * 0.65), startH + delta)));
+      setDrawerHeight(Math.max(MIN_DRAWER_HEIGHT, Math.min(maxDrawerHeight(), startH + delta)));
     };
     const onUp = () => {
       window.removeEventListener('mousemove', onMove);
@@ -199,11 +204,11 @@ export default function App() {
   };
 
   const handleDrawerResizeStep = (delta: number) => {
-    setDrawerHeight((h) => Math.max(180, Math.min(Math.floor(window.innerHeight * 0.65), h + delta)));
+    setDrawerHeight((h) => Math.max(MIN_DRAWER_HEIGHT, Math.min(maxDrawerHeight(), h + delta)));
   };
 
   const handleDrawerResizeTo = (edge: 'min' | 'max') => {
-    setDrawerHeight(edge === 'min' ? 180 : Math.floor(window.innerHeight * 0.65));
+    setDrawerHeight(edge === 'min' ? MIN_DRAWER_HEIGHT : maxDrawerHeight());
   };
 
   // Keep a ref so the keydown handler always closes over the latest toggle function
