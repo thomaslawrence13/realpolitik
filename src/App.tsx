@@ -4,14 +4,17 @@ import type { FeatureCollection, Geometry } from 'geojson';
 import { geoMercator, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import worldTopology from 'world-atlas/countries-110m.json';
-import { countryProfiles, methodologyNotes, scenarioTimeline } from './data/profiles';
+import { allianceNetworks, countryProfiles, datasetVersion, methodologyNotes, scenarioTimeline } from './data/countryData';
 import { getRiskTier, simulateCountry } from './simulation';
-import type { Alignment, Filters, Tier } from './types';
+import type { Alignment, Filters, OverlayMode, RelationshipDimension, Tier } from './types';
 
 const width = 980;
 const height = 520;
 const topology = worldTopology as { objects: { countries: unknown } };
-const worldFeatures = feature(topology as never, topology.objects.countries as never) as unknown as FeatureCollection<Geometry, { name: string }>;
+const worldFeatures = feature(topology as never, topology.objects.countries as never) as unknown as FeatureCollection<
+  Geometry,
+  { name: string }
+>;
 const projection = geoMercator().fitSize([width, height], worldFeatures);
 const path = geoPath(projection);
 
@@ -20,6 +23,10 @@ const countries = worldFeatures.features as Array<{
   properties: { name: string };
   geometry: Geometry;
 }>;
+
+const countryCentroids = new Map(
+  countries.map((country) => [country.properties.name, path.centroid(country as never) as [number, number]]),
+);
 
 const defaultFilters: Filters = {
   allianceNetwork: 'all',
@@ -45,10 +52,29 @@ const alignmentColor: Record<Alignment, string> = {
   unstable: '#c77dff',
 };
 
+const overlayLabel: Record<RelationshipDimension, string> = {
+  cooperation: 'Cooperation overlay',
+  hostility: 'Hostility overlay',
+  dependency: 'Dependency overlay',
+  deterrence: 'Deterrence overlay',
+};
+
+const overlayColor: Record<RelationshipDimension, string> = {
+  cooperation: '#38bdf8',
+  hostility: '#fb7185',
+  dependency: '#f59e0b',
+  deterrence: '#a78bfa',
+};
+
 const tierOptions: Array<'all' | Tier> = ['all', 'low', 'medium', 'high'];
 const regimeOptions = ['all', 'democracy', 'hybrid', 'authoritarian'] as const;
 
 const formatPercent = (value: number) => `${value}%`;
+const formatTitle = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
+
+const getRelationshipMetric = (mode: RelationshipDimension, relationship: { cooperation: number; hostility: number; dependency: number; deterrence: number }) => {
+  return relationship[mode];
+};
 
 export default function App() {
   const [timelineIndex, setTimelineIndex] = useState(0);
@@ -58,6 +84,7 @@ export default function App() {
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [overlayMode, setOverlayMode] = useState<OverlayMode>('cooperation');
 
   const simulated = useMemo(() => {
     return countryProfiles.map((profile) => simulateCountry(profile, timelineIndex));
@@ -74,10 +101,10 @@ export default function App() {
 
       return (
         (filters.allianceNetwork === 'all' || entry.profile.allianceNetwork === filters.allianceNetwork) &&
-        (filters.tradeExposure === 'all' || entry.profile.tradeExposure === filters.tradeExposure) &&
-        (filters.militaryTreatyLevel === 'all' || entry.profile.militaryTreatyLevel === filters.militaryTreatyLevel) &&
-        (filters.conflictPressure === 'all' || entry.profile.conflictPressure === filters.conflictPressure) &&
-        (filters.sanctionsExposure === 'all' || entry.profile.sanctionsExposure === filters.sanctionsExposure) &&
+        (filters.tradeExposure === 'all' || entry.profile.indicators.tradeExposure === filters.tradeExposure) &&
+        (filters.militaryTreatyLevel === 'all' || entry.profile.indicators.militaryTreatyLevel === filters.militaryTreatyLevel) &&
+        (filters.conflictPressure === 'all' || entry.profile.indicators.conflictPressure === filters.conflictPressure) &&
+        (filters.sanctionsExposure === 'all' || entry.profile.indicators.sanctionsExposure === filters.sanctionsExposure) &&
         (filters.regimeType === 'all' || entry.profile.regimeType === filters.regimeType) &&
         (filters.riskLevel === 'all' || riskTier === filters.riskLevel)
       );
@@ -87,15 +114,57 @@ export default function App() {
   const visibleNames = useMemo(() => new Set(filtered.map((entry) => entry.profile.mapName)), [filtered]);
   const selected = byName.get(selectedCountry) ?? simulated[0];
 
+  const overlayConnections = useMemo(() => {
+    if (!selected || overlayMode === 'none') {
+      return [];
+    }
+
+    const [sourceX, sourceY] = countryCentroids.get(selected.profile.mapName) ?? [];
+
+    if (typeof sourceX !== 'number' || typeof sourceY !== 'number') {
+      return [];
+    }
+
+    return selected.profile.relationships
+      .map((relationship) => {
+        const targetCentroid = countryCentroids.get(relationship.mapName);
+
+        if (!targetCentroid) {
+          return null;
+        }
+
+        return {
+          ...relationship,
+          score: getRelationshipMetric(overlayMode, relationship),
+          x1: sourceX,
+          y1: sourceY,
+          x2: targetCentroid[0],
+          y2: targetCentroid[1],
+        };
+      })
+      .filter((connection): connection is NonNullable<typeof connection> => Boolean(connection))
+      .filter((connection) => connection.score >= 40)
+      .sort((left, right) => right.score - left.score)
+      .slice(0, 6);
+  }, [overlayMode, selected]);
+
+  const relatedCountries = useMemo(() => new Set(overlayConnections.map((connection) => connection.mapName)), [overlayConnections]);
+
   const eventFeed = useMemo(() => {
     return filtered
       .slice()
       .sort((a, b) => b.risk - a.risk)
       .slice(0, 4)
-      .map((entry) => ({
-        title: `${scenarioTimeline[timelineIndex]}: ${entry.profile.displayName}`,
-        detail: `${alignmentLabel[entry.alignment]} with ${entry.confidence}% confidence and ${entry.risk}% modeled escalation risk.`,
-      }));
+      .map((entry) => {
+        const topPressure = entry.profile.relationships[0];
+
+        return {
+          title: `${scenarioTimeline[timelineIndex]}: ${entry.profile.displayName}`,
+          detail: `${alignmentLabel[entry.alignment]} with ${entry.confidence}% confidence and ${entry.risk}% modeled escalation risk.${
+            topPressure ? ` Top relationship pressure: ${topPressure.displayName}.` : ''
+          }`,
+        };
+      });
   }, [filtered, timelineIndex]);
 
   const handleFilterChange = <K extends keyof Filters>(key: K, value: Filters[K]) => {
@@ -119,14 +188,14 @@ export default function App() {
           <p className="eyebrow">Realpolitik prototype</p>
           <h1>Interactive world alignment map</h1>
           <p className="hero-copy">
-            A browser-based 2D geopolitical simulation that shows estimated alignment likelihoods, transparent assumptions,
-            and scenario-driven risk rather than claims of certainty.
+            A browser-based 2D geopolitical simulation that now reads from a versioned country-and-relationship dataset,
+            exposing source attribution, explicit assumptions, and inspectable ties instead of a purely seeded demo.
           </p>
         </div>
         <div className="hero-card">
-          <span>Scenario frame</span>
-          <strong>{scenarioTimeline[timelineIndex]}</strong>
-          <p>Model output is exploratory, probability-based, and intended for iteration against real data sources.</p>
+          <span>Active dataset</span>
+          <strong>{datasetVersion}</strong>
+          <p>{countryProfiles.length} parameterized countries with relationship edges feeding the current scenario model.</p>
         </div>
       </header>
 
@@ -150,7 +219,13 @@ export default function App() {
           <button type="button" onClick={() => setZoom((current) => Math.min(2.4, current + 0.15))}>
             +
           </button>
-          <button type="button" onClick={() => { setZoom(1); setOffset({ x: 0, y: 0 }); }}>
+          <button
+            type="button"
+            onClick={() => {
+              setZoom(1);
+              setOffset({ x: 0, y: 0 });
+            }}
+          >
             Reset view
           </button>
         </div>
@@ -160,15 +235,45 @@ export default function App() {
         <FilterSelect
           label="Alliance network"
           value={filters.allianceNetwork}
-          options={['all', ...new Set(countryProfiles.map((entry) => entry.allianceNetwork))]}
+          options={['all', ...allianceNetworks]}
           onChange={(value) => handleFilterChange('allianceNetwork', value)}
         />
-        <FilterSelect label="Trade exposure" value={filters.tradeExposure} options={tierOptions} onChange={(value) => handleFilterChange('tradeExposure', value as Filters['tradeExposure'])} />
-        <FilterSelect label="Military treaties" value={filters.militaryTreatyLevel} options={tierOptions} onChange={(value) => handleFilterChange('militaryTreatyLevel', value as Filters['militaryTreatyLevel'])} />
-        <FilterSelect label="Conflict pressure" value={filters.conflictPressure} options={tierOptions} onChange={(value) => handleFilterChange('conflictPressure', value as Filters['conflictPressure'])} />
-        <FilterSelect label="Sanctions exposure" value={filters.sanctionsExposure} options={tierOptions} onChange={(value) => handleFilterChange('sanctionsExposure', value as Filters['sanctionsExposure'])} />
-        <FilterSelect label="Regime type" value={filters.regimeType} options={regimeOptions} onChange={(value) => handleFilterChange('regimeType', value as Filters['regimeType'])} />
-        <FilterSelect label="Risk level" value={filters.riskLevel} options={tierOptions} onChange={(value) => handleFilterChange('riskLevel', value as Filters['riskLevel'])} />
+        <FilterSelect
+          label="Trade exposure"
+          value={filters.tradeExposure}
+          options={tierOptions}
+          onChange={(value) => handleFilterChange('tradeExposure', value as Filters['tradeExposure'])}
+        />
+        <FilterSelect
+          label="Military treaties"
+          value={filters.militaryTreatyLevel}
+          options={tierOptions}
+          onChange={(value) => handleFilterChange('militaryTreatyLevel', value as Filters['militaryTreatyLevel'])}
+        />
+        <FilterSelect
+          label="Conflict pressure"
+          value={filters.conflictPressure}
+          options={tierOptions}
+          onChange={(value) => handleFilterChange('conflictPressure', value as Filters['conflictPressure'])}
+        />
+        <FilterSelect
+          label="Sanctions exposure"
+          value={filters.sanctionsExposure}
+          options={tierOptions}
+          onChange={(value) => handleFilterChange('sanctionsExposure', value as Filters['sanctionsExposure'])}
+        />
+        <FilterSelect
+          label="Regime type"
+          value={filters.regimeType}
+          options={regimeOptions}
+          onChange={(value) => handleFilterChange('regimeType', value as Filters['regimeType'])}
+        />
+        <FilterSelect
+          label="Risk level"
+          value={filters.riskLevel}
+          options={tierOptions}
+          onChange={(value) => handleFilterChange('riskLevel', value as Filters['riskLevel'])}
+        />
       </section>
 
       <main className="workspace">
@@ -176,14 +281,41 @@ export default function App() {
           <div className="panel-header">
             <div>
               <h2>2D world map</h2>
-              <p>Drag to pan, use controls to zoom, and click a seeded country to inspect its modeled alignment.</p>
+              <p>Drag to pan, use controls to zoom, and inspect relationship overlays sourced from the active dataset.</p>
             </div>
             <div className="legend">
               {Object.entries(alignmentLabel).map(([key, label]) => (
-                <span key={key}><i style={{ backgroundColor: alignmentColor[key as Alignment] }} />{label}</span>
+                <span key={key}>
+                  <i style={{ backgroundColor: alignmentColor[key as Alignment] }} />
+                  {label}
+                </span>
               ))}
             </div>
           </div>
+
+          <div className="overlay-controls">
+            <span>Selected-country overlay</span>
+            <div className="overlay-button-row">
+              <button
+                type="button"
+                className={overlayMode === 'none' ? 'active' : ''}
+                onClick={() => setOverlayMode('none')}
+              >
+                None
+              </button>
+              {(Object.keys(overlayLabel) as RelationshipDimension[]).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  className={overlayMode === mode ? 'active' : ''}
+                  onClick={() => setOverlayMode(mode)}
+                >
+                  {formatTitle(mode)}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="map-frame">
             <svg
               viewBox={`0 0 ${width} ${height}`}
@@ -191,7 +323,10 @@ export default function App() {
               onPointerDown={(event) => setDragStart({ x: event.clientX, y: event.clientY })}
               onPointerMove={handlePointerMove}
               onPointerUp={() => setDragStart(null)}
-              onPointerLeave={() => { setDragStart(null); setHoveredCountry(null); }}
+              onPointerLeave={() => {
+                setDragStart(null);
+                setHoveredCountry(null);
+              }}
             >
               <rect width={width} height={height} fill="#08111f" rx="24" />
               <g transform={`translate(${offset.x} ${offset.y}) scale(${zoom})`}>
@@ -200,6 +335,7 @@ export default function App() {
                   const isVisible = simulatedCountry ? visibleNames.has(country.properties.name) : false;
                   const isSelected = selected?.profile.mapName === country.properties.name;
                   const isHovered = hoveredCountry === country.properties.name;
+                  const isRelated = relatedCountries.has(country.properties.name);
 
                   return (
                     <path
@@ -207,8 +343,16 @@ export default function App() {
                       d={path(country as never) ?? undefined}
                       fill={simulatedCountry ? alignmentColor[simulatedCountry.alignment] : '#1b2538'}
                       opacity={simulatedCountry ? (isVisible ? 0.95 : 0.18) : 0.38}
-                      stroke={isSelected ? '#f8fafc' : isHovered ? '#a5b4fc' : '#334155'}
-                      strokeWidth={isSelected ? 1.8 : 0.65}
+                      stroke={
+                        isSelected
+                          ? '#f8fafc'
+                          : isRelated && overlayMode !== 'none'
+                            ? overlayColor[overlayMode]
+                            : isHovered
+                              ? '#a5b4fc'
+                              : '#334155'
+                      }
+                      strokeWidth={isSelected ? 1.8 : isRelated && overlayMode !== 'none' ? 1.4 : 0.65}
                       onPointerEnter={() => setHoveredCountry(country.properties.name)}
                       onPointerLeave={() => setHoveredCountry(null)}
                       onClick={() => {
@@ -219,6 +363,23 @@ export default function App() {
                     />
                   );
                 })}
+
+                {overlayMode !== 'none' &&
+                  overlayConnections.map((connection) => (
+                    <g key={`${selected.profile.id}-${connection.countryId}-${overlayMode}`} className="relationship-overlay">
+                      <line
+                        x1={connection.x1}
+                        y1={connection.y1}
+                        x2={connection.x2}
+                        y2={connection.y2}
+                        stroke={overlayColor[overlayMode]}
+                        strokeWidth={1 + connection.score / 50}
+                        strokeOpacity={0.7}
+                        strokeDasharray={overlayMode === 'dependency' ? '8 6' : undefined}
+                      />
+                      <circle cx={connection.x2} cy={connection.y2} r={3.5} fill={overlayColor[overlayMode]} />
+                    </g>
+                  ))}
               </g>
             </svg>
             {hoveredCountry && (
@@ -265,6 +426,13 @@ export default function App() {
                 ))}
               </div>
 
+              <div className="relationship-summary-grid">
+                <MetricCard label="Cooperation" value={formatPercent(selected.relationshipSummary.cooperation)} />
+                <MetricCard label="Hostility" value={formatPercent(selected.relationshipSummary.hostility)} tone={getRiskTier(selected.relationshipSummary.hostility)} />
+                <MetricCard label="Dependency" value={formatPercent(selected.relationshipSummary.dependency)} />
+                <MetricCard label="Deterrence" value={formatPercent(selected.relationshipSummary.deterrence)} />
+              </div>
+
               <div className="details-stack">
                 <section>
                   <h3>Key drivers</h3>
@@ -284,16 +452,45 @@ export default function App() {
                     <li><span>Region</span><strong>{selected.profile.region}</strong></li>
                     <li><span>Subregion</span><strong>{selected.profile.subregion}</strong></li>
                     <li><span>Regime type</span><strong>{selected.profile.regimeType}</strong></li>
-                    <li><span>Trade exposure</span><strong>{selected.profile.tradeExposure}</strong></li>
-                    <li><span>Military treaties</span><strong>{selected.profile.militaryTreatyLevel}</strong></li>
+                    <li><span>Trade exposure</span><strong>{selected.profile.indicators.tradeExposure}</strong></li>
+                    <li><span>Military treaties</span><strong>{selected.profile.indicators.militaryTreatyLevel}</strong></li>
+                    <li><span>Border disputes</span><strong>{selected.profile.indicators.borderDisputes}</strong></li>
+                    <li><span>Trade dependence</span><strong>{selected.profile.indicators.tradeDependence}</strong></li>
+                    <li><span>Regime stability</span><strong>{selected.profile.indicators.regimeStability}</strong></li>
                   </ul>
+                </section>
+
+                <section>
+                  <h3>Relationship graph</h3>
+                  <div className="relationship-list">
+                    {selected.profile.relationships.slice(0, 5).map((relationship) => (
+                      <article key={relationship.countryId} className="relationship-card">
+                        <div className="relationship-card-header">
+                          <strong>{relationship.displayName}</strong>
+                          <span>{relationship.lastUpdated}</span>
+                        </div>
+                        <div className="relationship-tags">
+                          <span>Coop {relationship.cooperation}%</span>
+                          <span>Hostility {relationship.hostility}%</span>
+                          <span>Dependency {relationship.dependency}%</span>
+                          <span>Deterrence {relationship.deterrence}%</span>
+                        </div>
+                        <p>{relationship.notes}</p>
+                      </article>
+                    ))}
+                  </div>
                 </section>
 
                 <section>
                   <h3>Recent trajectory</h3>
                   <ul>
                     {selected.history.map((entry) => (
-                      <li key={entry.label}><span>{entry.label}</span><strong>{alignmentLabel[entry.alignment]} · {entry.confidence}%</strong></li>
+                      <li key={entry.label}>
+                        <span>{entry.label}</span>
+                        <strong>
+                          {alignmentLabel[entry.alignment]} · {entry.confidence}%
+                        </strong>
+                      </li>
                     ))}
                   </ul>
                 </section>
@@ -305,6 +502,19 @@ export default function App() {
                       <li key={assumption}>{assumption}</li>
                     ))}
                   </ul>
+                </section>
+
+                <section>
+                  <h3>Source attribution</h3>
+                  <div className="source-list">
+                    {selected.profile.sources.map((source) => (
+                      <article key={source.id} className="source-card">
+                        <strong>{source.title}</strong>
+                        <span>{source.publisher}</span>
+                        <span>{source.accessedOn}</span>
+                      </article>
+                    ))}
+                  </div>
                 </section>
               </div>
             </>
@@ -321,12 +531,14 @@ export default function App() {
             </div>
           </div>
           <div className="feed-list">
-            {eventFeed.length > 0 ? eventFeed.map((item) => (
-              <div key={item.title} className="feed-item">
-                <strong>{item.title}</strong>
-                <p>{item.detail}</p>
-              </div>
-            )) : (
+            {eventFeed.length > 0 ? (
+              eventFeed.map((item) => (
+                <div key={item.title} className="feed-item">
+                  <strong>{item.title}</strong>
+                  <p>{item.detail}</p>
+                </div>
+              ))
+            ) : (
               <div className="feed-item">
                 <strong>No countries match the active filters.</strong>
                 <p>Reset one or more filters to restore the current scenario feed.</p>

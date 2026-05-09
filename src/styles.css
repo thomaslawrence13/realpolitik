@@ -78,7 +78,10 @@ button {
 .feed-item p,
 .methodology-list,
 .details-stack ul,
-.hover-card span {
+.hover-card span,
+.overlay-controls > span,
+.relationship-card p,
+.source-card span {
   color: #94a3b8;
 }
 
@@ -93,7 +96,7 @@ button {
 }
 
 .hero-card strong {
-  font-size: 2rem;
+  font-size: 1.4rem;
 }
 
 .control-bar {
@@ -113,7 +116,9 @@ button {
 }
 
 .zoom-controls,
-.legend {
+.legend,
+.overlay-button-row,
+.relationship-tags {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -121,12 +126,18 @@ button {
 }
 
 .zoom-controls button,
-.filter-field select {
+.filter-field select,
+.overlay-button-row button {
   background: #0f172a;
   color: #f8fafc;
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 12px;
   padding: 0.55rem 0.85rem;
+}
+
+.overlay-button-row button.active {
+  border-color: rgba(56, 189, 248, 0.7);
+  background: rgba(14, 116, 144, 0.28);
 }
 
 .filters-panel {
@@ -146,7 +157,9 @@ button {
 .metric-card span,
 .bar-row span,
 .details-stack span,
-.hero-card span {
+.hero-card span,
+.source-card span,
+.relationship-card span {
   font-size: 0.84rem;
   color: #94a3b8;
 }
@@ -188,12 +201,16 @@ button {
 .details-stack section,
 .pill,
 .bar-row,
-.hover-card {
+.hover-card,
+.overlay-controls,
+.relationship-card,
+.source-card {
   border-radius: 16px;
 }
 
 .legend span,
-.pill {
+.pill,
+.relationship-tags span {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -207,6 +224,15 @@ button {
   height: 0.8rem;
   border-radius: 999px;
   display: inline-block;
+}
+
+.overlay-controls {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  background: #08111f;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  margin-bottom: 1rem;
 }
 
 .map-frame {
@@ -236,7 +262,8 @@ button {
   align-content: start;
 }
 
-.metric-grid {
+.metric-grid,
+.relationship-summary-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
@@ -244,18 +271,30 @@ button {
 
 .metric-card,
 .feed-item,
-.details-stack section {
+.details-stack section,
+.relationship-card,
+.source-card {
   background: #08111f;
   border: 1px solid rgba(148, 163, 184, 0.12);
   padding: 0.9rem;
 }
 
-.metric-card.low strong { color: #86efac; }
-.metric-card.medium strong { color: #facc15; }
-.metric-card.high strong { color: #f87171; }
+.metric-card.low strong {
+  color: #86efac;
+}
+
+.metric-card.medium strong {
+  color: #facc15;
+}
+
+.metric-card.high strong {
+  color: #f87171;
+}
 
 .probability-block,
-.details-stack {
+.details-stack,
+.relationship-list,
+.source-list {
   display: grid;
   gap: 0.85rem;
 }
@@ -305,15 +344,45 @@ button {
   gap: 0.75rem;
 }
 
-.feed-item strong {
+.feed-item strong,
+.relationship-card strong,
+.source-card strong {
   display: block;
   margin-bottom: 0.35rem;
 }
 
-.pill.blocA { color: #93c5fd; }
-.pill.blocB { color: #fda4af; }
-.pill.nonAligned { color: #fde68a; }
-.pill.unstable { color: #e9d5ff; }
+.relationship-card {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.relationship-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.source-card {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.pill.blocA {
+  color: #93c5fd;
+}
+
+.pill.blocB {
+  color: #fda4af;
+}
+
+.pill.nonAligned {
+  color: #fde68a;
+}
+
+.pill.unstable {
+  color: #e9d5ff;
+}
 
 @media (max-width: 1080px) {
   .workspace,
@@ -329,6 +398,7 @@ button {
   }
 
   .metric-grid,
+  .relationship-summary-grid,
   .bar-row {
     grid-template-columns: 1fr;
   }
