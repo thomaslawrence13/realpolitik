@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
+import type { WheelEvent as ReactWheelEvent } from 'react';
 import type { FeatureCollection, Geometry } from 'geojson';
 import { geoMercator, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
@@ -25,6 +26,13 @@ import type {
 
 const width = 980;
 const height = 520;
+// Keep map readable at default while allowing meaningful zoom in/out.
+const MIN_ZOOM = 0.8;
+const MAX_ZOOM = 2.4;
+const ZOOM_STEP = 0.15;
+// Typical wheel detent delta is about 100-125, so this maps one detent to roughly one zoom step.
+const WHEEL_DELTA_PER_STEP = 125;
+const WHEEL_ZOOM_SENSITIVITY = ZOOM_STEP / WHEEL_DELTA_PER_STEP;
 const topology = worldTopology as { objects: { countries: unknown } };
 const worldFeatures = feature(topology as never, topology.objects.countries as never) as unknown as FeatureCollection<
   Geometry,
@@ -91,6 +99,7 @@ const formatPercent = (value: number) => `${value}%`;
 const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
 const formatSignedValue = (value: number) => `${value > 0 ? '+' : ''}${value}`;
 const formatTitle = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 const getRelationshipMetric = (
   mode: RelationshipDimension,
@@ -238,6 +247,12 @@ export default function App() {
     setDragStart({ x: event.clientX, y: event.clientY });
   };
 
+  const handleWheelZoom = (event: ReactWheelEvent<SVGSVGElement>) => {
+    event.preventDefault();
+    const nextZoom = clamp(zoom - event.deltaY * WHEEL_ZOOM_SENSITIVITY, MIN_ZOOM, MAX_ZOOM);
+    setZoom(nextZoom);
+  };
+
   const resetScenario = () => {
     setScenarioName('Baseline+');
     setScenarioInputs({ ...defaultScenarioInputs });
@@ -290,11 +305,11 @@ export default function App() {
           <strong>{scenarioTimeline[timelineIndex]}</strong>
         </label>
         <div className="zoom-controls">
-          <button type="button" onClick={() => setZoom((current) => Math.max(0.8, current - 0.15))}>
+          <button type="button" onClick={() => setZoom((current) => Math.max(MIN_ZOOM, current - ZOOM_STEP))}>
             −
           </button>
           <span>{Math.round(zoom * 100)}%</span>
-          <button type="button" onClick={() => setZoom((current) => Math.min(2.4, current + 0.15))}>
+          <button type="button" onClick={() => setZoom((current) => Math.min(MAX_ZOOM, current + ZOOM_STEP))}>
             +
           </button>
           <button
@@ -487,6 +502,7 @@ export default function App() {
             <svg
               viewBox={`0 0 ${width} ${height}`}
               className="world-map"
+              onWheel={handleWheelZoom}
               onPointerDown={(event) => setDragStart({ x: event.clientX, y: event.clientY })}
               onPointerMove={handlePointerMove}
               onPointerUp={() => setDragStart(null)}
@@ -495,7 +511,7 @@ export default function App() {
                 setHoveredCountry(null);
               }}
             >
-              <rect width={width} height={height} fill="#08111f" rx="24" />
+              <rect width={width} height={height} fill="#08111f" />
               <g transform={`translate(${offset.x} ${offset.y}) scale(${zoom})`}>
                 {countries.map((country) => {
                   const simulatedCountry = byName.get(country.properties.name);

@@ -4,6 +4,9 @@
   background: #020617;
   line-height: 1.5;
   font-weight: 400;
+  /* Positions overlay controls below the map header block on desktop/mobile. */
+  --map-overlay-top: 9rem;
+  --map-overlay-top-mobile: 10.5rem;
 }
 
 * {
@@ -38,16 +41,18 @@ a {
 }
 
 .app-shell {
-  max-width: 1480px;
-  margin: 0 auto;
-  padding: 2rem;
+  position: relative;
+  min-height: 100vh;
+  width: min(540px, calc(100vw - 2rem));
+  margin: 0;
+  padding: 1rem;
+  z-index: 2;
 }
 
 .hero,
 .control-bar,
 .scenario-panel,
 .filters-panel,
-.map-panel,
 .details-panel,
 .feed-panel,
 .methodology-panel,
@@ -213,14 +218,13 @@ a {
   color: #94a3b8;
 }
 
-.workspace,
 .lower-grid {
   display: grid;
   gap: 1.25rem;
 }
 
 .workspace {
-  grid-template-columns: minmax(0, 2fr) minmax(320px, 420px);
+  display: block;
 }
 
 .lower-grid {
@@ -293,10 +297,49 @@ a {
   position: relative;
 }
 
+.map-panel {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  z-index: 0;
+}
+
+.map-panel .panel-header,
+.map-panel .overlay-controls {
+  position: absolute;
+  right: 1rem;
+  width: min(460px, calc(100vw - 2rem));
+  z-index: 3;
+  background: rgba(8, 17, 31, 0.9);
+  backdrop-filter: blur(8px);
+}
+
+.map-panel .panel-header {
+  top: 1rem;
+  padding: 0.9rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  margin-bottom: 0;
+}
+
+.map-panel .overlay-controls {
+  top: var(--map-overlay-top);
+}
+
+.map-panel .map-frame {
+  height: 100vh;
+}
+
 .world-map {
-  width: 100%;
-  height: auto;
-  border-radius: 20px;
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  display: block;
   touch-action: none;
 }
 
@@ -460,7 +503,22 @@ a {
 
 @media (max-width: 720px) {
   .app-shell {
-    padding: 1rem;
+    width: calc(100vw - 1rem);
+    padding: 0.5rem;
+  }
+
+  .map-panel .panel-header,
+  .map-panel .overlay-controls {
+    right: 0.5rem;
+    width: calc(100vw - 1rem);
+  }
+
+  .map-panel .overlay-controls {
+    top: var(--map-overlay-top-mobile);
+  }
+
+  .map-panel .legend {
+    display: none;
   }
 
   .metric-grid,
