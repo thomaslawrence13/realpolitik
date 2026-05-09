@@ -6,6 +6,8 @@ export interface CountryProfile {
   mapName: string;
   displayName: string;
   allianceNetwork: string;
+  region: string;
+  subregion: string;
   militaryTreatyLevel: Tier;
   tradeExposure: Tier;
   conflictPressure: Tier;

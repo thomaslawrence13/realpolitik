@@ -1,21 +1,24 @@
 import { useMemo, useState } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
+import type { FeatureCollection, Geometry } from 'geojson';
 import { geoMercator, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import worldTopology from 'world-atlas/countries-110m.json';
-import worldCountries from 'world-countries';
 import { countryProfiles, methodologyNotes, scenarioTimeline } from './data/profiles';
 import { getRiskTier, simulateCountry } from './simulation';
 import type { Alignment, Filters, Tier } from './types';
 
 const width = 980;
 const height = 520;
-const projection = geoMercator().fitSize([width, height], feature(worldTopology as never, (worldTopology as never).objects.countries) as never);
+const topology = worldTopology as { objects: { countries: unknown } };
+const worldFeatures = feature(topology as never, topology.objects.countries as never) as unknown as FeatureCollection<Geometry, { name: string }>;
+const projection = geoMercator().fitSize([width, height], worldFeatures);
 const path = geoPath(projection);
 
-const countries = feature(worldTopology as never, (worldTopology as never).objects.countries).features as Array<{
-  id: string;
+const countries = worldFeatures.features as Array<{
+  id?: string;
   properties: { name: string };
-  geometry: GeoJSON.Geometry;
+  geometry: Geometry;
 }>;
 
 const defaultFilters: Filters = {
@@ -44,11 +47,6 @@ const alignmentColor: Record<Alignment, string> = {
 
 const tierOptions: Array<'all' | Tier> = ['all', 'low', 'medium', 'high'];
 const regimeOptions = ['all', 'democracy', 'hybrid', 'authoritarian'] as const;
-
-const getMetadata = (name: string) =>
-  worldCountries.find((country) =>
-    [country.name.common, country.name.official, ...(country.altSpellings ?? [])].includes(name),
-  );
 
 const formatPercent = (value: number) => `${value}%`;
 
@@ -88,7 +86,6 @@ export default function App() {
 
   const visibleNames = useMemo(() => new Set(filtered.map((entry) => entry.profile.mapName)), [filtered]);
   const selected = byName.get(selectedCountry) ?? simulated[0];
-  const selectedMeta = selected ? getMetadata(selected.profile.mapName) : undefined;
 
   const eventFeed = useMemo(() => {
     return filtered
@@ -105,7 +102,7 @@ export default function App() {
     setFilters((current) => ({ ...current, [key]: value }));
   };
 
-  const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
+  const handlePointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
     if (!dragStart) return;
 
     setOffset((current) => ({
@@ -206,7 +203,7 @@ export default function App() {
 
                   return (
                     <path
-                      key={`${country.id}-${country.properties.name}`}
+                      key={`${country.id ?? country.properties.name}-${country.properties.name}`}
                       d={path(country as never) ?? undefined}
                       fill={simulatedCountry ? alignmentColor[simulatedCountry.alignment] : '#1b2538'}
                       opacity={simulatedCountry ? (isVisible ? 0.95 : 0.18) : 0.38}
@@ -284,8 +281,8 @@ export default function App() {
                 <section>
                   <h3>Country context</h3>
                   <ul>
-                    <li><span>Region</span><strong>{selectedMeta?.region ?? 'Seed profile only'}</strong></li>
-                    <li><span>Subregion</span><strong>{selectedMeta?.subregion ?? 'Seed profile only'}</strong></li>
+                    <li><span>Region</span><strong>{selected.profile.region}</strong></li>
+                    <li><span>Subregion</span><strong>{selected.profile.subregion}</strong></li>
                     <li><span>Regime type</span><strong>{selected.profile.regimeType}</strong></li>
                     <li><span>Trade exposure</span><strong>{selected.profile.tradeExposure}</strong></li>
                     <li><span>Military treaties</span><strong>{selected.profile.militaryTreatyLevel}</strong></li>
@@ -324,12 +321,17 @@ export default function App() {
             </div>
           </div>
           <div className="feed-list">
-            {eventFeed.map((item) => (
+            {eventFeed.length > 0 ? eventFeed.map((item) => (
               <div key={item.title} className="feed-item">
                 <strong>{item.title}</strong>
                 <p>{item.detail}</p>
               </div>
-            ))}
+            )) : (
+              <div className="feed-item">
+                <strong>No countries match the active filters.</strong>
+                <p>Reset one or more filters to restore the current scenario feed.</p>
+              </div>
+            )}
           </div>
         </article>
 

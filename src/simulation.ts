@@ -97,13 +97,13 @@ export const simulateCountry = (
   const confidence = clamp(sorted[0] - sorted[1] + 52, 41, 96);
   const risk = clamp(profile.baselineRisk + conflict * 0.18 + sanctions * 0.08 - profile.cohesion * 0.12 + timelineIndex * 1.1, 8, 97);
 
-  const drivers: DriverScore[] = [
-    { label: 'Alliance commitments', value: Math.round(military * 0.9), direction: 'blocA' },
-    { label: 'Trade exposure', value: Math.round(trade * 0.85), direction: 'nonAligned' },
-    { label: 'Conflict pressure', value: Math.round(conflict * 0.95), direction: 'risk' },
-    { label: 'Sanctions exposure', value: Math.round(sanctions * 0.85), direction: 'blocB' },
-    { label: 'Domestic cohesion', value: profile.cohesion, direction: 'nonAligned' },
-  ].sort((a, b) => b.value - a.value);
+  const drivers = [
+    { label: 'Alliance commitments', value: Math.round(military * 0.9), direction: 'blocA' as const },
+    { label: 'Trade exposure', value: Math.round(trade * 0.85), direction: 'nonAligned' as const },
+    { label: 'Conflict pressure', value: Math.round(conflict * 0.95), direction: 'risk' as const },
+    { label: 'Sanctions exposure', value: Math.round(sanctions * 0.85), direction: 'blocB' as const },
+    { label: 'Domestic cohesion', value: profile.cohesion, direction: 'nonAligned' as const },
+  ].sort((a, b) => b.value - a.value) satisfies DriverScore[];
 
   const alignment = resolveAlignment(probabilities, risk);
 
