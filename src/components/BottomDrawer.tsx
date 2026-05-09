@@ -266,9 +266,10 @@ function HistoryPanel({
             </header>
             <p>{weightSet?.label ?? 'Custom weighting'}</p>
             <p className="history-summary">
-              S{scenario.inputs.sanctionShock} · T{scenario.inputs.treatyShift > 0 ? '+' : ''}
-              {scenario.inputs.treatyShift} · E{scenario.inputs.electionVolatility} · I
-              {scenario.inputs.invasionPressure} · C{scenario.inputs.coupRisk}
+              Sanctions {scenario.inputs.sanctionShock} · Treaties{' '}
+              {scenario.inputs.treatyShift > 0 ? '+' : ''}
+              {scenario.inputs.treatyShift} · Election {scenario.inputs.electionVolatility} · Invasion{' '}
+              {scenario.inputs.invasionPressure} · Coup {scenario.inputs.coupRisk}
             </p>
             <button type="button" className="btn btn-ghost" onClick={() => onLoad(scenario)}>
               Load scenario

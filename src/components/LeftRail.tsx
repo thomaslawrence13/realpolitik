@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Alignment, Filters, RegimeType, SimulatedCountry, Tier } from '../types';
 import { Segmented, SvgIcon } from './ui';
 
@@ -59,6 +59,7 @@ export function LeftRail({
   alignmentLabel,
 }: Props) {
   const [filtersExpanded, setFiltersExpanded] = useState(true);
+  const selectedItemRef = useRef<HTMLButtonElement | null>(null);
 
   const sorted = useMemo(
     () => [...countries].sort((a, b) => b.risk - a.risk),
@@ -75,10 +76,12 @@ export function LeftRail({
     onFiltersChange({ ...filters, [key]: value as Filters[K] });
   };
 
-  if (!open) return null;
+  useEffect(() => {
+    selectedItemRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [selectedName]);
 
   return (
-    <aside className="rail" aria-label="Country browser">
+    <aside className="rail" aria-label="Country browser" aria-hidden={!open} {...(!open && { inert: true })}>
       <div className="rail-header">
         <div>
           <h2 className="rail-title">Countries</h2>
@@ -121,7 +124,7 @@ export function LeftRail({
           <span>Filters</span>
           <span className="rail-filters-count">
             {activeFilterCount > 0 && <em>{activeFilterCount}</em>}
-            <SvgIcon.Chevron dir={filtersExpanded ? 'left' : 'right'} />
+            <SvgIcon.Chevron dir={filtersExpanded ? 'up' : 'down'} />
           </span>
         </button>
         {filtersExpanded && (
@@ -227,6 +230,7 @@ export function LeftRail({
             return (
               <button
                 key={country.profile.id}
+                ref={isSelected ? selectedItemRef : null}
                 type="button"
                 role="option"
                 aria-selected={isSelected}

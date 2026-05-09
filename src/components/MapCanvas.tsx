@@ -7,6 +7,7 @@ import type {
   SimulatedCountry,
 } from '../types';
 import { MAP_HEIGHT, MAP_WIDTH, countries, path } from '../lib/map';
+import { getRiskTier } from '../simulation';
 import { IconButton, SvgIcon } from './ui';
 
 const MIN_ZOOM = 0.8;
@@ -250,7 +251,7 @@ export function MapCanvas({
             <div className="hover-stats">
               <span>
                 <em>Risk</em>
-                {hovered.risk}%
+                <span data-risk-tier={getRiskTier(hovered.risk)}>{hovered.risk}%</span>
               </span>
               <span>
                 <em>Conf</em>
