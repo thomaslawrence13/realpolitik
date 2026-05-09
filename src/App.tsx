@@ -5,8 +5,23 @@ import { geoMercator, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import worldTopology from 'world-atlas/countries-110m.json';
 import { allianceNetworks, countryProfiles, datasetVersion, methodologyNotes, scenarioTimeline } from './data/countryData';
-import { getRiskTier, simulateCountry } from './simulation';
-import type { Alignment, Filters, OverlayMode, RelationshipDimension, Tier } from './types';
+import {
+  defaultScenarioInputs,
+  getRiskTier,
+  getSimulationWeightSet,
+  simulateCountry,
+  simulationWeightSets,
+} from './simulation';
+import type {
+  Alignment,
+  Filters,
+  OverlayMode,
+  RelationshipDimension,
+  SavedScenario,
+  ScenarioInputs,
+  Tier,
+  WeightSetKey,
+} from './types';
 
 const width = 980;
 const height = 520;
@@ -37,6 +52,9 @@ const defaultFilters: Filters = {
   regimeType: 'all',
   riskLevel: 'all',
 };
+
+const baselineWeightSet = getSimulationWeightSet('baseline');
+const weightSetOptions = Object.values(simulationWeightSets);
 
 const alignmentLabel: Record<Alignment, string> = {
   blocA: 'Bloc A leaning',
@@ -70,10 +88,23 @@ const tierOptions: Array<'all' | Tier> = ['all', 'low', 'medium', 'high'];
 const regimeOptions = ['all', 'democracy', 'hybrid', 'authoritarian'] as const;
 
 const formatPercent = (value: number) => `${value}%`;
+const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
+const formatSignedValue = (value: number) => `${value > 0 ? '+' : ''}${value}`;
 const formatTitle = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
-const getRelationshipMetric = (mode: RelationshipDimension, relationship: { cooperation: number; hostility: number; dependency: number; deterrence: number }) => {
-  return relationship[mode];
+const getRelationshipMetric = (
+  mode: RelationshipDimension,
+  relationship: { cooperation: number; hostility: number; dependency: number; deterrence: number },
+) => relationship[mode];
+
+const summarizeScenarioInputs = (inputs: ScenarioInputs) => {
+  return [
+    `Sanctions ${inputs.sanctionShock}`,
+    `Treaties ${formatSignedValue(inputs.treatyShift)}`,
+    `Elections ${inputs.electionVolatility}`,
+    `Invasions ${inputs.invasionPressure}`,
+    `Coups ${inputs.coupRisk}`,
+  ].join(' · ');
 };
 
 export default function App() {
@@ -85,10 +116,27 @@ export default function App() {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [overlayMode, setOverlayMode] = useState<OverlayMode>('cooperation');
+  const [scenarioName, setScenarioName] = useState('Baseline+');
+  const [scenarioInputs, setScenarioInputs] = useState<ScenarioInputs>({ ...defaultScenarioInputs });
+  const [weightSetKey, setWeightSetKey] = useState<WeightSetKey>('baseline');
+  const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
+
+  const activeWeightSet = useMemo(() => getSimulationWeightSet(weightSetKey), [weightSetKey]);
+
+  const baselineSimulated = useMemo(() => {
+    return countryProfiles.map((profile) =>
+      simulateCountry(profile, timelineIndex, { scenarioInputs: defaultScenarioInputs, weightSet: baselineWeightSet }),
+    );
+  }, [timelineIndex]);
 
   const simulated = useMemo(() => {
-    return countryProfiles.map((profile) => simulateCountry(profile, timelineIndex));
-  }, [timelineIndex]);
+    return countryProfiles.map((profile) => simulateCountry(profile, timelineIndex, { scenarioInputs, weightSet: activeWeightSet }));
+  }, [activeWeightSet, scenarioInputs, timelineIndex]);
+
+  const baselineByName = useMemo(
+    () => new Map(baselineSimulated.map((entry) => [entry.profile.mapName, entry])),
+    [baselineSimulated],
+  );
 
   const byName = useMemo(
     () => new Map(simulated.map((entry) => [entry.profile.mapName, entry])),
@@ -113,6 +161,9 @@ export default function App() {
 
   const visibleNames = useMemo(() => new Set(filtered.map((entry) => entry.profile.mapName)), [filtered]);
   const selected = byName.get(selectedCountry) ?? simulated[0];
+  const baselineSelected = baselineByName.get(selectedCountry) ?? baselineSimulated[0];
+  const selectedRiskDelta = Math.round(selected.risk - baselineSelected.risk);
+  const selectedConfidenceDelta = Math.round(selected.confidence - baselineSelected.confidence);
 
   const overlayConnections = useMemo(() => {
     if (!selected || overlayMode === 'none') {
@@ -157,18 +208,24 @@ export default function App() {
       .slice(0, 4)
       .map((entry) => {
         const topPressure = entry.profile.relationships[0];
+        const baselineEntry = baselineByName.get(entry.profile.mapName);
+        const riskDelta = baselineEntry ? Math.round(entry.risk - baselineEntry.risk) : 0;
 
         return {
           title: `${scenarioTimeline[timelineIndex]}: ${entry.profile.displayName}`,
-          detail: `${alignmentLabel[entry.alignment]} with ${entry.confidence}% confidence and ${entry.risk}% modeled escalation risk.${
-            topPressure ? ` Top relationship pressure: ${topPressure.displayName}.` : ''
-          }`,
+          detail: `${alignmentLabel[entry.alignment]} with ${entry.confidence}% confidence and ${entry.risk}% modeled escalation risk (${formatSignedPercent(
+            riskDelta,
+          )} vs baseline).${topPressure ? ` Top relationship pressure: ${topPressure.displayName}.` : ''}`,
         };
       });
-  }, [filtered, timelineIndex]);
+  }, [baselineByName, filtered, timelineIndex]);
 
   const handleFilterChange = <K extends keyof Filters>(key: K, value: Filters[K]) => {
     setFilters((current) => ({ ...current, [key]: value }));
+  };
+
+  const handleScenarioInputChange = <K extends keyof ScenarioInputs>(key: K, value: number) => {
+    setScenarioInputs((current) => ({ ...current, [key]: value }));
   };
 
   const handlePointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
@@ -181,6 +238,27 @@ export default function App() {
     setDragStart({ x: event.clientX, y: event.clientY });
   };
 
+  const resetScenario = () => {
+    setScenarioName('Baseline+');
+    setScenarioInputs({ ...defaultScenarioInputs });
+    setWeightSetKey('baseline');
+  };
+
+  const saveScenario = () => {
+    const name = scenarioName.trim() || `Scenario ${savedScenarios.length + 1}`;
+
+    setSavedScenarios((current) => [
+      {
+        id: `${Date.now()}`,
+        name,
+        timelineIndex,
+        weightSetKey,
+        inputs: { ...scenarioInputs },
+      },
+      ...current,
+    ].slice(0, 6));
+  };
+
   return (
     <div className="app-shell">
       <header className="hero">
@@ -189,7 +267,7 @@ export default function App() {
           <h1>Interactive world alignment map</h1>
           <p className="hero-copy">
             A browser-based 2D geopolitical simulation that now reads from a versioned country-and-relationship dataset,
-            exposing source attribution, explicit assumptions, and inspectable ties instead of a purely seeded demo.
+            exposes source attribution, and lets users compare baseline outcomes against editable scenario shocks.
           </p>
         </div>
         <div className="hero-card">
@@ -228,6 +306,95 @@ export default function App() {
           >
             Reset view
           </button>
+        </div>
+      </section>
+
+      <section className="scenario-panel">
+        <div className="panel-header compact">
+          <div>
+            <h2>Scenario lab</h2>
+            <p>Adjust shocks, swap model weight sets, and compare the edited outcome against the baseline run.</p>
+          </div>
+          <div className="scenario-actions">
+            <button type="button" onClick={resetScenario}>Reset scenario</button>
+            <button type="button" onClick={saveScenario}>Save to history</button>
+          </div>
+        </div>
+
+        <div className="scenario-top-row">
+          <label className="filter-field">
+            <span>Scenario label</span>
+            <input value={scenarioName} onChange={(event) => setScenarioName(event.target.value)} />
+          </label>
+          <label className="filter-field">
+            <span>Weight set</span>
+            <select value={weightSetKey} onChange={(event) => setWeightSetKey(event.target.value as WeightSetKey)}>
+              {weightSetOptions.map((weightSet) => (
+                <option key={weightSet.key} value={weightSet.key}>
+                  {weightSet.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="scenario-weight-card">
+            <span>Weight profile</span>
+            <strong>{activeWeightSet.label}</strong>
+            <p>{activeWeightSet.description}</p>
+          </div>
+        </div>
+
+        <div className="scenario-grid">
+          <ScenarioSlider
+            label="Sanctions shock"
+            value={scenarioInputs.sanctionShock}
+            min={0}
+            max={100}
+            onChange={(value) => handleScenarioInputChange('sanctionShock', value)}
+          />
+          <ScenarioSlider
+            label="Treaty change"
+            value={scenarioInputs.treatyShift}
+            min={-60}
+            max={60}
+            onChange={(value) => handleScenarioInputChange('treatyShift', value)}
+          />
+          <ScenarioSlider
+            label="Election volatility"
+            value={scenarioInputs.electionVolatility}
+            min={0}
+            max={100}
+            onChange={(value) => handleScenarioInputChange('electionVolatility', value)}
+          />
+          <ScenarioSlider
+            label="Invasion pressure"
+            value={scenarioInputs.invasionPressure}
+            min={0}
+            max={100}
+            onChange={(value) => handleScenarioInputChange('invasionPressure', value)}
+          />
+          <ScenarioSlider
+            label="Coup risk"
+            value={scenarioInputs.coupRisk}
+            min={0}
+            max={100}
+            onChange={(value) => handleScenarioInputChange('coupRisk', value)}
+          />
+        </div>
+
+        <div className="scenario-summary-row">
+          <div className="scenario-summary-card">
+            <span>Active scenario</span>
+            <strong>{scenarioName}</strong>
+            <p>{summarizeScenarioInputs(scenarioInputs)}</p>
+          </div>
+          <div className="scenario-summary-card">
+            <span>Selected country delta</span>
+            <strong>{selected.profile.displayName}</strong>
+            <p>
+              {selected.alignment === baselineSelected.alignment ? 'Alignment unchanged' : `${alignmentLabel[baselineSelected.alignment]} → ${alignmentLabel[selected.alignment]}`}
+              {' · '}Risk {formatSignedPercent(selectedRiskDelta)}{' · '}Confidence {formatSignedPercent(selectedConfidenceDelta)}
+            </p>
+          </div>
         </div>
       </section>
 
@@ -413,17 +580,30 @@ export default function App() {
                 <MetricCard label="Last updated" value={selected.profile.lastUpdated} />
               </div>
 
+              <div className="comparison-grid">
+                <MetricCard label="Baseline alignment" value={alignmentLabel[baselineSelected.alignment]} />
+                <MetricCard label="Risk delta" value={formatSignedPercent(selectedRiskDelta)} tone={getRiskTier(Math.abs(selectedRiskDelta))} />
+                <MetricCard label="Confidence delta" value={formatSignedPercent(selectedConfidenceDelta)} />
+                <MetricCard label="Weight set" value={activeWeightSet.label} />
+              </div>
+
               <div className="probability-block">
                 <h3>Alignment likelihoods</h3>
-                {Object.entries(selected.probabilities).map(([key, value]) => (
-                  <div key={key} className="bar-row">
-                    <span>{alignmentLabel[key as Alignment]}</span>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: `${value}%`, backgroundColor: alignmentColor[key as Alignment] }} />
+                {Object.entries(selected.probabilities).map(([key, value]) => {
+                  const baselineValue = baselineSelected.probabilities[key as keyof typeof baselineSelected.probabilities];
+
+                  return (
+                    <div key={key} className="bar-row">
+                      <span>{alignmentLabel[key as Alignment]}</span>
+                      <div className="bar-track">
+                        <div className="bar-fill" style={{ width: `${value}%`, backgroundColor: alignmentColor[key as Alignment] }} />
+                      </div>
+                      <strong>
+                        {value}% <em>{formatSignedPercent(value - baselineValue)}</em>
+                      </strong>
                     </div>
-                    <strong>{value}%</strong>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="relationship-summary-grid">
@@ -443,6 +623,19 @@ export default function App() {
                         <strong>{driver.value}</strong>
                       </li>
                     ))}
+                  </ul>
+                </section>
+
+                <section>
+                  <h3>Scenario assumptions</h3>
+                  <ul>
+                    <li><span>Label</span><strong>{scenarioName}</strong></li>
+                    <li><span>Weight set</span><strong>{activeWeightSet.label}</strong></li>
+                    <li><span>Sanctions shock</span><strong>{scenarioInputs.sanctionShock}</strong></li>
+                    <li><span>Treaty change</span><strong>{formatSignedValue(scenarioInputs.treatyShift)}</strong></li>
+                    <li><span>Election volatility</span><strong>{scenarioInputs.electionVolatility}</strong></li>
+                    <li><span>Invasion pressure</span><strong>{scenarioInputs.invasionPressure}</strong></li>
+                    <li><span>Coup risk</span><strong>{scenarioInputs.coupRisk}</strong></li>
                   </ul>
                 </section>
 
@@ -512,6 +705,7 @@ export default function App() {
                         <strong>{source.title}</strong>
                         <span>{source.publisher}</span>
                         <span>{source.accessedOn}</span>
+                        <a href={source.url} target="_blank" rel="noreferrer">Open source</a>
                       </article>
                     ))}
                   </div>
@@ -560,6 +754,49 @@ export default function App() {
             ))}
           </ul>
         </article>
+
+        <article className="scenario-history-panel">
+          <div className="panel-header compact">
+            <div>
+              <h2>Scenario history</h2>
+              <p>Saved assumption sets so baseline and edited outcomes stay comparable.</p>
+            </div>
+          </div>
+          <div className="scenario-history-list">
+            {savedScenarios.length > 0 ? (
+              savedScenarios.map((savedScenario) => {
+                const savedWeightSet = getSimulationWeightSet(savedScenario.weightSetKey);
+
+                return (
+                  <article key={savedScenario.id} className="scenario-history-card">
+                    <div className="relationship-card-header">
+                      <strong>{savedScenario.name}</strong>
+                      <span>{scenarioTimeline[savedScenario.timelineIndex]}</span>
+                    </div>
+                    <p>{savedWeightSet.label}</p>
+                    <p>{summarizeScenarioInputs(savedScenario.inputs)}</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setScenarioName(savedScenario.name);
+                        setScenarioInputs({ ...savedScenario.inputs });
+                        setWeightSetKey(savedScenario.weightSetKey);
+                        setTimelineIndex(savedScenario.timelineIndex);
+                      }}
+                    >
+                      Load scenario
+                    </button>
+                  </article>
+                );
+              })
+            ) : (
+              <div className="feed-item">
+                <strong>No saved scenarios yet.</strong>
+                <p>Save the current assumptions to compare baseline versus edited outcomes over time.</p>
+              </div>
+            )}
+          </div>
+        </article>
       </section>
     </div>
   );
@@ -583,6 +820,24 @@ function FilterSelect({ label, value, options, onChange }: FilterSelectProps) {
           </option>
         ))}
       </select>
+    </label>
+  );
+}
+
+type ScenarioSliderProps = {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (value: number) => void;
+};
+
+function ScenarioSlider({ label, value, min, max, onChange }: ScenarioSliderProps) {
+  return (
+    <label className="scenario-slider">
+      <span>{label}</span>
+      <input type="range" min={min} max={max} value={value} onChange={(event) => onChange(Number(event.target.value))} />
+      <strong>{value > 0 ? `+${value}` : value}</strong>
     </label>
   );
 }

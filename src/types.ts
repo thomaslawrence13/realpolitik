@@ -3,6 +3,7 @@ export type RegimeType = 'democracy' | 'hybrid' | 'authoritarian';
 export type Tier = 'low' | 'medium' | 'high';
 export type RelationshipDimension = 'cooperation' | 'hostility' | 'dependency' | 'deterrence';
 export type OverlayMode = 'none' | RelationshipDimension;
+export type WeightSetKey = 'baseline' | 'hardPower' | 'economicStress';
 
 export interface DatasetSource {
   id: string;
@@ -107,6 +108,32 @@ export interface RelationshipSummary {
   tension: number;
 }
 
+export interface ScenarioInputs {
+  sanctionShock: number;
+  treatyShift: number;
+  electionVolatility: number;
+  invasionPressure: number;
+  coupRisk: number;
+}
+
+export interface SimulationWeightSet {
+  key: WeightSetKey;
+  label: string;
+  description: string;
+  alliance: number;
+  sanctions: number;
+  elections: number;
+  invasion: number;
+  coup: number;
+  economic: number;
+}
+
+export interface SimulationOptions {
+  includeHistory?: boolean;
+  scenarioInputs?: ScenarioInputs;
+  weightSet?: SimulationWeightSet;
+}
+
 export interface SimulatedCountry {
   profile: CountryProfile;
   alignment: Alignment;
@@ -126,4 +153,12 @@ export interface Filters {
   sanctionsExposure: 'all' | Tier;
   regimeType: 'all' | RegimeType;
   riskLevel: 'all' | Tier;
+}
+
+export interface SavedScenario {
+  id: string;
+  name: string;
+  timelineIndex: number;
+  weightSetKey: WeightSetKey;
+  inputs: ScenarioInputs;
 }

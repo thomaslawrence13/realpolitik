@@ -20,12 +20,17 @@ body {
 
 button,
 select,
-input {
+input,
+a {
   font: inherit;
 }
 
 button {
   cursor: pointer;
+}
+
+a {
+  color: #7dd3fc;
 }
 
 #root {
@@ -40,11 +45,13 @@ button {
 
 .hero,
 .control-bar,
+.scenario-panel,
 .filters-panel,
 .map-panel,
 .details-panel,
 .feed-panel,
-.methodology-panel {
+.methodology-panel,
+.scenario-history-panel {
   background: rgba(15, 23, 42, 0.88);
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 24px;
@@ -81,11 +88,16 @@ button {
 .hover-card span,
 .overlay-controls > span,
 .relationship-card p,
-.source-card span {
+.source-card span,
+.scenario-weight-card p,
+.scenario-summary-card p,
+.scenario-history-card p {
   color: #94a3b8;
 }
 
-.hero-card {
+.hero-card,
+.scenario-weight-card,
+.scenario-summary-card {
   padding: 1.25rem;
   border-radius: 20px;
   background: rgba(8, 17, 31, 0.95);
@@ -95,8 +107,16 @@ button {
   align-content: start;
 }
 
-.hero-card strong {
+.hero-card strong,
+.scenario-weight-card strong,
+.scenario-summary-card strong {
   font-size: 1.4rem;
+}
+
+.control-bar,
+.scenario-panel {
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .control-bar {
@@ -105,8 +125,6 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1rem;
 }
 
 .control-bar label {
@@ -118,7 +136,8 @@ button {
 .zoom-controls,
 .legend,
 .overlay-button-row,
-.relationship-tags {
+.relationship-tags,
+.scenario-actions {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -127,7 +146,10 @@ button {
 
 .zoom-controls button,
 .filter-field select,
-.overlay-button-row button {
+.filter-field input,
+.overlay-button-row button,
+.scenario-actions button,
+.scenario-history-card button {
   background: #0f172a;
   color: #f8fafc;
   border: 1px solid rgba(148, 163, 184, 0.22);
@@ -140,17 +162,40 @@ button {
   background: rgba(14, 116, 144, 0.28);
 }
 
+.scenario-top-row,
+.scenario-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.scenario-grid,
 .filters-panel {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 0.85rem;
+}
+
+.scenario-grid {
+  margin: 1rem 0;
+}
+
+.filters-panel {
   padding: 1rem;
   margin-bottom: 1.25rem;
 }
 
-.filter-field {
+.filter-field,
+.scenario-slider {
   display: grid;
   gap: 0.4rem;
+}
+
+.scenario-slider {
+  padding: 0.9rem;
+  border-radius: 16px;
+  background: #08111f;
+  border: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .filter-field span,
@@ -159,7 +204,11 @@ button {
 .details-stack span,
 .hero-card span,
 .source-card span,
-.relationship-card span {
+.relationship-card span,
+.scenario-slider span,
+.scenario-weight-card span,
+.scenario-summary-card span,
+.scenario-history-card span {
   font-size: 0.84rem;
   color: #94a3b8;
 }
@@ -167,19 +216,23 @@ button {
 .workspace,
 .lower-grid {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(320px, 420px);
   gap: 1.25rem;
+}
+
+.workspace {
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 420px);
 }
 
 .lower-grid {
   margin-top: 1.25rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
 .map-panel,
 .details-panel,
 .feed-panel,
-.methodology-panel {
+.methodology-panel,
+.scenario-history-panel {
   padding: 1rem;
 }
 
@@ -204,7 +257,8 @@ button {
 .hover-card,
 .overlay-controls,
 .relationship-card,
-.source-card {
+.source-card,
+.scenario-history-card {
   border-radius: 16px;
 }
 
@@ -263,7 +317,8 @@ button {
 }
 
 .metric-grid,
-.relationship-summary-grid {
+.relationship-summary-grid,
+.comparison-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
@@ -273,7 +328,8 @@ button {
 .feed-item,
 .details-stack section,
 .relationship-card,
-.source-card {
+.source-card,
+.scenario-history-card {
   background: #08111f;
   border: 1px solid rgba(148, 163, 184, 0.12);
   padding: 0.9rem;
@@ -294,7 +350,8 @@ button {
 .probability-block,
 .details-stack,
 .relationship-list,
-.source-list {
+.source-list,
+.scenario-history-list {
   display: grid;
   gap: 0.85rem;
 }
@@ -304,6 +361,12 @@ button {
   grid-template-columns: 130px minmax(0, 1fr) auto;
   gap: 0.75rem;
   align-items: center;
+}
+
+.bar-row strong em {
+  font-style: normal;
+  color: #94a3b8;
+  margin-left: 0.35rem;
 }
 
 .bar-track {
@@ -346,12 +409,14 @@ button {
 
 .feed-item strong,
 .relationship-card strong,
-.source-card strong {
+.source-card strong,
+.scenario-history-card strong {
   display: block;
   margin-bottom: 0.35rem;
 }
 
-.relationship-card {
+.relationship-card,
+.scenario-history-card {
   display: grid;
   gap: 0.75rem;
 }
@@ -386,8 +451,9 @@ button {
 
 @media (max-width: 1080px) {
   .workspace,
-  .lower-grid,
-  .hero {
+  .hero,
+  .scenario-top-row,
+  .scenario-summary-row {
     grid-template-columns: 1fr;
   }
 }
@@ -399,6 +465,7 @@ button {
 
   .metric-grid,
   .relationship-summary-grid,
+  .comparison-grid,
   .bar-row {
     grid-template-columns: 1fr;
   }
