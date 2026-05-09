@@ -148,6 +148,14 @@ a:hover {
   --drawer-h-current: var(--drawer-h);
 }
 
+/* When collapsed, keep mounted but disable all interaction */
+.rail[inert],
+.inspector[inert] {
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+}
+
 /* ----------------------------------------------------------------------------
  * Top bar
  * ------------------------------------------------------------------------- */
@@ -660,6 +668,13 @@ input[type='range']::-moz-range-thumb {
 .country-item-active {
   background: var(--surface-2);
   border-color: var(--border);
+  border-left-color: var(--accent-line);
+  padding-left: calc(0.6rem - 2px);
+  border-left-width: 3px;
+}
+
+.country-item-active:hover {
+  background: var(--surface-3);
 }
 
 .country-dot {
@@ -716,20 +731,23 @@ input[type='range']::-moz-range-thumb {
 }
 
 .rail-empty {
-  padding: 1.5rem 1rem;
+  padding: 2rem 1rem;
   text-align: center;
+  color: var(--text-3);
 }
 
 .rail-empty strong {
   display: block;
   margin-bottom: 0.3rem;
   color: var(--text-2);
+  font-size: 0.88rem;
 }
 
 .rail-empty p {
   margin: 0;
   font-size: 0.82rem;
   color: var(--text-3);
+  line-height: 1.5;
 }
 
 /* ----------------------------------------------------------------------------
@@ -966,6 +984,18 @@ input[type='range']::-moz-range-thumb {
   font-variant-numeric: tabular-nums;
 }
 
+.hover-stats > span > [data-risk-tier='high'] {
+  color: var(--risk-high);
+}
+
+.hover-stats > span > [data-risk-tier='medium'] {
+  color: var(--risk-med);
+}
+
+.hover-stats > span > [data-risk-tier='low'] {
+  color: var(--risk-low);
+}
+
 .hover-card-muted {
   opacity: 0.85;
 }
@@ -995,6 +1025,7 @@ input[type='range']::-moz-range-thumb {
   gap: 0.75rem;
   padding: 0.95rem 1rem 0.7rem;
   border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(17, 25, 45, 0.6) 0%, transparent 100%);
 }
 
 .inspector-title h2 {
@@ -1209,6 +1240,12 @@ input[type='range']::-moz-range-thumb {
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
+  transition: border-color 140ms var(--ease), background 140ms var(--ease);
+}
+
+.metric-explainable:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
 }
 
 .metric-sm {
@@ -1473,10 +1510,14 @@ input[type='range']::-moz-range-thumb {
   color: var(--text-1);
   text-align: left;
   letter-spacing: -0.005em;
+  transition: color 120ms var(--ease);
 }
 
 .relationship-name:hover {
   color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-line);
+  text-underline-offset: 2px;
 }
 
 .relationship-date {
@@ -1799,14 +1840,17 @@ input[type='range']::-moz-range-thumb {
 
 .feed-item-low {
   border-left-color: var(--risk-low);
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.04) 0%, var(--surface-1) 60%);
 }
 
 .feed-item-medium {
   border-left-color: var(--risk-med);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, var(--surface-1) 60%);
 }
 
 .feed-item-high {
   border-left-color: var(--risk-high);
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.06) 0%, var(--surface-1) 60%);
 }
 
 /* History */
@@ -2074,6 +2118,18 @@ input[type='range']::-moz-range-thumb {
 
 .popover-above {
   transform-origin: bottom center;
+  animation-name: popover-in-above;
+}
+
+@keyframes popover-in-above {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes popover-in {

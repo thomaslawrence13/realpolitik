@@ -321,11 +321,19 @@ export const SvgIcon = {
       <path d="M3 4v5h5" />
     </svg>
   ),
-  Chevron: ({ dir = 'left' }: { dir?: 'left' | 'right' }) => (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d={dir === 'left' ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6'} />
-    </svg>
-  ),
+  Chevron: ({ dir = 'left' }: { dir?: 'left' | 'right' | 'up' | 'down' }) => {
+    const paths: Record<string, string> = {
+      left: 'M15 6l-6 6 6 6',
+      right: 'M9 6l6 6-6 6',
+      up: 'M6 15l6-6 6 6',
+      down: 'M6 9l6 6 6-6',
+    };
+    return (
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d={paths[dir]} />
+      </svg>
+    );
+  },
   X: () => (
     <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M6 6l12 12M18 6L6 18" />

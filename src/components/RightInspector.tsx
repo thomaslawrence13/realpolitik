@@ -42,6 +42,21 @@ const riskTier = (value: number): Tier => {
   return 'low';
 };
 
+/**
+ * Returns a colored delta hint element when the delta is non-zero.
+ * @param delta     The numeric delta value.
+ * @param higherIsBetter When true (e.g. confidence), positive delta is green; when false (e.g. risk), positive delta is red.
+ */
+const DeltaHint = ({ delta, higherIsBetter }: { delta: number; higherIsBetter: boolean }) => {
+  if (delta === 0) return <>{`Δ ${formatSignedPercent(delta)}`}</>;
+  const positive = higherIsBetter ? delta > 0 : delta < 0;
+  return (
+    <span style={{ color: positive ? 'var(--risk-low)' : 'var(--risk-high)' }}>
+      Δ {formatSignedPercent(delta)}
+    </span>
+  );
+};
+
 export function RightInspector({
   open,
   selected,
@@ -57,12 +72,10 @@ export function RightInspector({
   onTabChange,
   onSelectRelated,
 }: Props) {
-  if (!open) return null;
-
   const alignmentChanged = selected.alignment !== baselineSelected.alignment;
 
   return (
-    <aside className="inspector" aria-label="Country inspector">
+    <aside className="inspector" aria-label="Country inspector" aria-hidden={!open} {...(!open && { inert: true })}>
       <header className="inspector-header">
         <div className="inspector-title">
           <h2>{selected.profile.displayName}</h2>
@@ -154,13 +167,13 @@ function OverviewPanel({
         <MetricCard
           label="Confidence"
           value={formatPercent(selected.confidence)}
-          hint={`Δ ${formatSignedPercent(confidenceDelta)}`}
+          hint={<DeltaHint delta={confidenceDelta} higherIsBetter />}
           explanation={<ConfidenceExplainer explanation={selected.explanation.confidence} />}
         />
         <MetricCard
           label="Escalation risk"
           value={formatPercent(selected.risk)}
-          hint={`Δ ${formatSignedPercent(riskDelta)}`}
+          hint={<DeltaHint delta={riskDelta} higherIsBetter={false} />}
           tone={riskTier(selected.risk)}
           explanation={<RiskExplainer explanation={selected.explanation.risk} />}
         />

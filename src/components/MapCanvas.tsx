@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import type {
   Alignment,
   OverlayMode,
@@ -7,14 +7,29 @@ import type {
   SimulatedCountry,
 } from '../types';
 import { MAP_HEIGHT, MAP_WIDTH, countries, path } from '../lib/map';
+import { getRiskTier } from '../simulation';
 import { IconButton, SvgIcon } from './ui';
 
-const MIN_ZOOM = 0.8;
-const MAX_ZOOM = 3.6;
-const ZOOM_STEP = 0.2;
-const WHEEL_DELTA_PER_STEP = 125;
-const WHEEL_ZOOM_SENSITIVITY = ZOOM_STEP / WHEEL_DELTA_PER_STEP;
+// Factors used to normalize WheelEvent.deltaY across different deltaMode values
+const WHEEL_LINE_PX = 17;  // approximate pixels per "line" scroll unit
+const WHEEL_PAGE_PX = 500; // approximate pixels per "page" scroll unit
+const MIN_ZOOM = 0.85;
+const MAX_ZOOM = 8;
+const ZOOM_STEP = 0.3;
+// How much of the map (in SVG viewBox units) must remain on-screen when panning
+const PAN_MARGIN = 80;
 
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+/** Prevent the map from being dragged completely off-screen. */
+function clampOffset(offset: { x: number; y: number }, zoom: number) {
+  return {
+    x: clamp(offset.x, -(MAP_WIDTH * zoom - PAN_MARGIN), MAP_WIDTH - PAN_MARGIN),
+    y: clamp(offset.y, -(MAP_HEIGHT * zoom - PAN_MARGIN), MAP_HEIGHT - PAN_MARGIN),
+  };
+}
+
+// ─── Overlay metadata ─────────────────────────────────────────────────────────
 const overlayLabel: Record<RelationshipDimension, string> = {
   cooperation: 'Cooperation',
   hostility: 'Hostility',
@@ -29,8 +44,7 @@ const overlayColor: Record<RelationshipDimension, string> = {
   deterrence: '#a78bfa',
 };
 
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
+// ─── Types ────────────────────────────────────────────────────────────────────
 export type OverlayConnection = {
   countryId: string;
   mapName: string;
@@ -49,10 +63,6 @@ type Props = {
   hoveredName: string | null;
   onSelect: (name: string) => void;
   onHover: (name: string | null) => void;
-  zoom: number;
-  offset: { x: number; y: number };
-  onZoomChange: (zoom: number) => void;
-  onOffsetChange: (offset: { x: number; y: number }) => void;
   overlayMode: OverlayMode;
   onOverlayModeChange: (mode: OverlayMode) => void;
   overlayConnections: OverlayConnection[];
@@ -61,6 +71,7 @@ type Props = {
   alignmentLabel: Record<Alignment, string>;
 };
 
+// ─── Component ────────────────────────────────────────────────────────────────
 export function MapCanvas({
   byName,
   visibleNames,
@@ -68,10 +79,6 @@ export function MapCanvas({
   hoveredName,
   onSelect,
   onHover,
-  zoom,
-  offset,
-  onZoomChange,
-  onOffsetChange,
   overlayMode,
   onOverlayModeChange,
   overlayConnections,
@@ -79,58 +86,150 @@ export function MapCanvas({
   alignmentColor,
   alignmentLabel,
 }: Props) {
-  const frameRef = useRef<HTMLDivElement | null>(null);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
-  const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
-  const [didDrag, setDidDrag] = useState(false);
+  // ── Transform state + mirrored ref (avoids stale closures in event handlers) ─
+  const [transform, setTransform] = useState({ zoom: 1, offset: { x: 0, y: 0 } });
+  const transformRef = useRef(transform);
+  // Keep the ref always current; this runs synchronously before effects.
+  transformRef.current = transform;
 
+  const applyTransform = useCallback((next: { zoom: number; offset: { x: number; y: number } }) => {
+    transformRef.current = next; // update ref immediately so the next event sees fresh values
+    setTransform(next);
+  }, []);
+
+  // ── Element refs ──────────────────────────────────────────────────────────────
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const frameRef = useRef<HTMLDivElement | null>(null);
+
+  // ── Drag tracking (refs to avoid stale closures) ──────────────────────────────
+  const dragPrevRef = useRef<{ x: number; y: number } | null>(null);
+  const didDragRef = useRef(false);
+
+  // ── Hover-card position ────────────────────────────────────────────────────────
+  const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
+
+  // ── Non-passive wheel handler for zoom-toward-cursor ──────────────────────────
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return;
+
+      const { zoom, offset } = transformRef.current;
+
+      // Normalize delta across deltaMode values (pixels / lines / pages)
+      let raw = event.deltaY;
+      if (event.deltaMode === 1) raw *= WHEEL_LINE_PX;
+      if (event.deltaMode === 2) raw *= WHEEL_PAGE_PX;
+
+      // Exponential scaling gives the same relative change regardless of current zoom level
+      const nextZoom = clamp(zoom * Math.pow(1.001, -raw), MIN_ZOOM, MAX_ZOOM);
+      const ratio = nextZoom / zoom;
+
+      // Convert cursor to SVG viewBox coordinates
+      const cursor = new DOMPoint(event.clientX, event.clientY).matrixTransform(ctm.inverse());
+
+      // Zoom toward cursor: keep the world point under the cursor fixed
+      const nextOffset = clampOffset(
+        {
+          x: cursor.x - (cursor.x - offset.x) * ratio,
+          y: cursor.y - (cursor.y - offset.y) * ratio,
+        },
+        nextZoom,
+      );
+
+      applyTransform({ zoom: nextZoom, offset: nextOffset });
+    };
+
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+  }, [applyTransform]);
+
+  // ── Pointer handlers ──────────────────────────────────────────────────────────
   const handlePointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
-    setDragStart({ x: event.clientX, y: event.clientY });
-    setDidDrag(false);
-    (event.target as Element).setPointerCapture?.(event.pointerId);
+    dragPrevRef.current = { x: event.clientX, y: event.clientY };
+    didDragRef.current = false;
+    // Capture on the SVG so all pointer events route here during the drag
+    svgRef.current?.setPointerCapture(event.pointerId);
   };
 
   const handlePointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
+    // Update hover-card position
     const frame = frameRef.current;
     if (frame) {
       const rect = frame.getBoundingClientRect();
       setHoverPos({ x: event.clientX - rect.left, y: event.clientY - rect.top });
     }
 
-    if (!dragStart) return;
+    const prev = dragPrevRef.current;
+    if (!prev) return;
 
-    const dx = event.clientX - dragStart.x;
-    const dy = event.clientY - dragStart.y;
-    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) setDidDrag(true);
+    const svg = svgRef.current;
+    if (!svg) return;
 
-    onOffsetChange({
-      x: offset.x + dx / zoom,
-      y: offset.y + dy / zoom,
-    });
-    setDragStart({ x: event.clientX, y: event.clientY });
+    const dx = event.clientX - prev.x;
+    const dy = event.clientY - prev.y;
+    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) didDragRef.current = true;
+
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return;
+
+    const { zoom, offset } = transformRef.current;
+
+    // Convert screen delta to SVG viewBox delta (accounts for SVG viewBox scale)
+    const dx_svg = dx / ctm.a;
+    const dy_svg = dy / ctm.d;
+
+    // Panning: offset = offset + delta (no division by zoom needed)
+    const nextOffset = clampOffset({ x: offset.x + dx_svg, y: offset.y + dy_svg }, zoom);
+    applyTransform({ zoom, offset: nextOffset });
+
+    dragPrevRef.current = { x: event.clientX, y: event.clientY };
   };
 
   const handlePointerUp = (event: ReactPointerEvent<SVGSVGElement>) => {
-    setDragStart(null);
-    (event.target as Element).releasePointerCapture?.(event.pointerId);
+    dragPrevRef.current = null;
+    svgRef.current?.releasePointerCapture(event.pointerId);
   };
 
-  const handleWheel = (event: ReactWheelEvent<SVGSVGElement>) => {
-    const next = clamp(zoom - event.deltaY * WHEEL_ZOOM_SENSITIVITY, MIN_ZOOM, MAX_ZOOM);
-    onZoomChange(next);
+  const resetView = () => applyTransform({ zoom: 1, offset: { x: 0, y: 0 } });
+
+  // ── Convenience zoom buttons ──────────────────────────────────────────────────
+  const zoomBy = (delta: number) => {
+    const { zoom, offset } = transformRef.current;
+    // Zoom toward the center of the visible SVG area
+    const cx = MAP_WIDTH / 2;
+    const cy = MAP_HEIGHT / 2;
+    const nextZoom = clamp(zoom + delta, MIN_ZOOM, MAX_ZOOM);
+    const ratio = nextZoom / zoom;
+    const nextOffset = clampOffset(
+      { x: cx - (cx - offset.x) * ratio, y: cy - (cy - offset.y) * ratio },
+      nextZoom,
+    );
+    applyTransform({ zoom: nextZoom, offset: nextOffset });
   };
 
+  // ── Derived values ────────────────────────────────────────────────────────────
+  const { zoom, offset } = transform;
   const hovered = hoveredName ? byName.get(hoveredName) : undefined;
   const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
+
+  // Overlay geometry is drawn in world-space (inside the <g> transform), so
+  // we divide sizes by zoom to keep them visually constant regardless of zoom level.
+  const invZoom = 1 / zoom;
 
   return (
     <section className="map" aria-label="World map">
       <div className="map-frame" ref={frameRef}>
         <svg
+          ref={svgRef}
           viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
           className="world-map"
           preserveAspectRatio="xMidYMid slice"
-          onWheel={handleWheel}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
@@ -148,8 +247,9 @@ export function MapCanvas({
             <pattern id="map-grid" width="40" height="40" patternUnits="userSpaceOnUse">
               <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148,163,184,0.05)" strokeWidth="0.5" />
             </pattern>
+            {/* stdDeviation divided by zoom → constant visual blur size at any zoom level */}
             <filter id="selected-glow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="2.4" result="blur" />
+              <feGaussianBlur stdDeviation={2.4 * invZoom} result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
@@ -174,12 +274,13 @@ export function MapCanvas({
               if (isParameterized) opacity = isVisible ? 1 : 0.2;
               if (isHovered && isParameterized) opacity = Math.min(1, opacity + 0.05);
 
+              // strokeWidth values are in screen pixels because of vectorEffect="non-scaling-stroke"
               let stroke = 'rgba(148,163,184,0.18)';
               let strokeWidth = 0.4;
 
               if (isRelated && overlayMode !== 'none') {
                 stroke = overlayColor[overlayMode];
-                strokeWidth = 1.2;
+                strokeWidth = 1.3;
               }
               if (isHovered) {
                 stroke = '#cbd5e1';
@@ -187,7 +288,7 @@ export function MapCanvas({
               }
               if (isSelected) {
                 stroke = '#f8fafc';
-                strokeWidth = 1.8;
+                strokeWidth = 2;
               }
 
               return (
@@ -198,12 +299,14 @@ export function MapCanvas({
                   fillOpacity={opacity}
                   stroke={stroke}
                   strokeWidth={strokeWidth}
+                  // Stroke stays visually constant regardless of zoom level
+                  vectorEffect="non-scaling-stroke"
                   filter={isSelected ? 'url(#selected-glow)' : undefined}
                   className="country-path"
                   onPointerEnter={() => onHover(country.properties.name)}
                   onPointerLeave={() => onHover(null)}
                   onClick={(event) => {
-                    if (didDrag) return;
+                    if (didDragRef.current) return;
                     event.stopPropagation();
                     if (isParameterized) onSelect(country.properties.name);
                   }}
@@ -220,11 +323,16 @@ export function MapCanvas({
                     x2={connection.x2}
                     y2={connection.y2}
                     stroke={overlayColor[overlayMode]}
-                    strokeWidth={1 + connection.score / 60}
+                    strokeWidth={(1 + connection.score / 60) * invZoom}
                     strokeOpacity={0.75}
-                    strokeDasharray={overlayMode === 'dependency' ? '6 5' : undefined}
+                    strokeDasharray={overlayMode === 'dependency' ? `${6 * invZoom} ${5 * invZoom}` : undefined}
                   />
-                  <circle cx={connection.x2} cy={connection.y2} r={3} fill={overlayColor[overlayMode]} />
+                  <circle
+                    cx={connection.x2}
+                    cy={connection.y2}
+                    r={3 * invZoom}
+                    fill={overlayColor[overlayMode]}
+                  />
                 </g>
               ))}
           </g>
@@ -250,7 +358,7 @@ export function MapCanvas({
             <div className="hover-stats">
               <span>
                 <em>Risk</em>
-                {hovered.risk}%
+                <span data-risk-tier={getRiskTier(hovered.risk)}>{hovered.risk}%</span>
               </span>
               <span>
                 <em>Conf</em>
@@ -269,7 +377,7 @@ export function MapCanvas({
             }}
           >
             <strong>{hoveredName}</strong>
-            <span>Visible · not yet parameterized</span>
+            <span>Not yet parameterized</span>
           </div>
         )}
 
@@ -312,27 +420,18 @@ export function MapCanvas({
         </div>
 
         <div className="map-zoom">
-          <IconButton
-            label="Zoom out"
-            onClick={() => onZoomChange(clamp(zoom - ZOOM_STEP, MIN_ZOOM, MAX_ZOOM))}
-          >
+          <IconButton label="Zoom out" onClick={() => zoomBy(-ZOOM_STEP)}>
             <SvgIcon.Minus />
           </IconButton>
           <button
             type="button"
             className="map-zoom-readout"
-            onClick={() => {
-              onZoomChange(1);
-              onOffsetChange({ x: 0, y: 0 });
-            }}
-            title="Reset view"
+            onClick={resetView}
+            title="Reset view (click to fit world)"
           >
             {Math.round(zoom * 100)}%
           </button>
-          <IconButton
-            label="Zoom in"
-            onClick={() => onZoomChange(clamp(zoom + ZOOM_STEP, MIN_ZOOM, MAX_ZOOM))}
-          >
+          <IconButton label="Zoom in" onClick={() => zoomBy(ZOOM_STEP)}>
             <SvgIcon.Plus />
           </IconButton>
         </div>
