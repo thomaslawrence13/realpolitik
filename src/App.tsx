@@ -174,12 +174,16 @@ export default function App() {
   const selectedConfidenceDelta = Math.round(selected.confidence - baselineSelected.confidence);
 
   const overlayConnections = useMemo<OverlayConnection[]>(() => {
-    if (!selected || overlayMode === 'none') return [];
-    const sourceCentroid = countryCentroids.get(selected.profile.mapName);
+    if (overlayMode === 'none') return [];
+    // Use the static profile (not the simulated result) so this only recomputes when the
+    // selected country or overlay mode changes — not on every scenario-slider adjustment.
+    const profile = countryProfiles.find((p) => p.mapName === selectedCountry);
+    if (!profile) return [];
+    const sourceCentroid = countryCentroids.get(selectedCountry);
     if (!sourceCentroid) return [];
     const [sourceX, sourceY] = sourceCentroid;
 
-    return selected.profile.relationships
+    return profile.relationships
       .map((relationship) => {
         const targetCentroid = countryCentroids.get(relationship.mapName);
         if (!targetCentroid) return null;
@@ -198,7 +202,7 @@ export default function App() {
       .filter((connection) => connection.score >= 40)
       .sort((left, right) => right.score - left.score)
       .slice(0, 6);
-  }, [overlayMode, selected]);
+  }, [overlayMode, selectedCountry]);
 
   const relatedNames = useMemo(
     () => new Set(overlayConnections.map((connection) => connection.mapName)),

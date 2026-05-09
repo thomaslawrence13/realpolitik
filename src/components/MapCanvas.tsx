@@ -158,11 +158,24 @@ export function MapCanvas({
   };
 
   const handlePointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
-    // Update hover-card position
+    // Update hover-card position imperatively — no setState so no React re-render
     const frame = frameRef.current;
     if (frame) {
       const rect = frame.getBoundingClientRect();
-      setHoverPos({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      hoverPosRef.current = { x, y };
+      const w = frame.clientWidth;
+      const h = frame.clientHeight;
+      const cx = clamp(x + 16, 12, w - 220);
+      if (hoverCardRef.current) {
+        hoverCardRef.current.style.left = `${cx}px`;
+        hoverCardRef.current.style.top = `${clamp(y + 16, 12, h - 90)}px`;
+      }
+      if (hoverCardMutedRef.current) {
+        hoverCardMutedRef.current.style.left = `${cx}px`;
+        hoverCardMutedRef.current.style.top = `${clamp(y + 16, 12, h - 60)}px`;
+      }
     }
 
     const prev = dragPrevRef.current;
@@ -215,8 +228,9 @@ export function MapCanvas({
 
   // ── Derived values ────────────────────────────────────────────────────────────
   const { zoom, offset } = transform;
-  const hovered = hoveredName ? byName.get(hoveredName) : undefined;
-  const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
+  const hovered = hoveredName ? byName.get(hoveredName) : undefined;  // Read current hover position from ref at render time (for initial card placement).
+  // Subsequent mouse moves update card position imperatively without triggering re-renders.
+  const hoverPos = hoverPosRef.current;  const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
 
   // Overlay geometry is drawn in world-space (inside the <g> transform), so
   // we divide sizes by zoom to keep them visually constant regardless of zoom level.
@@ -236,7 +250,7 @@ export function MapCanvas({
           onPointerLeave={(event) => {
             handlePointerUp(event);
             onHover(null);
-            setHoverPos(null);
+            hoverPosRef.current = null;
           }}
         >
           <defs>
@@ -340,6 +354,7 @@ export function MapCanvas({
 
         {hovered && hoverPos && (
           <div
+            ref={hoverCardRef}
             className="hover-card"
             style={{
               left: clamp(hoverPos.x + 16, 12, (frameRef.current?.clientWidth ?? 800) - 220),
@@ -370,6 +385,7 @@ export function MapCanvas({
 
         {hoveredName && !hovered && hoverPos && (
           <div
+            ref={hoverCardMutedRef}
             className="hover-card hover-card-muted"
             style={{
               left: clamp(hoverPos.x + 16, 12, (frameRef.current?.clientWidth ?? 800) - 220),

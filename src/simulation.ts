@@ -49,35 +49,39 @@ const resolveAlignment = (probabilities: ProbabilitySet, risk: number): Alignmen
   return topLabel;
 };
 
+// Cache the base relationship summary per profile object — relationships are static so this
+// computation only needs to run once per country regardless of how many simulations are run.
+const relationshipSummaryCache = new WeakMap<CountryProfile, RelationshipSummary>();
+
 const summarizeRelationships = (profile: CountryProfile): RelationshipSummary => {
+  const cached = relationshipSummaryCache.get(profile);
+  if (cached) return cached;
+
+  let result: RelationshipSummary;
   if (profile.relationships.length === 0) {
-    return {
-      cooperation: 40,
-      hostility: 25,
-      dependency: 35,
-      deterrence: 30,
-      tension: 28,
+    result = { cooperation: 40, hostility: 25, dependency: 35, deterrence: 30, tension: 28 };
+  } else {
+    const totals = profile.relationships.reduce(
+      (summary, relationship) => ({
+        cooperation: summary.cooperation + relationship.cooperation,
+        hostility: summary.hostility + relationship.hostility,
+        dependency: summary.dependency + relationship.dependency,
+        deterrence: summary.deterrence + relationship.deterrence,
+        tension: summary.tension + relationship.tension,
+      }),
+      { cooperation: 0, hostility: 0, dependency: 0, deterrence: 0, tension: 0 },
+    );
+    result = {
+      cooperation: Math.round(totals.cooperation / profile.relationships.length),
+      hostility: Math.round(totals.hostility / profile.relationships.length),
+      dependency: Math.round(totals.dependency / profile.relationships.length),
+      deterrence: Math.round(totals.deterrence / profile.relationships.length),
+      tension: Math.round(totals.tension / profile.relationships.length),
     };
   }
 
-  const totals = profile.relationships.reduce(
-    (summary, relationship) => ({
-      cooperation: summary.cooperation + relationship.cooperation,
-      hostility: summary.hostility + relationship.hostility,
-      dependency: summary.dependency + relationship.dependency,
-      deterrence: summary.deterrence + relationship.deterrence,
-      tension: summary.tension + relationship.tension,
-    }),
-    { cooperation: 0, hostility: 0, dependency: 0, deterrence: 0, tension: 0 },
-  );
-
-  return {
-    cooperation: Math.round(totals.cooperation / profile.relationships.length),
-    hostility: Math.round(totals.hostility / profile.relationships.length),
-    dependency: Math.round(totals.dependency / profile.relationships.length),
-    deterrence: Math.round(totals.deterrence / profile.relationships.length),
-    tension: Math.round(totals.tension / profile.relationships.length),
-  };
+  relationshipSummaryCache.set(profile, result);
+  return result;
 };
 
 export const defaultScenarioInputs: ScenarioInputs = {
@@ -132,18 +136,29 @@ const resolveOptions = (options?: SimulationOptions) => ({
   weightSet: options?.weightSet ?? simulationWeightSets.baseline,
 });
 
-const buildHistory = (profile: CountryProfile, activeIndex: number, options: SimulationOptions): ScenarioSnapshot[] => {
-  const historyOffsets = [-2, -1, 0].filter((offset) => activeIndex + offset >= 0);
+// Accepts the already-computed alignment/confidence for the current year so offset 0
+// does not trigger a redundant full simulation of the same timelineIndex.
+const buildHistory = (
+  profile: CountryProfile,
+  activeIndex: number,
+  options: SimulationOptions,
+  currentAlignment: Alignment,
+  currentConfidence: number,
+): ScenarioSnapshot[] => {
+  const pastOffsets = [-2, -1].filter((offset) => activeIndex + offset >= 0);
 
-  return historyOffsets.map((offset) => {
+  const past = pastOffsets.map((offset) => {
     const snapshot = simulateCountry(profile, activeIndex + offset, { ...options, includeHistory: false });
-
     return {
       label: `${2026 + activeIndex + offset}`,
       alignment: snapshot.alignment,
       confidence: snapshot.confidence,
     };
   });
+
+  // Append current year using already-computed values — no extra simulation needed.
+  past.push({ label: `${2026 + activeIndex}`, alignment: currentAlignment, confidence: currentConfidence });
+  return past;
 };
 
 export const simulateCountry = (
@@ -338,7 +353,9 @@ export const simulateCountry = (
     risk,
     probabilities,
     drivers,
-    history: includeHistory ? buildHistory(profile, timelineIndex, { scenarioInputs, weightSet }) : [],
+    history: includeHistory
+      ? buildHistory(profile, timelineIndex, { scenarioInputs, weightSet }, alignment, confidence)
+      : [],
     relationshipSummary,
     explanation,
   };

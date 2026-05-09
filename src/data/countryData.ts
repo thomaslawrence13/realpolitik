@@ -5,6 +5,16 @@ const dataset = geopoliticalDatasetV1;
 const sourceById = new Map(dataset.sources.map((source) => [source.id, source]));
 const countryById = new Map(dataset.countries.map((country) => [country.id, country]));
 
+// Build adjacency index once so buildRelationships is O(1) per country instead of O(N×R)
+const relationshipsByCountryId = new Map<string, RelationshipEdge[]>();
+dataset.relationships.forEach((edge) => {
+  for (const id of [edge.sourceCountryId, edge.targetCountryId]) {
+    let list = relationshipsByCountryId.get(id);
+    if (!list) { list = []; relationshipsByCountryId.set(id, list); }
+    list.push(edge);
+  }
+});
+
 const resolveSources = (sourceIds: string[]): DatasetSource[] => {
   return sourceIds
     .map((sourceId) => sourceById.get(sourceId))
@@ -35,8 +45,7 @@ const toRelationship = (countryId: string, edge: RelationshipEdge): CountryRelat
 };
 
 const buildRelationships = (countryId: string) => {
-  return dataset.relationships
-    .filter((edge) => edge.sourceCountryId === countryId || edge.targetCountryId === countryId)
+  return (relationshipsByCountryId.get(countryId) ?? [])
     .map((edge) => toRelationship(countryId, edge))
     .filter((relationship): relationship is CountryRelationship => Boolean(relationship))
     .sort((left, right) => right.tension - left.tension);
@@ -56,13 +65,12 @@ export const scenarioTimeline = dataset.scenarioTimeline;
 export const countryProfiles = countries;
 export const allianceNetworks = Array.from(new Set(countries.map((country) => country.allianceNetwork))).sort();
 
-export const getCountryByMapName = (mapName: string) => {
-  return countries.find((country) => country.mapName === mapName);
-};
+// O(1) lookup maps for country access
+const countryByMapName = new Map(countries.map((c) => [c.mapName, c]));
+const countryByIdMap = new Map(countries.map((c) => [c.id, c]));
 
-export const getCountryById = (countryId: string) => {
-  return countries.find((country) => country.id === countryId);
-};
+export const getCountryByMapName = (mapName: string) => countryByMapName.get(mapName);
+export const getCountryById = (countryId: string) => countryByIdMap.get(countryId);
 
 export const getCountryRelationships = (countryId: string) => {
   return getCountryById(countryId)?.relationships ?? [];
