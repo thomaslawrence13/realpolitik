@@ -455,7 +455,7 @@ a:hover {
   font-style: normal;
   font-size: 0.64rem;
   font-weight: 600;
-  background: rgba(34, 211, 238, 0.2);
+  background: var(--accent-soft);
   color: var(--accent-hi);
   border-radius: var(--r-pill);
   flex-shrink: 0;
