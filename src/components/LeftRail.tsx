@@ -31,6 +31,22 @@ const regimeOptions: ReadonlyArray<{ value: 'all' | RegimeType; label: string }>
   { value: 'authoritarian', label: 'Auth' },
 ];
 
+type SortMode = 'riskDesc' | 'confidenceDesc' | 'nameAsc';
+type GroupMode = 'none' | 'region' | 'alignment' | 'risk';
+
+const sortOptions: ReadonlyArray<{ value: SortMode; label: string }> = [
+  { value: 'riskDesc', label: 'Risk' },
+  { value: 'confidenceDesc', label: 'Confidence' },
+  { value: 'nameAsc', label: 'Name' },
+];
+
+const groupOptions: ReadonlyArray<{ value: GroupMode; label: string }> = [
+  { value: 'region', label: 'Region' },
+  { value: 'alignment', label: 'Alignment' },
+  { value: 'risk', label: 'Risk tier' },
+  { value: 'none', label: 'None' },
+];
+
 const defaultFilters: Filters = {
   allianceNetwork: 'all',
   tradeExposure: 'all',
@@ -59,12 +75,59 @@ export function LeftRail({
   alignmentLabel,
 }: Props) {
   const [filtersExpanded, setFiltersExpanded] = useState(true);
+  const [sortMode, setSortMode] = useState<SortMode>('riskDesc');
+  const [groupMode, setGroupMode] = useState<GroupMode>('region');
   const selectedItemRef = useRef<HTMLButtonElement | null>(null);
 
-  const sorted = useMemo(
-    () => [...countries].sort((a, b) => b.risk - a.risk),
-    [countries],
-  );
+  const sorted = useMemo(() => {
+    const next = [...countries];
+    if (sortMode === 'riskDesc') {
+      next.sort((a, b) => b.risk - a.risk || a.profile.displayName.localeCompare(b.profile.displayName));
+      return next;
+    }
+    if (sortMode === 'confidenceDesc') {
+      next.sort(
+        (a, b) => b.confidence - a.confidence || a.profile.displayName.localeCompare(b.profile.displayName),
+      );
+      return next;
+    }
+    next.sort((a, b) => a.profile.displayName.localeCompare(b.profile.displayName));
+    return next;
+  }, [countries, sortMode]);
+
+  const grouped = useMemo(() => {
+    if (groupMode === 'none') {
+      return [{ key: 'all', label: '', items: sorted }];
+    }
+
+    const groups = new Map<string, typeof sorted>();
+    sorted.forEach((country) => {
+      const key =
+        groupMode === 'region'
+          ? formatTitle(country.profile.region)
+          : groupMode === 'alignment'
+            ? alignmentLabel[country.alignment]
+            : formatTitle(getRiskTier(country.risk));
+
+      const existing = groups.get(key);
+      if (existing) {
+        existing.push(country);
+      } else {
+        groups.set(key, [country]);
+      }
+    });
+
+    const rank = (label: string) => {
+      if (groupMode !== 'risk') return 0;
+      if (label === 'High') return 0;
+      if (label === 'Medium') return 1;
+      return 2;
+    };
+
+    return [...groups.entries()]
+      .sort(([left], [right]) => rank(left) - rank(right) || left.localeCompare(right))
+      .map(([label, items]) => ({ key: label, label, items }));
+  }, [alignmentLabel, groupMode, sorted]);
 
   const activeFilterCount = useMemo(() => {
     return (Object.keys(filters) as Array<keyof Filters>).filter(
@@ -113,6 +176,29 @@ export function LeftRail({
             <SvgIcon.X />
           </button>
         )}
+      </div>
+
+      <div className="rail-organize">
+        <label className="rail-organize-field">
+          <span>Sort</span>
+          <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
+            {sortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="rail-organize-field">
+          <span>Group</span>
+          <select value={groupMode} onChange={(event) => setGroupMode(event.target.value as GroupMode)}>
+            {groupOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div className={`rail-filters ${filtersExpanded ? 'is-open' : 'is-closed'}`}>
@@ -225,35 +311,45 @@ export function LeftRail({
             <p>Try clearing a filter or searching for a different country.</p>
           </div>
         ) : (
-          sorted.map((country) => {
-            const isSelected = country.profile.mapName === selectedName;
-            return (
-              <button
-                key={country.profile.id}
-                ref={isSelected ? selectedItemRef : null}
-                type="button"
-                role="option"
-                aria-selected={isSelected}
-                className={`country-item ${isSelected ? 'country-item-active' : ''}`}
-                onClick={() => onSelect(country.profile.mapName)}
-              >
-                <span
-                  className="country-dot"
-                  style={{ background: alignmentColor[country.alignment] }}
-                  aria-hidden
-                />
-                <span className="country-text">
-                  <strong className="country-name">{country.profile.displayName}</strong>
-                  <span className="country-sub">
-                    {formatTitle(country.profile.region)} · {alignmentLabel[country.alignment]}
-                  </span>
-                </span>
-                <span className={`country-risk risk-${getRiskTier(country.risk)}`}>
-                  {country.risk}%
-                </span>
-              </button>
-            );
-          })
+          grouped.map((group) => (
+            <section key={group.key} className="country-group">
+              {groupMode !== 'none' && (
+                <header className="country-group-header">
+                  <strong>{group.label}</strong>
+                  <span>{group.items.length}</span>
+                </header>
+              )}
+              {group.items.map((country) => {
+                const isSelected = country.profile.mapName === selectedName;
+                return (
+                  <button
+                    key={country.profile.id}
+                    ref={isSelected ? selectedItemRef : null}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    className={`country-item ${isSelected ? 'country-item-active' : ''}`}
+                    onClick={() => onSelect(country.profile.mapName)}
+                  >
+                    <span
+                      className="country-dot"
+                      style={{ background: alignmentColor[country.alignment] }}
+                      aria-hidden
+                    />
+                    <span className="country-text">
+                      <strong className="country-name">{country.profile.displayName}</strong>
+                      <span className="country-sub">
+                        {formatTitle(country.profile.region)} · {alignmentLabel[country.alignment]}
+                      </span>
+                    </span>
+                    <span className={`country-risk risk-${getRiskTier(country.risk)}`}>
+                      {country.risk}%
+                    </span>
+                  </button>
+                );
+              })}
+            </section>
+          ))
         )}
       </div>
     </aside>
