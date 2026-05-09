@@ -4,6 +4,9 @@
   background: #020617;
   line-height: 1.5;
   font-weight: 400;
+  /* Positions overlay controls below the map header block on desktop/mobile. */
+  --map-overlay-top: 9rem;
+  --map-overlay-top-mobile: 10.5rem;
 }
 
 * {
@@ -215,7 +218,6 @@ a {
   color: #94a3b8;
 }
 
-.workspace,
 .lower-grid {
   display: grid;
   gap: 1.25rem;
@@ -326,7 +328,7 @@ a {
 }
 
 .map-panel .overlay-controls {
-  top: 9rem;
+  top: var(--map-overlay-top);
 }
 
 .map-panel .map-frame {
@@ -512,7 +514,7 @@ a {
   }
 
   .map-panel .overlay-controls {
-    top: 10.5rem;
+    top: var(--map-overlay-top-mobile);
   }
 
   .map-panel .legend {

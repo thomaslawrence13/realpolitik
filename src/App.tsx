@@ -26,6 +26,13 @@ import type {
 
 const width = 980;
 const height = 520;
+// Keep map readable at default while allowing meaningful zoom in/out.
+const MIN_ZOOM = 0.8;
+const MAX_ZOOM = 2.4;
+const ZOOM_STEP = 0.15;
+// Typical wheel detent delta is about 100-125, so this maps one detent to roughly one zoom step.
+const WHEEL_DELTA_PER_STEP = 125;
+const WHEEL_ZOOM_SENSITIVITY = ZOOM_STEP / WHEEL_DELTA_PER_STEP;
 const topology = worldTopology as { objects: { countries: unknown } };
 const worldFeatures = feature(topology as never, topology.objects.countries as never) as unknown as FeatureCollection<
   Geometry,
@@ -242,7 +249,7 @@ export default function App() {
 
   const handleWheelZoom = (event: ReactWheelEvent<SVGSVGElement>) => {
     event.preventDefault();
-    const nextZoom = clamp(zoom - event.deltaY * 0.0012, 0.8, 2.4);
+    const nextZoom = clamp(zoom - event.deltaY * WHEEL_ZOOM_SENSITIVITY, MIN_ZOOM, MAX_ZOOM);
     setZoom(nextZoom);
   };
 
@@ -298,11 +305,11 @@ export default function App() {
           <strong>{scenarioTimeline[timelineIndex]}</strong>
         </label>
         <div className="zoom-controls">
-          <button type="button" onClick={() => setZoom((current) => Math.max(0.8, current - 0.15))}>
+          <button type="button" onClick={() => setZoom((current) => Math.max(MIN_ZOOM, current - ZOOM_STEP))}>
             −
           </button>
           <span>{Math.round(zoom * 100)}%</span>
-          <button type="button" onClick={() => setZoom((current) => Math.min(2.4, current + 0.15))}>
+          <button type="button" onClick={() => setZoom((current) => Math.min(MAX_ZOOM, current + ZOOM_STEP))}>
             +
           </button>
           <button
