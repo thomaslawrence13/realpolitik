@@ -105,8 +105,12 @@ export function MapCanvas({
   const dragPrevRef = useRef<{ x: number; y: number } | null>(null);
   const didDragRef = useRef(false);
 
-  // ── Hover-card position ────────────────────────────────────────────────────────
-  const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
+  // ── Hover-card position (ref to avoid 60fps re-renders on mouse move) ──────────
+  const hoverPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  // ── Hover-card DOM refs for imperative positioning ────────────────────────────
+  const hoverCardRef = useRef<HTMLDivElement | null>(null);
+  const hoverCardMutedRef = useRef<HTMLDivElement | null>(null);
 
   // ── Non-passive wheel handler for zoom-toward-cursor ──────────────────────────
   useEffect(() => {
@@ -228,9 +232,12 @@ export function MapCanvas({
 
   // ── Derived values ────────────────────────────────────────────────────────────
   const { zoom, offset } = transform;
-  const hovered = hoveredName ? byName.get(hoveredName) : undefined;  // Read current hover position from ref at render time (for initial card placement).
+  const hovered = hoveredName ? byName.get(hoveredName) : undefined;
+  // Read current hover position from ref at render time (for initial card placement).
   // Subsequent mouse moves update card position imperatively without triggering re-renders.
-  const hoverPos = hoverPosRef.current;  const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
+  const hoverPos = hoverPosRef.current;
+
+  const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
 
   // Overlay geometry is drawn in world-space (inside the <g> transform), so
   // we divide sizes by zoom to keep them visually constant regardless of zoom level.
