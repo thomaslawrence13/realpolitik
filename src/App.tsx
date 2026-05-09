@@ -54,14 +54,20 @@ const clampInput = (key: keyof ScenarioInputs, value: number): number => {
   return Math.min(100, Math.max(0, value));
 };
 
+/** Ordered list of all `ScenarioInputs` keys — single source of truth for iteration. */
+export const scenarioInputKeys: (keyof ScenarioInputs)[] = [
+  'sanctionShock',
+  'treatyShift',
+  'electionVolatility',
+  'invasionPressure',
+  'coupRisk',
+];
+
 const computeEffectiveInputs = (
   manual: ScenarioInputs,
   activeIds: string[],
 ): ScenarioInputs => {
-  const keys: (keyof ScenarioInputs)[] = [
-    'sanctionShock', 'treatyShift', 'electionVolatility', 'invasionPressure', 'coupRisk',
-  ];
-  const delta = keys.reduce((acc, key) => {
+  const delta = scenarioInputKeys.reduce((acc, key) => {
     const sum = activeIds.reduce((total, id) => {
       const event = eventById.get(id);
       return total + (event?.inputs[key] ?? 0);
@@ -69,7 +75,7 @@ const computeEffectiveInputs = (
     return { ...acc, [key]: sum };
   }, {} as ScenarioInputs);
 
-  return keys.reduce((acc, key) => {
+  return scenarioInputKeys.reduce((acc, key) => {
     return { ...acc, [key]: clampInput(key, manual[key] + delta[key]) };
   }, {} as ScenarioInputs);
 };
