@@ -14,6 +14,8 @@ type Props = {
   onToggleLeft: () => void;
   onToggleRight: () => void;
   onToggleDrawer: () => void;
+  isPlaying: boolean;
+  onTogglePlay: () => void;
 };
 
 export function TopBar({
@@ -30,6 +32,8 @@ export function TopBar({
   onToggleLeft,
   onToggleRight,
   onToggleDrawer,
+  isPlaying,
+  onTogglePlay,
 }: Props) {
   const lastIndex = timeline.length - 1;
   const pct = lastIndex === 0 ? 0 : (timelineIndex / lastIndex) * 100;
@@ -94,6 +98,15 @@ export function TopBar({
             aria-label="Next year"
           >
             <SvgIcon.Chevron dir="right" />
+          </button>
+          <button
+            type="button"
+            className={`timeline-play ${isPlaying ? 'timeline-play-active' : ''}`}
+            onClick={onTogglePlay}
+            aria-label={isPlaying ? 'Pause timeline' : 'Play timeline'}
+            title={isPlaying ? 'Pause (auto-stepping years)' : 'Play (auto-step through years)'}
+          >
+            {isPlaying ? <SvgIcon.Pause /> : <SvgIcon.Play />}
           </button>
         </div>
       </div>

@@ -151,6 +151,52 @@ export default function App() {
   const [drawerTab, setDrawerTab] = useState<DrawerTab>('scenario');
   const [inspectorTab, setInspectorTab] = useState<InspectorTab>('overview');
 
+  // Resizable bottom drawer — height is applied as a CSS custom property on the shell.
+  const [drawerHeight, setDrawerHeight] = useState(320);
+
+  // Timeline auto-play — steps through scenario years at a fixed interval.
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const lastIndex = scenarioTimeline.length - 1;
+    const id = setInterval(() => {
+      setTimelineIndex((current) => {
+        if (current >= lastIndex) {
+          setIsPlaying(false);
+          return current;
+        }
+        return current + 1;
+      });
+    }, 1200);
+    return () => clearInterval(id);
+  }, [isPlaying, scenarioTimeline.length]);
+
+  const handleTogglePlay = () => {
+    setIsPlaying((prev) => {
+      if (!prev && timelineIndex >= scenarioTimeline.length - 1) {
+        // Restart from the beginning when pressing play at the last year.
+        setTimelineIndex(0);
+      }
+      return !prev;
+    });
+  };
+
+  // Dragging the top edge of the bottom drawer resizes it.
+  const handleDrawerResizeStart = (startClientY: number) => {
+    const startH = drawerHeight;
+    const onMove = (event: MouseEvent) => {
+      const delta = startClientY - event.clientY;
+      setDrawerHeight(Math.max(180, Math.min(Math.floor(window.innerHeight * 0.65), startH + delta)));
+    };
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  };
+
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
@@ -159,6 +205,10 @@ export default function App() {
       if (event.key === '[') setLeftOpen((value) => !value);
       if (event.key === ']') setRightOpen((value) => !value);
       if (event.key === '\\') setDrawerOpen((value) => !value);
+      if (event.key === ' ' && !event.target) {
+        event.preventDefault();
+        handleTogglePlay();
+      }
       if (event.key === '/') {
         event.preventDefault();
         const input = document.querySelector<HTMLInputElement>('.rail-search input');
@@ -167,7 +217,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, []);
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const activeWeightSet = useMemo(() => getSimulationWeightSet(deferredWeightSetKey), [deferredWeightSetKey]);
 
@@ -350,11 +400,12 @@ export default function App() {
       data-left-open={leftOpen}
       data-right-open={rightOpen}
       data-drawer-open={drawerOpen}
+      style={{ ['--drawer-h' as string]: `${drawerHeight}px` }}
     >
       <TopBar
         timelineIndex={timelineIndex}
         timeline={scenarioTimeline}
-        onTimelineChange={setTimelineIndex}
+        onTimelineChange={(index) => { setIsPlaying(false); setTimelineIndex(index); }}
         scenarioName={scenarioName}
         datasetVersion={datasetVersion}
         countryCount={totalCountries}
@@ -365,6 +416,8 @@ export default function App() {
         onToggleLeft={() => setLeftOpen((value) => !value)}
         onToggleRight={() => setRightOpen((value) => !value)}
         onToggleDrawer={() => setDrawerOpen((value) => !value)}
+        isPlaying={isPlaying}
+        onTogglePlay={handleTogglePlay}
       />
 
       <LeftRail
@@ -435,6 +488,7 @@ export default function App() {
         activeEventIds={activeEventIds}
         onApplyEvent={applyEvent}
         onRemoveEvent={removeEvent}
+        onResizeStart={handleDrawerResizeStart}
       />
     </div>
   );

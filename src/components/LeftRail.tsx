@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { Alignment, Filters, RegimeType, SimulatedCountry, Tier } from '../types';
 import { Segmented, SvgIcon } from './ui';
 
@@ -143,6 +144,20 @@ export function LeftRail({
       (key) => filters[key] !== 'all',
     ).length;
   }, [filters]);
+
+  // Flat ordered list — used for keyboard navigation across groups.
+  const allItems = useMemo(() => grouped.flatMap((g) => g.items), [grouped]);
+
+  const handleListKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    event.preventDefault();
+    const idx = allItems.findIndex((c) => c.profile.mapName === selectedName);
+    if (event.key === 'ArrowDown' && idx < allItems.length - 1) {
+      onSelect(allItems[idx + 1].profile.mapName);
+    } else if (event.key === 'ArrowUp' && idx > 0) {
+      onSelect(allItems[idx - 1].profile.mapName);
+    }
+  };
 
   const handleTier = <K extends keyof Filters>(key: K, value: 'all' | Tier) => {
     onFiltersChange({ ...filters, [key]: value as Filters[K] });
@@ -313,7 +328,13 @@ export function LeftRail({
         )}
       </div>
 
-      <div className="rail-list" role="listbox" aria-label="Filtered countries">
+      <div
+        className="rail-list"
+        role="listbox"
+        aria-label="Filtered countries"
+        tabIndex={allItems.length > 0 ? 0 : undefined}
+        onKeyDown={handleListKeyDown}
+      >
         {sorted.length === 0 ? (
           <div className="rail-empty">
             <strong>No matches</strong>

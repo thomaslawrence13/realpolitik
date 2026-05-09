@@ -304,6 +304,33 @@ a:hover {
   width: 100%;
 }
 
+/* Play / Pause button beside the timeline scrubber */
+.timeline-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  transition: all 120ms var(--ease);
+  flex-shrink: 0;
+}
+
+.timeline-play:hover {
+  color: var(--text-1);
+  border-color: var(--border-stronger);
+  background: var(--surface-2);
+}
+
+.timeline-play-active {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+
 .timeline-step {
   display: inline-flex;
   align-items: center;
@@ -729,6 +756,11 @@ input[type='range']::-moz-range-thumb {
   padding: 0.5rem 0.5rem 1rem;
   scrollbar-width: thin;
   scrollbar-color: var(--surface-3) transparent;
+  outline: none;
+}
+
+.rail-list:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--accent-line);
 }
 
 .rail-list::-webkit-scrollbar {
@@ -1732,6 +1764,35 @@ input[type='range']::-moz-range-thumb {
 .drawer-closed {
   pointer-events: none;
   visibility: hidden;
+}
+
+/* Drag handle at the top of the drawer for resizing */
+.drawer-resize-handle {
+  height: 8px;
+  cursor: ns-resize;
+  flex-shrink: 0;
+  position: relative;
+  background: transparent;
+  transition: background 120ms var(--ease);
+}
+
+.drawer-resize-handle::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 3px;
+  background: var(--border-strong);
+  border-radius: var(--r-pill);
+  transition: background 120ms var(--ease), width 120ms var(--ease);
+}
+
+.drawer-resize-handle:hover::after,
+.drawer-resize-handle:active::after {
+  background: var(--border-stronger);
+  width: 48px;
 }
 
 .drawer-header {

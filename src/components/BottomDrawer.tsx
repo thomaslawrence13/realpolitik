@@ -41,6 +41,7 @@ type Props = {
   activeEventIds: string[];
   onApplyEvent: (id: string) => void;
   onRemoveEvent: (id: string) => void;
+  onResizeStart: (startClientY: number) => void;
 };
 
 export function BottomDrawer({
@@ -67,9 +68,16 @@ export function BottomDrawer({
   activeEventIds,
   onApplyEvent,
   onRemoveEvent,
+  onResizeStart,
 }: Props) {
   return (
     <section className={`drawer ${open ? 'drawer-open' : 'drawer-closed'}`} aria-hidden={!open}>
+      {/* Drag handle — lets the user resize the drawer by dragging its top edge */}
+      <div
+        className="drawer-resize-handle"
+        aria-hidden="true"
+        onMouseDown={(e) => { e.preventDefault(); onResizeStart(e.clientY); }}
+      />
       <header className="drawer-header">
         <Tabs<DrawerTab>
           value={tab}
