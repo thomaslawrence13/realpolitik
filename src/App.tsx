@@ -218,7 +218,11 @@ export default function App() {
       if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
         return;
       }
-      if (target.isContentEditable || target.getAttribute('role') === 'textbox') {
+      if (
+        target.isContentEditable ||
+        target.getAttribute('role') === 'textbox' ||
+        target.getAttribute('role') === 'button'
+      ) {
         return;
       }
       if (event.key === '[') setLeftOpen((value) => !value);

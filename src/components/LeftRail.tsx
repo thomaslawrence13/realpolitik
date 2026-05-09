@@ -152,6 +152,10 @@ export function LeftRail({
     if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
     event.preventDefault();
     const idx = allItems.findIndex((c) => c.profile.mapName === selectedName);
+    if (idx === -1) {
+      if (allItems.length > 0) onSelect(allItems[0].profile.mapName);
+      return;
+    }
     if (event.key === 'ArrowDown' && idx < allItems.length - 1) {
       onSelect(allItems[idx + 1].profile.mapName);
     } else if (event.key === 'ArrowUp' && idx > 0) {
