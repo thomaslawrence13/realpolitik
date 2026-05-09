@@ -1,4 +1,6 @@
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 type TabsProps<T extends string> = {
   value: T;
@@ -52,20 +54,121 @@ export function Segmented<T extends string>({ value, options, onChange }: Segmen
   );
 }
 
+type PopoverProps = {
+  open: boolean;
+  anchor: HTMLElement | null;
+  onClose: () => void;
+  children: ReactNode;
+  width?: number;
+};
+
+export function Popover({ open, anchor, onClose, children, width = 360 }: PopoverProps) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [position, setPosition] = useState<{ top: number; left: number; placement: 'below' | 'above' } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!open || !anchor) {
+      setPosition(null);
+      return;
+    }
+
+    const compute = () => {
+      const rect = anchor.getBoundingClientRect();
+      const popoverHeight = ref.current?.offsetHeight ?? 220;
+      const desiredLeft = rect.left + rect.width / 2 - width / 2;
+      const left = Math.max(12, Math.min(desiredLeft, window.innerWidth - width - 12));
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const placement: 'below' | 'above' =
+        spaceBelow >= popoverHeight + 12 || rect.top < popoverHeight + 12 ? 'below' : 'above';
+      const top = placement === 'below' ? rect.bottom + 8 : Math.max(12, rect.top - popoverHeight - 8);
+      setPosition({ top, left, placement });
+    };
+
+    compute();
+    const raf = requestAnimationFrame(compute);
+
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (ref.current?.contains(target)) return;
+      if (anchor.contains(target)) return;
+      onClose();
+    };
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    const handleResize = () => compute();
+
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleResize, true);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleResize, true);
+    };
+  }, [open, anchor, onClose, width]);
+
+  if (!open || !anchor) return null;
+
+  return createPortal(
+    <div
+      ref={ref}
+      role="dialog"
+      className={`popover ${position?.placement === 'above' ? 'popover-above' : 'popover-below'}`}
+      style={{
+        top: position?.top ?? -9999,
+        left: position?.left ?? -9999,
+        width,
+        visibility: position ? 'visible' : 'hidden',
+      }}
+    >
+      {children}
+    </div>,
+    document.body,
+  );
+}
+
 type MetricCardProps = {
   label: string;
   value: ReactNode;
   hint?: ReactNode;
   tone?: 'low' | 'medium' | 'high' | 'accent' | 'neutral';
   size?: 'sm' | 'md';
+  explanation?: ReactNode;
 };
 
-export function MetricCard({ label, value, hint, tone = 'neutral', size = 'md' }: MetricCardProps) {
+export function MetricCard({ label, value, hint, tone = 'neutral', size = 'md', explanation }: MetricCardProps) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+
   return (
-    <div className={`metric metric-${size} metric-${tone}`}>
-      <span className="metric-label">{label}</span>
+    <div className={`metric metric-${size} metric-${tone} ${explanation ? 'metric-explainable' : ''}`}>
+      <div className="metric-head">
+        <span className="metric-label">{label}</span>
+        {explanation && (
+          <button
+            ref={triggerRef}
+            type="button"
+            className={`metric-info ${open ? 'metric-info-active' : ''}`}
+            onClick={() => setOpen((v) => !v)}
+            aria-label={`Explain ${label}`}
+            aria-expanded={open}
+          >
+            <SvgIcon.Info />
+          </button>
+        )}
+      </div>
       <strong className="metric-value">{value}</strong>
       {hint != null && <span className="metric-hint">{hint}</span>}
+      {explanation && (
+        <Popover open={open} anchor={triggerRef.current} onClose={() => setOpen(false)} width={380}>
+          {explanation}
+        </Popover>
+      )}
     </div>
   );
 }
@@ -75,15 +178,35 @@ type BarRowProps = {
   value: number;
   delta?: number;
   color: string;
+  explanation?: ReactNode;
 };
 
-export function BarRow({ label, value, delta, color }: BarRowProps) {
+export function BarRow({ label, value, delta, color, explanation }: BarRowProps) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const sign = (delta ?? 0) > 0 ? '+' : '';
+
   return (
     <div className="bar-row">
-      <span className="bar-label">{label}</span>
+      <span className="bar-label">
+        <span className="bar-label-text">{label}</span>
+        {explanation && (
+          <button
+            ref={triggerRef}
+            type="button"
+            className={`bar-info ${open ? 'bar-info-active' : ''}`}
+            onClick={() => setOpen((v) => !v)}
+            aria-label={`Explain ${label}`}
+          >
+            <SvgIcon.Info />
+          </button>
+        )}
+      </span>
       <div className="bar-track">
-        <div className="bar-fill" style={{ width: `${Math.max(0, Math.min(100, value))}%`, background: color }} />
+        <div
+          className="bar-fill"
+          style={{ width: `${Math.max(0, Math.min(100, value))}%`, background: color }}
+        />
       </div>
       <strong className="bar-value">
         {value}%
@@ -94,6 +217,11 @@ export function BarRow({ label, value, delta, color }: BarRowProps) {
           </em>
         )}
       </strong>
+      {explanation && (
+        <Popover open={open} anchor={triggerRef.current} onClose={() => setOpen(false)} width={380}>
+          {explanation}
+        </Popover>
+      )}
     </div>
   );
 }
@@ -201,6 +329,13 @@ export const SvgIcon = {
   X: () => (
     <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  ),
+  Info: () => (
+    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5" strokeLinecap="round" />
+      <circle cx="12" cy="8" r="0.7" fill="currentColor" stroke="none" />
     </svg>
   ),
 };

@@ -1142,6 +1142,41 @@ input[type='range']::-moz-range-thumb {
   gap: 1.1rem;
 }
 
+.metric-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.metric-info,
+.bar-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 0.25rem;
+  border-radius: var(--r-pill);
+  color: var(--text-4);
+  border: 1px solid transparent;
+  transition: color 120ms var(--ease), background 120ms var(--ease), border-color 120ms var(--ease);
+  flex-shrink: 0;
+}
+
+.metric-info:hover,
+.bar-info:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.metric-info-active,
+.bar-info-active {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+
 .section {
   display: flex;
   flex-direction: column;
@@ -1236,6 +1271,16 @@ input[type='range']::-moz-range-thumb {
 .bar-label {
   font-size: 0.78rem;
   color: var(--text-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.bar-label-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bar-track {
@@ -2007,4 +2052,211 @@ input[type='range']::-moz-range-thumb {
   .filter-row-label {
     margin-bottom: 0.1rem;
   }
+}
+
+/* ----------------------------------------------------------------------------
+ * Popover + explainer card
+ * ------------------------------------------------------------------------- */
+.popover {
+  position: fixed;
+  z-index: 50;
+  background: linear-gradient(180deg, var(--surface-1) 0%, var(--surface-0) 100%);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-2);
+  max-height: min(440px, calc(100vh - 24px));
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-3) transparent;
+  animation: popover-in 140ms var(--ease);
+  transform-origin: top center;
+}
+
+.popover-above {
+  transform-origin: bottom center;
+}
+
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.popover::-webkit-scrollbar {
+  width: 6px;
+}
+
+.popover::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: var(--r-pill);
+}
+
+.explainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.95rem 1rem 0.85rem;
+}
+
+.explainer-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.explainer-header strong {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -0.005em;
+}
+
+.explainer-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-pill);
+  flex-shrink: 0;
+}
+
+.explainer-desc {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-3);
+  line-height: 1.55;
+}
+
+.explainer-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.5rem;
+  align-self: flex-start;
+  font-size: 0.72rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+}
+
+.explainer-tag em {
+  font-style: normal;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.explainer-table {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.explainer-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.78rem;
+}
+
+.explainer-row:last-child {
+  border-bottom: none;
+}
+
+.explainer-row.is-base {
+  background: rgba(34, 211, 238, 0.04);
+}
+
+.explainer-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.explainer-row-label {
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.explainer-row-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  color: var(--text-4);
+}
+
+.explainer-row-meta em {
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+.explainer-row-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text-1);
+  font-size: 0.8rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.explainer-row-num.pos {
+  color: var(--risk-low);
+}
+
+.explainer-row-num.neg {
+  color: var(--risk-high);
+}
+
+.explainer-sum {
+  background: var(--surface-2);
+  border-top: 1px solid var(--border-strong);
+  font-size: 0.8rem;
+}
+
+.explainer-sum .explainer-row-label {
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.7rem;
+}
+
+.explainer-sum .explainer-row-num {
+  color: var(--text-1);
+}
+
+.explainer-final {
+  background: rgba(34, 211, 238, 0.08);
+  border-top: 1px solid var(--accent-line);
+}
+
+.explainer-final .explainer-row-label {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.7rem;
+}
+
+.explainer-final .explainer-row-num {
+  color: var(--accent-hi);
+  font-size: 0.95rem;
+}
+
+.explainer-footer {
+  font-size: 0.72rem;
+  color: var(--text-4);
+  line-height: 1.5;
+  margin: 0;
 }

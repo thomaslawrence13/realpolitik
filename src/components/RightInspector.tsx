@@ -1,5 +1,10 @@
+import type { ReactNode } from 'react';
 import type {
   Alignment,
+  ConfidenceExplanation,
+  ContributionLine,
+  ProbabilityExplanation,
+  RiskExplanation,
   ScenarioInputs,
   SimulatedCountry,
   SimulationWeightSet,
@@ -146,12 +151,18 @@ function OverviewPanel({
   return (
     <div className="panel-stack">
       <div className="metric-grid">
-        <MetricCard label="Confidence" value={formatPercent(selected.confidence)} hint={`Δ ${formatSignedPercent(confidenceDelta)}`} />
+        <MetricCard
+          label="Confidence"
+          value={formatPercent(selected.confidence)}
+          hint={`Δ ${formatSignedPercent(confidenceDelta)}`}
+          explanation={<ConfidenceExplainer explanation={selected.explanation.confidence} />}
+        />
         <MetricCard
           label="Escalation risk"
           value={formatPercent(selected.risk)}
           hint={`Δ ${formatSignedPercent(riskDelta)}`}
           tone={riskTier(selected.risk)}
+          explanation={<RiskExplainer explanation={selected.explanation.risk} />}
         />
         <MetricCard label="Source coverage" value={formatPercent(selected.profile.sourceCoverage)} />
         <MetricCard label="Last updated" value={selected.profile.lastUpdated} size="sm" />
@@ -184,6 +195,13 @@ function OverviewPanel({
                 value={selected.probabilities[key]}
                 delta={selected.probabilities[key] - baselineValue}
                 color={alignmentColor[key as Alignment]}
+                explanation={
+                  <ProbabilityExplainer
+                    explanation={selected.explanation.probabilities[key]}
+                    label={alignmentLabel[key as Alignment]}
+                    color={alignmentColor[key as Alignment]}
+                  />
+                }
               />
             );
           })}
@@ -434,4 +452,194 @@ function EmptyState({ title, body }: { title: string; body: string }) {
       <p>{body}</p>
     </div>
   );
+}
+
+/* ----------------------------------------------------------------------------
+ * Explainer popovers — derived from the simulator's own breakdown so the math
+ * displayed always matches the math computed.
+ * ------------------------------------------------------------------------- */
+
+type ExplainerRow = {
+  label: string;
+  contribution: number;
+  multiplier?: number;
+  inputValue?: number;
+  isBase?: boolean;
+};
+
+function ExplainerCard({
+  title,
+  description,
+  weightSetLabel,
+  rows,
+  sumLabel,
+  sumValue,
+  finalLabel,
+  finalValue,
+  finalUnit,
+  swatchColor,
+  footer,
+}: {
+  title: string;
+  description: string;
+  weightSetLabel?: string;
+  rows: ExplainerRow[];
+  sumLabel: string;
+  sumValue: number;
+  finalLabel: string;
+  finalValue: number;
+  finalUnit?: string;
+  swatchColor?: string;
+  footer?: ReactNode;
+}) {
+  return (
+    <div className="explainer">
+      <header className="explainer-header">
+        {swatchColor && <span className="explainer-swatch" style={{ background: swatchColor }} aria-hidden />}
+        <strong>{title}</strong>
+      </header>
+      <p className="explainer-desc">{description}</p>
+      {weightSetLabel && (
+        <div className="explainer-tag">
+          <span>Active weights</span>
+          <em>{weightSetLabel}</em>
+        </div>
+      )}
+      <div className="explainer-table">
+        {rows.map((row, index) => (
+          <div key={`${row.label}-${index}`} className={`explainer-row ${row.isBase ? 'is-base' : ''}`}>
+            <div className="explainer-row-main">
+              <span className="explainer-row-label">{row.label}</span>
+              {(row.multiplier != null || row.inputValue != null) && (
+                <span className="explainer-row-meta">
+                  {row.inputValue != null && <em>in {formatNumber(row.inputValue)}</em>}
+                  {row.multiplier != null && <em>×{row.multiplier}</em>}
+                </span>
+              )}
+            </div>
+            <span
+              className={`explainer-row-num ${row.contribution > 0 ? 'pos' : row.contribution < 0 ? 'neg' : ''}`}
+            >
+              {row.isBase ? formatNumber(row.contribution) : formatSigned(row.contribution)}
+            </span>
+          </div>
+        ))}
+        <div className="explainer-row explainer-sum">
+          <span className="explainer-row-label">{sumLabel}</span>
+          <span className="explainer-row-num">{formatNumber(sumValue)}</span>
+        </div>
+        <div className="explainer-row explainer-final">
+          <span className="explainer-row-label">{finalLabel}</span>
+          <span className="explainer-row-num">
+            {Math.round(finalValue)}
+            {finalUnit ?? ''}
+          </span>
+        </div>
+      </div>
+      {footer && <footer className="explainer-footer">{footer}</footer>}
+    </div>
+  );
+}
+
+function RiskExplainer({ explanation }: { explanation: RiskExplanation }) {
+  const baseRow: ExplainerRow = {
+    label: 'Country baseline risk',
+    contribution: explanation.base,
+    isBase: true,
+  };
+
+  return (
+    <ExplainerCard
+      title="How escalation risk is computed"
+      description="Country baseline plus weighted indicator contributions. Indicator levels (low/med/high) map to numeric scores 18/50/82 before weighting. Scenario shocks compound onto specific indicators."
+      weightSetLabel={explanation.weightSetLabel}
+      rows={[baseRow, ...toRows(explanation.components)]}
+      sumLabel="Sum"
+      sumValue={explanation.total}
+      finalLabel="Clamped to [8, 97]"
+      finalValue={explanation.clamped}
+      finalUnit="%"
+      footer={<>Numbers are illustrative — the active dataset is a versioned snapshot, not a live feed.</>}
+    />
+  );
+}
+
+function ConfidenceExplainer({ explanation }: { explanation: ConfidenceExplanation }) {
+  const marginRow: ExplainerRow = {
+    label: `Top − second probability (${explanation.topProbability}% − ${explanation.secondProbability}%)`,
+    contribution: explanation.margin,
+    isBase: true,
+  };
+  const baseRow: ExplainerRow = {
+    label: 'Base confidence floor',
+    contribution: explanation.base,
+    isBase: true,
+  };
+
+  return (
+    <ExplainerCard
+      title="How confidence is derived"
+      description="Probability gap between the top alignment and the second, plus a base floor of 54, minus political-volatility shocks."
+      rows={[marginRow, baseRow, ...toRows(explanation.components)]}
+      sumLabel="Sum"
+      sumValue={explanation.total}
+      finalLabel="Clamped to [38, 96]"
+      finalValue={explanation.clamped}
+      finalUnit="%"
+      footer={<>Higher confidence does not mean higher accuracy — it reflects how decisively the model lands on one bloc.</>}
+    />
+  );
+}
+
+function ProbabilityExplainer({
+  explanation,
+  label,
+  color,
+}: {
+  explanation: ProbabilityExplanation;
+  label: string;
+  color: string;
+}) {
+  const baseRow: ExplainerRow = {
+    label: 'Bloc base score',
+    contribution: explanation.base,
+    isBase: true,
+  };
+
+  return (
+    <ExplainerCard
+      title={`Why ${label}`}
+      description={`Raw bloc score from indicators, regime bonus, and momentum, then normalized across the three blocs (sum of clamped raws = ${formatNumber(
+        explanation.rawTotal,
+      )}).`}
+      rows={[baseRow, ...toRows(explanation.components)]}
+      sumLabel="Raw score"
+      sumValue={explanation.raw}
+      finalLabel={`Normalized share (${formatNumber(explanation.rawClamped)} ÷ ${formatNumber(
+        explanation.rawTotal,
+      )})`}
+      finalValue={explanation.normalized}
+      finalUnit="%"
+      swatchColor={color}
+      footer={<>Each bloc is computed independently, then divided by the total to yield the percentage shown.</>}
+    />
+  );
+}
+
+function toRows(components: ContributionLine[]): ExplainerRow[] {
+  return components.map((component) => ({
+    label: component.label,
+    contribution: component.contribution,
+    multiplier: component.multiplier,
+    inputValue: component.inputValue,
+  }));
+}
+
+function formatNumber(value: number) {
+  return Number.isInteger(value) ? value.toString() : value.toFixed(1);
+}
+
+function formatSigned(value: number) {
+  if (value === 0) return '0';
+  return `${value > 0 ? '+' : ''}${formatNumber(value)}`;
 }

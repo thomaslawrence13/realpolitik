@@ -134,6 +134,51 @@ export interface SimulationOptions {
   weightSet?: SimulationWeightSet;
 }
 
+export interface ContributionLine {
+  label: string;
+  multiplier?: number;
+  inputValue?: number;
+  contribution: number;
+  note?: string;
+}
+
+export interface RiskExplanation {
+  base: number;
+  components: ContributionLine[];
+  total: number;
+  clamped: number;
+  weightSetLabel: string;
+}
+
+export interface ConfidenceExplanation {
+  topProbability: number;
+  secondProbability: number;
+  margin: number;
+  base: number;
+  components: ContributionLine[];
+  total: number;
+  clamped: number;
+}
+
+export interface ProbabilityExplanation {
+  base: number;
+  components: ContributionLine[];
+  raw: number;
+  rawClamped: number;
+  rawTotal: number;
+  normalized: number;
+}
+
+export interface SimulationExplanation {
+  risk: RiskExplanation;
+  confidence: ConfidenceExplanation;
+  probabilities: {
+    blocA: ProbabilityExplanation;
+    blocB: ProbabilityExplanation;
+    nonAligned: ProbabilityExplanation;
+  };
+}
+
 export interface SimulatedCountry {
   profile: CountryProfile;
   alignment: Alignment;
@@ -143,6 +188,7 @@ export interface SimulatedCountry {
   drivers: DriverScore[];
   history: ScenarioSnapshot[];
   relationshipSummary: RelationshipSummary;
+  explanation: SimulationExplanation;
 }
 
 export interface Filters {
