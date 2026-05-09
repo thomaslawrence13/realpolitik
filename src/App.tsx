@@ -74,8 +74,6 @@ export default function App() {
   const [search, setSearch] = useState('');
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string>('United States of America');
-  const [zoom, setZoom] = useState(1);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [overlayMode, setOverlayMode] = useState<OverlayMode>('cooperation');
   const [scenarioName, setScenarioName] = useState('Baseline+');
   const [scenarioInputs, setScenarioInputs] = useState<ScenarioInputs>({ ...defaultScenarioInputs });
@@ -310,10 +308,6 @@ export default function App() {
         hoveredName={hoveredCountry}
         onSelect={setSelectedCountry}
         onHover={setHoveredCountry}
-        zoom={zoom}
-        offset={offset}
-        onZoomChange={setZoom}
-        onOffsetChange={setOffset}
         overlayMode={overlayMode}
         onOverlayModeChange={setOverlayMode}
         overlayConnections={overlayConnections}
