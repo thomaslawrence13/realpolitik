@@ -242,4 +242,16 @@ export interface SavedScenario {
   timelineIndex: number;
   weightSetKey: WeightSetKey;
   inputs: ScenarioInputs;
+  activeEventIds?: string[];
+}
+
+export type EventCategory = 'military' | 'economic' | 'political' | 'compound';
+
+export interface EventTemplate {
+  id: string;
+  name: string;
+  category: EventCategory;
+  summary: string;
+  inputs: Partial<ScenarioInputs>;
+  regionTags: string[];
 }

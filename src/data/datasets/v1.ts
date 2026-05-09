@@ -1,7 +1,7 @@
 import type { DatasetBundle } from '../../types';
 
 export const geopoliticalDatasetV1: DatasetBundle = {
-  version: '2026.05-data-prototype-v4',
+  version: '2026.05-data-prototype-v5',
   scenarioTimeline: ['2026', '2027', '2028', '2029', '2030', '2031', '2032', '2033', '2034', '2035'],
   methodologyNotes: [
     'This build uses a versioned dataset boundary so the UI can move off hardcoded country state and onto replaceable data snapshots.',
@@ -10,6 +10,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
     'Indicator-level freshness and data-quality degradation notices are surfaced for auditability when live or snapshot data is stale.',
     'Relationship edges now receive the same multi-source reconciliation treatment as country indicators: snapshot baselines are cross-checked with country-indicator-derived bilateral signals, with dimension-level provenance visible in the Relationships inspector tab.',
     'Relationship edges are inspectable inputs for cooperation, hostility, dependency, and deterrence rather than hidden assumptions.',
+    'A named event library (14 events across military, economic, political, and compound categories) lets analysts apply and compose pre-built geopolitical shocks directly to the scenario sliders. Active events stack additively on top of manual inputs, clamped to slider bounds.',
     'The simulation remains exploratory and should be calibrated against historical backtesting before stronger predictive claims are made.',
   ],
   sources: [
