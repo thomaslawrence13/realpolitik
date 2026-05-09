@@ -163,8 +163,6 @@ function OverviewPanel({
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
 }) {
-  const relationshipCount = selected.profile.relationships.length;
-
   return (
     <div className="panel-stack">
       <div className="overview-strip" aria-label="At a glance">
@@ -178,7 +176,7 @@ function OverviewPanel({
         </div>
         <div className="overview-chip">
           <span>Relationships</span>
-          <strong>{relationshipCount}</strong>
+          <strong>{selected.profile.relationships.length}</strong>
         </div>
       </div>
 
