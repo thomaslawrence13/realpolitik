@@ -419,6 +419,10 @@ export default function App() {
   const shellStyle: CSSProperties & { '--drawer-h': string } = {
     '--drawer-h': `${drawerHeight}px`,
   };
+  const handleTimelineChange = (index: number) => {
+    setIsPlaying(false);
+    setTimelineIndex(index);
+  };
 
   return (
     <div
@@ -431,7 +435,7 @@ export default function App() {
       <TopBar
         timelineIndex={timelineIndex}
         timeline={scenarioTimeline}
-        onTimelineChange={(index) => { setIsPlaying(false); setTimelineIndex(index); }}
+        onTimelineChange={handleTimelineChange}
         scenarioName={scenarioName}
         datasetVersion={datasetVersion}
         countryCount={totalCountries}
