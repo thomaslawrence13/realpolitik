@@ -52,6 +52,7 @@ const weightSetOptions = Object.values(simulationWeightSets);
 const TIMELINE_AUTO_PLAY_INTERVAL_MS = 1200;
 const MIN_DRAWER_HEIGHT = 180;
 const MAX_DRAWER_HEIGHT_RATIO = 0.65;
+const INTERACTIVE_SHORTCUT_TAGS = new Set(['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A']);
 
 const maxDrawerHeight = () => Math.floor(window.innerHeight * MAX_DRAWER_HEIGHT_RATIO);
 
@@ -217,7 +218,6 @@ export default function App() {
   handleTogglePlayRef.current = handleTogglePlay;
 
   useEffect(() => {
-    const INTERACTIVE_TAGS = new Set(['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A']);
     const handler = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
@@ -233,7 +233,7 @@ export default function App() {
       if (event.key === '[') setLeftOpen((value) => !value);
       if (event.key === ']') setRightOpen((value) => !value);
       if (event.key === '\\') setDrawerOpen((value) => !value);
-      if (event.key === ' ' && !INTERACTIVE_TAGS.has(target.tagName)) {
+      if (event.key === ' ' && !INTERACTIVE_SHORTCUT_TAGS.has(target.tagName)) {
         event.preventDefault();
         handleTogglePlayRef.current();
       }
@@ -421,9 +421,7 @@ export default function App() {
   };
 
   const totalCountries = activeProfiles.length;
-  const shellStyle: CSSProperties & { '--drawer-h': string } = {
-    '--drawer-h': `${drawerHeight}px`,
-  };
+  const shellStyle = { '--drawer-h': `${drawerHeight}px` } as CSSProperties;
   const handleTimelineChange = (index: number) => {
     setIsPlaying(false);
     setTimelineIndex(index);
