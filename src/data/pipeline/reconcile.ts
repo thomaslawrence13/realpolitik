@@ -127,7 +127,7 @@ export const enrichCountryWithObservations = (
     if (ts != null && ts > latestTimestamp) latestTimestamp = ts;
   }
 
-  const computedSourceCoverage = coverageTotal === 0 ? profile.sourceCoverage : Math.round((coveragePresent / coverageTotal) * 100);
+  const computedSourceCoverage = coverageTotal === 0 ? 0 : Math.round((coveragePresent / coverageTotal) * 100);
   const computedLastUpdated = new Date(latestTimestamp).toISOString().slice(0, 10);
 
   const dataQuality: CountryDataQuality = {

@@ -44,8 +44,20 @@ export const isValidIndicatorValue = <K extends keyof CountryIndicators>(
   indicator: K,
   value: CountryIndicators[K],
 ): boolean => {
-  if (indicator === 'cohesion') {
-    return Number.isFinite(value as number) && (value as number) >= 0 && (value as number) <= 100;
+  switch (indicator) {
+    case 'cohesion':
+      return Number.isFinite(value as number) && (value as number) >= 0 && (value as number) <= 100;
+    case 'tradeExposure':
+    case 'militaryTreatyLevel':
+    case 'conflictPressure':
+    case 'sanctionsExposure':
+    case 'ideology':
+    case 'borderDisputes':
+    case 'regimeStability':
+    case 'conflictHistory':
+    case 'tradeDependence':
+      return value === 'low' || value === 'medium' || value === 'high';
+    default:
+      return false;
   }
-  return value === 'low' || value === 'medium' || value === 'high';
 };

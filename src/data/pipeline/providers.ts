@@ -137,7 +137,7 @@ export const buildTradeDependenceObservations = (profiles: CountryProfile[]): In
     indicator: 'tradeDependence' as const,
     value: profile.indicators.tradeDependence,
     observedAt: profile.lastUpdated,
-    method: 'expert-curated' as const,
+    method: 'snapshot' as const,
     confidence: 0.64,
   }));
 };
