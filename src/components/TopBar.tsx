@@ -7,6 +7,7 @@ type Props = {
   scenarioName: string;
   datasetVersion: string;
   countryCount: number;
+  liveDataStatus: 'loading' | 'live' | 'error';
   leftOpen: boolean;
   rightOpen: boolean;
   drawerOpen: boolean;
@@ -22,6 +23,7 @@ export function TopBar({
   scenarioName,
   datasetVersion,
   countryCount,
+  liveDataStatus,
   leftOpen,
   rightOpen,
   drawerOpen,
@@ -45,6 +47,17 @@ export function TopBar({
             <span className="brand-pill">{datasetVersion}</span>
             <span className="brand-sep">·</span>
             <span>{countryCount} parameterized</span>
+            <span className="brand-sep">·</span>
+            <span
+              className={`live-status live-status-${liveDataStatus}`}
+              title={{
+                loading: 'Fetching live World Bank indicators…',
+                live: 'Indicators enriched with live World Bank data',
+                error: 'Live data unavailable — using static dataset',
+              }[liveDataStatus]}
+            >
+              {liveDataStatus === 'live' ? 'live data' : liveDataStatus === 'error' ? 'static data' : 'updating…'}
+            </span>
           </span>
         </div>
       </div>

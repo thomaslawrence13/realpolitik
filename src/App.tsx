@@ -24,6 +24,8 @@ import type {
   WeightSetKey,
 } from './types';
 import { countryCentroids } from './lib/map';
+import { fetchLiveData } from './data/worldBankClient';
+import { enrichProfiles } from './data/liveEnrichment';
 import { TopBar } from './components/TopBar';
 import { LeftRail } from './components/LeftRail';
 import { MapCanvas } from './components/MapCanvas';
@@ -80,6 +82,24 @@ export default function App() {
   const [weightSetKey, setWeightSetKey] = useState<WeightSetKey>('baseline');
   const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
 
+  // Live World Bank data enrichment — starts with static profiles and upgrades
+  // in the background. Failures fall back silently to the static dataset.
+  const [activeProfiles, setActiveProfiles] = useState(countryProfiles);
+  const [liveDataStatus, setLiveDataStatus] = useState<'loading' | 'live' | 'error'>('loading');
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchLiveData(controller.signal)
+      .then((live) => {
+        setActiveProfiles(enrichProfiles(countryProfiles, live));
+        setLiveDataStatus('live');
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setLiveDataStatus('error');
+      });
+    return () => controller.abort();
+  }, []);
+
   // Defer heavy simulation re-runs so UI (sliders, timeline) stays responsive while
   // the map catches up asynchronously via React's concurrent scheduler.
   const deferredScenarioInputs = useDeferredValue(scenarioInputs);
@@ -112,19 +132,19 @@ export default function App() {
   const activeWeightSet = useMemo(() => getSimulationWeightSet(deferredWeightSetKey), [deferredWeightSetKey]);
 
   const baselineSimulated = useMemo(() => {
-    return countryProfiles.map((profile) =>
+    return activeProfiles.map((profile) =>
       simulateCountry(profile, timelineIndex, {
         scenarioInputs: defaultScenarioInputs,
         weightSet: baselineWeightSet,
       }),
     );
-  }, [timelineIndex]);
+  }, [activeProfiles, timelineIndex]);
 
   const simulated = useMemo(() => {
-    return countryProfiles.map((profile) =>
+    return activeProfiles.map((profile) =>
       simulateCountry(profile, timelineIndex, { scenarioInputs: deferredScenarioInputs, weightSet: activeWeightSet }),
     );
-  }, [activeWeightSet, deferredScenarioInputs, timelineIndex]);
+  }, [activeProfiles, activeWeightSet, deferredScenarioInputs, timelineIndex]);
 
   const baselineByName = useMemo(
     () => new Map(baselineSimulated.map((entry) => [entry.profile.mapName, entry])),
@@ -271,7 +291,7 @@ export default function App() {
     if (byName.has(mapName)) setSelectedCountry(mapName);
   };
 
-  const totalCountries = countryProfiles.length;
+  const totalCountries = activeProfiles.length;
 
   return (
     <div
@@ -287,6 +307,7 @@ export default function App() {
         scenarioName={scenarioName}
         datasetVersion={datasetVersion}
         countryCount={totalCountries}
+        liveDataStatus={liveDataStatus}
         leftOpen={leftOpen}
         rightOpen={rightOpen}
         drawerOpen={drawerOpen}

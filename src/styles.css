@@ -238,6 +238,64 @@ a:hover {
   color: var(--text-4);
 }
 
+/* Live data status badge */
+.live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 0.18rem 0.45rem;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  transition: color 200ms var(--ease), background 200ms var(--ease), border-color 200ms var(--ease);
+}
+
+.live-status::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.live-status-loading {
+  color: var(--text-3);
+  background: transparent;
+  border-color: transparent;
+}
+
+.live-status-loading::before {
+  background: var(--text-4);
+  animation: live-pulse 1.2s ease-in-out infinite;
+}
+
+.live-status-live {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+  border-color: rgba(74, 222, 128, 0.25);
+}
+
+.live-status-live::before {
+  background: #4ade80;
+}
+
+.live-status-error {
+  color: var(--text-3);
+  background: transparent;
+  border-color: transparent;
+}
+
+.live-status-error::before {
+  background: var(--text-4);
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1; }
+}
+
 /* Timeline (centered scrubber) */
 .timeline {
   display: flex;
