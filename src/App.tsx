@@ -452,6 +452,7 @@ export default function App() {
         onToggleDrawer={() => setDrawerOpen((value) => !value)}
         isPlaying={isPlaying}
         onTogglePlay={handleTogglePlay}
+        activeEventCount={activeEventIds.length}
       />
 
       <LeftRail

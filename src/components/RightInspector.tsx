@@ -414,23 +414,23 @@ function DriversPanel({
           </li>
           <li>
             <span>Sanctions</span>
-            <strong>{scenarioInputs.sanctionShock}</strong>
+            <strong className={scenarioInputs.sanctionShock !== 0 ? 'value-active' : ''}>{scenarioInputs.sanctionShock}</strong>
           </li>
           <li>
             <span>Treaty change</span>
-            <strong>{formatSignedValue(scenarioInputs.treatyShift)}</strong>
+            <strong className={scenarioInputs.treatyShift !== 0 ? 'value-active' : ''}>{formatSignedValue(scenarioInputs.treatyShift)}</strong>
           </li>
           <li>
             <span>Election volatility</span>
-            <strong>{scenarioInputs.electionVolatility}</strong>
+            <strong className={scenarioInputs.electionVolatility !== 0 ? 'value-active' : ''}>{scenarioInputs.electionVolatility}</strong>
           </li>
           <li>
             <span>Invasion pressure</span>
-            <strong>{scenarioInputs.invasionPressure}</strong>
+            <strong className={scenarioInputs.invasionPressure !== 0 ? 'value-active' : ''}>{scenarioInputs.invasionPressure}</strong>
           </li>
           <li>
             <span>Coup risk</span>
-            <strong>{scenarioInputs.coupRisk}</strong>
+            <strong className={scenarioInputs.coupRisk !== 0 ? 'value-active' : ''}>{scenarioInputs.coupRisk}</strong>
           </li>
         </ul>
       </div>

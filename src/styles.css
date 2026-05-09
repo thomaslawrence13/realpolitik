@@ -121,6 +121,13 @@ a:hover {
   font-variant-numeric: tabular-nums;
 }
 
+/* Consistent focus-visible ring throughout the app */
+:focus-visible {
+  outline: 2px solid var(--accent-line);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
 /* ----------------------------------------------------------------------------
  * Shell layout (CSS Grid)
  * ------------------------------------------------------------------------- */
@@ -435,6 +442,23 @@ a:hover {
 .scenario-chip-active .scenario-chip-indicator {
   background: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Badge shown when events are active */
+.scenario-event-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 16px;
+  padding: 0 4px;
+  font-style: normal;
+  font-size: 0.64rem;
+  font-weight: 600;
+  background: rgba(34, 211, 238, 0.2);
+  color: var(--accent-hi);
+  border-radius: var(--r-pill);
+  flex-shrink: 0;
 }
 
 /* ----------------------------------------------------------------------------
@@ -1343,6 +1367,7 @@ input[type='range']::-moz-range-thumb {
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
+  transition: border-color 180ms var(--ease), background 180ms var(--ease);
 }
 
 .overview-chip span {
@@ -1357,6 +1382,16 @@ input[type='range']::-moz-range-thumb {
   font-weight: 600;
   color: var(--text-1);
 }
+
+/* Tonal variants for the overview strip chips */
+.overview-chip.metric-high   { border-color: rgba(248, 113, 113, 0.25); background: rgba(248, 113, 113, 0.07); }
+.overview-chip.metric-high strong { color: var(--risk-high); }
+.overview-chip.metric-medium { border-color: rgba(251, 191, 36, 0.25); background: rgba(251, 191, 36, 0.07); }
+.overview-chip.metric-medium strong { color: var(--risk-med); }
+.overview-chip.metric-low    { border-color: rgba(52, 211, 153, 0.2);  background: rgba(52, 211, 153, 0.06); }
+.overview-chip.metric-low strong { color: var(--risk-low); }
+.overview-chip.metric-accent { border-color: var(--accent-line); background: var(--accent-soft); }
+.overview-chip.metric-accent strong { color: var(--accent); }
 
 .metric-head {
   display: flex;
@@ -2335,6 +2370,54 @@ input[type='range']::-moz-range-thumb {
   font-size: 0.82rem;
   color: var(--text-2);
   line-height: 1.55;
+}
+
+/* History scenario input chips */
+.history-summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+}
+
+.history-input-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.12rem 0.42rem;
+  border-radius: var(--r-pill);
+  font-size: 0.72rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-4);
+  font-variant-numeric: tabular-nums;
+}
+
+.history-input-chip em {
+  font-style: normal;
+  font-weight: 500;
+}
+
+.history-input-chip strong {
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.history-input-chip-active {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+
+.history-input-chip-active em {
+  color: var(--accent);
+}
+
+.history-input-chip-active strong {
+  color: var(--accent-hi);
+}
+
+/* Highlighted (non-zero) value in kv-list rows */
+.value-active {
+  color: var(--accent-hi);
 }
 
 /* ----------------------------------------------------------------------------

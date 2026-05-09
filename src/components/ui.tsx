@@ -362,4 +362,9 @@ export const SvgIcon = {
       <path d="M6 5h2v14H6zM9 12l9-7v14z" />
     </svg>
   ),
+  SkipForward: () => (
+    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+      <path d="M18 5h-2v14h2zM15 12L6 5v14z" />
+    </svg>
+  ),
 };

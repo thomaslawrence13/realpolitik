@@ -390,6 +390,13 @@ function HistoryPanel({
     <div className="history">
       {scenarios.map((scenario) => {
         const weightSet = weightSets.find((entry) => entry.key === scenario.weightSetKey);
+        const summaryItems = [
+          { abbr: 'S', label: 'Sanctions', value: scenario.inputs.sanctionShock, signed: false },
+          { abbr: 'T', label: 'Treaty', value: scenario.inputs.treatyShift, signed: true },
+          { abbr: 'E', label: 'Election', value: scenario.inputs.electionVolatility, signed: false },
+          { abbr: 'I', label: 'Invasion', value: scenario.inputs.invasionPressure, signed: false },
+          { abbr: 'C', label: 'Coup', value: scenario.inputs.coupRisk, signed: false },
+        ];
         return (
           <article key={scenario.id} className="history-card">
             <header>
@@ -397,12 +404,18 @@ function HistoryPanel({
               <span>{timeline[scenario.timelineIndex]}</span>
             </header>
             <p>{weightSet?.label ?? 'Custom weighting'}</p>
-            <p className="history-summary">
-              Sanctions {scenario.inputs.sanctionShock} · Treaties{' '}
-              {scenario.inputs.treatyShift > 0 ? '+' : ''}
-              {scenario.inputs.treatyShift} · Election {scenario.inputs.electionVolatility} · Invasion{' '}
-              {scenario.inputs.invasionPressure} · Coup {scenario.inputs.coupRisk}
-            </p>
+            <div className="history-summary-chips">
+              {summaryItems.map(({ abbr, label, value, signed }) => (
+                <span
+                  key={abbr}
+                  className={`history-input-chip ${value !== 0 ? 'history-input-chip-active' : ''}`}
+                  title={`${label}: ${signed && value > 0 ? '+' : ''}${value}`}
+                >
+                  <em>{abbr}</em>
+                  <strong>{signed && value > 0 ? '+' : ''}{value}</strong>
+                </span>
+              ))}
+            </div>
             <button type="button" className="btn btn-ghost" onClick={() => onLoad(scenario)}>
               Load scenario
             </button>
