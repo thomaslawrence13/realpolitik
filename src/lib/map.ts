@@ -42,3 +42,8 @@ export const countryCentroids = new Map(
     path.centroid(country as never) as [number, number],
   ]),
 );
+
+// Pre-compute all path `d` strings once so MapCanvas never calls the d3 projection at render time.
+export const countryPathStrings = new Map(
+  countries.map((country) => [country.properties.name, path(country as never) ?? '']),
+);

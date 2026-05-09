@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useDeferredValue } from 'react';
 import {
   allianceNetworks,
   countryProfiles,
   datasetVersion,
+  getCountryByMapName,
   methodologyNotes,
   scenarioTimeline,
 } from './data/countryData';
@@ -72,13 +73,17 @@ export default function App() {
   const [timelineIndex, setTimelineIndex] = useState(0);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [search, setSearch] = useState('');
-  const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string>('United States of America');
   const [overlayMode, setOverlayMode] = useState<OverlayMode>('cooperation');
   const [scenarioName, setScenarioName] = useState('Baseline+');
   const [scenarioInputs, setScenarioInputs] = useState<ScenarioInputs>({ ...defaultScenarioInputs });
   const [weightSetKey, setWeightSetKey] = useState<WeightSetKey>('baseline');
   const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
+
+  // Defer heavy simulation re-runs so UI (sliders, timeline) stays responsive while
+  // the map catches up asynchronously via React's concurrent scheduler.
+  const deferredScenarioInputs = useDeferredValue(scenarioInputs);
+  const deferredWeightSetKey = useDeferredValue(weightSetKey);
 
   const [leftOpen, setLeftOpen] = useState<boolean>(() => !isMobile());
   const [rightOpen, setRightOpen] = useState<boolean>(() => !isMobile());
@@ -104,7 +109,7 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
-  const activeWeightSet = useMemo(() => getSimulationWeightSet(weightSetKey), [weightSetKey]);
+  const activeWeightSet = useMemo(() => getSimulationWeightSet(deferredWeightSetKey), [deferredWeightSetKey]);
 
   const baselineSimulated = useMemo(() => {
     return countryProfiles.map((profile) =>
@@ -117,9 +122,9 @@ export default function App() {
 
   const simulated = useMemo(() => {
     return countryProfiles.map((profile) =>
-      simulateCountry(profile, timelineIndex, { scenarioInputs, weightSet: activeWeightSet }),
+      simulateCountry(profile, timelineIndex, { scenarioInputs: deferredScenarioInputs, weightSet: activeWeightSet }),
     );
-  }, [activeWeightSet, scenarioInputs, timelineIndex]);
+  }, [activeWeightSet, deferredScenarioInputs, timelineIndex]);
 
   const baselineByName = useMemo(
     () => new Map(baselineSimulated.map((entry) => [entry.profile.mapName, entry])),
@@ -177,7 +182,7 @@ export default function App() {
     if (overlayMode === 'none') return [];
     // Use the static profile (not the simulated result) so this only recomputes when the
     // selected country or overlay mode changes — not on every scenario-slider adjustment.
-    const profile = countryProfiles.find((p) => p.mapName === selectedCountry);
+    const profile = getCountryByMapName(selectedCountry);
     if (!profile) return [];
     const sourceCentroid = countryCentroids.get(selectedCountry);
     if (!sourceCentroid) return [];
@@ -309,9 +314,7 @@ export default function App() {
         byName={byName}
         visibleNames={visibleNames}
         selectedName={selectedCountry}
-        hoveredName={hoveredCountry}
         onSelect={setSelectedCountry}
-        onHover={setHoveredCountry}
         overlayMode={overlayMode}
         onOverlayModeChange={setOverlayMode}
         overlayConnections={overlayConnections}

@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import type { MutableRefObject, PointerEvent as ReactPointerEvent } from 'react';
 import type {
   Alignment,
   OverlayMode,
   RelationshipDimension,
   SimulatedCountry,
 } from '../types';
-import { MAP_HEIGHT, MAP_WIDTH, countries, path } from '../lib/map';
+import { MAP_HEIGHT, MAP_WIDTH, countries, countryPathStrings } from '../lib/map';
 import { getRiskTier } from '../simulation';
 import { IconButton, SvgIcon } from './ui';
 
@@ -29,7 +29,6 @@ function clampOffset(offset: { x: number; y: number }, zoom: number) {
   };
 }
 
-// ─── Overlay metadata ─────────────────────────────────────────────────────────
 const overlayLabel: Record<RelationshipDimension, string> = {
   cooperation: 'Cooperation',
   hostility: 'Hostility',
@@ -43,6 +42,83 @@ const overlayColor: Record<RelationshipDimension, string> = {
   dependency: '#f59e0b',
   deterrence: '#a78bfa',
 };
+
+const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
+
+// ─── Memoized country paths layer ────────────────────────────────────────────
+// Defined outside MapCanvas so React.memo has stable component identity.
+// Only re-renders when alignment data, filters, selection, or overlays change —
+// NOT on hover or zoom/pan.
+type CountryLayersProps = {
+  byName: Map<string, SimulatedCountry>;
+  visibleNames: Set<string>;
+  selectedName: string;
+  relatedNames: Set<string>;
+  overlayMode: OverlayMode;
+  alignmentColor: Record<Alignment, string>;
+  setHoveredName: (name: string | null) => void;
+  hoveredNameRef: MutableRefObject<string | null>;
+  hoveredIsParamRef: MutableRefObject<boolean>;
+};
+
+import type React from 'react';
+
+const CountryLayers = memo(function CountryLayers({
+  byName,
+  visibleNames,
+  selectedName,
+  relatedNames,
+  overlayMode,
+  alignmentColor,
+  setHoveredName,
+  hoveredNameRef,
+  hoveredIsParamRef,
+}: CountryLayersProps) {
+  return (
+    <>
+      {countries.map((country) => {
+        const name = country.properties.name;
+        const simulated = byName.get(name);
+        const isParameterized = Boolean(simulated);
+        const isVisible = isParameterized && visibleNames.has(name);
+        const isSelected = selectedName === name;
+        const isRelated = relatedNames.has(name);
+
+        const fill = simulated ? alignmentColor[simulated.alignment] : '#1b2538';
+        const opacity = !isParameterized ? 0.3 : isVisible ? 1 : 0.2;
+
+        let stroke = 'rgba(148,163,184,0.18)';
+        let strokeWidth = 0.4;
+        if (isRelated && overlayMode !== 'none') { stroke = overlayColor[overlayMode]; strokeWidth = 1.3; }
+        if (isSelected) { stroke = '#f8fafc'; strokeWidth = 2; }
+
+        return (
+          <path
+            key={`${country.id ?? name}-${name}`}
+            d={countryPathStrings.get(name) ?? undefined}
+            fill={fill}
+            fillOpacity={opacity}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+            vectorEffect="non-scaling-stroke"
+            filter={isSelected ? 'url(#selected-glow)' : undefined}
+            className="country-path"
+            onPointerEnter={() => {
+              hoveredNameRef.current = name;
+              hoveredIsParamRef.current = isParameterized;
+              setHoveredName(name);
+            }}
+            onPointerLeave={() => {
+              hoveredNameRef.current = null;
+              hoveredIsParamRef.current = false;
+              setHoveredName(null);
+            }}
+          />
+        );
+      })}
+    </>
+  );
+});
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type OverlayConnection = {
@@ -60,9 +136,7 @@ type Props = {
   byName: Map<string, SimulatedCountry>;
   visibleNames: Set<string>;
   selectedName: string;
-  hoveredName: string | null;
   onSelect: (name: string) => void;
-  onHover: (name: string | null) => void;
   overlayMode: OverlayMode;
   onOverlayModeChange: (mode: OverlayMode) => void;
   overlayConnections: OverlayConnection[];
@@ -76,9 +150,7 @@ export function MapCanvas({
   byName,
   visibleNames,
   selectedName,
-  hoveredName,
   onSelect,
-  onHover,
   overlayMode,
   onOverlayModeChange,
   overlayConnections,
@@ -86,6 +158,11 @@ export function MapCanvas({
   alignmentColor,
   alignmentLabel,
 }: Props) {
+  // ── Internal hover state (kept here so App.tsx never re-renders on hover) ─────
+  const [hoveredName, setHoveredName] = useState<string | null>(null);
+  // Refs so pointer handlers always see the latest value without stale closures
+  const hoveredNameRef = useRef<string | null>(null);
+  const hoveredIsParamRef = useRef<boolean>(false);
   // ── Transform state + mirrored ref (avoids stale closures in event handlers) ─
   const [transform, setTransform] = useState({ zoom: 1, offset: { x: 0, y: 0 } });
   const transformRef = useRef(transform);
@@ -209,6 +286,12 @@ export function MapCanvas({
   };
 
   const handlePointerUp = (event: ReactPointerEvent<SVGSVGElement>) => {
+    // If pointer was released without dragging, treat it as a click on the country
+    // that was under the pointer at press-down time (pointer capture prevents path
+    // onClick from firing, so we handle selection here instead).
+    if (!didDragRef.current && hoveredIsParamRef.current && hoveredNameRef.current) {
+      onSelect(hoveredNameRef.current);
+    }
     dragPrevRef.current = null;
     svgRef.current?.releasePointerCapture(event.pointerId);
   };
@@ -233,11 +316,7 @@ export function MapCanvas({
   // ── Derived values ────────────────────────────────────────────────────────────
   const { zoom, offset } = transform;
   const hovered = hoveredName ? byName.get(hoveredName) : undefined;
-  // Read current hover position from ref at render time (for initial card placement).
-  // Subsequent mouse moves update card position imperatively without triggering re-renders.
   const hoverPos = hoverPosRef.current;
-
-  const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
 
   // Overlay geometry is drawn in world-space (inside the <g> transform), so
   // we divide sizes by zoom to keep them visually constant regardless of zoom level.
@@ -254,9 +333,12 @@ export function MapCanvas({
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          onPointerLeave={(event) => {
-            handlePointerUp(event);
-            onHover(null);
+          onPointerLeave={() => {
+            // Moving off the map without dragging: clear state but do NOT select a country.
+            dragPrevRef.current = null;
+            hoveredNameRef.current = null;
+            hoveredIsParamRef.current = false;
+            setHoveredName(null);
             hoverPosRef.current = null;
           }}
         >
@@ -282,58 +364,29 @@ export function MapCanvas({
           <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#map-grid)" />
 
           <g transform={`translate(${offset.x} ${offset.y}) scale(${zoom})`}>
-            {countries.map((country) => {
-              const simulated = byName.get(country.properties.name);
-              const isParameterized = Boolean(simulated);
-              const isVisible = isParameterized && visibleNames.has(country.properties.name);
-              const isSelected = selectedName === country.properties.name;
-              const isHovered = hoveredName === country.properties.name;
-              const isRelated = relatedNames.has(country.properties.name);
-
-              const fill = simulated ? alignmentColor[simulated.alignment] : '#1b2538';
-              let opacity = 0.3;
-              if (isParameterized) opacity = isVisible ? 1 : 0.2;
-              if (isHovered && isParameterized) opacity = Math.min(1, opacity + 0.05);
-
-              // strokeWidth values are in screen pixels because of vectorEffect="non-scaling-stroke"
-              let stroke = 'rgba(148,163,184,0.18)';
-              let strokeWidth = 0.4;
-
-              if (isRelated && overlayMode !== 'none') {
-                stroke = overlayColor[overlayMode];
-                strokeWidth = 1.3;
-              }
-              if (isHovered) {
-                stroke = '#cbd5e1';
-                strokeWidth = 1.1;
-              }
-              if (isSelected) {
-                stroke = '#f8fafc';
-                strokeWidth = 2;
-              }
-
-              return (
-                <path
-                  key={`${country.id ?? country.properties.name}-${country.properties.name}`}
-                  d={path(country as never) ?? undefined}
-                  fill={fill}
-                  fillOpacity={opacity}
-                  stroke={stroke}
-                  strokeWidth={strokeWidth}
-                  // Stroke stays visually constant regardless of zoom level
-                  vectorEffect="non-scaling-stroke"
-                  filter={isSelected ? 'url(#selected-glow)' : undefined}
-                  className="country-path"
-                  onPointerEnter={() => onHover(country.properties.name)}
-                  onPointerLeave={() => onHover(null)}
-                  onClick={(event) => {
-                    if (didDragRef.current) return;
-                    event.stopPropagation();
-                    if (isParameterized) onSelect(country.properties.name);
-                  }}
-                />
-              );
-            })}
+            {/* Memoized — only re-renders when data/selection/overlay changes, not on hover or zoom */}
+            <CountryLayers
+              byName={byName}
+              visibleNames={visibleNames}
+              selectedName={selectedName}
+              relatedNames={relatedNames}
+              overlayMode={overlayMode}
+              alignmentColor={alignmentColor}
+              setHoveredName={setHoveredName}
+              hoveredNameRef={hoveredNameRef}
+              hoveredIsParamRef={hoveredIsParamRef}
+            />
+            {/* Hover highlight — single path re-render instead of all 240+ paths */}
+            {hoveredName && (
+              <path
+                d={countryPathStrings.get(hoveredName) ?? undefined}
+                fill="none"
+                stroke="#cbd5e1"
+                strokeWidth={1.1}
+                vectorEffect="non-scaling-stroke"
+                style={{ pointerEvents: 'none' }}
+              />
+            )}
 
             {overlayMode !== 'none' &&
               overlayConnections.map((connection) => (
