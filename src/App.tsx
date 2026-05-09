@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
+import type { CSSProperties } from 'react';
 import {
   allianceNetworks,
   countryProfiles,
@@ -201,6 +202,10 @@ export default function App() {
     setDrawerHeight((h) => Math.max(180, Math.min(Math.floor(window.innerHeight * 0.65), h + delta)));
   };
 
+  const handleDrawerResizeTo = (edge: 'min' | 'max') => {
+    setDrawerHeight(edge === 'min' ? 180 : Math.floor(window.innerHeight * 0.65));
+  };
+
   // Keep a ref so the keydown handler always closes over the latest toggle function
   // without needing to be re-registered on every render.
   const handleTogglePlayRef = useRef(handleTogglePlay);
@@ -211,6 +216,9 @@ export default function App() {
     const handler = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      if (target.isContentEditable || target.getAttribute('role') === 'textbox') {
         return;
       }
       if (event.key === '[') setLeftOpen((value) => !value);
@@ -404,6 +412,9 @@ export default function App() {
   };
 
   const totalCountries = activeProfiles.length;
+  const shellStyle: CSSProperties & { '--drawer-h': string } = {
+    '--drawer-h': `${drawerHeight}px`,
+  };
 
   return (
     <div
@@ -411,7 +422,7 @@ export default function App() {
       data-left-open={leftOpen}
       data-right-open={rightOpen}
       data-drawer-open={drawerOpen}
-      style={{ ['--drawer-h' as string]: `${drawerHeight}px` }}
+      style={shellStyle}
     >
       <TopBar
         timelineIndex={timelineIndex}
@@ -501,6 +512,7 @@ export default function App() {
         onRemoveEvent={removeEvent}
         onResizeStart={handleDrawerResizeStart}
         onResizeStep={handleDrawerResizeStep}
+        onResizeTo={handleDrawerResizeTo}
       />
     </div>
   );

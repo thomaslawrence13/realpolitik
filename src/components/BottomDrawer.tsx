@@ -43,6 +43,7 @@ type Props = {
   onRemoveEvent: (id: string) => void;
   onResizeStart: (startClientY: number) => void;
   onResizeStep: (delta: number) => void;
+  onResizeTo: (edge: 'min' | 'max') => void;
 };
 
 export function BottomDrawer({
@@ -71,6 +72,7 @@ export function BottomDrawer({
   onRemoveEvent,
   onResizeStart,
   onResizeStep,
+  onResizeTo,
 }: Props) {
   return (
     <section className={`drawer ${open ? 'drawer-open' : 'drawer-closed'}`} aria-hidden={!open}>
@@ -86,6 +88,8 @@ export function BottomDrawer({
         onKeyDown={(e) => {
           if (e.key === 'ArrowUp') { e.preventDefault(); onResizeStep(20); }
           if (e.key === 'ArrowDown') { e.preventDefault(); onResizeStep(-20); }
+          if (e.key === 'Home') { e.preventDefault(); onResizeTo('min'); }
+          if (e.key === 'End') { e.preventDefault(); onResizeTo('max'); }
         }}
       />
       <header className="drawer-header">

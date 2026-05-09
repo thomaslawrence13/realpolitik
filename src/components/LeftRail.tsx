@@ -334,7 +334,7 @@ export function LeftRail({
         className="rail-list"
         role="listbox"
         aria-label="Filtered countries"
-        tabIndex={allItems.length > 0 ? 0 : undefined}
+        tabIndex={0}
         onKeyDown={handleListKeyDown}
       >
         {allItems.length === 0 ? (
