@@ -42,6 +42,7 @@ type Props = {
   onApplyEvent: (id: string) => void;
   onRemoveEvent: (id: string) => void;
   onResizeStart: (startClientY: number) => void;
+  onResizeStep: (delta: number) => void;
 };
 
 export function BottomDrawer({
@@ -69,14 +70,23 @@ export function BottomDrawer({
   onApplyEvent,
   onRemoveEvent,
   onResizeStart,
+  onResizeStep,
 }: Props) {
   return (
     <section className={`drawer ${open ? 'drawer-open' : 'drawer-closed'}`} aria-hidden={!open}>
-      {/* Drag handle — lets the user resize the drawer by dragging its top edge */}
+      {/* Drag handle — lets the user resize the drawer by dragging its top edge.
+          Keyboard: ↑ expands, ↓ shrinks (20 px per step). */}
       <div
         className="drawer-resize-handle"
-        aria-hidden="true"
+        role="separator"
+        aria-label="Resize panel"
+        aria-orientation="horizontal"
+        tabIndex={0}
         onMouseDown={(e) => { e.preventDefault(); onResizeStart(e.clientY); }}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowUp') { e.preventDefault(); onResizeStep(20); }
+          if (e.key === 'ArrowDown') { e.preventDefault(); onResizeStep(-20); }
+        }}
       />
       <header className="drawer-header">
         <Tabs<DrawerTab>

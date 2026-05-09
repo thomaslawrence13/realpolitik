@@ -335,7 +335,7 @@ export function LeftRail({
         tabIndex={allItems.length > 0 ? 0 : undefined}
         onKeyDown={handleListKeyDown}
       >
-        {sorted.length === 0 ? (
+        {allItems.length === 0 ? (
           <div className="rail-empty">
             <strong>No matches</strong>
             <p>Try clearing a filter or searching for a different country.</p>

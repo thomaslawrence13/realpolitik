@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useDeferredValue } from 'react';
+import { useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
 import {
   allianceNetworks,
   countryProfiles,
@@ -197,17 +197,28 @@ export default function App() {
     window.addEventListener('mouseup', onUp);
   };
 
+  const handleDrawerResizeStep = (delta: number) => {
+    setDrawerHeight((h) => Math.max(180, Math.min(Math.floor(window.innerHeight * 0.65), h + delta)));
+  };
+
+  // Keep a ref so the keydown handler always closes over the latest toggle function
+  // without needing to be re-registered on every render.
+  const handleTogglePlayRef = useRef(handleTogglePlay);
+  handleTogglePlayRef.current = handleTogglePlay;
+
   useEffect(() => {
+    const INTERACTIVE_TAGS = new Set(['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A']);
     const handler = (event: KeyboardEvent) => {
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      const target = event.target as HTMLElement;
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
         return;
       }
       if (event.key === '[') setLeftOpen((value) => !value);
       if (event.key === ']') setRightOpen((value) => !value);
       if (event.key === '\\') setDrawerOpen((value) => !value);
-      if (event.key === ' ' && !event.target) {
+      if (event.key === ' ' && !INTERACTIVE_TAGS.has(target.tagName)) {
         event.preventDefault();
-        handleTogglePlay();
+        handleTogglePlayRef.current();
       }
       if (event.key === '/') {
         event.preventDefault();
@@ -217,7 +228,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const activeWeightSet = useMemo(() => getSimulationWeightSet(deferredWeightSetKey), [deferredWeightSetKey]);
 
@@ -489,6 +500,7 @@ export default function App() {
         onApplyEvent={applyEvent}
         onRemoveEvent={removeEvent}
         onResizeStart={handleDrawerResizeStart}
+        onResizeStep={handleDrawerResizeStep}
       />
     </div>
   );
