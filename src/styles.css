@@ -1,0 +1,472 @@
+:root {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #e2e8f0;
+  background: #020617;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(circle at top, rgba(30, 64, 175, 0.35), transparent 28%),
+    linear-gradient(180deg, #020617 0%, #020817 100%);
+}
+
+button,
+select,
+input,
+a {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: #7dd3fc;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.hero,
+.control-bar,
+.scenario-panel,
+.filters-panel,
+.map-panel,
+.details-panel,
+.feed-panel,
+.methodology-panel,
+.scenario-history-panel {
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.35);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  gap: 1.5rem;
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  color: #7dd3fc;
+  margin: 0 0 0.75rem;
+}
+
+.hero h1,
+.panel-header h2 {
+  margin: 0;
+}
+
+.hero-copy,
+.panel-header p,
+.hero-card p,
+.feed-item p,
+.methodology-list,
+.details-stack ul,
+.hover-card span,
+.overlay-controls > span,
+.relationship-card p,
+.source-card span,
+.scenario-weight-card p,
+.scenario-summary-card p,
+.scenario-history-card p {
+  color: #94a3b8;
+}
+
+.hero-card,
+.scenario-weight-card,
+.scenario-summary-card {
+  padding: 1.25rem;
+  border-radius: 20px;
+  background: rgba(8, 17, 31, 0.95);
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+}
+
+.hero-card strong,
+.scenario-weight-card strong,
+.scenario-summary-card strong {
+  font-size: 1.4rem;
+}
+
+.control-bar,
+.scenario-panel {
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.control-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.control-bar label {
+  display: grid;
+  gap: 0.5rem;
+  min-width: min(420px, 100%);
+}
+
+.zoom-controls,
+.legend,
+.overlay-button-row,
+.relationship-tags,
+.scenario-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.zoom-controls button,
+.filter-field select,
+.filter-field input,
+.overlay-button-row button,
+.scenario-actions button,
+.scenario-history-card button {
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 12px;
+  padding: 0.55rem 0.85rem;
+}
+
+.overlay-button-row button.active {
+  border-color: rgba(56, 189, 248, 0.7);
+  background: rgba(14, 116, 144, 0.28);
+}
+
+.scenario-top-row,
+.scenario-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.scenario-grid,
+.filters-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.85rem;
+}
+
+.scenario-grid {
+  margin: 1rem 0;
+}
+
+.filters-panel {
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.filter-field,
+.scenario-slider {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.scenario-slider {
+  padding: 0.9rem;
+  border-radius: 16px;
+  background: #08111f;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.filter-field span,
+.metric-card span,
+.bar-row span,
+.details-stack span,
+.hero-card span,
+.source-card span,
+.relationship-card span,
+.scenario-slider span,
+.scenario-weight-card span,
+.scenario-summary-card span,
+.scenario-history-card span {
+  font-size: 0.84rem;
+  color: #94a3b8;
+}
+
+.workspace,
+.lower-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.workspace {
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 420px);
+}
+
+.lower-grid {
+  margin-top: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.map-panel,
+.details-panel,
+.feed-panel,
+.methodology-panel,
+.scenario-history-panel {
+  padding: 1rem;
+}
+
+.panel-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.panel-header.compact {
+  margin-bottom: 0.75rem;
+}
+
+.legend span,
+.feed-item,
+.metric-card,
+.details-stack section,
+.pill,
+.bar-row,
+.hover-card,
+.overlay-controls,
+.relationship-card,
+.source-card,
+.scenario-history-card {
+  border-radius: 16px;
+}
+
+.legend span,
+.pill,
+.relationship-tags span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(15, 23, 42, 0.74);
+  padding: 0.4rem 0.7rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.legend i {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.overlay-controls {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  background: #08111f;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  margin-bottom: 1rem;
+}
+
+.map-frame {
+  position: relative;
+}
+
+.world-map {
+  width: 100%;
+  height: auto;
+  border-radius: 20px;
+  touch-action: none;
+}
+
+.hover-card {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  padding: 0.75rem 0.9rem;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  display: grid;
+}
+
+.details-panel {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.metric-grid,
+.relationship-summary-grid,
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.metric-card,
+.feed-item,
+.details-stack section,
+.relationship-card,
+.source-card,
+.scenario-history-card {
+  background: #08111f;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  padding: 0.9rem;
+}
+
+.metric-card.low strong {
+  color: #86efac;
+}
+
+.metric-card.medium strong {
+  color: #facc15;
+}
+
+.metric-card.high strong {
+  color: #f87171;
+}
+
+.probability-block,
+.details-stack,
+.relationship-list,
+.source-list,
+.scenario-history-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.bar-row strong em {
+  font-style: normal;
+  color: #94a3b8;
+  margin-left: 0.35rem;
+}
+
+.bar-track {
+  height: 0.7rem;
+  background: rgba(148, 163, 184, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: inherit;
+}
+
+.details-stack ul,
+.methodology-list,
+.feed-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.details-stack li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.details-stack li:last-child {
+  border-bottom: none;
+}
+
+.feed-list,
+.methodology-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.feed-item strong,
+.relationship-card strong,
+.source-card strong,
+.scenario-history-card strong {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.relationship-card,
+.scenario-history-card {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.relationship-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.source-card {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.pill.blocA {
+  color: #93c5fd;
+}
+
+.pill.blocB {
+  color: #fda4af;
+}
+
+.pill.nonAligned {
+  color: #fde68a;
+}
+
+.pill.unstable {
+  color: #e9d5ff;
+}
+
+@media (max-width: 1080px) {
+  .workspace,
+  .hero,
+  .scenario-top-row,
+  .scenario-summary-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 1rem;
+  }
+
+  .metric-grid,
+  .relationship-summary-grid,
+  .comparison-grid,
+  .bar-row {
+    grid-template-columns: 1fr;
+  }
+}
