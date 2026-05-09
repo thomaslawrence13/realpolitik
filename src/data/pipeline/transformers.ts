@@ -4,6 +4,13 @@ type TierThresholds = [lowMax: number, highMin: number];
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+const GDP_GROWTH_MULTIPLIER = 1.6;
+const MIN_GDP_DELTA = -10;
+const MAX_GDP_DELTA = 8;
+const INFLATION_SAFE_BAND = 10;
+const INFLATION_PENALTY_RATE = 0.6;
+const MAX_INFLATION_PENALTY = 12;
+
 export const toTier = (value: number | null | undefined, [lowMax, highMin]: TierThresholds): Tier | null => {
   if (value == null) return null;
   if (value <= lowMax) return 'low';
@@ -23,11 +30,11 @@ export const toCohesionDelta = (
 ): number => {
   let delta = 0;
   if (gdpGrowth != null) {
-    delta += clamp(gdpGrowth * 1.6, -10, 8);
+    delta += clamp(gdpGrowth * GDP_GROWTH_MULTIPLIER, MIN_GDP_DELTA, MAX_GDP_DELTA);
   }
   if (inflation != null) {
-    const excess = Math.max(0, inflation - 10);
-    delta -= Math.min(12, excess * 0.6);
+    const excess = Math.max(0, inflation - INFLATION_SAFE_BAND);
+    delta -= Math.min(MAX_INFLATION_PENALTY, excess * INFLATION_PENALTY_RATE);
   }
   return delta;
 };

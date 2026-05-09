@@ -90,7 +90,7 @@ export const enrichCountryWithObservations = (
     const selected = selectObservation(indicator, candidates);
     if (!selected) {
       if (rule.includeInCoverage) {
-        degradedReasons.push(`Missing external data for ${indicator}; using static fallback.`);
+        degradedReasons.push(`Missing external data for ${indicator}. Using static fallback.`);
       }
       continue;
     }

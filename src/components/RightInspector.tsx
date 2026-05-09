@@ -36,7 +36,7 @@ const formatSignedValue = (value: number) => `${value > 0 ? '+' : ''}${value}`;
 const formatTitle = (value: string) =>
   value.length === 0 ? value : value.charAt(0).toUpperCase() + value.slice(1);
 const formatIndicator = (value: string) =>
-  value.replace(/([A-Z])/g, ' $1').replace(/^./, (v) => v.toUpperCase());
+  value.replace(/([A-Z])/g, ' $1').trim().replace(/^./, (v) => v.toUpperCase());
 
 const riskTier = (value: number): Tier => {
   if (value >= 65) return 'high';
