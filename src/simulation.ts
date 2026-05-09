@@ -31,6 +31,38 @@ const round1 = (value: number) => Math.round(value * 10) / 10;
 const sumContributions = (lines: ContributionLine[]) =>
   lines.reduce((sum, line) => sum + line.contribution, 0);
 
+const probabilityKeys = ['blocA', 'blocB', 'nonAligned'] as const;
+
+const normalizeProbabilities = (weights: Record<(typeof probabilityKeys)[number], number>): ProbabilitySet => {
+  const total = probabilityKeys.reduce((sum, key) => sum + weights[key], 0);
+  if (total <= 0) {
+    return { blocA: 34, blocB: 33, nonAligned: 33 };
+  }
+
+  const parts = probabilityKeys.map((key) => {
+    const exact = (weights[key] / total) * 100;
+    const floored = Math.floor(exact);
+    return { key, exact, value: floored, remainder: exact - floored };
+  });
+
+  let remaining = 100 - parts.reduce((sum, part) => sum + part.value, 0);
+  if (remaining > 0) {
+    parts
+      .slice()
+      .sort((a, b) => b.remainder - a.remainder || b.exact - a.exact)
+      .slice(0, remaining)
+      .forEach((winner) => {
+        const match = parts.find((part) => part.key === winner.key);
+        if (match) match.value += 1;
+      });
+  }
+
+  return parts.reduce(
+    (acc, part) => ({ ...acc, [part.key]: part.value }),
+    { blocA: 0, blocB: 0, nonAligned: 0 } satisfies ProbabilitySet,
+  );
+};
+
 const classifyRisk = (risk: number): Tier => {
   if (risk >= 67) return 'high';
   if (risk >= 34) return 'medium';
@@ -230,11 +262,11 @@ export const simulateCountry = (
   const blocBClamped = Math.max(1, blocBRaw);
   const nonAlignedClamped = Math.max(1, nonAlignedRaw);
   const probTotal = blocAClamped + blocBClamped + nonAlignedClamped;
-  const probabilities: ProbabilitySet = {
-    blocA: Math.round((blocAClamped / probTotal) * 100),
-    blocB: Math.round((blocBClamped / probTotal) * 100),
-    nonAligned: Math.round((nonAlignedClamped / probTotal) * 100),
-  };
+  const probabilities = normalizeProbabilities({
+    blocA: blocAClamped,
+    blocB: blocBClamped,
+    nonAligned: nonAlignedClamped,
+  });
 
   const sorted = Object.values(probabilities).sort((a, b) => b - a);
   const topProbability = sorted[0];
@@ -246,7 +278,7 @@ export const simulateCountry = (
     { label: 'Coup risk (shock)', multiplier: -0.08, inputValue: coupShock, contribution: -coupShock * 0.08 },
   ];
   const confidenceTotal = margin + confidenceBase + sumContributions(confidenceComponents);
-  const confidence = clamp(confidenceTotal, 38, 96);
+  const confidence = Math.round(clamp(confidenceTotal, 38, 96));
 
   const riskBase = profile.baselineRisk;
   const riskComponents: ContributionLine[] = [
@@ -261,7 +293,7 @@ export const simulateCountry = (
     { label: 'Year offset', multiplier: 1.1, inputValue: timelineIndex, contribution: timelineIndex * 1.1 },
   ];
   const riskTotal = riskBase + sumContributions(riskComponents);
-  const risk = clamp(riskTotal, 8, 97);
+  const risk = Math.round(clamp(riskTotal, 8, 97));
 
   const drivers = [
     { label: 'Alliance commitments', value: Math.round(military * 0.9), direction: 'blocA' as const },
@@ -292,7 +324,7 @@ export const simulateCountry = (
     base: round1(riskBase),
     components: riskComponents.map((line) => ({ ...line, contribution: round1(line.contribution) })),
     total: round1(riskTotal),
-    clamped: Math.round(risk),
+    clamped: risk,
     weightSetLabel: weightSet.label,
   };
 
@@ -303,7 +335,7 @@ export const simulateCountry = (
     base: confidenceBase,
     components: confidenceComponents.map((line) => ({ ...line, contribution: round1(line.contribution) })),
     total: round1(confidenceTotal),
-    clamped: Math.round(confidence),
+    clamped: confidence,
   };
 
   const buildProbabilityExplanation = (

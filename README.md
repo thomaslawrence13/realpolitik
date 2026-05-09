@@ -6,6 +6,7 @@ Realpolitik is a browser-based prototype for an interactive 2D geopolitical map.
 
 - Interactive 2D world map rendered in the browser
 - Clickable parameterized countries with a detail panel
+- Risk, confidence, and alignment likelihoods shown as whole percentages (likelihoods sum to 100%)
 - Versioned country dataset with source attribution, source coverage, and last-updated metadata
 - Relationship graph edges for cooperation, hostility, dependency, and deterrence
 - Scenario year slider with probability-based simulation updates driven by structured country indicators
