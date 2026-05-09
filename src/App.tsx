@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, useDeferredValue } from 'react';
+import { useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
+import type { CSSProperties } from 'react';
 import {
   allianceNetworks,
   countryProfiles,
@@ -48,6 +49,21 @@ const defaultFilters: Filters = {
 
 const baselineWeightSet = getSimulationWeightSet('baseline');
 const weightSetOptions = Object.values(simulationWeightSets);
+const TIMELINE_AUTO_PLAY_INTERVAL_MS = 1200;
+const MIN_DRAWER_HEIGHT = 180;
+const MAX_DRAWER_HEIGHT_RATIO = 0.65;
+const INTERACTIVE_SHORTCUT_TAGS = new Set(['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A']);
+const INTERACTIVE_SHORTCUT_ROLES = new Set(['button', 'textbox', 'link']);
+
+const maxDrawerHeight = () => Math.floor(window.innerHeight * MAX_DRAWER_HEIGHT_RATIO);
+
+const isInteractiveShortcutTarget = (target: EventTarget | null): target is HTMLElement => {
+  if (!(target instanceof HTMLElement)) return false;
+  if (INTERACTIVE_SHORTCUT_TAGS.has(target.tagName)) return true;
+  const role = target.getAttribute('role');
+  if (role && INTERACTIVE_SHORTCUT_ROLES.has(role)) return true;
+  return target.isContentEditable;
+};
 
 const clampInput = (key: keyof ScenarioInputs, value: number): number => {
   if (key === 'treatyShift') return Math.min(60, Math.max(-60, value));
@@ -151,14 +167,77 @@ export default function App() {
   const [drawerTab, setDrawerTab] = useState<DrawerTab>('scenario');
   const [inspectorTab, setInspectorTab] = useState<InspectorTab>('overview');
 
+  // Resizable bottom drawer — height is applied as a CSS custom property on the shell.
+  const [drawerHeight, setDrawerHeight] = useState(320);
+
+  // Timeline auto-play — steps through scenario years at a fixed interval.
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const lastIndex = scenarioTimeline.length - 1;
+    const id = setInterval(() => {
+      setTimelineIndex((current) => {
+        if (current >= lastIndex) {
+          setIsPlaying(false);
+          return current;
+        }
+        return current + 1;
+      });
+    }, TIMELINE_AUTO_PLAY_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [isPlaying, scenarioTimeline.length]);
+
+  const handleTogglePlay = () => {
+    setIsPlaying((prev) => {
+      if (!prev && timelineIndex >= scenarioTimeline.length - 1) {
+        // Restart from the beginning when pressing play at the last year.
+        setTimelineIndex(0);
+      }
+      return !prev;
+    });
+  };
+
+  // Dragging the top edge of the bottom drawer resizes it.
+  const handleDrawerResizeStart = (startClientY: number) => {
+    const startH = drawerHeight;
+    const onMove = (event: MouseEvent) => {
+      const delta = startClientY - event.clientY;
+      setDrawerHeight(Math.max(MIN_DRAWER_HEIGHT, Math.min(maxDrawerHeight(), startH + delta)));
+    };
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  };
+
+  const handleDrawerResizeStep = (delta: number) => {
+    setDrawerHeight((h) => Math.max(MIN_DRAWER_HEIGHT, Math.min(maxDrawerHeight(), h + delta)));
+  };
+
+  const handleDrawerResizeTo = (edge: 'min' | 'max') => {
+    setDrawerHeight(edge === 'min' ? MIN_DRAWER_HEIGHT : maxDrawerHeight());
+  };
+
+  // Keep a ref so the keydown handler always closes over the latest toggle function
+  // without needing to be re-registered on every render.
+  const handleTogglePlayRef = useRef(handleTogglePlay);
+  handleTogglePlayRef.current = handleTogglePlay;
+
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      if (isInteractiveShortcutTarget(event.target)) {
         return;
       }
       if (event.key === '[') setLeftOpen((value) => !value);
       if (event.key === ']') setRightOpen((value) => !value);
       if (event.key === '\\') setDrawerOpen((value) => !value);
+      if (event.key === ' ') {
+        event.preventDefault();
+        handleTogglePlayRef.current();
+      }
       if (event.key === '/') {
         event.preventDefault();
         const input = document.querySelector<HTMLInputElement>('.rail-search input');
@@ -343,6 +422,11 @@ export default function App() {
   };
 
   const totalCountries = activeProfiles.length;
+  const shellStyle = { '--drawer-h': `${drawerHeight}px` } as CSSProperties;
+  const handleTimelineChange = (index: number) => {
+    setIsPlaying(false);
+    setTimelineIndex(index);
+  };
 
   return (
     <div
@@ -350,11 +434,12 @@ export default function App() {
       data-left-open={leftOpen}
       data-right-open={rightOpen}
       data-drawer-open={drawerOpen}
+      style={shellStyle}
     >
       <TopBar
         timelineIndex={timelineIndex}
         timeline={scenarioTimeline}
-        onTimelineChange={setTimelineIndex}
+        onTimelineChange={handleTimelineChange}
         scenarioName={scenarioName}
         datasetVersion={datasetVersion}
         countryCount={totalCountries}
@@ -365,6 +450,9 @@ export default function App() {
         onToggleLeft={() => setLeftOpen((value) => !value)}
         onToggleRight={() => setRightOpen((value) => !value)}
         onToggleDrawer={() => setDrawerOpen((value) => !value)}
+        isPlaying={isPlaying}
+        onTogglePlay={handleTogglePlay}
+        activeEventCount={activeEventIds.length}
       />
 
       <LeftRail
@@ -435,6 +523,9 @@ export default function App() {
         activeEventIds={activeEventIds}
         onApplyEvent={applyEvent}
         onRemoveEvent={removeEvent}
+        onResizeStart={handleDrawerResizeStart}
+        onResizeStep={handleDrawerResizeStep}
+        onResizeTo={handleDrawerResizeTo}
       />
     </div>
   );

@@ -41,6 +41,9 @@ type Props = {
   activeEventIds: string[];
   onApplyEvent: (id: string) => void;
   onRemoveEvent: (id: string) => void;
+  onResizeStart: (startClientY: number) => void;
+  onResizeStep: (delta: number) => void;
+  onResizeTo: (edge: 'min' | 'max') => void;
 };
 
 export function BottomDrawer({
@@ -67,9 +70,28 @@ export function BottomDrawer({
   activeEventIds,
   onApplyEvent,
   onRemoveEvent,
+  onResizeStart,
+  onResizeStep,
+  onResizeTo,
 }: Props) {
   return (
     <section className={`drawer ${open ? 'drawer-open' : 'drawer-closed'}`} aria-hidden={!open}>
+      {/* Drag handle — lets the user resize the drawer by dragging its top edge.
+          Keyboard: ↑ expands, ↓ shrinks (20 px per step). */}
+      <div
+        className="drawer-resize-handle"
+        role="separator"
+        aria-label="Resize panel"
+        aria-orientation="horizontal"
+        tabIndex={0}
+        onMouseDown={(e) => { e.preventDefault(); onResizeStart(e.clientY); }}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowUp') { e.preventDefault(); onResizeStep(20); }
+          if (e.key === 'ArrowDown') { e.preventDefault(); onResizeStep(-20); }
+          if (e.key === 'Home') { e.preventDefault(); onResizeTo('min'); }
+          if (e.key === 'End') { e.preventDefault(); onResizeTo('max'); }
+        }}
+      />
       <header className="drawer-header">
         <Tabs<DrawerTab>
           value={tab}
@@ -368,6 +390,13 @@ function HistoryPanel({
     <div className="history">
       {scenarios.map((scenario) => {
         const weightSet = weightSets.find((entry) => entry.key === scenario.weightSetKey);
+        const summaryItems = [
+          { abbr: 'S', label: 'Sanctions', value: scenario.inputs.sanctionShock, signed: false },
+          { abbr: 'T', label: 'Treaty', value: scenario.inputs.treatyShift, signed: true },
+          { abbr: 'E', label: 'Election', value: scenario.inputs.electionVolatility, signed: false },
+          { abbr: 'I', label: 'Invasion', value: scenario.inputs.invasionPressure, signed: false },
+          { abbr: 'C', label: 'Coup', value: scenario.inputs.coupRisk, signed: false },
+        ];
         return (
           <article key={scenario.id} className="history-card">
             <header>
@@ -375,12 +404,18 @@ function HistoryPanel({
               <span>{timeline[scenario.timelineIndex]}</span>
             </header>
             <p>{weightSet?.label ?? 'Custom weighting'}</p>
-            <p className="history-summary">
-              Sanctions {scenario.inputs.sanctionShock} · Treaties{' '}
-              {scenario.inputs.treatyShift > 0 ? '+' : ''}
-              {scenario.inputs.treatyShift} · Election {scenario.inputs.electionVolatility} · Invasion{' '}
-              {scenario.inputs.invasionPressure} · Coup {scenario.inputs.coupRisk}
-            </p>
+            <div className="history-summary-chips">
+              {summaryItems.map(({ abbr, label, value, signed }) => (
+                <span
+                  key={abbr}
+                  className={`history-input-chip ${value !== 0 ? 'history-input-chip-active' : ''}`}
+                  title={`${label}: ${signed && value > 0 ? '+' : ''}${value}`}
+                >
+                  <em>{abbr}</em>
+                  <strong>{signed && value > 0 ? '+' : ''}{value}</strong>
+                </span>
+              ))}
+            </div>
             <button type="button" className="btn btn-ghost" onClick={() => onLoad(scenario)}>
               Load scenario
             </button>

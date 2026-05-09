@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { Alignment, Filters, RegimeType, SimulatedCountry, Tier } from '../types';
 import { Segmented, SvgIcon } from './ui';
 
@@ -31,6 +32,28 @@ const regimeOptions: ReadonlyArray<{ value: 'all' | RegimeType; label: string }>
   { value: 'authoritarian', label: 'Auth' },
 ];
 
+type SortMode = 'riskDesc' | 'confidenceDesc' | 'nameAsc';
+type GroupMode = 'none' | 'region' | 'alignment' | 'risk';
+
+const sortOptions: ReadonlyArray<{ value: SortMode; label: string }> = [
+  { value: 'riskDesc', label: 'Risk' },
+  { value: 'confidenceDesc', label: 'Confidence' },
+  { value: 'nameAsc', label: 'Name' },
+];
+
+const groupOptions: ReadonlyArray<{ value: GroupMode; label: string }> = [
+  { value: 'region', label: 'Region' },
+  { value: 'alignment', label: 'Alignment' },
+  { value: 'risk', label: 'Risk tier' },
+  { value: 'none', label: 'None' },
+];
+
+const RISK_GROUP_RANK = {
+  high: 0,
+  medium: 1,
+  low: 2,
+} as const;
+
 const defaultFilters: Filters = {
   allianceNetwork: 'all',
   tradeExposure: 'all',
@@ -59,18 +82,93 @@ export function LeftRail({
   alignmentLabel,
 }: Props) {
   const [filtersExpanded, setFiltersExpanded] = useState(true);
+  const [sortMode, setSortMode] = useState<SortMode>('riskDesc');
+  const [groupMode, setGroupMode] = useState<GroupMode>('region');
   const selectedItemRef = useRef<HTMLButtonElement | null>(null);
 
-  const sorted = useMemo(
-    () => [...countries].sort((a, b) => b.risk - a.risk),
-    [countries],
-  );
+  const sorted = useMemo(() => {
+    const next = [...countries];
+    if (sortMode === 'riskDesc') {
+      next.sort((a, b) => {
+        const riskDelta = b.risk - a.risk;
+        return riskDelta !== 0 ? riskDelta : a.profile.displayName.localeCompare(b.profile.displayName);
+      });
+      return next;
+    }
+    if (sortMode === 'confidenceDesc') {
+      next.sort((a, b) => {
+        const confidenceDelta = b.confidence - a.confidence;
+        return confidenceDelta !== 0
+          ? confidenceDelta
+          : a.profile.displayName.localeCompare(b.profile.displayName);
+      });
+      return next;
+    }
+    next.sort((a, b) => a.profile.displayName.localeCompare(b.profile.displayName));
+    return next;
+  }, [countries, sortMode]);
+
+  const grouped = useMemo(() => {
+    if (groupMode === 'none') {
+      return [{ key: 'all', label: '', items: sorted }];
+    }
+
+    const groups = new Map<string, typeof sorted>();
+    sorted.forEach((country) => {
+      const key =
+        groupMode === 'region'
+          ? formatTitle(country.profile.region)
+          : groupMode === 'alignment'
+            ? alignmentLabel[country.alignment]
+            : formatTitle(getRiskTier(country.risk));
+
+      const existing = groups.get(key);
+      if (existing) {
+        existing.push(country);
+      } else {
+        groups.set(key, [country]);
+      }
+    });
+
+    const rank = (label: string) => {
+      if (groupMode !== 'risk') return 0;
+      if (label === 'High') return RISK_GROUP_RANK.high;
+      if (label === 'Medium') return RISK_GROUP_RANK.medium;
+      return RISK_GROUP_RANK.low;
+    };
+
+    return [...groups.entries()]
+      .sort(([left], [right]) => {
+        const rankDelta = rank(left) - rank(right);
+        return rankDelta !== 0 ? rankDelta : left.localeCompare(right);
+      })
+      .map(([label, items]) => ({ key: label, label, items }));
+  }, [alignmentLabel, groupMode, sorted]);
 
   const activeFilterCount = useMemo(() => {
     return (Object.keys(filters) as Array<keyof Filters>).filter(
       (key) => filters[key] !== 'all',
     ).length;
   }, [filters]);
+
+  // Flat ordered list — used for keyboard navigation across groups.
+  const allItems = useMemo(() => grouped.flatMap((g) => g.items), [grouped]);
+
+  const handleListKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    event.preventDefault();
+    const idx = allItems.findIndex((c) => c.profile.mapName === selectedName);
+    if (idx === -1) {
+      if (allItems.length === 0) return;
+      onSelect(event.key === 'ArrowDown' ? allItems[0].profile.mapName : allItems[allItems.length - 1].profile.mapName);
+      return;
+    }
+    if (event.key === 'ArrowDown' && idx < allItems.length - 1) {
+      onSelect(allItems[idx + 1].profile.mapName);
+    } else if (event.key === 'ArrowUp' && idx > 0) {
+      onSelect(allItems[idx - 1].profile.mapName);
+    }
+  };
 
   const handleTier = <K extends keyof Filters>(key: K, value: 'all' | Tier) => {
     onFiltersChange({ ...filters, [key]: value as Filters[K] });
@@ -82,53 +180,77 @@ export function LeftRail({
 
   return (
     <aside className="rail" aria-label="Country browser" aria-hidden={!open} {...(!open && { inert: true })}>
-      <div className="rail-header">
-        <div>
-          <h2 className="rail-title">Countries</h2>
-          <p className="rail-meta">
-            {countries.length} of {totalCount} match
-          </p>
+      <div className="rail-controls">
+        <div className="rail-header">
+          <div>
+            <h2 className="rail-title">Countries</h2>
+            <p className="rail-meta">
+              {countries.length} of {totalCount} shown
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="rail-search">
-        <span className="rail-search-icon" aria-hidden>
-          <SvgIcon.Search />
-        </span>
-        <input
-          type="search"
-          value={search}
-          placeholder="Search country or region…"
-          onChange={(event) => onSearchChange(event.target.value)}
-          spellCheck={false}
-          autoComplete="off"
-        />
-        {search.length > 0 && (
+        <div className="rail-search">
+          <span className="rail-search-icon" aria-hidden>
+            <SvgIcon.Search />
+          </span>
+          <input
+            type="search"
+            value={search}
+            placeholder="Search country or region…"
+            onChange={(event) => onSearchChange(event.target.value)}
+            spellCheck={false}
+            autoComplete="off"
+          />
+          {search.length > 0 && (
+            <button
+              type="button"
+              className="rail-search-clear"
+              onClick={() => onSearchChange('')}
+              aria-label="Clear search"
+            >
+              <SvgIcon.X />
+            </button>
+          )}
+        </div>
+
+        <div className="rail-organize">
+          <label className="rail-organize-field">
+            <span>Sort</span>
+            <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
+              {sortOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="rail-organize-field">
+            <span>Group</span>
+            <select value={groupMode} onChange={(event) => setGroupMode(event.target.value as GroupMode)}>
+              {groupOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className={`rail-filters ${filtersExpanded ? 'is-open' : 'is-closed'}`}>
           <button
             type="button"
-            className="rail-search-clear"
-            onClick={() => onSearchChange('')}
-            aria-label="Clear search"
+            className="rail-filters-toggle"
+            onClick={() => setFiltersExpanded((value) => !value)}
           >
-            <SvgIcon.X />
+            <span>Filters</span>
+            <span className="rail-filters-count">
+              {activeFilterCount > 0 && <em>{activeFilterCount}</em>}
+              <SvgIcon.Chevron dir={filtersExpanded ? 'up' : 'down'} />
+            </span>
           </button>
-        )}
-      </div>
-
-      <div className={`rail-filters ${filtersExpanded ? 'is-open' : 'is-closed'}`}>
-        <button
-          type="button"
-          className="rail-filters-toggle"
-          onClick={() => setFiltersExpanded((value) => !value)}
-        >
-          <span>Filters</span>
-          <span className="rail-filters-count">
-            {activeFilterCount > 0 && <em>{activeFilterCount}</em>}
-            <SvgIcon.Chevron dir={filtersExpanded ? 'up' : 'down'} />
-          </span>
-        </button>
-        {filtersExpanded && (
-          <div className="rail-filters-body">
+          {filtersExpanded && (
+            <div className="rail-filters-body">
             <div className="filter-row">
               <label className="filter-row-label" htmlFor="rail-alliance">
                 Alliance
@@ -214,46 +336,63 @@ export function LeftRail({
                 <span>Reset all filters</span>
               </button>
             )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="rail-list" role="listbox" aria-label="Filtered countries">
-        {sorted.length === 0 ? (
+      <div
+        className="rail-list"
+        role="listbox"
+        aria-label="Filtered countries"
+        tabIndex={0}
+        onKeyDown={handleListKeyDown}
+      >
+        {allItems.length === 0 ? (
           <div className="rail-empty">
             <strong>No matches</strong>
             <p>Try clearing a filter or searching for a different country.</p>
           </div>
         ) : (
-          sorted.map((country) => {
-            const isSelected = country.profile.mapName === selectedName;
-            return (
-              <button
-                key={country.profile.id}
-                ref={isSelected ? selectedItemRef : null}
-                type="button"
-                role="option"
-                aria-selected={isSelected}
-                className={`country-item ${isSelected ? 'country-item-active' : ''}`}
-                onClick={() => onSelect(country.profile.mapName)}
-              >
-                <span
-                  className="country-dot"
-                  style={{ background: alignmentColor[country.alignment] }}
-                  aria-hidden
-                />
-                <span className="country-text">
-                  <strong className="country-name">{country.profile.displayName}</strong>
-                  <span className="country-sub">
-                    {formatTitle(country.profile.region)} · {alignmentLabel[country.alignment]}
-                  </span>
-                </span>
-                <span className={`country-risk risk-${getRiskTier(country.risk)}`}>
-                  {country.risk}%
-                </span>
-              </button>
-            );
-          })
+          grouped.map((group) => (
+            <section key={group.key} className="country-group">
+              {groupMode !== 'none' && (
+                <header className="country-group-header">
+                  <strong>{group.label}</strong>
+                  <span>{group.items.length}</span>
+                </header>
+              )}
+              {group.items.map((country) => {
+                const isSelected = country.profile.mapName === selectedName;
+                return (
+                  <button
+                    key={country.profile.id}
+                    ref={isSelected ? selectedItemRef : null}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    className={`country-item ${isSelected ? 'country-item-active' : ''}`}
+                    onClick={() => onSelect(country.profile.mapName)}
+                  >
+                    <span
+                      className="country-dot"
+                      style={{ background: alignmentColor[country.alignment] }}
+                      aria-hidden
+                    />
+                    <span className="country-text">
+                      <strong className="country-name">{country.profile.displayName}</strong>
+                      <span className="country-sub">
+                        {formatTitle(country.profile.region)} · {alignmentLabel[country.alignment]}
+                      </span>
+                    </span>
+                    <span className={`country-risk risk-${getRiskTier(country.risk)}`}>
+                      {country.risk}%
+                    </span>
+                  </button>
+                );
+              })}
+            </section>
+          ))
         )}
       </div>
     </aside>

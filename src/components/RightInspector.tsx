@@ -165,6 +165,21 @@ function OverviewPanel({
 }) {
   return (
     <div className="panel-stack">
+      <div className="overview-strip" aria-label="At a glance">
+        <div className={`overview-chip metric-${riskTier(selected.risk)}`}>
+          <span>Risk</span>
+          <strong>{selected.risk}%</strong>
+        </div>
+        <div className="overview-chip metric-accent">
+          <span>Confidence</span>
+          <strong>{selected.confidence}%</strong>
+        </div>
+        <div className="overview-chip">
+          <span>Relationships</span>
+          <strong>{selected.profile.relationships.length}</strong>
+        </div>
+      </div>
+
       <div className="metric-grid">
         <MetricCard
           label="Confidence"
@@ -199,7 +214,7 @@ function OverviewPanel({
       )}
 
       <div className="section">
-        <h3 className="section-title">Alignment likelihoods</h3>
+        <h3 className="section-title">Alignment probabilities</h3>
         <div className="bar-stack">
           {(Object.keys(selected.probabilities) as Array<keyof typeof selected.probabilities>).map((key) => {
             const baselineValue = baselineSelected.probabilities[key];
@@ -224,7 +239,7 @@ function OverviewPanel({
       </div>
 
       <div className="section">
-        <h3 className="section-title">Relationship summary</h3>
+        <h3 className="section-title">Relationship posture</h3>
         <div className="metric-grid metric-grid-tight">
           <MetricCard
             label="Cooperation"
@@ -399,23 +414,23 @@ function DriversPanel({
           </li>
           <li>
             <span>Sanctions</span>
-            <strong>{scenarioInputs.sanctionShock}</strong>
+            <strong className={scenarioInputs.sanctionShock !== 0 ? 'value-active' : ''}>{scenarioInputs.sanctionShock}</strong>
           </li>
           <li>
             <span>Treaty change</span>
-            <strong>{formatSignedValue(scenarioInputs.treatyShift)}</strong>
+            <strong className={scenarioInputs.treatyShift !== 0 ? 'value-active' : ''}>{formatSignedValue(scenarioInputs.treatyShift)}</strong>
           </li>
           <li>
             <span>Election volatility</span>
-            <strong>{scenarioInputs.electionVolatility}</strong>
+            <strong className={scenarioInputs.electionVolatility !== 0 ? 'value-active' : ''}>{scenarioInputs.electionVolatility}</strong>
           </li>
           <li>
             <span>Invasion pressure</span>
-            <strong>{scenarioInputs.invasionPressure}</strong>
+            <strong className={scenarioInputs.invasionPressure !== 0 ? 'value-active' : ''}>{scenarioInputs.invasionPressure}</strong>
           </li>
           <li>
             <span>Coup risk</span>
-            <strong>{scenarioInputs.coupRisk}</strong>
+            <strong className={scenarioInputs.coupRisk !== 0 ? 'value-active' : ''}>{scenarioInputs.coupRisk}</strong>
           </li>
         </ul>
       </div>

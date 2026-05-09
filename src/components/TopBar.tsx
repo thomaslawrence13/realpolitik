@@ -14,6 +14,9 @@ type Props = {
   onToggleLeft: () => void;
   onToggleRight: () => void;
   onToggleDrawer: () => void;
+  isPlaying: boolean;
+  onTogglePlay: () => void;
+  activeEventCount: number;
 };
 
 export function TopBar({
@@ -30,6 +33,9 @@ export function TopBar({
   onToggleLeft,
   onToggleRight,
   onToggleDrawer,
+  isPlaying,
+  onTogglePlay,
+  activeEventCount,
 }: Props) {
   const lastIndex = timeline.length - 1;
   const pct = lastIndex === 0 ? 0 : (timelineIndex / lastIndex) * 100;
@@ -37,7 +43,7 @@ export function TopBar({
   return (
     <header className="topbar">
       <div className="topbar-section topbar-left">
-        <IconButton label="Toggle countries panel" active={leftOpen} onClick={onToggleLeft}>
+        <IconButton label="Toggle countries panel ([)" active={leftOpen} onClick={onToggleLeft}>
           <SvgIcon.PanelLeft />
         </IconButton>
         <div className="brand">
@@ -64,6 +70,16 @@ export function TopBar({
 
       <div className="topbar-section topbar-center">
         <div className="timeline">
+          <button
+            type="button"
+            className="timeline-step"
+            onClick={() => onTimelineChange(0)}
+            disabled={timelineIndex === 0}
+            aria-label="Skip to first year"
+            title="Skip to start"
+          >
+            <SvgIcon.SkipBack />
+          </button>
           <button
             type="button"
             className="timeline-step"
@@ -95,6 +111,25 @@ export function TopBar({
           >
             <SvgIcon.Chevron dir="right" />
           </button>
+          <button
+            type="button"
+            className="timeline-step"
+            onClick={() => onTimelineChange(lastIndex)}
+            disabled={timelineIndex === lastIndex}
+            aria-label="Skip to last year"
+            title="Skip to end"
+          >
+            <SvgIcon.SkipForward />
+          </button>
+          <button
+            type="button"
+            className={`timeline-play ${isPlaying ? 'timeline-play-active' : ''}`}
+            onClick={onTogglePlay}
+            aria-label={isPlaying ? 'Pause timeline' : 'Play timeline'}
+            title={isPlaying ? 'Pause (auto-stepping years)' : 'Play (auto-step through years)'}
+          >
+            {isPlaying ? <SvgIcon.Pause /> : <SvgIcon.Play />}
+          </button>
         </div>
       </div>
 
@@ -106,12 +141,17 @@ export function TopBar({
         >
           <span className="scenario-chip-label">Scenario</span>
           <em className="scenario-chip-name">{scenarioName}</em>
+          {activeEventCount > 0 && (
+            <em className="scenario-event-badge" title={`${activeEventCount} event${activeEventCount !== 1 ? 's' : ''} applied`}>
+              {activeEventCount}
+            </em>
+          )}
           <span className="scenario-chip-indicator" aria-hidden />
         </button>
-        <IconButton label="Toggle drawer" active={drawerOpen} onClick={onToggleDrawer}>
+        <IconButton label="Toggle scenario drawer (\)" active={drawerOpen} onClick={onToggleDrawer}>
           <SvgIcon.PanelBottom />
         </IconButton>
-        <IconButton label="Toggle inspector" active={rightOpen} onClick={onToggleRight}>
+        <IconButton label="Toggle inspector (])" active={rightOpen} onClick={onToggleRight}>
           <SvgIcon.PanelRight />
         </IconButton>
       </div>
