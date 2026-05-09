@@ -1,4 +1,4 @@
-import type { CountryIndicators } from '../../types';
+import type { CountryIndicators, RelationshipDimensionKey } from '../../types';
 
 export type IndicatorKey = keyof CountryIndicators;
 
@@ -10,6 +10,18 @@ export interface IndicatorObservation<K extends IndicatorKey = IndicatorKey> {
   countryId: string;
   indicator: K;
   value: CountryIndicators[K];
+  observedAt: string;
+  method: ObservationMethod;
+  confidence: number;
+}
+
+export interface RelationshipObservation {
+  providerId: string;
+  sourceId: string;
+  sourceCountryId: string;
+  targetCountryId: string;
+  dimension: RelationshipDimensionKey;
+  value: number;
   observedAt: string;
   method: ObservationMethod;
   confidence: number;

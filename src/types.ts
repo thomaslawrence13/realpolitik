@@ -63,6 +63,23 @@ export interface DatasetBundle {
   relationships: RelationshipEdge[];
 }
 
+export type RelationshipDimensionKey = 'cooperation' | 'hostility' | 'dependency' | 'deterrence';
+
+export interface RelationshipDimensionTelemetry {
+  dimension: RelationshipDimensionKey;
+  sourceId: string;
+  observedAt: string;
+  confidence: number;
+  stale: boolean;
+  method: 'api' | 'snapshot' | 'expert-curated' | 'derived';
+}
+
+export interface RelationshipDataQuality {
+  computedLastUpdated: string;
+  degradedReasons: string[];
+  dimensions: RelationshipDimensionTelemetry[];
+}
+
 export interface CountryRelationship {
   countryId: string;
   displayName: string;
@@ -75,6 +92,7 @@ export interface CountryRelationship {
   notes: string;
   lastUpdated: string;
   sources: DatasetSource[];
+  dataQuality?: RelationshipDataQuality;
 }
 
 export interface CountryProfile extends CountryRecord {

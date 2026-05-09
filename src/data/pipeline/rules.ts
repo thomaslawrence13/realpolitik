@@ -1,4 +1,4 @@
-import type { CountryIndicators } from '../../types';
+import type { CountryIndicators, RelationshipDimensionKey } from '../../types';
 import type { IndicatorKey, IndicatorQualityRule } from './types';
 
 export const modelIndicatorKeys: IndicatorKey[] = [
@@ -38,6 +38,27 @@ export const indicatorSourcePriority: Record<IndicatorKey, string[]> = {
   tradeDependence: ['imf-direction-of-trade', 'wto-profile', 'world-bank-wdi'],
   ideology: ['vdem', 'freedom-house'],
   borderDisputes: ['iiss-military-balance', 'ucdp'],
+};
+
+export const relationshipDimensions: RelationshipDimensionKey[] = [
+  'cooperation',
+  'hostility',
+  'dependency',
+  'deterrence',
+];
+
+export const relationshipDimensionQualityRules: Record<RelationshipDimensionKey, IndicatorQualityRule> = {
+  cooperation: { cadence: 'quarterly', staleAfterDays: 180, minimumConfidence: 0.5, includeInCoverage: true },
+  hostility: { cadence: 'quarterly', staleAfterDays: 180, minimumConfidence: 0.5, includeInCoverage: true },
+  dependency: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.5, includeInCoverage: true },
+  deterrence: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.5, includeInCoverage: true },
+};
+
+export const relationshipDimensionSourcePriority: Record<RelationshipDimensionKey, string[]> = {
+  cooperation: ['iiss-military-balance', 'imf-direction-of-trade', 'ucdp'],
+  hostility: ['ucdp', 'iiss-military-balance'],
+  dependency: ['imf-direction-of-trade', 'wto-profile', 'world-bank-wdi'],
+  deterrence: ['iiss-military-balance', 'sipri-milex'],
 };
 
 export const tierToScore = {

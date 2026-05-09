@@ -1,5 +1,6 @@
 import type { CountryProfile } from '../../types';
 import type { LiveData } from '../worldBankClient';
+import { geopoliticalDatasetV1 } from '../datasets/v1';
 import {
   buildConflictSnapshotObservations,
   buildGovernanceCrossCheckObservations,
@@ -7,7 +8,13 @@ import {
   buildTradeDependenceObservations,
   buildWorldBankObservations,
 } from './providers';
+import {
+  buildDerivedRelationshipObservations,
+  buildRelationshipSnapshotObservations,
+} from './relationshipProviders';
 import { enrichCountryWithObservations } from './reconcile';
+import { enrichRelationshipWithObservations } from './reconcileRelationships';
+import type { RelationshipObservation } from './types';
 
 const groupByCountry = <T extends { countryId: string }>(rows: T[]) => {
   const map = new Map<string, T[]>();
@@ -22,11 +29,28 @@ const groupByCountry = <T extends { countryId: string }>(rows: T[]) => {
   return map;
 };
 
+/** Build a flat lookup of all relationship observations keyed by sourceCountryId. */
+const indexRelationshipObservations = (
+  observations: RelationshipObservation[],
+): Map<string, RelationshipObservation[]> => {
+  const map = new Map<string, RelationshipObservation[]>();
+  for (const obs of observations) {
+    const existing = map.get(obs.sourceCountryId);
+    if (existing) {
+      existing.push(obs);
+    } else {
+      map.set(obs.sourceCountryId, [obs]);
+    }
+  }
+  return map;
+};
+
 export const enrichProfilesWithSourcePipeline = (
   profiles: CountryProfile[],
   live: LiveData,
 ): CountryProfile[] => {
-  const observations = [
+  // --- Country-level indicator enrichment ---
+  const indicatorObservations = [
     ...buildWorldBankObservations(profiles, live),
     ...buildConflictSnapshotObservations(profiles),
     ...buildSanctionsSnapshotObservations(profiles),
@@ -34,9 +58,9 @@ export const enrichProfilesWithSourcePipeline = (
     ...buildGovernanceCrossCheckObservations(profiles),
   ];
 
-  const byCountry = groupByCountry(observations);
+  const byCountry = groupByCountry(indicatorObservations);
 
-  return profiles.map((profile) => {
+  const enrichedProfiles = profiles.map((profile) => {
     const enriched = enrichCountryWithObservations(profile, byCountry.get(profile.id) ?? []);
     return {
       ...profile,
@@ -45,5 +69,23 @@ export const enrichProfilesWithSourcePipeline = (
       lastUpdated: enriched.lastUpdated,
       dataQuality: enriched.dataQuality,
     };
+  });
+
+  // --- Relationship-edge enrichment ---
+  // Snapshot observations from static dataset edges + derived signals from enriched country profiles
+  const rawEdges = geopoliticalDatasetV1.relationships;
+  const relationshipObservations = [
+    ...buildRelationshipSnapshotObservations(rawEdges),
+    ...buildDerivedRelationshipObservations(enrichedProfiles, rawEdges),
+  ];
+
+  const relObsBySourceCountry = indexRelationshipObservations(relationshipObservations);
+
+  return enrichedProfiles.map((profile) => {
+    const relObs = relObsBySourceCountry.get(profile.id) ?? [];
+    const enrichedRelationships = profile.relationships.map((rel) =>
+      enrichRelationshipWithObservations(rel, profile.id, relObs),
+    );
+    return { ...profile, relationships: enrichedRelationships };
   });
 };

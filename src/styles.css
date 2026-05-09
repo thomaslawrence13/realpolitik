@@ -1626,6 +1626,16 @@ input[type='range']::-moz-range-thumb {
   line-height: 1.55;
 }
 
+.kv-list-sm li {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.75rem;
+}
+
+.rel-dim-label {
+  color: var(--text-3);
+  font-style: italic;
+}
+
 /* Empty state */
 .empty-state {
   padding: 1.5rem 1rem;

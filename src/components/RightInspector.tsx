@@ -277,7 +277,9 @@ function RelationshipsPanel({
             >
               {relationship.displayName}
             </button>
-            <span className="relationship-date">{relationship.lastUpdated}</span>
+            <span className="relationship-date">
+              {relationship.dataQuality?.computedLastUpdated ?? relationship.lastUpdated}
+            </span>
           </header>
           <div className="relationship-bars">
             <SmallBar label="Coop" value={relationship.cooperation} color="#38bdf8" />
@@ -286,6 +288,19 @@ function RelationshipsPanel({
             <SmallBar label="Deter" value={relationship.deterrence} color="#a78bfa" />
           </div>
           <p className="relationship-notes">{relationship.notes}</p>
+          {relationship.dataQuality && relationship.dataQuality.dimensions.length > 0 && (
+            <ul className="kv-list kv-list-sm">
+              {relationship.dataQuality.dimensions.map((dim) => (
+                <li key={dim.dimension}>
+                  <span className="rel-dim-label">{formatTitle(dim.dimension)} · {dim.sourceId} · {dim.method}</span>
+                  <strong>
+                    {dim.observedAt} · {Math.round(dim.confidence * 100)}%
+                    {dim.stale ? ' · stale' : ''}
+                  </strong>
+                </li>
+              ))}
+            </ul>
+          )}
         </article>
       ))}
     </div>
