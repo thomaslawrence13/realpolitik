@@ -63,6 +63,23 @@ export interface DatasetBundle {
   relationships: RelationshipEdge[];
 }
 
+export type RelationshipDimensionKey = 'cooperation' | 'hostility' | 'dependency' | 'deterrence';
+
+export interface RelationshipDimensionTelemetry {
+  dimension: RelationshipDimensionKey;
+  sourceId: string;
+  observedAt: string;
+  confidence: number;
+  stale: boolean;
+  method: 'api' | 'snapshot' | 'expert-curated' | 'derived';
+}
+
+export interface RelationshipDataQuality {
+  computedLastUpdated: string;
+  degradedReasons: string[];
+  dimensions: RelationshipDimensionTelemetry[];
+}
+
 export interface CountryRelationship {
   countryId: string;
   displayName: string;
@@ -75,11 +92,29 @@ export interface CountryRelationship {
   notes: string;
   lastUpdated: string;
   sources: DatasetSource[];
+  dataQuality?: RelationshipDataQuality;
 }
 
 export interface CountryProfile extends CountryRecord {
   sources: DatasetSource[];
   relationships: CountryRelationship[];
+  dataQuality?: CountryDataQuality;
+}
+
+export interface IndicatorTelemetry {
+  indicator: keyof CountryIndicators;
+  sourceId: string;
+  observedAt: string;
+  confidence: number;
+  stale: boolean;
+  method: 'api' | 'snapshot' | 'expert-curated' | 'derived';
+}
+
+export interface CountryDataQuality {
+  computedSourceCoverage: number;
+  computedLastUpdated: string;
+  degradedReasons: string[];
+  indicators: IndicatorTelemetry[];
 }
 
 export interface ProbabilitySet {
@@ -207,4 +242,16 @@ export interface SavedScenario {
   timelineIndex: number;
   weightSetKey: WeightSetKey;
   inputs: ScenarioInputs;
+  activeEventIds?: string[];
+}
+
+export type EventCategory = 'military' | 'economic' | 'political' | 'compound';
+
+export interface EventTemplate {
+  id: string;
+  name: string;
+  category: EventCategory;
+  summary: string;
+  inputs: Partial<ScenarioInputs>;
+  regionTags: string[];
 }

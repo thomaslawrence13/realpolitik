@@ -26,6 +26,7 @@ import type {
 import { countryCentroids } from './lib/map';
 import { fetchLiveData } from './data/worldBankClient';
 import { enrichProfiles } from './data/liveEnrichment';
+import { eventLibrary, eventById } from './data/eventLibrary';
 import { TopBar } from './components/TopBar';
 import { LeftRail } from './components/LeftRail';
 import { MapCanvas } from './components/MapCanvas';
@@ -47,6 +48,37 @@ const defaultFilters: Filters = {
 
 const baselineWeightSet = getSimulationWeightSet('baseline');
 const weightSetOptions = Object.values(simulationWeightSets);
+
+const clampInput = (key: keyof ScenarioInputs, value: number): number => {
+  if (key === 'treatyShift') return Math.min(60, Math.max(-60, value));
+  return Math.min(100, Math.max(0, value));
+};
+
+/** Ordered list of all `ScenarioInputs` keys — single source of truth for iteration. */
+export const scenarioInputKeys: (keyof ScenarioInputs)[] = [
+  'sanctionShock',
+  'treatyShift',
+  'electionVolatility',
+  'invasionPressure',
+  'coupRisk',
+];
+
+const computeEffectiveInputs = (
+  manual: ScenarioInputs,
+  activeIds: string[],
+): ScenarioInputs => {
+  const delta = scenarioInputKeys.reduce((acc, key) => {
+    const sum = activeIds.reduce((total, id) => {
+      const event = eventById.get(id);
+      return total + (event?.inputs[key] ?? 0);
+    }, 0);
+    return { ...acc, [key]: sum };
+  }, {} as ScenarioInputs);
+
+  return scenarioInputKeys.reduce((acc, key) => {
+    return { ...acc, [key]: clampInput(key, manual[key] + delta[key]) };
+  }, {} as ScenarioInputs);
+};
 
 const alignmentLabel: Record<Alignment, string> = {
   blocA: 'Bloc A',
@@ -81,6 +113,7 @@ export default function App() {
   const [scenarioInputs, setScenarioInputs] = useState<ScenarioInputs>({ ...defaultScenarioInputs });
   const [weightSetKey, setWeightSetKey] = useState<WeightSetKey>('baseline');
   const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
+  const [activeEventIds, setActiveEventIds] = useState<string[]>([]);
 
   // Live World Bank data enrichment — starts with static profiles and upgrades
   // in the background. Failures fall back silently to the static dataset.
@@ -104,6 +137,13 @@ export default function App() {
   // the map catches up asynchronously via React's concurrent scheduler.
   const deferredScenarioInputs = useDeferredValue(scenarioInputs);
   const deferredWeightSetKey = useDeferredValue(weightSetKey);
+  const deferredActiveEventIds = useDeferredValue(activeEventIds);
+
+  // Merge manual slider values with the accumulated deltas from active events.
+  const effectiveInputs = useMemo(
+    () => computeEffectiveInputs(deferredScenarioInputs, deferredActiveEventIds),
+    [deferredScenarioInputs, deferredActiveEventIds],
+  );
 
   const [leftOpen, setLeftOpen] = useState<boolean>(() => !isMobile());
   const [rightOpen, setRightOpen] = useState<boolean>(() => !isMobile());
@@ -142,9 +182,9 @@ export default function App() {
 
   const simulated = useMemo(() => {
     return activeProfiles.map((profile) =>
-      simulateCountry(profile, timelineIndex, { scenarioInputs: deferredScenarioInputs, weightSet: activeWeightSet }),
+      simulateCountry(profile, timelineIndex, { scenarioInputs: effectiveInputs, weightSet: activeWeightSet }),
     );
-  }, [activeProfiles, activeWeightSet, deferredScenarioInputs, timelineIndex]);
+  }, [activeProfiles, activeWeightSet, effectiveInputs, timelineIndex]);
 
   const baselineByName = useMemo(
     () => new Map(baselineSimulated.map((entry) => [entry.profile.mapName, entry])),
@@ -258,10 +298,19 @@ export default function App() {
     setScenarioInputs((current) => ({ ...current, [key]: value }));
   };
 
+  const applyEvent = (id: string) => {
+    setActiveEventIds((current) => (current.includes(id) ? current : [...current, id]));
+  };
+
+  const removeEvent = (id: string) => {
+    setActiveEventIds((current) => current.filter((activeId) => activeId !== id));
+  };
+
   const resetScenario = () => {
     setScenarioName('Baseline+');
     setScenarioInputs({ ...defaultScenarioInputs });
     setWeightSetKey('baseline');
+    setActiveEventIds([]);
   };
 
   const saveScenario = () => {
@@ -274,6 +323,7 @@ export default function App() {
           timelineIndex,
           weightSetKey,
           inputs: { ...scenarioInputs },
+          activeEventIds: [...activeEventIds],
         },
         ...current,
       ].slice(0, 8),
@@ -285,6 +335,7 @@ export default function App() {
     setScenarioInputs({ ...scenario.inputs });
     setWeightSetKey(scenario.weightSetKey);
     setTimelineIndex(scenario.timelineIndex);
+    setActiveEventIds(scenario.activeEventIds ?? []);
   };
 
   const handleSelectFromInspector = (mapName: string) => {
@@ -351,7 +402,7 @@ export default function App() {
         riskDelta={selectedRiskDelta}
         confidenceDelta={selectedConfidenceDelta}
         scenarioName={scenarioName}
-        scenarioInputs={scenarioInputs}
+        scenarioInputs={effectiveInputs}
         activeWeightSet={activeWeightSet}
         alignmentColor={alignmentColor}
         alignmentLabel={alignmentLabel}
@@ -380,6 +431,10 @@ export default function App() {
         eventFeed={eventFeed}
         methodologyNotes={methodologyNotes}
         scenarioTimeline={scenarioTimeline}
+        events={eventLibrary}
+        activeEventIds={activeEventIds}
+        onApplyEvent={applyEvent}
+        onRemoveEvent={removeEvent}
       />
     </div>
   );

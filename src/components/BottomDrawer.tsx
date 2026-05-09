@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import type {
+  EventCategory,
+  EventTemplate,
   SavedScenario,
   ScenarioInputs,
   SimulationWeightSet,
@@ -34,6 +37,10 @@ type Props = {
   eventFeed: EventFeedItem[];
   methodologyNotes: string[];
   scenarioTimeline: string[];
+  events: EventTemplate[];
+  activeEventIds: string[];
+  onApplyEvent: (id: string) => void;
+  onRemoveEvent: (id: string) => void;
 };
 
 export function BottomDrawer({
@@ -56,6 +63,10 @@ export function BottomDrawer({
   eventFeed,
   methodologyNotes,
   scenarioTimeline,
+  events,
+  activeEventIds,
+  onApplyEvent,
+  onRemoveEvent,
 }: Props) {
   return (
     <section className={`drawer ${open ? 'drawer-open' : 'drawer-closed'}`} aria-hidden={!open}>
@@ -65,7 +76,7 @@ export function BottomDrawer({
           onChange={onTabChange}
           options={[
             { value: 'scenario', label: 'Scenario lab' },
-            { value: 'feed', label: 'Event feed', count: eventFeed.length },
+            { value: 'feed', label: 'Events', count: activeEventIds.length > 0 ? activeEventIds.length : undefined },
             { value: 'history', label: 'History', count: savedScenarios.length },
             { value: 'methodology', label: 'Methodology' },
           ]}
@@ -91,7 +102,15 @@ export function BottomDrawer({
           />
         )}
 
-        {tab === 'feed' && <FeedPanel feed={eventFeed} />}
+        {tab === 'feed' && (
+          <EventsPanel
+            events={events}
+            activeEventIds={activeEventIds}
+            onApply={onApplyEvent}
+            onRemove={onRemoveEvent}
+            scenarioFeed={eventFeed}
+          />
+        )}
 
         {tab === 'history' && (
           <HistoryPanel
@@ -212,24 +231,115 @@ function ScenarioPanel({
   );
 }
 
-function FeedPanel({ feed }: { feed: EventFeedItem[] }) {
-  if (feed.length === 0) {
-    return (
-      <div className="empty-state">
-        <strong>No countries match the active filters.</strong>
-        <p>Reset one or more filters to restore the current scenario feed.</p>
-      </div>
-    );
-  }
+function EventsPanel({
+  events,
+  activeEventIds,
+  onApply,
+  onRemove,
+  scenarioFeed,
+}: {
+  events: EventTemplate[];
+  activeEventIds: string[];
+  onApply: (id: string) => void;
+  onRemove: (id: string) => void;
+  scenarioFeed: EventFeedItem[];
+}) {
+  const [categoryFilter, setCategoryFilter] = useState<'all' | EventCategory>('all');
+
+  const categories: Array<{ value: 'all' | EventCategory; label: string }> = [
+    { value: 'all', label: 'All' },
+    { value: 'military', label: 'Military' },
+    { value: 'economic', label: 'Economic' },
+    { value: 'political', label: 'Political' },
+    { value: 'compound', label: 'Compound' },
+  ];
+
+  const visible = categoryFilter === 'all' ? events : events.filter((e) => e.category === categoryFilter);
+
+  const formatDelta = (key: string, value: number) => {
+    const signed = value > 0 ? `+${value}` : `${value}`;
+    const labels: Record<string, string> = {
+      sanctionShock: 'Sanctions',
+      treatyShift: 'Treaty',
+      electionVolatility: 'Election',
+      invasionPressure: 'Invasion',
+      coupRisk: 'Coup',
+    };
+    return `${labels[key] ?? key} ${signed}`;
+  };
 
   return (
-    <div className="feed">
-      {feed.map((item) => (
-        <article key={item.title} className={`feed-item feed-item-${item.tone}`}>
-          <strong>{item.title}</strong>
-          <p>{item.detail}</p>
-        </article>
-      ))}
+    <div className="events-panel">
+      <div className="events-filter-bar">
+        {categories.map((cat) => (
+          <button
+            key={cat.value}
+            type="button"
+            className={`event-cat-chip ${categoryFilter === cat.value ? 'event-cat-chip-active' : ''}`}
+            onClick={() => setCategoryFilter(cat.value)}
+          >
+            {cat.label}
+          </button>
+        ))}
+        {activeEventIds.length > 0 && (
+          <span className="events-active-badge">{activeEventIds.length} active</span>
+        )}
+      </div>
+
+      <div className="events-grid">
+        {visible.map((event) => {
+          const isActive = activeEventIds.includes(event.id);
+          const deltaItems = (Object.entries(event.inputs) as Array<[string, number]>).filter(
+            ([, v]) => v !== 0,
+          );
+          return (
+            <article key={event.id} className={`event-card ${isActive ? 'event-card-active' : ''}`}>
+              <header className="event-card-header">
+                <span className={`event-category-tag event-category-${event.category}`}>
+                  {event.category}
+                </span>
+                <button
+                  type="button"
+                  className={`btn ${isActive ? 'btn-ghost event-btn-remove' : 'btn-primary'} btn-sm`}
+                  onClick={() => (isActive ? onRemove(event.id) : onApply(event.id))}
+                >
+                  {isActive ? 'Remove' : 'Apply'}
+                </button>
+              </header>
+              <strong className="event-card-name">{event.name}</strong>
+              <p className="event-card-summary">{event.summary}</p>
+              <div className="event-deltas">
+                {deltaItems.map(([key, value]) => (
+                  <span key={key} className={`event-delta ${value > 0 ? 'event-delta-up' : 'event-delta-down'}`}>
+                    {formatDelta(key, value)}
+                  </span>
+                ))}
+              </div>
+              {event.regionTags.length > 0 && (
+                <div className="event-regions">
+                  {event.regionTags.map((tag) => (
+                    <span key={tag} className="event-region-tag">{tag}</span>
+                  ))}
+                </div>
+              )}
+            </article>
+          );
+        })}
+      </div>
+
+      {scenarioFeed.length > 0 && (
+        <div className="events-impact-section">
+          <h3 className="events-impact-title">Scenario impact — top pressures</h3>
+          <div className="feed">
+            {scenarioFeed.map((item) => (
+              <article key={item.title} className={`feed-item feed-item-${item.tone}`}>
+                <strong>{item.title}</strong>
+                <p>{item.detail}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
