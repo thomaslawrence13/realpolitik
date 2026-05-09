@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useDeferredValue } from 'react';
+import { useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
 import {
   allianceNetworks,
   countryProfiles,
@@ -21,9 +21,11 @@ import type {
   RelationshipDimension,
   SavedScenario,
   ScenarioInputs,
+  SimulatedCountry,
   WeightSetKey,
 } from './types';
 import { countryCentroids } from './lib/map';
+import { readPermalinkFromLocation, writePermalinkToLocation } from './lib/permalink';
 import { fetchLiveData } from './data/worldBankClient';
 import { enrichProfiles } from './data/liveEnrichment';
 import { eventLibrary, eventById } from './data/eventLibrary';
@@ -104,16 +106,27 @@ const getRelationshipMetric = (
 const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 1080;
 
 export default function App() {
-  const [timelineIndex, setTimelineIndex] = useState(0);
-  const [filters, setFilters] = useState<Filters>(defaultFilters);
+  // Hydrate from URL once at mount so a shared link restores the same scenario.
+  const initialPermalink = useMemo(() => readPermalinkFromLocation(), []);
+
+  const [timelineIndex, setTimelineIndex] = useState(initialPermalink?.t ?? 0);
+  const [filters, setFilters] = useState<Filters>({
+    ...defaultFilters,
+    ...(initialPermalink?.f ?? {}),
+  });
   const [search, setSearch] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState<string>('United States of America');
-  const [overlayMode, setOverlayMode] = useState<OverlayMode>('cooperation');
-  const [scenarioName, setScenarioName] = useState('Baseline+');
-  const [scenarioInputs, setScenarioInputs] = useState<ScenarioInputs>({ ...defaultScenarioInputs });
-  const [weightSetKey, setWeightSetKey] = useState<WeightSetKey>('baseline');
+  const [selectedCountry, setSelectedCountry] = useState<string>(
+    initialPermalink?.c ?? 'United States of America',
+  );
+  const [overlayMode, setOverlayMode] = useState<OverlayMode>(initialPermalink?.o ?? 'cooperation');
+  const [scenarioName, setScenarioName] = useState(initialPermalink?.n ?? 'Baseline+');
+  const [scenarioInputs, setScenarioInputs] = useState<ScenarioInputs>({
+    ...defaultScenarioInputs,
+    ...(initialPermalink?.i ?? {}),
+  });
+  const [weightSetKey, setWeightSetKey] = useState<WeightSetKey>(initialPermalink?.w ?? 'baseline');
   const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
-  const [activeEventIds, setActiveEventIds] = useState<string[]>([]);
+  const [activeEventIds, setActiveEventIds] = useState<string[]>(initialPermalink?.e ?? []);
 
   // Live World Bank data enrichment — starts with static profiles and upgrades
   // in the background. Failures fall back silently to the static dataset.
@@ -133,6 +146,41 @@ export default function App() {
     return () => controller.abort();
   }, []);
 
+  // Sync scenario state into the URL so the page is shareable. Debounced so
+  // dragging a slider doesn't write on every frame. Filters are diffed against
+  // defaults to keep the URL short.
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      const filterDiff = (Object.keys(filters) as Array<keyof Filters>).reduce<Partial<Filters>>(
+        (acc, key) => {
+          if (filters[key] !== defaultFilters[key]) (acc as Record<string, unknown>)[key] = filters[key];
+          return acc;
+        },
+        {},
+      );
+      writePermalinkToLocation({
+        t: timelineIndex,
+        c: selectedCountry,
+        w: weightSetKey,
+        i: scenarioInputs,
+        e: activeEventIds.length ? activeEventIds : undefined,
+        o: overlayMode,
+        n: scenarioName,
+        f: Object.keys(filterDiff).length ? filterDiff : undefined,
+      });
+    }, 250);
+    return () => window.clearTimeout(handle);
+  }, [
+    timelineIndex,
+    selectedCountry,
+    weightSetKey,
+    scenarioInputs,
+    activeEventIds,
+    overlayMode,
+    scenarioName,
+    filters,
+  ]);
+
   // Defer heavy simulation re-runs so UI (sliders, timeline) stays responsive while
   // the map catches up asynchronously via React's concurrent scheduler.
   const deferredScenarioInputs = useDeferredValue(scenarioInputs);
@@ -151,11 +199,34 @@ export default function App() {
   const [drawerTab, setDrawerTab] = useState<DrawerTab>('scenario');
   const [inspectorTab, setInspectorTab] = useState<InspectorTab>('overview');
 
+  // Refs so the keyboard handler can read the latest filtered list and selection
+  // without re-binding the listener on every render.
+  const railCountriesRef = useRef<SimulatedCountry[]>([]);
+  const selectedCountryRef = useRef(selectedCountry);
+  selectedCountryRef.current = selectedCountry;
+
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      const inField =
+        event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement;
+
+      // Esc: clear search if focused; otherwise blur the active element. Always
+      // available so users can escape any state with one key.
+      if (event.key === 'Escape') {
+        if (inField && (event.target as HTMLElement).closest('.rail-search')) {
+          setSearch('');
+          (event.target as HTMLInputElement).blur();
+          event.preventDefault();
+          return;
+        }
+        if (document.activeElement instanceof HTMLElement && document.activeElement !== document.body) {
+          document.activeElement.blur();
+        }
         return;
       }
+
+      if (inField) return;
+
       if (event.key === '[') setLeftOpen((value) => !value);
       if (event.key === ']') setRightOpen((value) => !value);
       if (event.key === '\\') setDrawerOpen((value) => !value);
@@ -163,6 +234,24 @@ export default function App() {
         event.preventDefault();
         const input = document.querySelector<HTMLInputElement>('.rail-search input');
         input?.focus();
+        input?.select();
+      }
+
+      // Arrow keys cycle through the rail's currently-visible (filtered+sorted)
+      // list, mirroring what the user sees rather than the full dataset.
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        const list = railCountriesRef.current;
+        if (list.length === 0) return;
+        // Sorted by risk descending — same as LeftRail
+        const sorted = [...list].sort((a, b) => b.risk - a.risk);
+        const currentIdx = sorted.findIndex((c) => c.profile.mapName === selectedCountryRef.current);
+        const step = event.key === 'ArrowDown' ? 1 : -1;
+        // If selection is outside the visible list, jump to either end.
+        const nextIdx = currentIdx === -1
+          ? (step === 1 ? 0 : sorted.length - 1)
+          : (currentIdx + step + sorted.length) % sorted.length;
+        setSelectedCountry(sorted[nextIdx].profile.mapName);
+        event.preventDefault();
       }
     };
     window.addEventListener('keydown', handler);
@@ -233,6 +322,10 @@ export default function App() {
     });
   }, [filtered, search]);
 
+  // Mirror the visible list into a ref so the global keyboard handler can
+  // navigate it without re-binding when the list changes.
+  railCountriesRef.current = railCountries;
+
   const selected = byName.get(selectedCountry) ?? simulated[0];
   const baselineSelected = baselineByName.get(selectedCountry) ?? baselineSimulated[0];
   const selectedRiskDelta = Math.round(selected.risk - baselineSelected.risk);
@@ -252,11 +345,20 @@ export default function App() {
       .map((relationship) => {
         const targetCentroid = countryCentroids.get(relationship.mapName);
         if (!targetCentroid) return null;
+        // Per-dimension telemetry when present, else fall back to whole-edge
+        // computed timestamp absence as a stale signal.
+        const telemetry = relationship.dataQuality?.dimensions.find(
+          (entry) => entry.dimension === overlayMode,
+        );
+        const confidence = telemetry?.confidence ?? (relationship.dataQuality ? 60 : 80);
+        const stale = telemetry?.stale ?? false;
         return {
           countryId: relationship.countryId,
           mapName: relationship.mapName,
           displayName: relationship.displayName,
           score: getRelationshipMetric(overlayMode, relationship),
+          confidence,
+          stale,
           x1: sourceX,
           y1: sourceY,
           x2: targetCentroid[0],

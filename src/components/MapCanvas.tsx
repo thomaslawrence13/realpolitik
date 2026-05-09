@@ -126,6 +126,9 @@ export type OverlayConnection = {
   mapName: string;
   displayName: string;
   score: number;
+  /** 0–100 data confidence for the active overlay dimension. Drives edge styling. */
+  confidence: number;
+  stale: boolean;
   x1: number;
   y1: number;
   x2: number;
@@ -389,26 +392,42 @@ export function MapCanvas({
             )}
 
             {overlayMode !== 'none' &&
-              overlayConnections.map((connection) => (
-                <g key={`overlay-${connection.countryId}-${overlayMode}`} className="relationship-overlay">
-                  <line
-                    x1={connection.x1}
-                    y1={connection.y1}
-                    x2={connection.x2}
-                    y2={connection.y2}
-                    stroke={overlayColor[overlayMode]}
-                    strokeWidth={(1 + connection.score / 60) * invZoom}
-                    strokeOpacity={0.75}
-                    strokeDasharray={overlayMode === 'dependency' ? `${6 * invZoom} ${5 * invZoom}` : undefined}
-                  />
-                  <circle
-                    cx={connection.x2}
-                    cy={connection.y2}
-                    r={3 * invZoom}
-                    fill={overlayColor[overlayMode]}
-                  />
-                </g>
-              ))}
+              overlayConnections.map((connection) => {
+                // Confidence ribbon: low-confidence edges fade and dash so the
+                // viewer can see at a glance which relationships are well-sourced.
+                const conf = Math.max(0, Math.min(100, connection.confidence)) / 100;
+                const lowConf = conf < 0.6 || connection.stale;
+                const opacity = 0.35 + conf * 0.55;
+                const dash = overlayMode === 'dependency' || lowConf
+                  ? `${(lowConf ? 4 : 6) * invZoom} ${(lowConf ? 4 : 5) * invZoom}`
+                  : undefined;
+                const baseTitle = `${connection.displayName} · ${overlayLabel[overlayMode]} ${connection.score}%`;
+                const confTitle = connection.stale
+                  ? `${baseTitle} · stale data`
+                  : `${baseTitle} · ${Math.round(connection.confidence)}% confidence`;
+                return (
+                  <g key={`overlay-${connection.countryId}-${overlayMode}`} className="relationship-overlay">
+                    <title>{confTitle}</title>
+                    <line
+                      x1={connection.x1}
+                      y1={connection.y1}
+                      x2={connection.x2}
+                      y2={connection.y2}
+                      stroke={overlayColor[overlayMode]}
+                      strokeWidth={(0.6 + (connection.score / 60) * (0.4 + conf * 0.6)) * invZoom}
+                      strokeOpacity={opacity}
+                      strokeDasharray={dash}
+                    />
+                    <circle
+                      cx={connection.x2}
+                      cy={connection.y2}
+                      r={(2.2 + conf * 1.2) * invZoom}
+                      fill={overlayColor[overlayMode]}
+                      fillOpacity={opacity}
+                    />
+                  </g>
+                );
+              })}
           </g>
         </svg>
 
