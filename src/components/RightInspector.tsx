@@ -163,8 +163,25 @@ function OverviewPanel({
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
 }) {
+  const relationCount = selected.profile.relationships.length;
+
   return (
     <div className="panel-stack">
+      <div className="overview-strip" aria-label="At a glance">
+        <div className={`overview-chip metric-${riskTier(selected.risk)}`}>
+          <span>Risk</span>
+          <strong>{selected.risk}%</strong>
+        </div>
+        <div className="overview-chip metric-accent">
+          <span>Confidence</span>
+          <strong>{selected.confidence}%</strong>
+        </div>
+        <div className="overview-chip">
+          <span>Relationships</span>
+          <strong>{relationCount}</strong>
+        </div>
+      </div>
+
       <div className="metric-grid">
         <MetricCard
           label="Confidence"
@@ -199,7 +216,7 @@ function OverviewPanel({
       )}
 
       <div className="section">
-        <h3 className="section-title">Alignment likelihoods</h3>
+        <h3 className="section-title">Alignment probabilities</h3>
         <div className="bar-stack">
           {(Object.keys(selected.probabilities) as Array<keyof typeof selected.probabilities>).map((key) => {
             const baselineValue = baselineSelected.probabilities[key];
@@ -224,7 +241,7 @@ function OverviewPanel({
       </div>
 
       <div className="section">
-        <h3 className="section-title">Relationship summary</h3>
+        <h3 className="section-title">Relationship posture</h3>
         <div className="metric-grid metric-grid-tight">
           <MetricCard
             label="Cooperation"

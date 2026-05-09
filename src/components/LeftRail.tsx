@@ -169,76 +169,77 @@ export function LeftRail({
 
   return (
     <aside className="rail" aria-label="Country browser" aria-hidden={!open} {...(!open && { inert: true })}>
-      <div className="rail-header">
-        <div>
-          <h2 className="rail-title">Countries</h2>
-          <p className="rail-meta">
-            {countries.length} of {totalCount} match
-          </p>
+      <div className="rail-controls">
+        <div className="rail-header">
+          <div>
+            <h2 className="rail-title">Countries</h2>
+            <p className="rail-meta">
+              {countries.length} of {totalCount} shown
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="rail-search">
-        <span className="rail-search-icon" aria-hidden>
-          <SvgIcon.Search />
-        </span>
-        <input
-          type="search"
-          value={search}
-          placeholder="Search country or region…"
-          onChange={(event) => onSearchChange(event.target.value)}
-          spellCheck={false}
-          autoComplete="off"
-        />
-        {search.length > 0 && (
+        <div className="rail-search">
+          <span className="rail-search-icon" aria-hidden>
+            <SvgIcon.Search />
+          </span>
+          <input
+            type="search"
+            value={search}
+            placeholder="Search country or region…"
+            onChange={(event) => onSearchChange(event.target.value)}
+            spellCheck={false}
+            autoComplete="off"
+          />
+          {search.length > 0 && (
+            <button
+              type="button"
+              className="rail-search-clear"
+              onClick={() => onSearchChange('')}
+              aria-label="Clear search"
+            >
+              <SvgIcon.X />
+            </button>
+          )}
+        </div>
+
+        <div className="rail-organize">
+          <label className="rail-organize-field">
+            <span>Sort</span>
+            <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
+              {sortOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="rail-organize-field">
+            <span>Group</span>
+            <select value={groupMode} onChange={(event) => setGroupMode(event.target.value as GroupMode)}>
+              {groupOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className={`rail-filters ${filtersExpanded ? 'is-open' : 'is-closed'}`}>
           <button
             type="button"
-            className="rail-search-clear"
-            onClick={() => onSearchChange('')}
-            aria-label="Clear search"
+            className="rail-filters-toggle"
+            onClick={() => setFiltersExpanded((value) => !value)}
           >
-            <SvgIcon.X />
+            <span>Filters</span>
+            <span className="rail-filters-count">
+              {activeFilterCount > 0 && <em>{activeFilterCount}</em>}
+              <SvgIcon.Chevron dir={filtersExpanded ? 'up' : 'down'} />
+            </span>
           </button>
-        )}
-      </div>
-
-      <div className="rail-organize">
-        <label className="rail-organize-field">
-          <span>Sort</span>
-          <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
-            {sortOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="rail-organize-field">
-          <span>Group</span>
-          <select value={groupMode} onChange={(event) => setGroupMode(event.target.value as GroupMode)}>
-            {groupOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      <div className={`rail-filters ${filtersExpanded ? 'is-open' : 'is-closed'}`}>
-        <button
-          type="button"
-          className="rail-filters-toggle"
-          onClick={() => setFiltersExpanded((value) => !value)}
-        >
-          <span>Filters</span>
-          <span className="rail-filters-count">
-            {activeFilterCount > 0 && <em>{activeFilterCount}</em>}
-            <SvgIcon.Chevron dir={filtersExpanded ? 'up' : 'down'} />
-          </span>
-        </button>
-        {filtersExpanded && (
-          <div className="rail-filters-body">
+          {filtersExpanded && (
+            <div className="rail-filters-body">
             <div className="filter-row">
               <label className="filter-row-label" htmlFor="rail-alliance">
                 Alliance
@@ -324,8 +325,9 @@ export function LeftRail({
                 <span>Reset all filters</span>
               </button>
             )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div
