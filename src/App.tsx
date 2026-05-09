@@ -53,8 +53,17 @@ const TIMELINE_AUTO_PLAY_INTERVAL_MS = 1200;
 const MIN_DRAWER_HEIGHT = 180;
 const MAX_DRAWER_HEIGHT_RATIO = 0.65;
 const INTERACTIVE_SHORTCUT_TAGS = new Set(['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A']);
+const INTERACTIVE_SHORTCUT_ROLES = new Set(['button', 'textbox', 'link']);
 
 const maxDrawerHeight = () => Math.floor(window.innerHeight * MAX_DRAWER_HEIGHT_RATIO);
+
+const isInteractiveShortcutTarget = (target: EventTarget | null): target is HTMLElement => {
+  if (!(target instanceof HTMLElement)) return false;
+  if (INTERACTIVE_SHORTCUT_TAGS.has(target.tagName)) return true;
+  const role = target.getAttribute('role');
+  if (role && INTERACTIVE_SHORTCUT_ROLES.has(role)) return true;
+  return target.isContentEditable;
+};
 
 const clampInput = (key: keyof ScenarioInputs, value: number): number => {
   if (key === 'treatyShift') return Math.min(60, Math.max(-60, value));
@@ -219,21 +228,13 @@ export default function App() {
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement;
-      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
-        return;
-      }
-      if (
-        target.isContentEditable ||
-        target.getAttribute('role') === 'textbox' ||
-        target.getAttribute('role') === 'button'
-      ) {
+      if (isInteractiveShortcutTarget(event.target)) {
         return;
       }
       if (event.key === '[') setLeftOpen((value) => !value);
       if (event.key === ']') setRightOpen((value) => !value);
       if (event.key === '\\') setDrawerOpen((value) => !value);
-      if (event.key === ' ' && !INTERACTIVE_SHORTCUT_TAGS.has(target.tagName)) {
+      if (event.key === ' ') {
         event.preventDefault();
         handleTogglePlayRef.current();
       }
