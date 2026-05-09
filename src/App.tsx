@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
+import type { WheelEvent as ReactWheelEvent } from 'react';
 import type { FeatureCollection, Geometry } from 'geojson';
 import { geoMercator, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
@@ -91,6 +92,7 @@ const formatPercent = (value: number) => `${value}%`;
 const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
 const formatSignedValue = (value: number) => `${value > 0 ? '+' : ''}${value}`;
 const formatTitle = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 const getRelationshipMetric = (
   mode: RelationshipDimension,
@@ -236,6 +238,12 @@ export default function App() {
       y: current.y + (event.clientY - dragStart.y) / zoom,
     }));
     setDragStart({ x: event.clientX, y: event.clientY });
+  };
+
+  const handleWheelZoom = (event: ReactWheelEvent<SVGSVGElement>) => {
+    event.preventDefault();
+    const nextZoom = clamp(zoom - event.deltaY * 0.0012, 0.8, 2.4);
+    setZoom(nextZoom);
   };
 
   const resetScenario = () => {
@@ -487,6 +495,7 @@ export default function App() {
             <svg
               viewBox={`0 0 ${width} ${height}`}
               className="world-map"
+              onWheel={handleWheelZoom}
               onPointerDown={(event) => setDragStart({ x: event.clientX, y: event.clientY })}
               onPointerMove={handlePointerMove}
               onPointerUp={() => setDragStart(null)}
@@ -495,7 +504,7 @@ export default function App() {
                 setHoveredCountry(null);
               }}
             >
-              <rect width={width} height={height} fill="#08111f" rx="24" />
+              <rect width={width} height={height} fill="#08111f" />
               <g transform={`translate(${offset.x} ${offset.y}) scale(${zoom})`}>
                 {countries.map((country) => {
                   const simulatedCountry = byName.get(country.properties.name);
