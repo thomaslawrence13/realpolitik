@@ -80,6 +80,23 @@ export interface CountryRelationship {
 export interface CountryProfile extends CountryRecord {
   sources: DatasetSource[];
   relationships: CountryRelationship[];
+  dataQuality?: CountryDataQuality;
+}
+
+export interface IndicatorTelemetry {
+  indicator: keyof CountryIndicators;
+  sourceId: string;
+  observedAt: string;
+  confidence: number;
+  stale: boolean;
+  method: 'api' | 'snapshot' | 'expert-curated' | 'derived';
+}
+
+export interface CountryDataQuality {
+  computedSourceCoverage: number;
+  computedLastUpdated: string;
+  degradedReasons: string[];
+  indicators: IndicatorTelemetry[];
 }
 
 export interface ProbabilitySet {

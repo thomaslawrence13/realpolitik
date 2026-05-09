@@ -35,6 +35,8 @@ const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%
 const formatSignedValue = (value: number) => `${value > 0 ? '+' : ''}${value}`;
 const formatTitle = (value: string) =>
   value.length === 0 ? value : value.charAt(0).toUpperCase() + value.slice(1);
+const formatIndicator = (value: string) =>
+  value.replace(/([A-Z])/g, ' $1').replace(/^./, (v) => v.toUpperCase());
 
 const riskTier = (value: number): Tier => {
   if (value >= 65) return 'high';
@@ -454,6 +456,38 @@ function SourcesPanel({
           ))}
         </div>
       </div>
+
+      {selected.profile.dataQuality && (
+        <>
+          <div className="section">
+            <h3 className="section-title">Indicator freshness</h3>
+            <ul className="kv-list">
+              {selected.profile.dataQuality.indicators.map((entry) => (
+                <li key={`${entry.indicator}-${entry.sourceId}`}>
+                  <span>
+                    {formatIndicator(entry.indicator)} · {entry.sourceId}
+                  </span>
+                  <strong>
+                    {entry.observedAt} · {Math.round(entry.confidence * 100)}%
+                    {entry.stale ? ' · stale' : ''}
+                  </strong>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {selected.profile.dataQuality.degradedReasons.length > 0 && (
+            <div className="section">
+              <h3 className="section-title">Data quality notices</h3>
+              <ul className="bullet-list">
+                {selected.profile.dataQuality.degradedReasons.map((reason) => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

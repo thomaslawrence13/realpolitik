@@ -1,0 +1,23 @@
+import type { CountryIndicators } from '../../types';
+
+export type IndicatorKey = keyof CountryIndicators;
+
+export type ObservationMethod = 'api' | 'snapshot' | 'expert-curated' | 'derived';
+
+export interface IndicatorObservation<K extends IndicatorKey = IndicatorKey> {
+  providerId: string;
+  sourceId: string;
+  countryId: string;
+  indicator: K;
+  value: CountryIndicators[K];
+  observedAt: string;
+  method: ObservationMethod;
+  confidence: number;
+}
+
+export interface IndicatorQualityRule {
+  cadence: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual';
+  staleAfterDays: number;
+  minimumConfidence: number;
+  includeInCoverage: boolean;
+}
