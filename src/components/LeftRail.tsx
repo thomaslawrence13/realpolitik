@@ -82,13 +82,19 @@ export function LeftRail({
   const sorted = useMemo(() => {
     const next = [...countries];
     if (sortMode === 'riskDesc') {
-      next.sort((a, b) => b.risk - a.risk || a.profile.displayName.localeCompare(b.profile.displayName));
+      next.sort((a, b) => {
+        const riskDelta = b.risk - a.risk;
+        return riskDelta !== 0 ? riskDelta : a.profile.displayName.localeCompare(b.profile.displayName);
+      });
       return next;
     }
     if (sortMode === 'confidenceDesc') {
-      next.sort(
-        (a, b) => b.confidence - a.confidence || a.profile.displayName.localeCompare(b.profile.displayName),
-      );
+      next.sort((a, b) => {
+        const confidenceDelta = b.confidence - a.confidence;
+        return confidenceDelta !== 0
+          ? confidenceDelta
+          : a.profile.displayName.localeCompare(b.profile.displayName);
+      });
       return next;
     }
     next.sort((a, b) => a.profile.displayName.localeCompare(b.profile.displayName));
@@ -125,7 +131,10 @@ export function LeftRail({
     };
 
     return [...groups.entries()]
-      .sort(([left], [right]) => rank(left) - rank(right) || left.localeCompare(right))
+      .sort(([left], [right]) => {
+        const rankDelta = rank(left) - rank(right);
+        return rankDelta !== 0 ? rankDelta : left.localeCompare(right);
+      })
       .map(([label, items]) => ({ key: label, label, items }));
   }, [alignmentLabel, groupMode, sorted]);
 
