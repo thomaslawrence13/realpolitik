@@ -35,7 +35,7 @@ const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%
 const formatSignedValue = (value: number) => `${value > 0 ? '+' : ''}${value}`;
 const formatTitle = (value: string) =>
   value.length === 0 ? value : value.charAt(0).toUpperCase() + value.slice(1);
-const formatIndicator = (value: string) =>
+const formatIndicatorLabel = (value: string) =>
   value.replace(/([A-Z])/g, ' $1').trim().replace(/^./, (v) => v.toUpperCase());
 
 const riskTier = (value: number): Tier => {
@@ -465,7 +465,7 @@ function SourcesPanel({
               {selected.profile.dataQuality.indicators.map((entry) => (
                 <li key={`${entry.indicator}-${entry.sourceId}`}>
                   <span>
-                    {formatIndicator(entry.indicator)} · {entry.sourceId}
+                    {formatIndicatorLabel(entry.indicator)} · {entry.sourceId}
                   </span>
                   <strong>
                     {entry.observedAt} · {Math.round(entry.confidence * 100)}%
