@@ -1,0 +1,32 @@
+{
+  "version": "1.1.0-ingested",
+  "timestamp": "2026-05-10T12:00:00Z",
+  "world_bank_military_expenditure_pct": {
+    "united-states": 3.4,
+    "china": 1.7,
+    "russia": 5.9,
+    "india": 2.4,
+    "japan": 1.2
+  },
+  "world_bank_trade_pct": {
+    "united-states": 25.1,
+    "china": 37.2,
+    "russia": 43.6,
+    "india": 46.1,
+    "japan": 44.8
+  },
+  "world_bank_gdp_growth": {
+    "united-states": 2.8,
+    "china": 4.7,
+    "russia": 2.6,
+    "india": 6.5,
+    "japan": 0.6
+  },
+  "world_bank_inflation": {
+    "united-states": 3.2,
+    "china": 0.8,
+    "russia": 7.4,
+    "india": 4.9,
+    "japan": 2.2
+  }
+}

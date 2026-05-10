@@ -614,7 +614,12 @@ function HistoryCard({
         )}
         <span>{timeline[scenario.timelineIndex]}</span>
       </header>
-      <p>{weightSet?.label ?? 'Custom weighting'}</p>
+      <div className="history-card-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <p>{weightSet?.label ?? 'Custom weighting'}</p>
+        <p className="history-saved-at" style={{ fontSize: '0.65rem', color: 'var(--text-4)' }}>
+          {scenario.savedAt ? `Saved ${new Date(scenario.savedAt).toLocaleDateString()}` : ''}
+        </p>
+      </div>
       <div className="history-summary-chips">
         {summaryItems.map(({ abbr, label, value, signed }) => (
           <span

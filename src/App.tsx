@@ -10,6 +10,8 @@ import {
 import {
   defaultScenarioInputs,
   getRiskTier,
+  getActiveEventsForProfile,
+  getScenarioInputsForProfile,
   getSimulationWeightSet,
   simulateCountry,
   simulationWeightSets,
@@ -197,6 +199,13 @@ export default function App() {
     () => computeEffectiveInputs(deferredScenarioInputs, deferredActiveEventIds),
     [deferredScenarioInputs, deferredActiveEventIds],
   );
+  const activeEvents = useMemo(
+    () => deferredActiveEventIds.flatMap((id) => {
+      const event = eventById.get(id);
+      return event ? [event] : [];
+    }),
+    [deferredActiveEventIds],
+  );
 
   const [leftOpen, setLeftOpen] = useState<boolean>(() => !isMobile());
   const [rightOpen, setRightOpen] = useState<boolean>(() => !isMobile());
@@ -302,9 +311,13 @@ export default function App() {
 
   const simulated = useMemo(() => {
     return activeProfiles.map((profile) =>
-      simulateCountry(profile, timelineIndex, { scenarioInputs: effectiveInputs, weightSet: activeWeightSet }),
+      simulateCountry(profile, timelineIndex, {
+        scenarioInputs: deferredScenarioInputs,
+        activeEvents,
+        weightSet: activeWeightSet,
+      }),
     );
-  }, [activeProfiles, activeWeightSet, effectiveInputs, timelineIndex]);
+  }, [activeEvents, activeProfiles, activeWeightSet, deferredScenarioInputs, timelineIndex]);
 
   const baselineByName = useMemo(
     () => new Map(baselineSimulated.map((entry) => [entry.profile.mapName, entry])),
@@ -357,6 +370,14 @@ export default function App() {
   const baselineSelected = baselineByName.get(selectedCountry) ?? baselineSimulated[0];
   const selectedRiskDelta = Math.round(selected.risk - baselineSelected.risk);
   const selectedConfidenceDelta = Math.round(selected.confidence - baselineSelected.confidence);
+  const selectedActiveEvents = useMemo(
+    () => getActiveEventsForProfile(selected.profile, activeEvents),
+    [activeEvents, selected.profile],
+  );
+  const selectedScenarioInputs = useMemo(
+    () => getScenarioInputsForProfile(deferredScenarioInputs, activeEvents, selected.profile),
+    [activeEvents, deferredScenarioInputs, selected.profile],
+  );
 
   const eventFeed = useMemo<EventFeedItem[]>(() => {
     return filtered
@@ -386,14 +407,15 @@ export default function App() {
 
   const comparisonSimulated = useMemo<SimulatedCountry[]>(() => {
     if (!comparisonScenario) return [];
-    const compEffective = computeEffectiveInputs(
-      comparisonScenario.inputs,
-      comparisonScenario.activeEventIds ?? [],
-    );
+    const comparisonEvents = (comparisonScenario.activeEventIds ?? []).flatMap((id) => {
+      const event = eventById.get(id);
+      return event ? [event] : [];
+    });
     const compWeights = getSimulationWeightSet(comparisonScenario.weightSetKey);
     return activeProfiles.map((profile) =>
       simulateCountry(profile, comparisonScenario.timelineIndex, {
-        scenarioInputs: compEffective,
+        scenarioInputs: comparisonScenario.inputs,
+        activeEvents: comparisonEvents,
         weightSet: compWeights,
       }),
     );
@@ -417,7 +439,8 @@ export default function App() {
     const active = scenarioTimeline.map((_, index) =>
       Math.round(
         simulateCountry(profile, index, {
-          scenarioInputs: effectiveInputs,
+          scenarioInputs: deferredScenarioInputs,
+          activeEvents,
           weightSet: activeWeightSet,
           includeHistory: false,
         }).risk,
@@ -438,7 +461,7 @@ export default function App() {
       baseline,
       currentIndex: timelineIndex,
     };
-  }, [activeProfiles, activeWeightSet, effectiveInputs, selectedCountry, timelineIndex]);
+  }, [activeEvents, activeProfiles, activeWeightSet, deferredScenarioInputs, selectedCountry, timelineIndex]);
 
   const handleScenarioInputChange = <K extends keyof ScenarioInputs>(key: K, value: number) => {
     setScenarioInputs((current) => ({ ...current, [key]: value }));
@@ -470,6 +493,7 @@ export default function App() {
           weightSetKey,
           inputs: { ...scenarioInputs },
           activeEventIds: [...activeEventIds],
+          savedAt: new Date().toISOString(),
         },
         ...current,
       ].slice(0, 12),
@@ -723,8 +747,9 @@ export default function App() {
         riskDelta={selectedRiskDelta}
         confidenceDelta={selectedConfidenceDelta}
         scenarioName={scenarioName}
-        scenarioInputs={effectiveInputs}
+        scenarioInputs={selectedScenarioInputs}
         activeWeightSet={activeWeightSet}
+        activeEventNames={selectedActiveEvents.map((event) => event.name)}
         alignmentColor={alignmentColor}
         alignmentLabel={alignmentLabel}
         tab={inspectorTab}

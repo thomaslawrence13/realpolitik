@@ -62,23 +62,59 @@ const overlayColor: Record<RelationshipDimension, string> = {
 
 const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
 
-const fillModeOptions: ReadonlyArray<{ value: MapFillMode; label: string; hint: string }> = [
-  { value: 'alignment', label: 'Alignment', hint: 'Color by current bloc alignment' },
-  { value: 'risk', label: 'Risk', hint: 'Green → red as escalation risk rises' },
-  { value: 'confidence', label: 'Confidence', hint: 'Brighter = higher confidence' },
-  { value: 'shift', label: 'Shift', hint: 'Highlights countries that diverge from baseline' },
-  { value: 'gdpPerCapita', label: 'GDP/cap', hint: 'Choropleth by GDP per capita (USD)' },
-  { value: 'gdpGrowth', label: 'GDP Δ', hint: 'GDP growth rate — red for contraction, green for fast growth' },
-  { value: 'inflation', label: 'Inflation', hint: 'Consumer price inflation — green (low) → red (high)' },
-  { value: 'tradeOpenness', label: 'Trade', hint: 'Total trade as % of GDP — economic openness' },
-  { value: 'nuclearArmed', label: 'Nuclear', hint: 'Highlight nuclear-armed states' },
-  { value: 'militaryBurden', label: 'Mil.%GDP', hint: 'Military expenditure as % of GDP' },
-  { value: 'regime', label: 'Regime', hint: 'Color by regime type (democracy / hybrid / authoritarian)' },
-  { value: 'conflictPressure', label: 'Conflict', hint: 'Indicator-based conflict pressure (low / medium / high)' },
-  { value: 'population', label: 'Pop', hint: 'Total population (millions, log-scaled)' },
-  { value: 'medianAge', label: 'Age', hint: 'Median age — young (green) → aged (indigo)' },
-  { value: 'energyExports', label: 'Energy', hint: 'Net energy exports — green (exporter) → red (importer)' },
-  { value: 'demographicPressure', label: 'Demo', hint: 'Composite demographic pressure score (youth bulge + aging + migration)' },
+const fillModeGroups: ReadonlyArray<{ label: string; options: ReadonlyArray<{ value: MapFillMode; label: string; hint: string }> }> = [
+  {
+    label: 'Core Alignment',
+    options: [
+      { value: 'alignment', label: 'Alignment', hint: 'Color by current bloc alignment' },
+      { value: 'risk', label: 'Risk', hint: 'Green → red as escalation risk rises' },
+      { value: 'confidence', label: 'Confidence', hint: 'Brighter = higher confidence' },
+      { value: 'shift', label: 'Shift', hint: 'Highlights countries that diverge from baseline' },
+    ],
+  },
+  {
+    label: 'Macroeconomics',
+    options: [
+      { value: 'gdpPerCapita', label: 'GDP per capita', hint: 'Choropleth by GDP per capita (USD)' },
+      { value: 'gdpGrowth', label: 'GDP Growth', hint: 'GDP growth rate — red for contraction, green for fast growth' },
+      { value: 'inflation', label: 'Inflation', hint: 'Consumer price inflation — green (low) → red (high)' },
+      { value: 'tradeOpenness', label: 'Trade Openness', hint: 'Total trade as % of GDP — economic openness' },
+      { value: 'debtVulnerability', label: 'Debt Vulnerability', hint: 'Composite fiscal vulnerability from rating, debt load, and FX cushion' },
+      { value: 'sovereignRating', label: 'Sovereign Rating', hint: 'Sovereign credit tier' },
+    ],
+  },
+  {
+    label: 'Security & State',
+    options: [
+      { value: 'nuclearArmed', label: 'Nuclear Armed', hint: 'Highlight nuclear-armed states' },
+      { value: 'militaryBurden', label: 'Military % GDP', hint: 'Military expenditure as % of GDP' },
+      { value: 'regime', label: 'Regime Type', hint: 'Color by regime type (democracy / hybrid / authoritarian)' },
+      { value: 'conflictPressure', label: 'Conflict Pressure', hint: 'Indicator-based conflict pressure (low / medium / high)' },
+      { value: 'defensePactDensity', label: 'Defense Pacts', hint: 'Active defense-pact density' },
+    ],
+  },
+  {
+    label: 'Demographics & Resources',
+    options: [
+      { value: 'population', label: 'Population', hint: 'Total population (millions, log-scaled)' },
+      { value: 'medianAge', label: 'Median Age', hint: 'Median age — young (green) → aged (indigo)' },
+      { value: 'demographicPressure', label: 'Demo Pressure', hint: 'Composite demographic pressure score (youth bulge + aging + migration)' },
+      { value: 'energyExports', label: 'Energy Exports', hint: 'Net energy exports — green (exporter) → red (importer)' },
+      { value: 'foodImportDependence', label: 'Food Dependency', hint: 'Food import dependence — exporter → importer' },
+      { value: 'waterStress', label: 'Water Stress', hint: 'Water stress index — low → extreme' },
+      { value: 'criticalMineralIntensity', label: 'Critical Minerals', hint: 'Weighted critical-mineral supply-chain footprint' },
+    ],
+  },
+  {
+    label: 'Information & Soft Power',
+    options: [
+      { value: 'unVotingBlocA', label: 'UN-A Alignment', hint: 'UN voting alignment with bloc A anchor' },
+      { value: 'unVotingBlocB', label: 'UN-B Alignment', hint: 'UN voting alignment with bloc B anchor' },
+      { value: 'softPower', label: 'Soft Power', hint: 'Soft-power reach score' },
+      { value: 'cyberCapability', label: 'Cyber Capability', hint: 'Composite offensive and defensive cyber capability' },
+      { value: 'internetFreedom', label: 'Internet Freedom', hint: 'Internet freedom score — controlled → open' },
+    ],
+  },
 ];
 
 // Risk gradient: low (green) → medium (amber) → high (red).
@@ -258,6 +294,114 @@ const demographicPressureColor = (profile: SimulatedCountry['profile']): string 
   return lerpColor(DEMO_LOW, DEMO_HIGH, t);
 };
 
+const CYBER_LOW = '#132238';
+const CYBER_HIGH = '#38bdf8';
+const cyberCapabilityColor = (profile: SimulatedCountry['profile']): string => {
+  if (!profile.cyber) return NEUTRAL;
+  const tierScore = { low: 20, medium: 55, high: 90 } as const;
+  const score = (tierScore[profile.cyber.offensiveTier] * 0.6) + (tierScore[profile.cyber.defensiveTier] * 0.4);
+  return lerpColor(CYBER_LOW, CYBER_HIGH, score / 100);
+};
+
+const INTERNET_UNFREE = '#991b1b';
+const INTERNET_MID = '#f59e0b';
+const INTERNET_FREE = '#34d399';
+const internetFreedomColor = (score: number | undefined): string => {
+  if (score == null) return NEUTRAL;
+  const t = Math.max(0, Math.min(1, score / 100));
+  if (t < 0.5) return lerpColor(INTERNET_UNFREE, INTERNET_MID, t * 2);
+  return lerpColor(INTERNET_MID, INTERNET_FREE, (t - 0.5) * 2);
+};
+
+const FOOD_EXPORTER = '#22c55e';
+const FOOD_BALANCED = '#475569';
+const FOOD_IMPORTER = '#f97316';
+const foodImportDependenceColor = (dependencePct: number | undefined): string => {
+  if (dependencePct == null) return NEUTRAL;
+  if (dependencePct > 0) {
+    const t = Math.max(0, Math.min(1, dependencePct / 90));
+    return lerpColor(FOOD_BALANCED, FOOD_IMPORTER, t);
+  }
+  const t = Math.max(0, Math.min(1, -dependencePct / 120));
+  return lerpColor(FOOD_BALANCED, FOOD_EXPORTER, t);
+};
+
+const WATER_LOW = '#38bdf8';
+const WATER_MID = '#fbbf24';
+const WATER_HIGH = '#ef4444';
+const waterStressColor = (index: number | undefined): string => {
+  if (index == null) return NEUTRAL;
+  const t = Math.max(0, Math.min(1, (index - 1) / 4));
+  if (t < 0.5) return lerpColor(WATER_LOW, WATER_MID, t * 2);
+  return lerpColor(WATER_MID, WATER_HIGH, (t - 0.5) * 2);
+};
+
+const DEBT_LOW = '#22c55e';
+const DEBT_MID = '#f59e0b';
+const DEBT_HIGH = '#ef4444';
+const debtVulnerabilityScore = (profile: SimulatedCountry['profile']): number | null => {
+  const fiscal = profile.fiscal;
+  if (!fiscal) return null;
+  const ratingBase = fiscal.sovereignRatingTier === 'investment'
+    ? 15
+    : fiscal.sovereignRatingTier === 'speculative'
+      ? 50
+      : 80;
+  const debtPressure = clamp((fiscal.externalDebtGdpPct - 50) * 0.4, 0, 25);
+  const reserveStress = clamp((6 - fiscal.fxReservesMonthsImports) * 5, 0, 25);
+  return Math.round(clamp(ratingBase + debtPressure + reserveStress, 0, 100));
+};
+const debtVulnerabilityColor = (profile: SimulatedCountry['profile']): string => {
+  const score = debtVulnerabilityScore(profile);
+  if (score == null) return NEUTRAL;
+  const t = Math.max(0, Math.min(1, score / 100));
+  if (t < 0.5) return lerpColor(DEBT_LOW, DEBT_MID, t * 2);
+  return lerpColor(DEBT_MID, DEBT_HIGH, (t - 0.5) * 2);
+};
+
+const sovereignRatingColor: Record<NonNullable<SimulatedCountry['profile']['fiscal']>['sovereignRatingTier'], string> = {
+  investment: '#22c55e',
+  speculative: '#f59e0b',
+  distressed: '#ef4444',
+};
+
+const criticalMineralIntensityScore = (profile: SimulatedCountry['profile']): number | null => {
+  const entries = profile.criticalMinerals;
+  if (!entries || entries.length === 0) return null;
+  const roleWeight = {
+    producer: 1,
+    processor: 1.2,
+    reserves: 0.8,
+    consumer: 0.4,
+  } as const;
+  const weightedShare = entries.reduce((sum, entry) => {
+    return sum + (entry.globalSharePct ?? 8) * roleWeight[entry.role];
+  }, 0);
+  return Math.round(clamp(weightedShare / 2, 0, 100));
+};
+
+const MINERAL_LOW = '#1f2937';
+const MINERAL_HIGH = '#eab308';
+const criticalMineralIntensityColor = (profile: SimulatedCountry['profile']): string => {
+  const score = criticalMineralIntensityScore(profile);
+  if (score == null) return NEUTRAL;
+  return lerpColor(MINERAL_LOW, MINERAL_HIGH, score / 100);
+};
+
+const SOFT_LOW = '#1e293b';
+const SOFT_HIGH = '#ec4899';
+const softPowerColor = (reachScore: number | undefined): string => {
+  if (reachScore == null) return NEUTRAL;
+  return lerpColor(SOFT_LOW, SOFT_HIGH, Math.max(0, Math.min(1, reachScore / 100)));
+};
+
+const PACT_LOW = '#334155';
+const PACT_HIGH = '#a78bfa';
+const defensePactDensityColor = (count: number | undefined): string => {
+  if (count == null) return NEUTRAL;
+  return lerpColor(PACT_LOW, PACT_HIGH, Math.max(0, Math.min(1, count / 5)));
+};
+
 type FillResolverArgs = {
   simulated: SimulatedCountry;
   baseline?: SimulatedCountry;
@@ -282,6 +426,26 @@ const resolveFill = (mode: MapFillMode, args: FillResolverArgs): string => {
   if (mode === 'medianAge') return medianAgeColor(simulated.profile.demographics?.medianAge);
   if (mode === 'energyExports') return energyExportsColor(simulated.profile.energy?.energyImportDependencePct);
   if (mode === 'demographicPressure') return demographicPressureColor(simulated.profile);
+  if (mode === 'cyberCapability') return cyberCapabilityColor(simulated.profile);
+  if (mode === 'internetFreedom') return internetFreedomColor(simulated.profile.cyber?.internetFreedomScore);
+  if (mode === 'foodImportDependence') return foodImportDependenceColor(simulated.profile.foodWater?.foodImportDependencePct);
+  if (mode === 'waterStress') return waterStressColor(simulated.profile.foodWater?.waterStressIndex);
+  if (mode === 'debtVulnerability') return debtVulnerabilityColor(simulated.profile);
+  if (mode === 'sovereignRating') {
+    const rating = simulated.profile.fiscal?.sovereignRatingTier;
+    return rating ? sovereignRatingColor[rating] : NEUTRAL;
+  }
+  if (mode === 'unVotingBlocA') {
+    const score = simulated.profile.diplomatic?.unVotingAlignmentBlocA;
+    return score == null ? NEUTRAL : lerpColor(NEUTRAL, alignmentColor.blocA, Math.max(0, Math.min(1, score / 100)));
+  }
+  if (mode === 'unVotingBlocB') {
+    const score = simulated.profile.diplomatic?.unVotingAlignmentBlocB;
+    return score == null ? NEUTRAL : lerpColor(NEUTRAL, alignmentColor.blocB, Math.max(0, Math.min(1, score / 100)));
+  }
+  if (mode === 'criticalMineralIntensity') return criticalMineralIntensityColor(simulated.profile);
+  if (mode === 'softPower') return softPowerColor(simulated.profile.softPower?.reachScore);
+  if (mode === 'defensePactDensity') return defensePactDensityColor(simulated.profile.diplomatic?.defensePacts.length);
   // shift: highlight countries whose risk or alignment diverged from baseline.
   if (!baseline) return alignmentColor[simulated.alignment];
   const alignmentChanged = simulated.alignment !== baseline.alignment;
@@ -844,6 +1008,80 @@ export function MapCanvas({
                   })()}
                 </span>
               )}
+              {fillMode === 'cyberCapability' && hovered.profile.cyber != null && (
+                <span>
+                  <em>Cyber</em>
+                  {`${capitalize(hovered.profile.cyber.offensiveTier)}/${capitalize(hovered.profile.cyber.defensiveTier)}`}
+                </span>
+              )}
+              {fillMode === 'internetFreedom' && hovered.profile.cyber?.internetFreedomScore != null && (
+                <span>
+                  <em>Net free</em>
+                  {hovered.profile.cyber.internetFreedomScore}/100
+                </span>
+              )}
+              {fillMode === 'foodImportDependence' && hovered.profile.foodWater?.foodImportDependencePct != null && (
+                <span>
+                  <em>Food</em>
+                  {hovered.profile.foodWater.foodImportDependencePct >= 0
+                    ? `${Math.round(hovered.profile.foodWater.foodImportDependencePct)}% imports`
+                    : `${Math.round(-hovered.profile.foodWater.foodImportDependencePct)}% exporter`}
+                </span>
+              )}
+              {fillMode === 'waterStress' && hovered.profile.foodWater?.waterStressIndex != null && (
+                <span>
+                  <em>Water</em>
+                  {hovered.profile.foodWater.waterStressIndex}/5
+                </span>
+              )}
+              {fillMode === 'debtVulnerability' && hovered.profile.fiscal != null && (
+                <span>
+                  <em>Debt</em>
+                  {(() => {
+                    const score = debtVulnerabilityScore(hovered.profile);
+                    return score == null ? '—' : `${score}/100`;
+                  })()}
+                </span>
+              )}
+              {fillMode === 'sovereignRating' && hovered.profile.fiscal != null && (
+                <span>
+                  <em>Rating</em>
+                  {capitalize(hovered.profile.fiscal.sovereignRatingTier)}
+                </span>
+              )}
+              {fillMode === 'unVotingBlocA' && hovered.profile.diplomatic?.unVotingAlignmentBlocA != null && (
+                <span>
+                  <em>UN-A</em>
+                  {hovered.profile.diplomatic.unVotingAlignmentBlocA}%
+                </span>
+              )}
+              {fillMode === 'unVotingBlocB' && hovered.profile.diplomatic?.unVotingAlignmentBlocB != null && (
+                <span>
+                  <em>UN-B</em>
+                  {hovered.profile.diplomatic.unVotingAlignmentBlocB}%
+                </span>
+              )}
+              {fillMode === 'criticalMineralIntensity' && hovered.profile.criticalMinerals != null && (
+                <span>
+                  <em>Minerals</em>
+                  {(() => {
+                    const score = criticalMineralIntensityScore(hovered.profile);
+                    return score == null ? '—' : `${score}/100`;
+                  })()}
+                </span>
+              )}
+              {fillMode === 'softPower' && hovered.profile.softPower?.reachScore != null && (
+                <span>
+                  <em>Soft</em>
+                  {hovered.profile.softPower.reachScore}/100
+                </span>
+              )}
+              {fillMode === 'defensePactDensity' && hovered.profile.diplomatic != null && (
+                <span>
+                  <em>Pacts</em>
+                  {hovered.profile.diplomatic.defensePacts.length}
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -1022,23 +1260,122 @@ export function MapCanvas({
               </span>
             </span>
           )}
+          {fillMode === 'cyberCapability' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${CYBER_LOW}, ${CYBER_HIGH})` }} />
+              <span className="legend-gradient-labels">
+                <span>Low</span><span>High</span>
+              </span>
+            </span>
+          )}
+          {fillMode === 'internetFreedom' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${INTERNET_UNFREE}, ${INTERNET_MID}, ${INTERNET_FREE})` }} />
+              <span className="legend-gradient-labels">
+                <span>Restricted</span><span>Mixed</span><span>Open</span>
+              </span>
+            </span>
+          )}
+          {fillMode === 'foodImportDependence' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${FOOD_EXPORTER}, ${FOOD_BALANCED}, ${FOOD_IMPORTER})` }} />
+              <span className="legend-gradient-labels">
+                <span>Exporter</span><span>Balanced</span><span>Importer</span>
+              </span>
+            </span>
+          )}
+          {fillMode === 'waterStress' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${WATER_LOW}, ${WATER_MID}, ${WATER_HIGH})` }} />
+              <span className="legend-gradient-labels">
+                <span>1</span><span>3</span><span>5</span>
+              </span>
+            </span>
+          )}
+          {fillMode === 'debtVulnerability' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${DEBT_LOW}, ${DEBT_MID}, ${DEBT_HIGH})` }} />
+              <span className="legend-gradient-labels">
+                <span>Resilient</span><span>Stretched</span><span>Fragile</span>
+              </span>
+            </span>
+          )}
+          {fillMode === 'sovereignRating' && (
+            <>
+              <span className="legend-chip">
+                <i style={{ background: sovereignRatingColor.investment }} aria-hidden />
+                Investment
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: sovereignRatingColor.speculative }} aria-hidden />
+                Speculative
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: sovereignRatingColor.distressed }} aria-hidden />
+                Distressed
+              </span>
+            </>
+          )}
+          {fillMode === 'unVotingBlocA' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${NEUTRAL}, ${alignmentColor.blocA})` }} />
+              <span className="legend-gradient-labels">
+                <span>Low alignment</span><span>Bloc A aligned</span>
+              </span>
+            </span>
+          )}
+          {fillMode === 'unVotingBlocB' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${NEUTRAL}, ${alignmentColor.blocB})` }} />
+              <span className="legend-gradient-labels">
+                <span>Low alignment</span><span>Bloc B aligned</span>
+              </span>
+            </span>
+          )}
+          {fillMode === 'criticalMineralIntensity' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${MINERAL_LOW}, ${MINERAL_HIGH})` }} />
+              <span className="legend-gradient-labels">
+                <span>Low</span><span>High</span>
+              </span>
+            </span>
+          )}
+          {fillMode === 'softPower' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${SOFT_LOW}, ${SOFT_HIGH})` }} />
+              <span className="legend-gradient-labels">
+                <span>Low</span><span>High</span>
+              </span>
+            </span>
+          )}
+          {fillMode === 'defensePactDensity' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${PACT_LOW}, ${PACT_HIGH})` }} />
+              <span className="legend-gradient-labels">
+                <span>None</span><span>5+</span>
+              </span>
+            </span>
+          )}
         </div>
 
         <div className="map-fill-toggle">
           <span className="map-overlay-label">Fill</span>
-          <div className="map-overlay-row">
-            {fillModeOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={`overlay-btn ${fillMode === option.value ? 'overlay-btn-active' : ''}`}
-                onClick={() => onFillModeChange(option.value)}
-                title={option.hint}
-              >
-                {option.label}
-              </button>
+          <select
+            className="filter-select map-overlay-select"
+            value={fillMode}
+            onChange={(e) => onFillModeChange(e.target.value as MapFillMode)}
+            title="Select map fill mode"
+          >
+            {fillModeGroups.map((group) => (
+              <optgroup key={group.label} label={group.label}>
+                {group.options.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </optgroup>
             ))}
-          </div>
+          </select>
         </div>
 
         <div className="map-overlay-toggle">

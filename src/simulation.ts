@@ -4,6 +4,7 @@ import type {
   ContributionLine,
   CountryProfile,
   DriverScore,
+  EventTemplate,
   ProbabilityExplanation,
   ProbabilitySet,
   RelationshipSummary,
@@ -30,6 +31,8 @@ const round1 = (value: number) => Math.round(value * 10) / 10;
 
 const sumContributions = (lines: ContributionLine[]) =>
   lines.reduce((sum, line) => sum + line.contribution, 0);
+
+const normalizeRegionLabel = (value: string) => value.trim().toLowerCase();
 
 const classifyRisk = (risk: number): Tier => {
   if (risk >= 67) return 'high';
@@ -92,6 +95,58 @@ export const defaultScenarioInputs: ScenarioInputs = {
   coupRisk: 0,
 };
 
+const scenarioInputKeys = Object.keys(defaultScenarioInputs) as Array<keyof ScenarioInputs>;
+
+const clampScenarioInput = (key: keyof ScenarioInputs, value: number): number => {
+  if (key === 'treatyShift') return Math.min(60, Math.max(-60, value));
+  return Math.min(100, Math.max(0, value));
+};
+
+const eventAppliesToProfile = (profile: CountryProfile, event: EventTemplate): boolean => {
+  if (event.regionTags.length === 0) return true;
+
+  const region = normalizeRegionLabel(profile.region);
+  const subregion = normalizeRegionLabel(profile.subregion);
+  const matchesEasternMediterranean =
+    ['western asia', 'northern africa', 'southern europe'].includes(subregion)
+    || ['israel', 'lebanon', 'syria', 'jordan', 'cyprus', 'greece', 'turkey', 'egypt', 'libya'].includes(profile.id);
+
+  return event.regionTags.some((tag) => {
+    const normalized = normalizeRegionLabel(tag);
+    if (normalized === 'global') return true;
+    if (normalized === region || normalized === subregion) return true;
+    if (normalized === 'eastern mediterranean') return matchesEasternMediterranean;
+    return false;
+  });
+};
+
+export const getActiveEventsForProfile = (
+  profile: CountryProfile,
+  activeEvents: EventTemplate[],
+): EventTemplate[] => activeEvents.filter((event) => eventAppliesToProfile(profile, event));
+
+export const getScenarioInputsForProfile = (
+  baseInputs: ScenarioInputs,
+  activeEvents: EventTemplate[],
+  profile: CountryProfile,
+): ScenarioInputs => {
+  if (activeEvents.length === 0) return baseInputs;
+
+  const matchingEvents = getActiveEventsForProfile(profile, activeEvents);
+  if (matchingEvents.length === 0) return baseInputs;
+
+  const delta = scenarioInputKeys.reduce((acc, key) => {
+    const sum = matchingEvents.reduce((total, event) => {
+      return total + (event.inputs[key] ?? 0);
+    }, 0);
+    return { ...acc, [key]: sum };
+  }, {} as ScenarioInputs);
+
+  return scenarioInputKeys.reduce((acc, key) => {
+    return { ...acc, [key]: clampScenarioInput(key, baseInputs[key] + delta[key]) };
+  }, {} as ScenarioInputs);
+};
+
 export const simulationWeightSets: Record<WeightSetKey, SimulationWeightSet> = {
   baseline: {
     key: 'baseline',
@@ -133,6 +188,7 @@ export const getSimulationWeightSet = (key: WeightSetKey) => simulationWeightSet
 const resolveOptions = (options?: SimulationOptions) => ({
   includeHistory: options?.includeHistory ?? true,
   scenarioInputs: options?.scenarioInputs ?? defaultScenarioInputs,
+  activeEvents: options?.activeEvents ?? [],
   weightSet: options?.weightSet ?? simulationWeightSets.baseline,
 });
 
@@ -166,15 +222,16 @@ export const simulateCountry = (
   timelineIndex: number,
   options?: SimulationOptions,
 ): SimulatedCountry => {
-  const { includeHistory, scenarioInputs, weightSet } = resolveOptions(options);
+  const { includeHistory, scenarioInputs, activeEvents, weightSet } = resolveOptions(options);
+  const effectiveScenarioInputs = getScenarioInputsForProfile(scenarioInputs, activeEvents, profile);
   const momentum = timelineIndex * 1.8;
 
-  const treatyShock = scenarioInputs.treatyShift * weightSet.alliance;
-  const sanctionsShock = scenarioInputs.sanctionShock * weightSet.sanctions;
-  const electionShock = scenarioInputs.electionVolatility * weightSet.elections;
-  const invasionShock = scenarioInputs.invasionPressure * weightSet.invasion;
-  const coupShock = scenarioInputs.coupRisk * weightSet.coup;
-  const economicShock = (scenarioInputs.sanctionShock * 0.55 + Math.max(0, -scenarioInputs.treatyShift) * 0.35) * weightSet.economic;
+  const treatyShock = effectiveScenarioInputs.treatyShift * weightSet.alliance;
+  const sanctionsShock = effectiveScenarioInputs.sanctionShock * weightSet.sanctions;
+  const electionShock = effectiveScenarioInputs.electionVolatility * weightSet.elections;
+  const invasionShock = effectiveScenarioInputs.invasionPressure * weightSet.invasion;
+  const coupShock = effectiveScenarioInputs.coupRisk * weightSet.coup;
+  const economicShock = (effectiveScenarioInputs.sanctionShock * 0.55 + Math.max(0, -effectiveScenarioInputs.treatyShift) * 0.35) * weightSet.economic;
 
   // v10 numeric overlays: when EconomicStats / MilitaryStats / EnergyProfile are present,
   // use them as fine-grained modifiers on top of the existing tier-based logic. Profiles

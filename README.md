@@ -79,10 +79,26 @@ This release significantly expands the analytical surface of the model:
 - **Dataset version bumped to `0.11.0`** with telemetry exposed via
   `datasetTelemetry` for the methodology panel.
 
-## Next steps
+## Data Enhancement Pipeline
 
-- Replace the illustrative dataset snapshot with ingestion outputs from maintained external sources
-- Add historical backtesting and calibration of the weighting model
-- Persist user-defined scenarios or export them as structured files
-- Compare saved scenarios side-by-side across regions instead of only in a single active run
-- Wire the new v11 map-fill modes (`cyberCapability`, `internetFreedom`, `foodImportDependence`, `waterStress`, `debtVulnerability`, `sovereignRating`, `unVotingBlocA`, `unVotingBlocB`, `criticalMineralIntensity`, `softPower`, `defensePactDensity`) into the map-canvas legend and color ramps
+The project includes an off-main-thread data ingestion and backtesting pipeline to continuously refine the simulation weights based on real-world reference points.
+
+### Ingestion
+
+Externally sourced signals (IMF, SIPRI, UN Comtrade) can be fetched and integrated into the dataset payload:
+
+```bash
+npm run ingest
+```
+
+### Backtesting & Calibration
+
+To measure the simulation engine's accuracy against known historical alignments and calibrate risk/confidence weightings, use the backtesting script:
+
+```bash
+npm run backtest
+```
+
+### Scenario State
+
+Users can now pin side-by-side scenario comparisons within the right inspector panel to visually identify alignment deltas, risk spikes, and structural shifts caused by user-configured model overrides. Scenarios are exportable/importable securely as independent `.json` blobs to preserve historical snapshots.

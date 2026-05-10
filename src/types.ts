@@ -385,6 +385,7 @@ export interface SimulationWeightSet {
 export interface SimulationOptions {
   includeHistory?: boolean;
   scenarioInputs?: ScenarioInputs;
+  activeEvents?: EventTemplate[];
   weightSet?: SimulationWeightSet;
 }
 
@@ -462,6 +463,7 @@ export interface SavedScenario {
   weightSetKey: WeightSetKey;
   inputs: ScenarioInputs;
   activeEventIds?: string[];
+  savedAt?: string;
 }
 
 export type EventCategory = 'military' | 'economic' | 'political' | 'compound';

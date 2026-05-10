@@ -27,6 +27,7 @@ type Props = {
   scenarioName: string;
   scenarioInputs: ScenarioInputs;
   activeWeightSet: SimulationWeightSet;
+  activeEventNames: string[];
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
   tab: InspectorTab;
@@ -83,6 +84,7 @@ export function RightInspector({
   scenarioName,
   scenarioInputs,
   activeWeightSet,
+  activeEventNames,
   alignmentColor,
   alignmentLabel,
   tab,
@@ -158,7 +160,13 @@ export function RightInspector({
           />
         )}
 
-        {tab === 'profile' && <ProfilePanel selected={selected} />}
+        {tab === 'profile' && (
+          <ProfilePanel 
+            selected={selected} 
+            comparisonSelected={comparisonSelected}
+            comparisonScenarioName={comparisonScenarioName}
+          />
+        )}
 
         {tab === 'relationships' && (
           <RelationshipsPanel selected={selected} onSelectRelated={onSelectRelated} />
@@ -170,6 +178,9 @@ export function RightInspector({
             scenarioName={scenarioName}
             scenarioInputs={scenarioInputs}
             activeWeightSet={activeWeightSet}
+            activeEventNames={activeEventNames}
+            comparisonSelected={comparisonSelected}
+            comparisonScenarioName={comparisonScenarioName}
           />
         )}
 
@@ -364,29 +375,46 @@ function ProfileStatGrid({
 function ProfileStat({
   label,
   value,
+  comparisonValue,
   sub,
   tone,
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
+  comparisonValue?: ReactNode;
   sub?: string;
   tone?: 'positive' | 'negative' | 'neutral';
 }) {
   return (
     <div className="profile-stat">
       <span className="profile-stat-label">{label}</span>
-      <strong
-        className="profile-stat-value"
-        data-tone={tone}
-      >
-        {value}
-      </strong>
+      <div className="profile-stat-value-group">
+        <strong
+          className="profile-stat-value"
+          data-tone={tone}
+        >
+          {value}
+        </strong>
+        {comparisonValue && (
+          <strong className="profile-stat-value profile-stat-value-comparison">
+             / {comparisonValue}
+          </strong>
+        )}
+      </div>
       {sub && <span className="profile-stat-sub">{sub}</span>}
     </div>
   );
 }
 
-function ProfilePanel({ selected }: { selected: SimulatedCountry }) {
+function ProfilePanel({ 
+  selected, 
+  comparisonSelected, 
+  comparisonScenarioName 
+}: { 
+  selected: SimulatedCountry;
+  comparisonSelected: SimulatedCountry | null;
+  comparisonScenarioName: string | null;
+}) {
   const { profile } = selected;
   const econ = profile.economicStats;
   const mil = profile.militaryStats;
@@ -512,16 +540,19 @@ function ProfilePanel({ selected }: { selected: SimulatedCountry }) {
         <h3 className="profile-section-title">
           <span className="profile-section-icon" aria-hidden={true}>📊</span>
           Model outputs
+          {comparisonScenarioName && <span className="profile-section-sub"> (vs {comparisonScenarioName})</span>}
         </h3>
         <div className="profile-stat-grid">
           <ProfileStat
             label="Escalation risk"
             value={`${selected.risk}%`}
+            comparisonValue={comparisonSelected ? `${comparisonSelected.risk}%` : undefined}
             tone={selected.risk >= 65 ? 'negative' : selected.risk >= 40 ? 'neutral' : 'positive'}
           />
           <ProfileStat
             label="Confidence"
             value={`${selected.confidence}%`}
+            comparisonValue={comparisonSelected ? `${comparisonSelected.confidence}%` : undefined}
           />
           <ProfileStat
             label="Source coverage"
@@ -689,23 +720,39 @@ function DriversPanel({
   scenarioName,
   scenarioInputs,
   activeWeightSet,
+  activeEventNames,
+  comparisonSelected,
+  comparisonScenarioName,
 }: {
   selected: SimulatedCountry;
   scenarioName: string;
   scenarioInputs: ScenarioInputs;
   activeWeightSet: SimulationWeightSet;
+  activeEventNames: string[];
+  comparisonSelected: SimulatedCountry | null;
+  comparisonScenarioName: string | null;
 }) {
   return (
     <div className="panel-stack">
       <div className="section">
         <h3 className="section-title">Key drivers</h3>
         <ul className="kv-list">
-          {selected.drivers.map((driver) => (
-            <li key={driver.label}>
-              <span>{driver.label}</span>
-              <strong>{driver.value}</strong>
-            </li>
-          ))}
+          {selected.drivers.map((driver) => {
+            const compDriver = comparisonSelected?.drivers.find(d => d.label === driver.label);
+            return (
+              <li key={driver.label}>
+                <span>{driver.label}</span>
+                <strong>
+                  {driver.value}
+                  {compDriver && compDriver.value !== driver.value && (
+                    <em style={{ marginLeft: 6, fontWeight: 'normal', color: 'var(--text-muted)' }}>
+                      (was {compDriver.value})
+                    </em>
+                  )}
+                </strong>
+              </li>
+            );
+          })}
         </ul>
       </div>
 
@@ -791,6 +838,20 @@ function DriversPanel({
           </li>
         </ul>
       </div>
+
+      {activeEventNames.length > 0 && (
+        <div className="section">
+          <h3 className="section-title">Events affecting this country</h3>
+          <ul className="kv-list">
+            {activeEventNames.map((eventName) => (
+              <li key={eventName}>
+                <span>{eventName}</span>
+                <strong>Active</strong>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
