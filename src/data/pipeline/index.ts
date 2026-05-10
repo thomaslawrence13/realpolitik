@@ -3,6 +3,8 @@ import type { LiveData } from '../worldBankClient';
 import { geopoliticalDatasetV1 } from '../datasets/v1';
 import {
   buildConflictSnapshotObservations,
+  buildDemographicCohesionObservations,
+  buildEnergySanctionsCrossCheckObservations,
   buildGovernanceCrossCheckObservations,
   buildSanctionsSnapshotObservations,
   buildTradeDependenceObservations,
@@ -11,6 +13,7 @@ import {
 import {
   buildDerivedRelationshipObservations,
   buildRelationshipSnapshotObservations,
+  buildTradePartnerDependencyObservations,
 } from './relationshipProviders';
 import { enrichCountryWithObservations } from './reconcile';
 import { enrichRelationshipWithObservations } from './reconcileRelationships';
@@ -56,6 +59,8 @@ export const enrichProfilesWithSourcePipeline = (
     ...buildSanctionsSnapshotObservations(profiles),
     ...buildTradeDependenceObservations(profiles),
     ...buildGovernanceCrossCheckObservations(profiles),
+    ...buildEnergySanctionsCrossCheckObservations(profiles),
+    ...buildDemographicCohesionObservations(profiles),
   ];
 
   const byCountry = groupByCountry(indicatorObservations);
@@ -77,6 +82,7 @@ export const enrichProfilesWithSourcePipeline = (
   const relationshipObservations = [
     ...buildRelationshipSnapshotObservations(rawEdges),
     ...buildDerivedRelationshipObservations(enrichedProfiles, rawEdges),
+    ...buildTradePartnerDependencyObservations(enrichedProfiles, rawEdges),
   ];
 
   const relObsBySourceCountry = indexRelationshipObservations(relationshipObservations);

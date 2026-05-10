@@ -75,6 +75,10 @@ const fillModeOptions: ReadonlyArray<{ value: MapFillMode; label: string; hint: 
   { value: 'militaryBurden', label: 'Mil.%GDP', hint: 'Military expenditure as % of GDP' },
   { value: 'regime', label: 'Regime', hint: 'Color by regime type (democracy / hybrid / authoritarian)' },
   { value: 'conflictPressure', label: 'Conflict', hint: 'Indicator-based conflict pressure (low / medium / high)' },
+  { value: 'population', label: 'Pop', hint: 'Total population (millions, log-scaled)' },
+  { value: 'medianAge', label: 'Age', hint: 'Median age — young (green) → aged (indigo)' },
+  { value: 'energyExports', label: 'Energy', hint: 'Net energy exports — green (exporter) → red (importer)' },
+  { value: 'demographicPressure', label: 'Demo', hint: 'Composite demographic pressure score (youth bulge + aging + migration)' },
 ];
 
 // Risk gradient: low (green) → medium (amber) → high (red).
@@ -194,6 +198,66 @@ const conflictPressureColor: Record<string, string> = {
   high:   CONFLICT_HIGH,
 };
 
+// Population: log-scale charcoal (< 1 M) → cyan (~ 50 M) → magenta (> 1 B).
+const POP_LOW = '#0f172a';
+const POP_MID = '#22d3ee';
+const POP_HIGH = '#e879f9';
+const populationColor = (popMillions: number | undefined): string => {
+  if (popMillions == null) return NEUTRAL;
+  // log10 scale: 1 M → 0, 50 M → 0.5, 1 B → 1
+  const t = Math.max(0, Math.min(1, (Math.log10(Math.max(1, popMillions)) - 0) / 3));
+  if (t < 0.5) return lerpColor(POP_LOW, POP_MID, t * 2);
+  return lerpColor(POP_MID, POP_HIGH, (t - 0.5) * 2);
+};
+
+// Median age: green (very young, ≤ 22) → amber (~33) → indigo (very aged, ≥ 48).
+const AGE_YOUNG = '#34d399';
+const AGE_MID   = '#f59e0b';
+const AGE_OLD   = '#6366f1';
+const medianAgeColor = (age: number | undefined): string => {
+  if (age == null) return NEUTRAL;
+  const t = Math.max(0, Math.min(1, (age - 22) / 26));
+  if (t < 0.5) return lerpColor(AGE_YOUNG, AGE_MID, t * 2);
+  return lerpColor(AGE_MID, AGE_OLD, (t - 0.5) * 2);
+};
+
+// Energy exports: red (heavy importer) → slate (balanced) → green (heavy exporter).
+// Scale uses energyImportDependencePct: positive = importer, negative = exporter.
+const ENERGY_IMPORTER = '#f87171';
+const ENERGY_BALANCED = '#475569';
+const ENERGY_EXPORTER = '#22c55e';
+const energyExportsColor = (depPct: number | undefined): string => {
+  if (depPct == null) return NEUTRAL;
+  if (depPct > 0) {
+    const t = Math.max(0, Math.min(1, depPct / 90));
+    return lerpColor(ENERGY_BALANCED, ENERGY_IMPORTER, t);
+  }
+  const t = Math.max(0, Math.min(1, -depPct / 200));
+  return lerpColor(ENERGY_BALANCED, ENERGY_EXPORTER, t);
+};
+
+// Demographic pressure score, derived from youth share, aging, and net migration.
+// Higher score = more pressure on stability and labour-market absorption.
+const demographicPressureScore = (profile: SimulatedCountry['profile']): number | null => {
+  const demo = profile.demographics;
+  if (!demo) return null;
+  let score = 0;
+  if (demo.youthSharePct > 25) score += (demo.youthSharePct - 25) * 4;
+  if (demo.medianAge > 45) score += (demo.medianAge - 45) * 3;
+  if (demo.netMigrationPer1000 != null && demo.netMigrationPer1000 < -3) {
+    score += Math.abs(demo.netMigrationPer1000 + 3) * 5;
+  }
+  return Math.min(100, Math.round(score));
+};
+const DEMO_LOW  = '#0ea5e9';
+const DEMO_HIGH = '#dc2626';
+const demographicPressureColor = (profile: SimulatedCountry['profile']): string => {
+  const score = demographicPressureScore(profile);
+  if (score == null) return NEUTRAL;
+  const t = Math.max(0, Math.min(1, score / 60));
+  return lerpColor(DEMO_LOW, DEMO_HIGH, t);
+};
+
 type FillResolverArgs = {
   simulated: SimulatedCountry;
   baseline?: SimulatedCountry;
@@ -214,6 +278,10 @@ const resolveFill = (mode: MapFillMode, args: FillResolverArgs): string => {
   if (mode === 'regime') return regimeTypeColor[simulated.profile.regimeType];
   if (mode === 'conflictPressure')
     return conflictPressureColor[simulated.profile.indicators.conflictPressure] ?? NEUTRAL;
+  if (mode === 'population') return populationColor(simulated.profile.demographics?.populationMillions);
+  if (mode === 'medianAge') return medianAgeColor(simulated.profile.demographics?.medianAge);
+  if (mode === 'energyExports') return energyExportsColor(simulated.profile.energy?.energyImportDependencePct);
+  if (mode === 'demographicPressure') return demographicPressureColor(simulated.profile);
   // shift: highlight countries whose risk or alignment diverged from baseline.
   if (!baseline) return alignmentColor[simulated.alignment];
   const alignmentChanged = simulated.alignment !== baseline.alignment;
@@ -745,6 +813,37 @@ export function MapCanvas({
                   {capitalize(hovered.profile.indicators.conflictPressure)}
                 </span>
               )}
+              {fillMode === 'population' && hovered.profile.demographics?.populationMillions != null && (
+                <span>
+                  <em>Pop</em>
+                  {hovered.profile.demographics.populationMillions >= 1000
+                    ? `${(hovered.profile.demographics.populationMillions / 1000).toFixed(2)}B`
+                    : `${hovered.profile.demographics.populationMillions.toFixed(0)}M`}
+                </span>
+              )}
+              {fillMode === 'medianAge' && hovered.profile.demographics?.medianAge != null && (
+                <span>
+                  <em>Median age</em>
+                  {hovered.profile.demographics.medianAge.toFixed(1)}y
+                </span>
+              )}
+              {fillMode === 'energyExports' && hovered.profile.energy != null && (
+                <span>
+                  <em>Energy</em>
+                  {hovered.profile.energy.energyImportDependencePct > 0
+                    ? `${Math.round(hovered.profile.energy.energyImportDependencePct)}% imports`
+                    : `${Math.round(-hovered.profile.energy.energyImportDependencePct)}% exporter`}
+                </span>
+              )}
+              {fillMode === 'demographicPressure' && hovered.profile.demographics != null && (
+                <span>
+                  <em>Demo pressure</em>
+                  {(() => {
+                    const score = demographicPressureScore(hovered.profile);
+                    return score == null ? '—' : `${score}`;
+                  })()}
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -890,6 +989,38 @@ export function MapCanvas({
                 High
               </span>
             </>
+          )}
+          {fillMode === 'population' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${POP_LOW}, ${POP_MID}, ${POP_HIGH})` }} />
+              <span className="legend-gradient-labels">
+                <span>&lt; 1M</span><span>~50M</span><span>1B+</span>
+              </span>
+            </span>
+          )}
+          {fillMode === 'medianAge' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${AGE_YOUNG}, ${AGE_MID}, ${AGE_OLD})` }} />
+              <span className="legend-gradient-labels">
+                <span>22y</span><span>35y</span><span>48y+</span>
+              </span>
+            </span>
+          )}
+          {fillMode === 'energyExports' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${ENERGY_EXPORTER}, ${ENERGY_BALANCED}, ${ENERGY_IMPORTER})` }} />
+              <span className="legend-gradient-labels">
+                <span>Net exporter</span><span>Balanced</span><span>Heavy importer</span>
+              </span>
+            </span>
+          )}
+          {fillMode === 'demographicPressure' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${DEMO_LOW}, ${DEMO_HIGH})` }} />
+              <span className="legend-gradient-labels">
+                <span>Stable</span><span>High pressure</span>
+              </span>
+            </span>
           )}
         </div>
 

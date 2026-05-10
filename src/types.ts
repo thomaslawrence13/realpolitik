@@ -16,7 +16,11 @@ export type MapFillMode =
   | 'nuclearArmed'
   | 'militaryBurden'
   | 'regime'
-  | 'conflictPressure';
+  | 'conflictPressure'
+  | 'population'
+  | 'medianAge'
+  | 'energyExports'
+  | 'demographicPressure';
 
 export interface DatasetSource {
   id: string;
@@ -65,6 +69,50 @@ export interface MilitaryStats {
   nuclearArmed: boolean;
 }
 
+/** Demographic snapshot (~2024 values). */
+export interface DemographicStats {
+  /** Total population in millions */
+  populationMillions: number;
+  /** Median age, years */
+  medianAge: number;
+  /** Urban population as % of total */
+  urbanizationPct: number;
+  /** Share of population aged 15-29 (%) — proxy for youth bulge */
+  youthSharePct: number;
+  /** Net annual migration rate per 1000 (positive = inflow) */
+  netMigrationPer1000?: number;
+}
+
+/** Energy and critical-resource posture. */
+export interface EnergyProfile {
+  /** Net oil exporter (positive numbers = net export, mb/d) */
+  netOilExportMbd: number;
+  /** Net gas exporter (positive = net export, bcm/yr) */
+  netGasExportBcm: number;
+  /** Energy import dependence: imports as % of total energy use */
+  energyImportDependencePct: number;
+  /** Whether the state hosts material critical-mineral production */
+  criticalMineralExporter: boolean;
+  /** Notes describing key resources, choke points, or pipelines */
+  notes?: string;
+}
+
+/** Top-N bilateral trade partner with directional share metadata. */
+export interface TopTradePartner {
+  /** Other country's id */
+  countryId: string;
+  /** Share of this country's total trade attributed to the partner (0–100). */
+  sharePct: number;
+  /** Whether the share is dominated by exports, imports, or balanced. */
+  flow: 'exports' | 'imports' | 'balanced';
+}
+
+/** Geographic centroid (approximate). */
+export interface GeoCentroid {
+  lat: number;
+  lng: number;
+}
+
 export interface CountryRecord {
   id: string;
   mapName: string;
@@ -83,6 +131,14 @@ export interface CountryRecord {
   economicStats?: EconomicStats;
   /** Defence / military snapshot (~2024). Present for all parameterised states. */
   militaryStats?: MilitaryStats;
+  /** Demographic snapshot (~2024). Coverage limited to G20 + key strategic actors in v10. */
+  demographics?: DemographicStats;
+  /** Energy and critical-resource posture. Coverage limited to major exporters/importers in v10. */
+  energy?: EnergyProfile;
+  /** Top bilateral trade partners with directional shares. */
+  topTradePartners?: TopTradePartner[];
+  /** Approximate geographic centroid. */
+  geo?: GeoCentroid;
 }
 
 export interface RelationshipEdge {
