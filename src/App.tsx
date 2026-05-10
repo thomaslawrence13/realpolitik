@@ -4,6 +4,7 @@ import {
   allianceNetworks,
   countryProfiles,
   datasetVersion,
+  informationQualityTelemetry,
   methodologyNotes,
   scenarioTimeline,
 } from './data/countryData';
@@ -789,6 +790,7 @@ export default function App() {
         onToggleComparison={toggleComparison}
         eventFeed={eventFeed}
         methodologyNotes={methodologyNotes}
+        informationQuality={informationQualityTelemetry}
         scenarioTimeline={scenarioTimeline}
         events={eventLibrary}
         activeEventIds={activeEventIds}

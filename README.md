@@ -79,6 +79,28 @@ This release significantly expands the analytical surface of the model:
 - **Dataset version bumped to `0.11.0`** with telemetry exposed via
   `datasetTelemetry` for the methodology panel.
 
+## v12 information quality enhancement
+
+- **Information quality scoring for every country** — each record now receives an
+  `informationScore` (0–100) composed of:
+  - source-coverage contribution
+  - dimensional completeness across macro/military + v10/v11 expansions
+  - recency penalties based on `lastUpdated`
+- **Actionable quality telemetry** — `informationQualityTelemetry` surfaces:
+  - average score
+  - stale-country count
+  - high-quality/low-quality counts
+  - top and weakest information cohorts for prioritised data-refresh work
+- **UI integration** — the methodology drawer now renders this telemetry summary
+  and highlights top priority refresh targets directly in-product.
+- **Remediation dashboard cards** — weakest countries are shown with score,
+  source coverage, completeness, staleness age, and top missing dimensions to
+  support triage without leaving the app.
+- **Per-country quality traces** — country profiles now include a computed
+  `dataQuality` payload with per-indicator confidence, staleness flags, and
+  explicit degraded reasons (missing enrichments, low coverage, stale updates).
+- **Dataset version bumped to `0.12.0`**.
+
 ## Data Enhancement Pipeline
 
 The project includes an off-main-thread data ingestion and backtesting pipeline to continuously refine the simulation weights based on real-world reference points.

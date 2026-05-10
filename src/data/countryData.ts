@@ -2,10 +2,14 @@ import { geopoliticalDatasetV1 } from './datasets/v1';
 import { v10Enhancements } from './datasets/v10Enhancements';
 import { v11Enhancements } from './datasets/v11Enhancements';
 import type {
+  CountryIndicators,
   CountryProfile,
+  CountryInformationScore,
   CountryRelationship,
   CountryRecord,
   DatasetSource,
+  IndicatorTelemetry,
+  InformationQualityTelemetry,
   RelationshipEdge,
 } from '../types';
 
@@ -313,20 +317,95 @@ const buildRelationships = (countryId: string) => {
     .sort((left, right) => right.tension - left.tension);
 };
 
+const getYear = (isoDate: string) => {
+  const year = Number.parseInt(isoDate.slice(0, 4), 10);
+  return Number.isFinite(year) ? year : 0;
+};
+
+const nowYear = new Date().getUTCFullYear();
+const DATA_QUALITY_STALE_YEARS = 2;
+const DATA_QUALITY_MIN_CONFIDENCE = 35;
+const DATA_QUALITY_MAX_CONFIDENCE = 95;
+const DATA_QUALITY_STALE_CONFIDENCE_PENALTY = 7;
+const DATA_QUALITY_SOURCE_COVERAGE_THRESHOLD = 70;
+const INDICATOR_KEYS: (keyof CountryIndicators)[] = [
+  'tradeExposure',
+  'militaryTreatyLevel',
+  'conflictPressure',
+  'sanctionsExposure',
+  'ideology',
+  'borderDisputes',
+  'regimeStability',
+  'conflictHistory',
+  'tradeDependence',
+  'cohesion',
+];
+
+const getDataQualityGaps = (country: CountryRecord): string[] => {
+  const gaps: string[] = [];
+  if (!country.demographics) gaps.push('missing demographic enrichment');
+  if (!country.energy) gaps.push('missing energy enrichment');
+  if (!country.topTradePartners?.length) gaps.push('missing top trade partner enrichment');
+  if (!country.cyber || !country.fiscal || !country.foodWater || !country.diplomatic) {
+    gaps.push('missing v11 strategic-dimension enrichment');
+  }
+  return gaps;
+};
+
+const deriveCountryDataQuality = (country: CountryRecord) => {
+  const yearsStale = Math.max(0, nowYear - getYear(country.lastUpdated));
+  const stale = yearsStale > DATA_QUALITY_STALE_YEARS;
+  const defaultSourceId = country.sourceIds[0] ?? 'phase1-estimates';
+  const confidence = Math.max(
+    DATA_QUALITY_MIN_CONFIDENCE,
+    Math.min(
+      DATA_QUALITY_MAX_CONFIDENCE,
+      Math.round(country.sourceCoverage - yearsStale * DATA_QUALITY_STALE_CONFIDENCE_PENALTY),
+    ),
+  );
+  const indicators: IndicatorTelemetry[] = INDICATOR_KEYS.map((indicator) => ({
+    sourceId: defaultSourceId,
+    observedAt: country.lastUpdated,
+    confidence,
+    stale,
+    method: 'expert-curated',
+    indicator,
+  }));
+
+  const degradedReasons: string[] = [];
+  if (stale) degradedReasons.push(`country snapshot is ${yearsStale} years old`);
+  if (country.sourceCoverage < DATA_QUALITY_SOURCE_COVERAGE_THRESHOLD) {
+    degradedReasons.push(
+      `source coverage below recommended threshold (${DATA_QUALITY_SOURCE_COVERAGE_THRESHOLD})`,
+    );
+  }
+  degradedReasons.push(...getDataQualityGaps(country));
+
+  return {
+    computedSourceCoverage: country.sourceCoverage,
+    computedLastUpdated: country.lastUpdated,
+    degradedReasons,
+    indicators,
+  };
+};
+
 const countries = enhancedCountries
   .map<CountryProfile>((country) => ({
     ...country,
     sources: resolveSources(country.sourceIds),
     relationships: buildRelationships(country.id),
+    dataQuality: deriveCountryDataQuality(country),
   }))
   .sort((left, right) => left.displayName.localeCompare(right.displayName));
 
-export const datasetVersion = '0.11.0';
+export const datasetVersion = '0.12.0';
 export const methodologyNotes = [
   ...dataset.methodologyNotes,
   'v11 (data enhancement): adds cyber, fiscal, food/water, diplomatic, critical-mineral and soft-power dimensions for ~50 strategic actors.',
   'v11 also backfills demographics, energy posture, top trade partners and geo centroids for the previously sparse country tier.',
   'v11 derives ~hundreds of additional relationship edges from top trade-partner shares, shared defense pacts and IGO memberships, and opposing-bloc anchors. Derived edges are tagged sourceId="v11-derived" and ranked below explicit ones in pipeline reconciliation.',
+  'v12 (information quality): computes per-country information scores based on source coverage, dimensional completeness, and recency to spotlight stale or sparse records.',
+  'v12 also emits per-country dataQuality telemetry (indicator confidence, staleness, and degraded reasons) to make remediation workflows explicit.',
 ];
 export const scenarioTimeline = dataset.scenarioTimeline;
 export const countryProfiles = countries;
@@ -341,6 +420,72 @@ export const datasetTelemetry = {
   totalRelationships: allEdges.length,
   v10Coverage: countries.filter((c) => Boolean(c.demographics)).length,
   v11Coverage: countries.filter((c) => Boolean(c.cyber)).length,
+};
+
+const assessCountryCompleteness = (country: CountryProfile) => {
+  const checks = [
+    Boolean(country.economicStats),
+    Boolean(country.militaryStats),
+    Boolean(country.demographics),
+    Boolean(country.energy),
+    Boolean(country.topTradePartners?.length),
+    Boolean(country.geo),
+    Boolean(country.cyber),
+    Boolean(country.fiscal),
+    Boolean(country.foodWater),
+    Boolean(country.diplomatic),
+    Boolean(country.criticalMinerals),
+    Boolean(country.softPower),
+  ];
+  return checks.filter(Boolean).length / checks.length;
+};
+
+const countryInformationScores: CountryInformationScore[] = countries
+  .map((country) => {
+    const yearsStale = Math.max(0, nowYear - getYear(country.lastUpdated));
+    const stalenessPenalty = Math.min(35, yearsStale * 8);
+    const completeness = assessCountryCompleteness(country);
+    const sourceCoverageScore = country.sourceCoverage * 0.45;
+    const completenessScore = completeness * 45;
+    const recencyScore = Math.max(0, 10 - stalenessPenalty);
+    const informationScore = Math.max(
+      0,
+      Math.min(100, Math.round(sourceCoverageScore + completenessScore + recencyScore)),
+    );
+    return {
+      countryId: country.id,
+      displayName: country.displayName,
+      informationScore,
+      yearsStale,
+      sourceCoverage: country.sourceCoverage,
+      completeness: Number(completeness.toFixed(2)),
+      stale: yearsStale > 2,
+      gaps: [
+        !country.demographics && 'demographics',
+        !country.energy && 'energy',
+        !country.topTradePartners?.length && 'tradePartners',
+        !country.cyber && 'cyber',
+        !country.fiscal && 'fiscal',
+        !country.foodWater && 'foodWater',
+        !country.diplomatic && 'diplomatic',
+        !country.softPower && 'softPower',
+      ].filter((gap): gap is string => Boolean(gap)),
+    };
+  })
+  .sort((a, b) => b.informationScore - a.informationScore);
+
+export const informationQualityTelemetry: InformationQualityTelemetry = {
+  assessedAt: new Date().toISOString(),
+  averageInformationScore:
+    Math.round(
+      (countryInformationScores.reduce((sum, c) => sum + c.informationScore, 0) / countries.length) *
+        10,
+    ) / 10,
+  staleCountryCount: countryInformationScores.filter((c) => c.stale).length,
+  highQualityCount: countryInformationScores.filter((c) => c.informationScore >= 80).length,
+  lowQualityCount: countryInformationScores.filter((c) => c.informationScore < 55).length,
+  topInformationCountries: countryInformationScores.slice(0, 15),
+  weakestInformationCountries: countryInformationScores.slice(-15).reverse(),
 };
 
 // O(1) lookup maps for country access

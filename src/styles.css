@@ -2397,6 +2397,80 @@ input[type='range']::-moz-range-thumb {
   line-height: 1.55;
 }
 
+.methodology-panel {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.methodology-telemetry-line {
+  margin-top: 0.35rem;
+}
+
+.methodology-telemetry-line-tight {
+  margin-top: 0.2rem;
+}
+
+.methodology-priority-targets {
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+
+.methodology-priority-label {
+  color: var(--text-2);
+}
+
+.methodology-priority-grid {
+  margin-top: 0.7rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.45rem;
+}
+
+.methodology-priority-card {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  padding: 0.5rem 0.6rem;
+}
+
+.methodology-priority-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.methodology-priority-score {
+  font-size: 0.72rem;
+  padding: 0.1rem 0.42rem;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--text-2);
+}
+
+.methodology-priority-card p {
+  margin: 0.35rem 0 0;
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+
+.methodology-priority-gaps {
+  margin-top: 0.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.methodology-priority-gaps span {
+  font-size: 0.66rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: 0.08rem 0.35rem;
+  color: var(--text-4);
+}
+
 /* History scenario input chips */
 .history-summary-chips {
   display: flex;
