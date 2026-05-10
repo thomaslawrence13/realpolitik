@@ -49,6 +49,7 @@ import { BottomDrawer } from './components/BottomDrawer';
 import type { DrawerTab, EventFeedItem } from './components/BottomDrawer';
 import { ShortcutsHelp } from './components/ShortcutsHelp';
 import { UndoToast } from './components/UndoToast';
+import { WelcomeGuide } from './components/WelcomeGuide';
 
 // Lazy-load MapCanvas so the world-atlas TopoJSON ships in its own async chunk.
 const MapCanvas = lazy(() => import('./components/MapCanvas').then((m) => ({ default: m.MapCanvas })));
@@ -68,6 +69,7 @@ const weightSetOptions = Object.values(simulationWeightSets);
 const TIMELINE_AUTO_PLAY_INTERVAL_MS = 1200;
 const MIN_DRAWER_HEIGHT = 180;
 const MAX_DRAWER_HEIGHT_RATIO = 0.65;
+const WELCOME_DISMISSED_KEY = 'realpolitik:welcome-dismissed';
 const INTERACTIVE_SHORTCUT_TAGS = new Set(['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A']);
 const INTERACTIVE_SHORTCUT_ROLES = new Set(['button', 'textbox', 'link']);
 
@@ -163,6 +165,10 @@ export default function App() {
     persisted?.comparisonScenarioId ?? null,
   );
   const [helpOpen, setHelpOpen] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem(WELCOME_DISMISSED_KEY) !== '1';
+  });
   const [importError, setImportError] = useState<string | null>(null);
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>('idle');
   const [pendingDelete, setPendingDelete] = useState<SavedScenario | null>(null);
@@ -175,9 +181,13 @@ export default function App() {
   // in the background. Failures fall back silently to the static dataset.
   const [activeProfiles, setActiveProfiles] = useState(countryProfiles);
   const [liveDataStatus, setLiveDataStatus] = useState<'loading' | 'live' | 'error'>('loading');
+  const liveFetchRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
+  const loadLiveData = useCallback(() => {
+    liveFetchRef.current?.abort();
     const controller = new AbortController();
+    liveFetchRef.current = controller;
+    setLiveDataStatus('loading');
     fetchLiveData(controller.signal)
       .then((live) => {
         setActiveProfiles(enrichProfiles(countryProfiles, live));
@@ -186,8 +196,12 @@ export default function App() {
       .catch(() => {
         if (!controller.signal.aborted) setLiveDataStatus('error');
       });
-    return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    loadLiveData();
+    return () => liveFetchRef.current?.abort();
+  }, [loadLiveData]);
 
   // Defer heavy simulation re-runs so UI (sliders, timeline) stays responsive while
   // the map catches up asynchronously via React's concurrent scheduler.
@@ -589,6 +603,38 @@ export default function App() {
 
   const clearComparison = () => setComparisonScenarioId(null);
 
+  const closeWelcome = useCallback(() => {
+    setWelcomeOpen(false);
+    try {
+      window.localStorage.setItem(WELCOME_DISMISSED_KEY, '1');
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const handleWelcomeFocusSearch = useCallback(() => {
+    setLeftOpen(true);
+    setWelcomeOpen(false);
+    searchInputRef.current?.focus();
+    searchInputRef.current?.select();
+    try {
+      window.localStorage.setItem(WELCOME_DISMISSED_KEY, '1');
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const handleWelcomeOpenScenario = useCallback(() => {
+    setDrawerOpen(true);
+    setDrawerTab('scenario');
+    closeWelcome();
+  }, [closeWelcome]);
+
+  const handleWelcomeOpenShortcuts = useCallback(() => {
+    setHelpOpen(true);
+    closeWelcome();
+  }, [closeWelcome]);
+
   const shareCurrentScenario = useCallback(async () => {
     const url = buildShareableUrl({
       scenarioName,
@@ -698,6 +744,7 @@ export default function App() {
         datasetVersion={datasetVersion}
         countryCount={totalCountries}
         liveDataStatus={liveDataStatus}
+        onRetryLiveData={loadLiveData}
         leftOpen={leftOpen}
         rightOpen={rightOpen}
         drawerOpen={drawerOpen}
@@ -721,6 +768,8 @@ export default function App() {
         onSelect={setSelectedCountry}
         filters={filters}
         onFiltersChange={setFilters}
+        onClearSearch={() => setSearch('')}
+        onResetFilters={() => setFilters(defaultFilters)}
         alliances={allianceNetworks}
         alignmentColor={alignmentColor}
         alignmentLabel={alignmentLabel}
@@ -821,6 +870,13 @@ export default function App() {
       />
 
       <ShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <WelcomeGuide
+        open={welcomeOpen}
+        onClose={closeWelcome}
+        onFocusSearch={handleWelcomeFocusSearch}
+        onOpenScenarioLab={handleWelcomeOpenScenario}
+        onOpenShortcuts={handleWelcomeOpenShortcuts}
+      />
 
       {pendingDelete && (
         <UndoToast

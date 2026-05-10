@@ -13,6 +13,8 @@ type Props = {
   onSelect: (name: string) => void;
   filters: Filters;
   onFiltersChange: (next: Filters) => void;
+  onClearSearch: () => void;
+  onResetFilters: () => void;
   alliances: readonly string[];
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
@@ -55,16 +57,6 @@ const RISK_GROUP_RANK = {
   low: 2,
 } as const;
 
-const defaultFilters: Filters = {
-  allianceNetwork: 'all',
-  tradeExposure: 'all',
-  militaryTreatyLevel: 'all',
-  conflictPressure: 'all',
-  sanctionsExposure: 'all',
-  regimeType: 'all',
-  riskLevel: 'all',
-};
-
 const formatTitle = (value: string) =>
   value.length === 0 ? value : value.charAt(0).toUpperCase() + value.slice(1);
 
@@ -78,6 +70,8 @@ export function LeftRail({
   onSelect,
   filters,
   onFiltersChange,
+  onClearSearch,
+  onResetFilters,
   alliances,
   alignmentColor,
   alignmentLabel,
@@ -209,7 +203,7 @@ export function LeftRail({
             <button
               type="button"
               className="rail-search-clear"
-              onClick={() => onSearchChange('')}
+              onClick={onClearSearch}
               aria-label="Clear search"
             >
               <SvgIcon.X />
@@ -333,7 +327,7 @@ export function LeftRail({
               <button
                 type="button"
                 className="filter-reset"
-                onClick={() => onFiltersChange(defaultFilters)}
+                onClick={onResetFilters}
               >
                 <SvgIcon.Reset />
                 <span>Reset all filters</span>
@@ -355,6 +349,20 @@ export function LeftRail({
           <div className="rail-empty">
             <strong>No matches</strong>
             <p>Try clearing a filter or searching for a different country.</p>
+            {(search.length > 0 || activeFilterCount > 0) && (
+              <div className="rail-empty-actions">
+                {search.length > 0 && (
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={onClearSearch}>
+                    Clear search
+                  </button>
+                )}
+                {activeFilterCount > 0 && (
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={onResetFilters}>
+                    Reset filters
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           grouped.map((group) => (

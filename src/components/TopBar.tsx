@@ -8,6 +8,7 @@ type Props = {
   datasetVersion: string;
   countryCount: number;
   liveDataStatus: 'loading' | 'live' | 'error';
+  onRetryLiveData: () => void;
   leftOpen: boolean;
   rightOpen: boolean;
   drawerOpen: boolean;
@@ -29,6 +30,7 @@ export function TopBar({
   datasetVersion,
   countryCount,
   liveDataStatus,
+  onRetryLiveData,
   leftOpen,
   rightOpen,
   drawerOpen,
@@ -68,6 +70,11 @@ export function TopBar({
             >
               {liveDataStatus === 'live' ? 'live data' : liveDataStatus === 'error' ? 'static data' : 'updating…'}
             </span>
+            {liveDataStatus === 'error' && (
+              <button type="button" className="live-status-retry" onClick={onRetryLiveData}>
+                Retry
+              </button>
+            )}
           </span>
         </div>
       </div>
