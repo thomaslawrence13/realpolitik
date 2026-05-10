@@ -26,6 +26,8 @@ const MAX_ZOOM = 8;
 const ZOOM_STEP = 0.3;
 // How much of the map (in SVG viewBox units) must remain on-screen when panning
 const PAN_MARGIN = 80;
+// Approximate pixel height of the main hover card (used to clamp card position near the bottom edge)
+const HOVER_CARD_HEIGHT = 115;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -412,7 +414,7 @@ export function MapCanvas({
       const cx = clamp(x + 16, 12, w - 220);
       if (hoverCardRef.current) {
         hoverCardRef.current.style.left = `${cx}px`;
-        hoverCardRef.current.style.top = `${clamp(y + 16, 12, h - 115)}px`;
+        hoverCardRef.current.style.top = `${clamp(y + 16, 12, h - HOVER_CARD_HEIGHT)}px`;
       }
       if (hoverCardMutedRef.current) {
         hoverCardMutedRef.current.style.left = `${cx}px`;
@@ -582,7 +584,7 @@ export function MapCanvas({
             className="hover-card"
             style={{
               left: clamp(hoverPos.x + 16, 12, (frameRef.current?.clientWidth ?? 800) - 220),
-              top: clamp(hoverPos.y + 16, 12, (frameRef.current?.clientHeight ?? 600) - 115),
+              top: clamp(hoverPos.y + 16, 12, (frameRef.current?.clientHeight ?? 600) - HOVER_CARD_HEIGHT),
             }}
           >
             <strong>{hovered.profile.displayName}</strong>
@@ -603,7 +605,7 @@ export function MapCanvas({
                 <em>Conf</em>
                 {hovered.confidence}%
               </span>
-              {fillMode === 'gdpPerCapita' && hovered.profile.economicStats && (
+              {fillMode === 'gdpPerCapita' && hovered.profile.economicStats?.gdpPerCapitaUsd != null && (
                 <span>
                   <em>GDP/cap</em>
                   ${hovered.profile.economicStats.gdpPerCapitaUsd.toLocaleString()}
@@ -615,7 +617,7 @@ export function MapCanvas({
                   {hovered.profile.militaryStats.nuclearArmed ? 'Armed' : 'No'}
                 </span>
               )}
-              {fillMode === 'militaryBurden' && hovered.profile.militaryStats && (
+              {fillMode === 'militaryBurden' && hovered.profile.militaryStats?.militaryExpGdpPct != null && (
                 <span>
                   <em>Mil.%GDP</em>
                   {hovered.profile.militaryStats.militaryExpGdpPct.toFixed(1)}%
