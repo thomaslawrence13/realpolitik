@@ -200,10 +200,77 @@ export const simulateCountry = (
   // Nuclear-armed bonus for deterrence component (used in relationship deterrence summary).
   const nuclearDeterrenceBoost = mil?.nuclearArmed ? 6 : 0;
 
+  // v11 numeric overlays. Each is a small bounded modifier so that profiles without
+  // these dimensions remain unaffected and tier inputs stay primary.
+  const cyber = profile.cyber;
+  const fiscal = profile.fiscal;
+  const foodWater = profile.foodWater;
+  const diplomatic = profile.diplomatic;
+
+  // Cyber: offensive capability adds deterrence; defensive capability blunts sanctions
+  // and shock spillover; very low internet freedom signals fragile information posture.
+  const cyberOffensiveTierValue = cyber ? tierValue[cyber.offensiveTier] : 0;
+  const cyberDefensiveTierValue = cyber ? tierValue[cyber.defensiveTier] : 0;
+  const cyberDeterrenceBoost = cyber ? clamp((cyberOffensiveTierValue - 50) * 0.05, -2, 4) : 0;
+  const cyberSanctionsDamping = cyber ? clamp((cyberDefensiveTierValue - 50) * 0.04, -2, 3) : 0;
+  // Internet-freedom < 30 modestly destabilizes cohesion under shocks (info-control tax).
+  const cyberCohesionDelta = cyber && cyber.internetFreedomScore < 30
+    ? -clamp((30 - cyber.internetFreedomScore) * 0.06, 0, 3)
+    : 0;
+
+  // Fiscal: distressed rating + low FX cushion drag cohesion; investment + adequate
+  // cushion stabilizes. External debt above 100% of GDP adds risk weight.
+  const fiscalRatingValue = fiscal
+    ? fiscal.sovereignRatingTier === 'investment' ? 2
+    : fiscal.sovereignRatingTier === 'speculative' ? -2
+    : -6
+    : 0;
+  const fxCushionDelta = fiscal ? clamp((fiscal.fxReservesMonthsImports - 3) * 0.4, -4, 4) : 0;
+  const debtRiskBoost = fiscal && fiscal.externalDebtGdpPct > 100
+    ? Math.min(8, (fiscal.externalDebtGdpPct - 100) * 0.05)
+    : 0;
+  const fiscalCohesionDelta = fiscal ? fiscalRatingValue + fxCushionDelta : 0;
+
+  // Food / water: high import dependence + extreme water stress drains cohesion and
+  // amplifies sanctions exposure (trade pinch hits a vulnerable population).
+  const foodWaterCohesionDelta = foodWater
+    ? -clamp(
+        Math.max(0, foodWater.foodImportDependencePct) * 0.05
+        + Math.max(0, foodWater.waterStressIndex - 3) * 1.5,
+        0,
+        7,
+      )
+    : 0;
+  const foodWaterSanctionsDelta = foodWater && foodWater.foodImportDependencePct > 30
+    ? Math.min(8, (foodWater.foodImportDependencePct - 30) * 0.08)
+    : 0;
+
+  // Diplomatic: UN voting alignment with bloc anchors directly tilts probabilities.
+  // Bounded ±20 so it complements but does not overwhelm the indicator-driven core.
+  const diplomaticBlocABoost = diplomatic
+    ? clamp((diplomatic.unVotingAlignmentBlocA - 50) * 0.2, -10, 12)
+    : 0;
+  const diplomaticBlocBBoost = diplomatic
+    ? clamp((diplomatic.unVotingAlignmentBlocB - 50) * 0.2, -10, 12)
+    : 0;
+  // Defense-pact density: many active pacts → modest deterrence and military boost.
+  const defensePactDensity = diplomatic ? Math.min(5, diplomatic.defensePacts.length) : 0;
+  const defensePactDeterrenceBoost = defensePactDensity * 1.2;
+
   const tradeExposure = clamp(tierValue[profile.indicators.tradeExposure] + tradeOpennessDelta * 0.5, 0, 100);
-  const military = clamp(tierValue[profile.indicators.militaryTreatyLevel] + treatyShock * 0.55 + militaryBurdenBoost, 0, 100);
+  const military = clamp(
+    tierValue[profile.indicators.militaryTreatyLevel] + treatyShock * 0.55 + militaryBurdenBoost
+    + defensePactDensity * 1.5,
+    0,
+    100,
+  );
   const conflict = clamp(tierValue[profile.indicators.conflictPressure] + invasionShock * 0.8 + coupShock * 0.12, 0, 100);
-  const sanctions = clamp(tierValue[profile.indicators.sanctionsExposure] + sanctionsShock * 0.72 + energySanctionsDelta, 0, 100);
+  const sanctions = clamp(
+    tierValue[profile.indicators.sanctionsExposure] + sanctionsShock * 0.72
+    + energySanctionsDelta + foodWaterSanctionsDelta - cyberSanctionsDamping,
+    0,
+    100,
+  );
   const ideology = tierValue[profile.indicators.ideology];
   const borderDisputes = clamp(tierValue[profile.indicators.borderDisputes] + invasionShock * 0.45, 0, 100);
   const regimeStability = clamp(tierValue[profile.indicators.regimeStability] - electionShock * 0.55 - coupShock * 0.75, 0, 100);
@@ -211,7 +278,8 @@ export const simulateCountry = (
   const tradeDependence = clamp(tierValue[profile.indicators.tradeDependence] + economicShock * 0.28 + tradeOpennessDelta, 0, 100);
   const cohesion = clamp(
     profile.indicators.cohesion - electionShock * 0.35 - coupShock * 0.45 + treatyShock * 0.08
-    + gdpCohesionDelta + inflationCohesionDelta,
+    + gdpCohesionDelta + inflationCohesionDelta
+    + cyberCohesionDelta + fiscalCohesionDelta + foodWaterCohesionDelta,
     0,
     100,
   );
@@ -221,7 +289,12 @@ export const simulateCountry = (
     cooperation: Math.round(clamp(baseRelationships.cooperation + treatyShock * 0.35 - sanctionsShock * 0.12 - invasionShock * 0.25, 0, 100)),
     hostility: Math.round(clamp(baseRelationships.hostility + invasionShock * 0.6 + sanctionsShock * 0.25 - treatyShock * 0.15, 0, 100)),
     dependency: Math.round(clamp(baseRelationships.dependency + sanctionsShock * 0.18 + economicShock * 0.2, 0, 100)),
-    deterrence: Math.round(clamp(baseRelationships.deterrence + invasionShock * 0.28 + treatyShock * 0.14 + nuclearDeterrenceBoost, 0, 100)),
+    deterrence: Math.round(clamp(
+      baseRelationships.deterrence + invasionShock * 0.28 + treatyShock * 0.14
+      + nuclearDeterrenceBoost + cyberDeterrenceBoost + defensePactDeterrenceBoost,
+      0,
+      100,
+    )),
     tension: 0,
   };
   relationshipSummary.tension = Math.round((relationshipSummary.hostility + relationshipSummary.deterrence + conflict) / 3);
@@ -240,6 +313,9 @@ export const simulateCountry = (
     { label: 'Year momentum', multiplier: 0.3, inputValue: momentum, contribution: momentum * 0.3 },
     { label: 'Hostility (relationships)', multiplier: -0.06, inputValue: relationshipSummary.hostility, contribution: -relationshipSummary.hostility * 0.06 },
     { label: 'Sanctions exposure', multiplier: -0.04, inputValue: sanctions, contribution: -sanctions * 0.04 },
+    ...(diplomatic
+      ? [{ label: 'UN voting alignment (bloc A)', inputValue: diplomatic.unVotingAlignmentBlocA, contribution: diplomaticBlocABoost } satisfies ContributionLine]
+      : []),
   ];
   const blocABase = 20;
   const blocARaw = blocABase + sumContributions(blocAComponents);
@@ -253,6 +329,9 @@ export const simulateCountry = (
     { label: `Regime bonus (${profile.regimeType})`, contribution: regimeBlocBBonus },
     { label: 'Year momentum', multiplier: 0.08, inputValue: momentum, contribution: momentum * 0.08 },
     { label: 'Regime stability', multiplier: -0.04, inputValue: regimeStability, contribution: -regimeStability * 0.04 },
+    ...(diplomatic
+      ? [{ label: 'UN voting alignment (bloc B)', inputValue: diplomatic.unVotingAlignmentBlocB, contribution: diplomaticBlocBBoost } satisfies ContributionLine]
+      : []),
   ];
   const blocBBase = 18;
   const blocBRaw = blocBBase + sumContributions(blocBComponents);
@@ -303,6 +382,12 @@ export const simulateCountry = (
     { label: 'Regime stability', multiplier: -0.05, inputValue: regimeStability, contribution: -regimeStability * 0.05 },
     { label: 'Deterrence (relationships)', multiplier: -0.03, inputValue: relationshipSummary.deterrence, contribution: -relationshipSummary.deterrence * 0.03 },
     { label: 'Year offset', multiplier: 1.1, inputValue: timelineIndex, contribution: timelineIndex * 1.1 },
+    ...(fiscal && debtRiskBoost > 0
+      ? [{ label: 'External-debt vulnerability', inputValue: fiscal.externalDebtGdpPct, contribution: debtRiskBoost } satisfies ContributionLine]
+      : []),
+    ...(foodWater && foodWater.waterStressIndex >= 4
+      ? [{ label: 'Water-stress vulnerability', inputValue: foodWater.waterStressIndex, contribution: (foodWater.waterStressIndex - 3) * 1.8 } satisfies ContributionLine]
+      : []),
   ];
   const riskTotal = riskBase + sumContributions(riskComponents);
   const risk = clamp(riskTotal, 8, 97);
