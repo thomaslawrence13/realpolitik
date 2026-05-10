@@ -131,6 +131,14 @@ const alignmentColor: Record<Alignment, string> = {
 const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
 
 const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 1080;
+const markWelcomeDismissed = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(WELCOME_DISMISSED_KEY, '1');
+  } catch {
+    // ignore
+  }
+};
 
 const persisted = loadPersistedState();
 // URL hash beats persistence so shared links always reflect the link payload.
@@ -605,24 +613,15 @@ export default function App() {
 
   const closeWelcome = useCallback(() => {
     setWelcomeOpen(false);
-    try {
-      window.localStorage.setItem(WELCOME_DISMISSED_KEY, '1');
-    } catch {
-      // ignore
-    }
+    markWelcomeDismissed();
   }, []);
 
   const handleWelcomeFocusSearch = useCallback(() => {
     setLeftOpen(true);
-    setWelcomeOpen(false);
+    closeWelcome();
     searchInputRef.current?.focus();
     searchInputRef.current?.select();
-    try {
-      window.localStorage.setItem(WELCOME_DISMISSED_KEY, '1');
-    } catch {
-      // ignore
-    }
-  }, []);
+  }, [closeWelcome]);
 
   const handleWelcomeOpenScenario = useCallback(() => {
     setDrawerOpen(true);
