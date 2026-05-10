@@ -27,6 +27,32 @@ export interface CountryIndicators {
   cohesion: number;
 }
 
+/** Key macroeconomic statistics (~2024 values). */
+export interface EconomicStats {
+  /** Nominal GDP in billions USD */
+  gdpBillionUsd: number;
+  /** Annual GDP growth rate (%) */
+  gdpGrowthPct: number;
+  /** Nominal GDP per capita in USD */
+  gdpPerCapitaUsd: number;
+  /** Consumer price inflation, annual % */
+  inflationPct: number;
+  /** Total trade (imports + exports) as % of GDP */
+  tradeGdpPct: number;
+}
+
+/** Key military statistics (~2024 values). */
+export interface MilitaryStats {
+  /** Defence spending in billions USD */
+  militaryExpBillionUsd: number;
+  /** Defence spending as % of GDP */
+  militaryExpGdpPct: number;
+  /** Active-duty military personnel (thousands) */
+  activePersonnelThousands: number;
+  /** Whether the state possesses nuclear weapons */
+  nuclearArmed: boolean;
+}
+
 export interface CountryRecord {
   id: string;
   mapName: string;
@@ -41,6 +67,10 @@ export interface CountryRecord {
   assumptions: string[];
   sourceIds: string[];
   indicators: CountryIndicators;
+  /** Macroeconomic snapshot (~2024). Present for all parameterised states. */
+  economicStats?: EconomicStats;
+  /** Defence / military snapshot (~2024). Present for all parameterised states. */
+  militaryStats?: MilitaryStats;
 }
 
 export interface RelationshipEdge {

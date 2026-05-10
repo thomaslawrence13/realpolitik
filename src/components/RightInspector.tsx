@@ -3,6 +3,8 @@ import type {
   Alignment,
   ConfidenceExplanation,
   ContributionLine,
+  EconomicStats,
+  MilitaryStats,
   ProbabilityExplanation,
   RiskExplanation,
   ScenarioInputs,
@@ -527,6 +529,13 @@ function DriversPanel({
         </ul>
       </div>
 
+      {(selected.profile.economicStats || selected.profile.militaryStats) && (
+        <EconomicMilitarySection
+          economic={selected.profile.economicStats}
+          military={selected.profile.militaryStats}
+        />
+      )}
+
       <div className="section">
         <h3 className="section-title">Active scenario</h3>
         <ul className="kv-list">
@@ -906,4 +915,78 @@ function formatNumber(value: number) {
 function formatSigned(value: number) {
   if (value === 0) return '0';
   return `${value > 0 ? '+' : ''}${formatNumber(value)}`;
+}
+
+function EconomicMilitarySection({
+  economic,
+  military,
+}: {
+  economic?: EconomicStats;
+  military?: MilitaryStats;
+}) {
+  return (
+    <>
+      {economic && (
+        <div className="section">
+          <h3 className="section-title">Economic statistics</h3>
+          <ul className="kv-list">
+            <li>
+              <span>GDP</span>
+              <strong>${economic.gdpBillionUsd.toLocaleString()}B</strong>
+            </li>
+            <li>
+              <span>GDP per capita</span>
+              <strong>${economic.gdpPerCapitaUsd.toLocaleString()}</strong>
+            </li>
+            <li>
+              <span>GDP growth</span>
+              <strong className={economic.gdpGrowthPct >= 0 ? '' : 'value-active'}>
+                {economic.gdpGrowthPct > 0 ? '+' : ''}{economic.gdpGrowthPct}%
+              </strong>
+            </li>
+            <li>
+              <span>Inflation</span>
+              <strong className={economic.inflationPct > 10 ? 'value-active' : ''}>
+                {economic.inflationPct}%
+              </strong>
+            </li>
+            <li>
+              <span>Trade / GDP</span>
+              <strong>{economic.tradeGdpPct}%</strong>
+            </li>
+          </ul>
+        </div>
+      )}
+
+      {military && (
+        <div className="section">
+          <h3 className="section-title">Military statistics</h3>
+          <ul className="kv-list">
+            <li>
+              <span>Defence spending</span>
+              <strong>${military.militaryExpBillionUsd.toLocaleString()}B</strong>
+            </li>
+            <li>
+              <span>Defence / GDP</span>
+              <strong>{military.militaryExpGdpPct}%</strong>
+            </li>
+            <li>
+              <span>Active personnel</span>
+              <strong>
+                {military.activePersonnelThousands > 0
+                  ? `${military.activePersonnelThousands.toLocaleString()}k`
+                  : '—'}
+              </strong>
+            </li>
+            <li>
+              <span>Nuclear armed</span>
+              <strong className={military.nuclearArmed ? 'value-active' : ''}>
+                {military.nuclearArmed ? 'Yes' : 'No'}
+              </strong>
+            </li>
+          </ul>
+        </div>
+      )}
+    </>
+  );
 }

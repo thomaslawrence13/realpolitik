@@ -1,7 +1,7 @@
 import type { DatasetBundle } from '../../types';
 
 export const geopoliticalDatasetV1: DatasetBundle = {
-  version: '2026.05-data-prototype-v7',
+  version: '2026.05-data-prototype-v9',
   scenarioTimeline: ['2026', '2027', '2028', '2029', '2030', '2031', '2032', '2033', '2034', '2035'],
   methodologyNotes: [
     'This build uses a versioned dataset boundary so the UI can move off hardcoded country state and onto replaceable data snapshots.',
@@ -14,6 +14,8 @@ export const geopoliticalDatasetV1: DatasetBundle = {
     'The simulation remains exploratory and should be calibrated against historical backtesting before stronger predictive claims are made.',
     'v6 expands country coverage from 46 to 114 parameterised states, adding all major geopolitical actors across Europe, the Middle East, Central Asia, South and South-East Asia, Sub-Saharan Africa, and the Americas; bilateral relationships increased from 52 to 111.',
     'v7 fills remaining European gaps (Ireland, Iceland, Luxembourg, Slovenia, Cyprus, Albania, Bosnia and Herzegovina, North Macedonia, Montenegro, Kosovo) and adds further depth across the Caribbean, Central America, Sub-Saharan Africa, the Sahel, Oceania, the Gulf, and South-East Asia, taking coverage to 134 parameterised states and 146 bilateral relationships.',
+    'v8 revamps country data with explicit economic and military statistics for all 134 parameterised states: nominal GDP (billions USD), GDP growth rate, GDP per capita, consumer inflation, trade-to-GDP ratio, defence spending (billions USD and % of GDP), active military personnel, and nuclear-armed status. Values are ~2024 estimates sourced from IMF WEO, SIPRI Military Expenditure Database, and IISS Military Balance.',
+    'v9 expands and refines the data source registry: five new authoritative sources are added (ACLED for real-time conflict event data, Transparency International CPI for governance and corruption, ICG CrisisWatch for geopolitical crisis monitoring, UN Comtrade for premier bilateral trade statistics, and CIA World Factbook for broad military and demographic coverage). Live World Bank enrichment now covers all 134 parameterised states (up from 31) via an expanded ISO-alpha-2 lookup. Two additional World Bank live indicators are ingested: Rule of Law (RL.EST) for higher-confidence regime-stability enrichment, and Unemployment (SL.UEM.TOTL.ZS) as a third driver of domestic-cohesion adjustment. Source priority lists in the reconciliation pipeline are updated to weight the new sources appropriately.',
   ],
   sources: [
     {
@@ -21,63 +23,98 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       title: 'World Development Indicators',
       publisher: 'World Bank',
       url: 'https://databank.worldbank.org/source/world-development-indicators',
-      accessedOn: '2026-05-01',
+      accessedOn: '2026-05-10',
     },
     {
       id: 'sipri-milex',
       title: 'Military Expenditure Database',
       publisher: 'SIPRI',
       url: 'https://www.sipri.org/databases/milex',
-      accessedOn: '2026-05-01',
+      accessedOn: '2026-05-10',
     },
     {
       id: 'vdem',
       title: 'Varieties of Democracy',
       publisher: 'V-Dem Institute',
       url: 'https://www.v-dem.net/data/the-v-dem-dataset/',
-      accessedOn: '2026-05-01',
+      accessedOn: '2026-05-10',
     },
     {
       id: 'ucdp',
       title: 'Armed Conflict Dataset',
       publisher: 'UCDP',
       url: 'https://ucdp.uu.se/downloads/',
-      accessedOn: '2026-05-01',
+      accessedOn: '2026-05-10',
     },
     {
       id: 'imf-direction-of-trade',
       title: 'Direction of Trade Statistics',
       publisher: 'IMF',
       url: 'https://data.imf.org/?sk=9D6028D4-F14A-464C-A2F2-59B2CD424B85',
-      accessedOn: '2026-05-01',
+      accessedOn: '2026-05-10',
     },
     {
       id: 'wto-profile',
       title: 'Trade Profiles',
       publisher: 'WTO',
       url: 'https://www.wto.org/english/res_e/statis_e/daily_update_e/trade_profiles_e.htm',
-      accessedOn: '2026-05-01',
+      accessedOn: '2026-05-10',
     },
     {
       id: 'freedom-house',
       title: 'Freedom in the World',
       publisher: 'Freedom House',
       url: 'https://freedomhouse.org/report/freedom-world',
-      accessedOn: '2026-05-01',
+      accessedOn: '2026-05-10',
     },
     {
       id: 'csis-sanctions',
       title: 'Global Sanctions Database',
       publisher: 'CSIS',
       url: 'https://www.csis.org/programs/economics-program/sanctions',
-      accessedOn: '2026-05-01',
+      accessedOn: '2026-05-10',
     },
     {
       id: 'iiss-military-balance',
       title: 'The Military Balance',
       publisher: 'IISS',
       url: 'https://www.iiss.org/publications/the-military-balance/',
-      accessedOn: '2026-05-01',
+      accessedOn: '2026-05-10',
+    },
+    {
+      id: 'acled',
+      title: 'Armed Conflict Location & Event Data',
+      publisher: 'ACLED',
+      url: 'https://acleddata.com/data-export-tool/',
+      accessedOn: '2026-05-10',
+    },
+    {
+      id: 'transparency-intl',
+      title: 'Corruption Perceptions Index',
+      publisher: 'Transparency International',
+      url: 'https://www.transparency.org/en/cpi/',
+      accessedOn: '2026-05-10',
+    },
+    {
+      id: 'icg-crisiswatch',
+      title: 'CrisisWatch',
+      publisher: 'International Crisis Group',
+      url: 'https://www.crisisgroup.org/crisiswatch',
+      accessedOn: '2026-05-10',
+    },
+    {
+      id: 'un-comtrade',
+      title: 'UN Comtrade Database',
+      publisher: 'United Nations Statistics Division',
+      url: 'https://comtradeplus.un.org/',
+      accessedOn: '2026-05-10',
+    },
+    {
+      id: 'world-factbook',
+      title: 'The World Factbook',
+      publisher: 'Central Intelligence Agency',
+      url: 'https://www.cia.gov/the-world-factbook/',
+      accessedOn: '2026-05-10',
     },
   ],
   countries: [
@@ -92,7 +129,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 31,
       sourceCoverage: 91,
       lastUpdated: '2026-05-01',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'imf-direction-of-trade', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Alliance commitments remain intact.', 'Domestic polarization stays manageable.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -106,6 +143,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 74,
       },
+      economicStats: {
+        gdpBillionUsd: 28700,
+        gdpGrowthPct: 2.8,
+        gdpPerCapitaUsd: 85500,
+        inflationPct: 3.1,
+        tradeGdpPct: 27,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 916.0,
+        militaryExpGdpPct: 3.2,
+        activePersonnelThousands: 1390.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'china',
@@ -118,7 +168,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 45,
       sourceCoverage: 87,
       lastUpdated: '2026-05-01',
-      sourceIds: ['world-bank-wdi', 'wto-profile', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'wto-profile', 'vdem', 'iiss-military-balance', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Trade interdependence remains a major constraint.', 'Regional deterrence still matters.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -132,6 +182,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 81,
       },
+      economicStats: {
+        gdpBillionUsd: 18500,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 13000,
+        inflationPct: 0.2,
+        tradeGdpPct: 37,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 296.0,
+        militaryExpGdpPct: 1.6,
+        activePersonnelThousands: 2035.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'russia',
@@ -144,7 +207,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 72,
       sourceCoverage: 84,
       lastUpdated: '2026-05-01',
-      sourceIds: ['sipri-milex', 'ucdp', 'vdem', 'csis-sanctions'],
+      sourceIds: ['sipri-milex', 'ucdp', 'vdem', 'csis-sanctions', 'acled', 'icg-crisiswatch', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Sanctions remain in force.', 'Conflict pressure stays elevated.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -158,6 +221,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 58,
       },
+      economicStats: {
+        gdpBillionUsd: 2000,
+        gdpGrowthPct: 3.6,
+        gdpPerCapitaUsd: 13800,
+        inflationPct: 7.4,
+        tradeGdpPct: 48,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 109.0,
+        militaryExpGdpPct: 5.7,
+        activePersonnelThousands: 900.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'india',
@@ -170,7 +246,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 42,
       sourceCoverage: 82,
       lastUpdated: '2026-05-01',
-      sourceIds: ['world-bank-wdi', 'wto-profile', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'wto-profile', 'vdem', 'iiss-military-balance', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Strategic autonomy remains a priority.', 'Border frictions do not escalate sharply.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -184,6 +260,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 67,
       },
+      economicStats: {
+        gdpBillionUsd: 3730,
+        gdpGrowthPct: 6.5,
+        gdpPerCapitaUsd: 2600,
+        inflationPct: 4.8,
+        tradeGdpPct: 44,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 83.0,
+        militaryExpGdpPct: 2.4,
+        activePersonnelThousands: 1455.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'germany',
@@ -196,7 +285,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 26,
       sourceCoverage: 89,
       lastUpdated: '2026-05-01',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'wto-profile', 'un-comtrade', 'transparency-intl'],
       assumptions: ['European coordination stays resilient.', 'Energy shocks remain contained.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -210,6 +299,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 71,
       },
+      economicStats: {
+        gdpBillionUsd: 4460,
+        gdpGrowthPct: -0.3,
+        gdpPerCapitaUsd: 53600,
+        inflationPct: 2.2,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 90.0,
+        militaryExpGdpPct: 2.0,
+        activePersonnelThousands: 181.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'poland',
@@ -222,7 +324,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 58,
       sourceCoverage: 80,
       lastUpdated: '2026-05-01',
-      sourceIds: ['sipri-milex', 'ucdp', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['sipri-milex', 'ucdp', 'vdem', 'iiss-military-balance', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Alliance deterrence remains credible.', 'Spillover pressure is manageable.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -236,6 +338,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 65,
       },
+      economicStats: {
+        gdpBillionUsd: 870,
+        gdpGrowthPct: 2.9,
+        gdpPerCapitaUsd: 22800,
+        inflationPct: 3.9,
+        tradeGdpPct: 115,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 34.0,
+        militaryExpGdpPct: 4.0,
+        activePersonnelThousands: 209.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'turkey',
@@ -248,7 +363,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 51,
       sourceCoverage: 77,
       lastUpdated: '2026-05-01',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'ucdp'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'ucdp', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Transactional balancing remains viable.', 'Regional crises stay compartmentalized.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -262,6 +377,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 59,
       },
+      economicStats: {
+        gdpBillionUsd: 1110,
+        gdpGrowthPct: 3.2,
+        gdpPerCapitaUsd: 13000,
+        inflationPct: 58.5,
+        tradeGdpPct: 60,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 41.0,
+        militaryExpGdpPct: 3.7,
+        activePersonnelThousands: 355.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'japan',
@@ -274,7 +402,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 37,
       sourceCoverage: 86,
       lastUpdated: '2026-05-01',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'wto-profile', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Alliance guarantees hold.', 'Regional maritime tensions remain below open conflict.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -288,6 +416,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 77,
       },
+      economicStats: {
+        gdpBillionUsd: 4210,
+        gdpGrowthPct: -0.1,
+        gdpPerCapitaUsd: 33900,
+        inflationPct: 2.7,
+        tradeGdpPct: 40,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 55.0,
+        militaryExpGdpPct: 1.3,
+        activePersonnelThousands: 247.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'iran',
@@ -300,7 +441,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 76,
       sourceCoverage: 75,
       lastUpdated: '2026-05-01',
-      sourceIds: ['ucdp', 'csis-sanctions', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['ucdp', 'csis-sanctions', 'vdem', 'iiss-military-balance', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Sanctions continue to shape trade options.', 'Proxy conflict pressure remains high.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -314,6 +455,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 48,
       },
+      economicStats: {
+        gdpBillionUsd: 430,
+        gdpGrowthPct: 4.7,
+        gdpPerCapitaUsd: 5000,
+        inflationPct: 42.0,
+        tradeGdpPct: 30,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 10.0,
+        militaryExpGdpPct: 2.3,
+        activePersonnelThousands: 580.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'saudi-arabia',
@@ -326,7 +480,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 43,
       sourceCoverage: 74,
       lastUpdated: '2026-05-01',
-      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'ucdp', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'ucdp', 'imf-direction-of-trade', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Energy diplomacy stays central.', 'Regional normalization efforts continue.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -340,6 +494,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 64,
       },
+      economicStats: {
+        gdpBillionUsd: 1100,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 30500,
+        inflationPct: 1.7,
+        tradeGdpPct: 85,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 75.0,
+        militaryExpGdpPct: 6.8,
+        activePersonnelThousands: 257.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'brazil',
@@ -352,7 +519,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 29,
       sourceCoverage: 76,
       lastUpdated: '2026-05-01',
-      sourceIds: ['world-bank-wdi', 'wto-profile', 'vdem', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'wto-profile', 'vdem', 'imf-direction-of-trade', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Strategic autonomy remains politically attractive.', 'Regional security stays comparatively stable.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -366,6 +533,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 68,
       },
+      economicStats: {
+        gdpBillionUsd: 2170,
+        gdpGrowthPct: 2.9,
+        gdpPerCapitaUsd: 10100,
+        inflationPct: 4.5,
+        tradeGdpPct: 34,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 21.0,
+        militaryExpGdpPct: 1.0,
+        activePersonnelThousands: 334.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'ukraine',
@@ -378,7 +558,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 88,
       sourceCoverage: 80,
       lastUpdated: '2026-05-01',
-      sourceIds: ['ucdp', 'sipri-milex', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['ucdp', 'sipri-milex', 'vdem', 'iiss-military-balance', 'acled', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Conflict remains the dominant driver.', 'External support remains available.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -392,6 +572,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 54,
       },
+      economicStats: {
+        gdpBillionUsd: 175,
+        gdpGrowthPct: 4.0,
+        gdpPerCapitaUsd: 4700,
+        inflationPct: 9.7,
+        tradeGdpPct: 65,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 66.0,
+        militaryExpGdpPct: 37.5,
+        activePersonnelThousands: 800.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'france',
@@ -404,7 +597,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 28,
       sourceCoverage: 85,
       lastUpdated: '2026-05-01',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'wto-profile', 'un-comtrade', 'transparency-intl'],
       assumptions: ['European strategic coordination continues.', 'Domestic volatility stays bounded.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -418,6 +611,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 70,
       },
+      economicStats: {
+        gdpBillionUsd: 3130,
+        gdpGrowthPct: 1.1,
+        gdpPerCapitaUsd: 47600,
+        inflationPct: 2.3,
+        tradeGdpPct: 68,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 61.0,
+        militaryExpGdpPct: 2.0,
+        activePersonnelThousands: 205.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'united-kingdom',
@@ -430,7 +636,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 24,
       sourceCoverage: 84,
       lastUpdated: '2026-05-01',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'imf-direction-of-trade', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Atlantic alignment remains durable.', 'Economic pressures do not force major repositioning.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -444,6 +650,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 69,
       },
+      economicStats: {
+        gdpBillionUsd: 3400,
+        gdpGrowthPct: 0.9,
+        gdpPerCapitaUsd: 49300,
+        inflationPct: 2.5,
+        tradeGdpPct: 63,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 82.0,
+        militaryExpGdpPct: 2.4,
+        activePersonnelThousands: 149.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'canada',
@@ -456,7 +675,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 18,
       sourceCoverage: 90,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'imf-direction-of-trade', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Atlantic alliance commitments hold.', 'USMCA trade integration remains the structural anchor.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -470,6 +689,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 76,
       },
+      economicStats: {
+        gdpBillionUsd: 2140,
+        gdpGrowthPct: 1.2,
+        gdpPerCapitaUsd: 53400,
+        inflationPct: 2.7,
+        tradeGdpPct: 67,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 28.0,
+        militaryExpGdpPct: 1.3,
+        activePersonnelThousands: 67.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'mexico',
@@ -482,7 +714,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 47,
       sourceCoverage: 78,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'wto-profile', 'vdem', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'wto-profile', 'vdem', 'imf-direction-of-trade', 'un-comtrade', 'transparency-intl'],
       assumptions: ['USMCA framework remains the dominant trade anchor.', 'Domestic security pressures persist but do not destabilize.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -496,6 +728,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 58,
       },
+      economicStats: {
+        gdpBillionUsd: 1800,
+        gdpGrowthPct: 1.6,
+        gdpPerCapitaUsd: 13800,
+        inflationPct: 4.8,
+        tradeGdpPct: 78,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 8.0,
+        militaryExpGdpPct: 0.4,
+        activePersonnelThousands: 278.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'argentina',
@@ -508,7 +753,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 36,
       sourceCoverage: 74,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'imf-direction-of-trade', 'vdem', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'imf-direction-of-trade', 'vdem', 'wto-profile', 'transparency-intl'],
       assumptions: ['Economic volatility persists but systemic collapse is avoided.', 'Strategic hedging between blocs continues.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -522,6 +767,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 52,
       },
+      economicStats: {
+        gdpBillionUsd: 600,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 13200,
+        inflationPct: 120.0,
+        tradeGdpPct: 30,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 0.5,
+        activePersonnelThousands: 73.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'venezuela',
@@ -534,7 +792,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 74,
       sourceCoverage: 60,
       lastUpdated: '2026-05-09',
-      sourceIds: ['csis-sanctions', 'vdem', 'ucdp', 'imf-direction-of-trade'],
+      sourceIds: ['csis-sanctions', 'vdem', 'ucdp', 'imf-direction-of-trade', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Regime durability continues under sanctions pressure.', 'Economic ties with China and Russia offset Western isolation.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -548,6 +806,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 40,
       },
+      economicStats: {
+        gdpBillionUsd: 92,
+        gdpGrowthPct: 4.0,
+        gdpPerCapitaUsd: 3200,
+        inflationPct: 100.0,
+        tradeGdpPct: 40,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 3.3,
+        activePersonnelThousands: 123.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'australia',
@@ -560,7 +831,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 22,
       sourceCoverage: 88,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance', 'un-comtrade', 'transparency-intl'],
       assumptions: ['AUKUS partnership deepens Indo-Pacific deterrence.', 'Trade diversification away from China accelerates.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -574,6 +845,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 73,
       },
+      economicStats: {
+        gdpBillionUsd: 1790,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 67800,
+        inflationPct: 3.2,
+        tradeGdpPct: 47,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 36.0,
+        militaryExpGdpPct: 2.0,
+        activePersonnelThousands: 60.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'south-korea',
@@ -586,7 +870,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 48,
       sourceCoverage: 85,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance', 'un-comtrade', 'transparency-intl'],
       assumptions: ['US extended deterrence remains credible against North Korea.', 'Technology export controls shape China trade relationship.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -600,6 +884,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 70,
       },
+      economicStats: {
+        gdpBillionUsd: 1760,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 34000,
+        inflationPct: 2.3,
+        tradeGdpPct: 88,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 50.0,
+        militaryExpGdpPct: 2.8,
+        activePersonnelThousands: 500.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'indonesia',
@@ -612,7 +909,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 33,
       sourceCoverage: 76,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'wto-profile', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'wto-profile', 'vdem', 'iiss-military-balance', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Strategic non-alignment remains the dominant posture.', 'South China Sea tensions stay below open conflict.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -626,6 +923,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 65,
       },
+      economicStats: {
+        gdpBillionUsd: 1370,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 4900,
+        inflationPct: 2.8,
+        tradeGdpPct: 38,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 10.0,
+        militaryExpGdpPct: 0.7,
+        activePersonnelThousands: 395.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'vietnam',
@@ -638,7 +948,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 41,
       sourceCoverage: 70,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'wto-profile', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'wto-profile', 'vdem', 'iiss-military-balance', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Bamboo diplomacy balances China and US engagement.', 'South China Sea disputes remain managed but unresolved.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -652,6 +962,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 72,
       },
+      economicStats: {
+        gdpBillionUsd: 430,
+        gdpGrowthPct: 6.9,
+        gdpPerCapitaUsd: 4300,
+        inflationPct: 4.2,
+        tradeGdpPct: 185,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 7.0,
+        militaryExpGdpPct: 1.6,
+        activePersonnelThousands: 482.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'thailand',
@@ -664,7 +987,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 38,
       sourceCoverage: 72,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Military influence over politics persists.', 'Hedging between US alliance and China trade continues.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -678,6 +1001,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 60,
       },
+      economicStats: {
+        gdpBillionUsd: 545,
+        gdpGrowthPct: 2.7,
+        gdpPerCapitaUsd: 7600,
+        inflationPct: 0.4,
+        tradeGdpPct: 125,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 8.0,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 361.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'philippines',
@@ -690,7 +1026,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 44,
       sourceCoverage: 73,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'ucdp'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'ucdp', 'transparency-intl'],
       assumptions: ['US alliance is being reinforced following repeated EEZ incidents.', 'South China Sea territorial pressure remains elevated.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -704,6 +1040,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 62,
       },
+      economicStats: {
+        gdpBillionUsd: 440,
+        gdpGrowthPct: 5.2,
+        gdpPerCapitaUsd: 3800,
+        inflationPct: 3.5,
+        tradeGdpPct: 68,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 6.0,
+        militaryExpGdpPct: 1.3,
+        activePersonnelThousands: 163.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'myanmar',
@@ -716,7 +1065,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 81,
       sourceCoverage: 55,
       lastUpdated: '2026-05-09',
-      sourceIds: ['ucdp', 'vdem', 'csis-sanctions', 'iiss-military-balance'],
+      sourceIds: ['ucdp', 'vdem', 'csis-sanctions', 'iiss-military-balance', 'acled', 'icg-crisiswatch', 'transparency-intl', 'world-factbook'],
       assumptions: ['Military junta maintains control in urban centers despite civil war.', 'Western sanctions limit but do not collapse the regime.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -730,6 +1079,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 28,
       },
+      economicStats: {
+        gdpBillionUsd: 65,
+        gdpGrowthPct: 1.0,
+        gdpPerCapitaUsd: 1200,
+        inflationPct: 15.0,
+        tradeGdpPct: 30,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 4.5,
+        activePersonnelThousands: 406.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'bangladesh',
@@ -742,7 +1104,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 44,
       sourceCoverage: 65,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'wto-profile', 'transparency-intl'],
       assumptions: ['Political instability persists after 2024 transition.', 'Garment export dependence makes it sensitive to global demand shocks.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -756,6 +1118,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 47,
       },
+      economicStats: {
+        gdpBillionUsd: 460,
+        gdpGrowthPct: 5.7,
+        gdpPerCapitaUsd: 2700,
+        inflationPct: 9.5,
+        tradeGdpPct: 43,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 0.9,
+        activePersonnelThousands: 166.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'pakistan',
@@ -768,7 +1143,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 67,
       sourceCoverage: 68,
       lastUpdated: '2026-05-09',
-      sourceIds: ['sipri-milex', 'iiss-military-balance', 'ucdp', 'vdem'],
+      sourceIds: ['sipri-milex', 'iiss-military-balance', 'ucdp', 'vdem', 'acled', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Military remains the primary power center.', 'Economic crisis does not trigger regime collapse.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -782,6 +1157,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 43,
       },
+      economicStats: {
+        gdpBillionUsd: 375,
+        gdpGrowthPct: 2.4,
+        gdpPerCapitaUsd: 1600,
+        inflationPct: 22.8,
+        tradeGdpPct: 27,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 10.0,
+        militaryExpGdpPct: 2.7,
+        activePersonnelThousands: 654.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'israel',
@@ -794,7 +1182,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 71,
       sourceCoverage: 78,
       lastUpdated: '2026-05-09',
-      sourceIds: ['sipri-milex', 'iiss-military-balance', 'ucdp', 'vdem'],
+      sourceIds: ['sipri-milex', 'iiss-military-balance', 'ucdp', 'vdem', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Military superiority and US backing remain decisive.', 'Regional normalization proceeds in parallel with ongoing conflict pressure.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -808,6 +1196,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 55,
       },
+      economicStats: {
+        gdpBillionUsd: 520,
+        gdpGrowthPct: 1.2,
+        gdpPerCapitaUsd: 55000,
+        inflationPct: 3.5,
+        tradeGdpPct: 62,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 28.0,
+        militaryExpGdpPct: 5.3,
+        activePersonnelThousands: 170.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'iraq',
@@ -820,7 +1221,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 69,
       sourceCoverage: 62,
       lastUpdated: '2026-05-09',
-      sourceIds: ['ucdp', 'iiss-military-balance', 'csis-sanctions', 'vdem'],
+      sourceIds: ['ucdp', 'iiss-military-balance', 'csis-sanctions', 'vdem', 'acled', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Government navigates Iran and US influence without fully aligning to either.', 'Internal militia fragmentation persists.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -834,6 +1235,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 36,
       },
+      economicStats: {
+        gdpBillionUsd: 270,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 6200,
+        inflationPct: 3.5,
+        tradeGdpPct: 70,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 165.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'uae',
@@ -846,7 +1260,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 32,
       sourceCoverage: 72,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'imf-direction-of-trade', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'imf-direction-of-trade', 'wto-profile', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Diversification from oil revenue continues.', 'Balancing between US security and China trade access persists.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -860,6 +1274,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 70,
       },
+      economicStats: {
+        gdpBillionUsd: 520,
+        gdpGrowthPct: 4.0,
+        gdpPerCapitaUsd: 53100,
+        inflationPct: 2.3,
+        tradeGdpPct: 170,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 23.0,
+        militaryExpGdpPct: 4.4,
+        activePersonnelThousands: 63.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'syria',
@@ -872,7 +1299,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 83,
       sourceCoverage: 50,
       lastUpdated: '2026-05-09',
-      sourceIds: ['ucdp', 'csis-sanctions', 'iiss-military-balance', 'vdem'],
+      sourceIds: ['ucdp', 'csis-sanctions', 'iiss-military-balance', 'vdem', 'acled', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Post-Assad governance remains fragile and contested.', 'Reconstruction is contingent on sanctions relief and international engagement.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -886,6 +1313,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 24,
       },
+      economicStats: {
+        gdpBillionUsd: 22,
+        gdpGrowthPct: -0.5,
+        gdpPerCapitaUsd: 1300,
+        inflationPct: 80.0,
+        tradeGdpPct: 35,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 4.5,
+        activePersonnelThousands: 130.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'taiwan',
@@ -898,7 +1338,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 77,
       sourceCoverage: 76,
       lastUpdated: '2026-05-09',
-      sourceIds: ['sipri-milex', 'iiss-military-balance', 'wto-profile', 'vdem'],
+      sourceIds: ['sipri-milex', 'iiss-military-balance', 'wto-profile', 'vdem', 'un-comtrade', 'transparency-intl'],
       assumptions: ['US security commitment remains ambiguous but credible.', 'Semiconductor supply chain centrality raises strategic stakes globally.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -912,6 +1352,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 74,
       },
+      economicStats: {
+        gdpBillionUsd: 760,
+        gdpGrowthPct: 4.9,
+        gdpPerCapitaUsd: 33000,
+        inflationPct: 2.5,
+        tradeGdpPct: 115,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 19.0,
+        militaryExpGdpPct: 2.5,
+        activePersonnelThousands: 175.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'north-korea',
@@ -924,7 +1377,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 87,
       sourceCoverage: 40,
       lastUpdated: '2026-05-09',
-      sourceIds: ['iiss-military-balance', 'ucdp', 'csis-sanctions', 'sipri-milex'],
+      sourceIds: ['iiss-military-balance', 'ucdp', 'csis-sanctions', 'sipri-milex', 'icg-crisiswatch', 'transparency-intl', 'world-factbook'],
       assumptions: ['Nuclear deterrent remains the regime core security guarantee.', 'Deepening partnership with Russia provides economic and diplomatic cover.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -938,6 +1391,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 65,
       },
+      economicStats: {
+        gdpBillionUsd: 28,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 1100,
+        inflationPct: 5.0,
+        tradeGdpPct: 15,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 14.3,
+        activePersonnelThousands: 1280.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'egypt',
@@ -950,7 +1416,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 50,
       sourceCoverage: 70,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'vdem', 'ucdp'],
+      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'vdem', 'ucdp', 'transparency-intl'],
       assumptions: ['Military-backed stability is maintained despite economic fragility.', 'Regional role in Gaza diplomacy sustains US partnership.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -964,6 +1430,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 55,
       },
+      economicStats: {
+        gdpBillionUsd: 395,
+        gdpGrowthPct: 2.7,
+        gdpPerCapitaUsd: 3400,
+        inflationPct: 30.0,
+        tradeGdpPct: 33,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 5.0,
+        militaryExpGdpPct: 1.2,
+        activePersonnelThousands: 440.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'nigeria',
@@ -976,7 +1455,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 62,
       sourceCoverage: 63,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'ucdp', 'vdem', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'ucdp', 'vdem', 'imf-direction-of-trade', 'acled', 'transparency-intl'],
       assumptions: ['Internal security challenges persist in the north and delta.', 'Oil revenue remains structurally important despite volatility.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -990,6 +1469,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 41,
       },
+      economicStats: {
+        gdpBillionUsd: 390,
+        gdpGrowthPct: 3.3,
+        gdpPerCapitaUsd: 1700,
+        inflationPct: 28.9,
+        tradeGdpPct: 27,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 0.8,
+        activePersonnelThousands: 143.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'south-africa',
@@ -1002,7 +1494,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 44,
       sourceCoverage: 72,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'vdem', 'wto-profile', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'wto-profile', 'imf-direction-of-trade', 'transparency-intl'],
       assumptions: ['Non-aligned posture between West and BRICS partners continues.', 'Growth remains sluggish due to energy and institutional constraints.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -1016,6 +1508,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 49,
       },
+      economicStats: {
+        gdpBillionUsd: 380,
+        gdpGrowthPct: 0.6,
+        gdpPerCapitaUsd: 6100,
+        inflationPct: 4.7,
+        tradeGdpPct: 58,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 0.8,
+        activePersonnelThousands: 78.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'ethiopia',
@@ -1028,7 +1533,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 66,
       sourceCoverage: 58,
       lastUpdated: '2026-05-09',
-      sourceIds: ['ucdp', 'vdem', 'world-bank-wdi', 'iiss-military-balance'],
+      sourceIds: ['ucdp', 'vdem', 'world-bank-wdi', 'iiss-military-balance', 'acled', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Post-Tigray stabilization continues but remains fragile.', 'Grand Ethiopian Renaissance Dam dispute sustains strategic tension with Egypt.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -1042,6 +1547,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 38,
       },
+      economicStats: {
+        gdpBillionUsd: 155,
+        gdpGrowthPct: 7.5,
+        gdpPerCapitaUsd: 1200,
+        inflationPct: 30.0,
+        tradeGdpPct: 25,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 0.6,
+        activePersonnelThousands: 162.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'morocco',
@@ -1054,7 +1572,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 34,
       sourceCoverage: 66,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'freedom-house'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'freedom-house', 'transparency-intl'],
       assumptions: ['Monarchy remains stable.', 'Geopolitical positioning between EU, Africa, and Gulf sustains diplomatic relevance.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -1068,6 +1586,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 62,
       },
+      economicStats: {
+        gdpBillionUsd: 145,
+        gdpGrowthPct: 3.1,
+        gdpPerCapitaUsd: 3800,
+        inflationPct: 1.2,
+        tradeGdpPct: 73,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 5.0,
+        militaryExpGdpPct: 3.5,
+        activePersonnelThousands: 196.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'italy',
@@ -1080,7 +1611,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 30,
       sourceCoverage: 83,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'imf-direction-of-trade', 'un-comtrade', 'transparency-intl'],
       assumptions: ['NATO and EU commitments remain the structural anchors.', 'Domestic political fragility does not translate into strategic repositioning.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1094,6 +1625,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 61,
       },
+      economicStats: {
+        gdpBillionUsd: 2260,
+        gdpGrowthPct: 0.7,
+        gdpPerCapitaUsd: 38400,
+        inflationPct: 1.2,
+        tradeGdpPct: 67,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 36.0,
+        militaryExpGdpPct: 1.6,
+        activePersonnelThousands: 165.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'spain',
@@ -1106,7 +1650,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 27,
       sourceCoverage: 82,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'wto-profile', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Atlantic and European framework stays the strategic reference.', 'Internal territorial tensions remain bounded.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1120,6 +1664,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 58,
       },
+      economicStats: {
+        gdpBillionUsd: 1620,
+        gdpGrowthPct: 3.2,
+        gdpPerCapitaUsd: 33800,
+        inflationPct: 2.8,
+        tradeGdpPct: 73,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 23.0,
+        militaryExpGdpPct: 1.4,
+        activePersonnelThousands: 122.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'norway',
@@ -1132,7 +1689,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 24,
       sourceCoverage: 86,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance', 'transparency-intl'],
       assumptions: ['NATO membership provides a strong security anchor.', 'Energy wealth gives Norway outsized influence in European supply chains.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1146,6 +1703,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 82,
       },
+      economicStats: {
+        gdpBillionUsd: 590,
+        gdpGrowthPct: 1.6,
+        gdpPerCapitaUsd: 105000,
+        inflationPct: 3.3,
+        tradeGdpPct: 80,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 11.0,
+        militaryExpGdpPct: 1.9,
+        activePersonnelThousands: 27.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'sweden',
@@ -1158,7 +1728,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 26,
       sourceCoverage: 85,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance', 'un-comtrade', 'transparency-intl'],
       assumptions: ['NATO accession has reshaped the security posture significantly.', 'Defense spending trajectory continues upward.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1172,6 +1742,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 78,
       },
+      economicStats: {
+        gdpBillionUsd: 590,
+        gdpGrowthPct: 0.5,
+        gdpPerCapitaUsd: 55500,
+        inflationPct: 2.6,
+        tradeGdpPct: 88,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 12.0,
+        militaryExpGdpPct: 2.0,
+        activePersonnelThousands: 24.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'finland',
@@ -1184,7 +1767,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 30,
       sourceCoverage: 85,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance', 'transparency-intl'],
       assumptions: ['NATO membership consolidates the strategic shift from neutrality.', 'Shared border with Russia elevates deterrence priority.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1198,6 +1781,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 80,
       },
+      economicStats: {
+        gdpBillionUsd: 300,
+        gdpGrowthPct: 0.4,
+        gdpPerCapitaUsd: 53700,
+        inflationPct: 1.5,
+        tradeGdpPct: 85,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 8.0,
+        militaryExpGdpPct: 2.8,
+        activePersonnelThousands: 23.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'greece',
@@ -1210,7 +1806,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 38,
       sourceCoverage: 76,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance', 'transparency-intl'],
       assumptions: ['NATO-Turkey rivalry constrains strategic room.', 'Mediterranean migration and energy geopolitics remain active pressure points.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1224,6 +1820,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 60,
       },
+      economicStats: {
+        gdpBillionUsd: 240,
+        gdpGrowthPct: 2.3,
+        gdpPerCapitaUsd: 23400,
+        inflationPct: 2.9,
+        tradeGdpPct: 67,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 7.0,
+        militaryExpGdpPct: 3.1,
+        activePersonnelThousands: 142.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'kazakhstan',
@@ -1236,7 +1845,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 46,
       sourceCoverage: 64,
       lastUpdated: '2026-05-09',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade', 'transparency-intl'],
       assumptions: ['Multi-vector diplomacy balances Russian, Chinese, and Western ties.', 'Energy wealth buffers the regime from external pressure.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -1250,6 +1859,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 60,
       },
+      economicStats: {
+        gdpBillionUsd: 260,
+        gdpGrowthPct: 4.6,
+        gdpPerCapitaUsd: 12700,
+        inflationPct: 8.4,
+        tradeGdpPct: 65,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 74.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'serbia',
@@ -1262,7 +1884,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 49,
       sourceCoverage: 66,
       lastUpdated: '2026-05-09',
-      sourceIds: ['vdem', 'iiss-military-balance', 'freedom-house', 'imf-direction-of-trade'],
+      sourceIds: ['vdem', 'iiss-military-balance', 'freedom-house', 'imf-direction-of-trade', 'transparency-intl'],
       assumptions: ['EU accession process advances slowly while Russia ties are maintained selectively.', 'Kosovo status remains an unresolved flashpoint.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -1275,6 +1897,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'medium',
         cohesion: 55,
+      },
+      economicStats: {
+        gdpBillionUsd: 73,
+        gdpGrowthPct: 3.7,
+        gdpPerCapitaUsd: 12000,
+        inflationPct: 4.5,
+        tradeGdpPct: 110,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 2.0,
+        militaryExpGdpPct: 2.2,
+        activePersonnelThousands: 28.0,
+        nuclearArmed: false,
       },
     },
     // ─── Europe ────────────────────────────────────────────────────────────────
@@ -1289,7 +1924,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 22,
       sourceCoverage: 88,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'imf-direction-of-trade', 'un-comtrade', 'transparency-intl'],
       assumptions: ['NATO and EU commitments remain the strategic anchor.', 'Rotterdam port centrality sustains outsized trade leverage.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1303,6 +1938,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 72,
       },
+      economicStats: {
+        gdpBillionUsd: 1130,
+        gdpGrowthPct: 0.9,
+        gdpPerCapitaUsd: 63000,
+        inflationPct: 2.7,
+        tradeGdpPct: 155,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 16.0,
+        militaryExpGdpPct: 1.4,
+        activePersonnelThousands: 41.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'belgium',
@@ -1315,7 +1963,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 24,
       sourceCoverage: 86,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'imf-direction-of-trade', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Hosting NATO and EU institutions anchors diplomatic centrality.', 'Domestic political fragmentation does not destabilize the European framework role.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1329,6 +1977,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 55,
       },
+      economicStats: {
+        gdpBillionUsd: 640,
+        gdpGrowthPct: 1.4,
+        gdpPerCapitaUsd: 54600,
+        inflationPct: 3.4,
+        tradeGdpPct: 170,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 7.0,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 25.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'switzerland',
@@ -1341,7 +2002,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 16,
       sourceCoverage: 87,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'csis-sanctions'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'csis-sanctions', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Constitutional neutrality is maintained despite pressure to join EU sanctions.', 'Financial centre role continues to attract strategic attention from all blocs.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -1355,6 +2016,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 80,
       },
+      economicStats: {
+        gdpBillionUsd: 890,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 100000,
+        inflationPct: 1.1,
+        tradeGdpPct: 118,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 5.0,
+        militaryExpGdpPct: 0.6,
+        activePersonnelThousands: 20.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'austria',
@@ -1367,7 +2041,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 20,
       sourceCoverage: 84,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'sipri-milex'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'sipri-milex', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Constitutional neutrality is preserved while EU integration deepens.', 'Energy transition reduces residual Russian gas dependency.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -1381,6 +2055,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 68,
       },
+      economicStats: {
+        gdpBillionUsd: 530,
+        gdpGrowthPct: 0.9,
+        gdpPerCapitaUsd: 58400,
+        inflationPct: 2.8,
+        tradeGdpPct: 105,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 0.8,
+        activePersonnelThousands: 22.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'denmark',
@@ -1393,7 +2080,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 22,
       sourceCoverage: 87,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance', 'transparency-intl'],
       assumptions: ['NATO membership consolidates defense spending increases.', 'Arctic and Baltic Sea posture is elevated following Russia escalation.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1407,6 +2094,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 80,
       },
+      economicStats: {
+        gdpBillionUsd: 400,
+        gdpGrowthPct: 1.8,
+        gdpPerCapitaUsd: 67900,
+        inflationPct: 2.7,
+        tradeGdpPct: 110,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 9.0,
+        militaryExpGdpPct: 2.3,
+        activePersonnelThousands: 17.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'czechia',
@@ -1419,7 +2119,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 28,
       sourceCoverage: 82,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance', 'transparency-intl'],
       assumptions: ['NATO eastern flank role drives increased defence investment.', 'V4 cohesion persists on migration despite internal tensions.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1433,6 +2133,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 68,
       },
+      economicStats: {
+        gdpBillionUsd: 330,
+        gdpGrowthPct: 1.6,
+        gdpPerCapitaUsd: 30800,
+        inflationPct: 2.4,
+        tradeGdpPct: 155,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 5.0,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 30.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'hungary',
@@ -1445,7 +2158,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 36,
       sourceCoverage: 80,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'freedom-house'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'freedom-house', 'transparency-intl'],
       assumptions: ['Orbán government maintains selective Russia engagement despite NATO membership.', 'EU rule-of-law pressure does not force a strategic realignment.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1459,6 +2172,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 55,
       },
+      economicStats: {
+        gdpBillionUsd: 200,
+        gdpGrowthPct: 2.0,
+        gdpPerCapitaUsd: 21100,
+        inflationPct: 3.7,
+        tradeGdpPct: 160,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 1.7,
+        activePersonnelThousands: 37.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'romania',
@@ -1471,7 +2197,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 38,
       sourceCoverage: 78,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance', 'transparency-intl'],
       assumptions: ['Black Sea posture and Ukraine proximity make NATO basing a priority.', 'Domestic reform trajectory remains slow but EU accession momentum holds.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1485,6 +2211,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 60,
       },
+      economicStats: {
+        gdpBillionUsd: 345,
+        gdpGrowthPct: 1.8,
+        gdpPerCapitaUsd: 18200,
+        inflationPct: 5.0,
+        tradeGdpPct: 80,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 8.0,
+        militaryExpGdpPct: 2.3,
+        activePersonnelThousands: 68.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'portugal',
@@ -1497,7 +2236,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 22,
       sourceCoverage: 82,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'wto-profile', 'transparency-intl'],
       assumptions: ['Atlantic orientation sustains Azores basing value for NATO.', 'Lusophone ties provide soft-power reach into Africa and Brazil.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1511,6 +2250,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 68,
       },
+      economicStats: {
+        gdpBillionUsd: 280,
+        gdpGrowthPct: 1.9,
+        gdpPerCapitaUsd: 27300,
+        inflationPct: 2.3,
+        tradeGdpPct: 93,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 1.4,
+        activePersonnelThousands: 33.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'bulgaria',
@@ -1523,7 +2275,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 32,
       sourceCoverage: 76,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'freedom-house'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'freedom-house', 'transparency-intl'],
       assumptions: ['NATO membership is the strategic anchor despite historical Russia ties.', 'Political instability slows EU integration but does not reverse alignment.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1537,6 +2289,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 52,
       },
+      economicStats: {
+        gdpBillionUsd: 100,
+        gdpGrowthPct: 2.1,
+        gdpPerCapitaUsd: 15000,
+        inflationPct: 3.0,
+        tradeGdpPct: 115,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 2.8,
+        activePersonnelThousands: 30.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'croatia',
@@ -1549,7 +2314,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 26,
       sourceCoverage: 76,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance', 'transparency-intl'],
       assumptions: ['Western Balkans stability remains a priority for Croatia as a front-state.', 'NATO and EU membership consolidate the post-Yugoslav transition.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1563,6 +2328,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 62,
       },
+      economicStats: {
+        gdpBillionUsd: 77,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 19800,
+        inflationPct: 3.5,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 2.0,
+        militaryExpGdpPct: 2.6,
+        activePersonnelThousands: 16.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'slovakia',
@@ -1575,7 +2353,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 33,
       sourceCoverage: 78,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'freedom-house'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'freedom-house', 'transparency-intl'],
       assumptions: ['Fico government maintains ambivalent stance on Ukraine aid within NATO.', 'EU institutional pressure constrains but does not reverse the political drift.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1589,6 +2367,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 54,
       },
+      economicStats: {
+        gdpBillionUsd: 120,
+        gdpGrowthPct: 2.1,
+        gdpPerCapitaUsd: 22100,
+        inflationPct: 2.8,
+        tradeGdpPct: 175,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 2.3,
+        activePersonnelThousands: 16.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'estonia',
@@ -1601,7 +2392,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 48,
       sourceCoverage: 80,
       lastUpdated: '2026-05-10',
-      sourceIds: ['sipri-milex', 'iiss-military-balance', 'vdem', 'freedom-house'],
+      sourceIds: ['sipri-milex', 'iiss-military-balance', 'vdem', 'freedom-house', 'transparency-intl'],
       assumptions: ['NATO Article 5 guarantee and enhanced forward presence are the primary deterrents.', 'Hybrid warfare and cyber threats from Russia remain persistently elevated.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1615,6 +2406,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 70,
       },
+      economicStats: {
+        gdpBillionUsd: 38,
+        gdpGrowthPct: 1.8,
+        gdpPerCapitaUsd: 28900,
+        inflationPct: 3.5,
+        tradeGdpPct: 135,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 3.0,
+        activePersonnelThousands: 8.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'latvia',
@@ -1627,7 +2431,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 46,
       sourceCoverage: 78,
       lastUpdated: '2026-05-10',
-      sourceIds: ['sipri-milex', 'iiss-military-balance', 'vdem', 'freedom-house'],
+      sourceIds: ['sipri-milex', 'iiss-military-balance', 'vdem', 'freedom-house', 'transparency-intl'],
       assumptions: ['NATO enhanced forward presence is the critical deterrence pillar.', 'Russian-speaking minority remains a potential instrument of hybrid pressure.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1641,6 +2445,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 64,
       },
+      economicStats: {
+        gdpBillionUsd: 43,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 23200,
+        inflationPct: 2.6,
+        tradeGdpPct: 125,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 3.2,
+        activePersonnelThousands: 7.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'lithuania',
@@ -1653,7 +2470,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 46,
       sourceCoverage: 79,
       lastUpdated: '2026-05-10',
-      sourceIds: ['sipri-milex', 'iiss-military-balance', 'vdem', 'freedom-house'],
+      sourceIds: ['sipri-milex', 'iiss-military-balance', 'vdem', 'freedom-house', 'transparency-intl'],
       assumptions: ['Suwalki Gap vulnerability makes Lithuania a primary NATO reinforcement focus.', 'Kaliningrad enclave creates a structural chokepoint that sustains strategic tension.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1667,6 +2484,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 66,
       },
+      economicStats: {
+        gdpBillionUsd: 73,
+        gdpGrowthPct: 2.2,
+        gdpPerCapitaUsd: 27200,
+        inflationPct: 3.0,
+        tradeGdpPct: 130,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 2.0,
+        militaryExpGdpPct: 3.0,
+        activePersonnelThousands: 18.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'belarus',
@@ -1679,7 +2509,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 70,
       sourceCoverage: 58,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'csis-sanctions', 'iiss-military-balance', 'ucdp'],
+      sourceIds: ['vdem', 'csis-sanctions', 'iiss-military-balance', 'ucdp', 'transparency-intl'],
       assumptions: ['Lukashenko regime survives on Russian security guarantees and economic subsidies.', 'Western sanctions deepen dependence on Russia without triggering regime collapse.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1693,6 +2523,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 45,
       },
+      economicStats: {
+        gdpBillionUsd: 73,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 7900,
+        inflationPct: 5.6,
+        tradeGdpPct: 100,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 2.0,
+        militaryExpGdpPct: 2.2,
+        activePersonnelThousands: 48.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'moldova',
@@ -1705,7 +2548,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 56,
       sourceCoverage: 62,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'ucdp', 'imf-direction-of-trade', 'freedom-house'],
+      sourceIds: ['vdem', 'ucdp', 'imf-direction-of-trade', 'freedom-house', 'transparency-intl', 'world-factbook'],
       assumptions: ['Transnistria frozen conflict remains a persistent Russian leverage point.', 'EU accession momentum continues to erode Russia influence in the political mainstream.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -1718,6 +2561,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 50,
+      },
+      economicStats: {
+        gdpBillionUsd: 15,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 5800,
+        inflationPct: 7.0,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.6,
+        activePersonnelThousands: 5.0,
+        nuclearArmed: false,
       },
     },
     // ─── Caucasus ──────────────────────────────────────────────────────────────
@@ -1732,7 +2588,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 52,
       sourceCoverage: 64,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'ucdp', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'ucdp', 'imf-direction-of-trade', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Caspian energy exports to Europe reduce dependence on Russian pipeline routes.', 'Post-Karabakh consolidation elevates regional influence but sustains Armenia tension.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -1746,6 +2602,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 65,
       },
+      economicStats: {
+        gdpBillionUsd: 78,
+        gdpGrowthPct: 3.0,
+        gdpPerCapitaUsd: 7600,
+        inflationPct: 3.6,
+        tradeGdpPct: 65,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 3.8,
+        activePersonnelThousands: 66.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'armenia',
@@ -1758,7 +2627,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 58,
       sourceCoverage: 62,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'iiss-military-balance', 'ucdp', 'freedom-house'],
+      sourceIds: ['vdem', 'iiss-military-balance', 'ucdp', 'freedom-house', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Post-Karabakh loss accelerates pivot away from Russian security guarantees.', 'EU partnership is expanding but formal membership or defence pact is years away.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -1772,6 +2641,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 55,
       },
+      economicStats: {
+        gdpBillionUsd: 22,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 7400,
+        inflationPct: 1.5,
+        tradeGdpPct: 80,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.8,
+        militaryExpGdpPct: 3.9,
+        activePersonnelThousands: 45.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'georgia',
@@ -1784,7 +2666,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 55,
       sourceCoverage: 62,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'ucdp', 'iiss-military-balance', 'freedom-house'],
+      sourceIds: ['vdem', 'ucdp', 'iiss-military-balance', 'freedom-house', 'transparency-intl'],
       assumptions: ['Russia occupation of South Ossetia and Abkhazia is the defining security constraint.', 'EU accession process is politically contentious domestically despite broad public support.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -1797,6 +2679,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'medium',
         cohesion: 50,
+      },
+      economicStats: {
+        gdpBillionUsd: 27,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 7400,
+        inflationPct: 2.5,
+        tradeGdpPct: 98,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 1.8,
+        activePersonnelThousands: 37.0,
+        nuclearArmed: false,
       },
     },
     // ─── Central Asia ──────────────────────────────────────────────────────────
@@ -1811,7 +2706,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 40,
       sourceCoverage: 58,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade', 'transparency-intl'],
       assumptions: ['Reform-oriented leadership pursues multi-vector diplomacy to reduce Russia dependence.', 'Central Asian connectivity makes Uzbekistan a key transit hub for China BRI routes.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -1825,6 +2720,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 58,
       },
+      economicStats: {
+        gdpBillionUsd: 100,
+        gdpGrowthPct: 6.5,
+        gdpPerCapitaUsd: 2800,
+        inflationPct: 8.0,
+        tradeGdpPct: 53,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.5,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 67.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'tajikistan',
@@ -1837,7 +2745,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 48,
       sourceCoverage: 52,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'iiss-military-balance', 'ucdp', 'world-bank-wdi'],
+      sourceIds: ['vdem', 'iiss-military-balance', 'ucdp', 'world-bank-wdi', 'transparency-intl', 'world-factbook'],
       assumptions: ['Russian military base at Dushanbe is the primary external security guarantee.', 'Afghan instability spillover remains the dominant threat perception.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -1851,6 +2759,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 52,
       },
+      economicStats: {
+        gdpBillionUsd: 12,
+        gdpGrowthPct: 8.0,
+        gdpPerCapitaUsd: 1200,
+        inflationPct: 6.5,
+        tradeGdpPct: 65,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 2.5,
+        activePersonnelThousands: 8.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'kyrgyzstan',
@@ -1863,7 +2784,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 44,
       sourceCoverage: 54,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'iiss-military-balance', 'ucdp', 'world-bank-wdi'],
+      sourceIds: ['vdem', 'iiss-military-balance', 'ucdp', 'world-bank-wdi', 'transparency-intl', 'world-factbook'],
       assumptions: ['Political instability and successive coups constrain long-term strategic planning.', 'Russia remittances and CSTO membership remain the primary external economic and security pillars.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -1877,6 +2798,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 48,
       },
+      economicStats: {
+        gdpBillionUsd: 13,
+        gdpGrowthPct: 6.0,
+        gdpPerCapitaUsd: 1900,
+        inflationPct: 7.5,
+        tradeGdpPct: 120,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.2,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 11.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'turkmenistan',
@@ -1889,7 +2823,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 38,
       sourceCoverage: 42,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'world-bank-wdi', 'csis-sanctions', 'imf-direction-of-trade'],
+      sourceIds: ['vdem', 'world-bank-wdi', 'csis-sanctions', 'imf-direction-of-trade', 'transparency-intl', 'world-factbook'],
       assumptions: ['Constitutional neutrality limits external entanglement but also forecloses security partnerships.', 'Natural gas exports to China are the near-total economic lifeline.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -1902,6 +2836,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 55,
+      },
+      economicStats: {
+        gdpBillionUsd: 55,
+        gdpGrowthPct: 6.2,
+        gdpPerCapitaUsd: 8500,
+        inflationPct: 8.0,
+        tradeGdpPct: 60,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.6,
+        militaryExpGdpPct: 2.9,
+        activePersonnelThousands: 37.0,
+        nuclearArmed: false,
       },
     },
     // ─── Middle East ───────────────────────────────────────────────────────────
@@ -1916,7 +2863,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 46,
       sourceCoverage: 68,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'ucdp', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'ucdp', 'imf-direction-of-trade', 'transparency-intl'],
       assumptions: ['Hashemite monarchy sustains stability through balancing Gulf and US relationships.', 'Palestinian issue and Gaza conflict spillover are the dominant societal pressure drivers.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -1930,6 +2877,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 52,
       },
+      economicStats: {
+        gdpBillionUsd: 50,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 4600,
+        inflationPct: 2.5,
+        tradeGdpPct: 85,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 2.2,
+        militaryExpGdpPct: 4.5,
+        activePersonnelThousands: 101.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'kuwait',
@@ -1942,7 +2902,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 34,
       sourceCoverage: 66,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'imf-direction-of-trade', 'csis-sanctions'],
+      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'imf-direction-of-trade', 'csis-sanctions', 'transparency-intl'],
       assumptions: ['US basing presence is the primary security guarantee; Kuwait hosts Camp Arifjan.', 'Oil wealth buffers political pressures from parliamentary instability.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1956,6 +2916,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 60,
       },
+      economicStats: {
+        gdpBillionUsd: 130,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 30000,
+        inflationPct: 2.3,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 7.0,
+        militaryExpGdpPct: 5.4,
+        activePersonnelThousands: 18.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'qatar',
@@ -1968,7 +2941,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 30,
       sourceCoverage: 68,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'imf-direction-of-trade', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'imf-direction-of-trade', 'wto-profile', 'transparency-intl'],
       assumptions: ['Al Udeid air base and LNG diplomacy give Qatar outsized geopolitical leverage.', 'Mediation role between Hamas, Israel, and Western parties sustains diplomatic centrality.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -1982,6 +2955,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 66,
       },
+      economicStats: {
+        gdpBillionUsd: 220,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 75000,
+        inflationPct: 1.0,
+        tradeGdpPct: 100,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 7.0,
+        militaryExpGdpPct: 3.2,
+        activePersonnelThousands: 16.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'oman',
@@ -1994,7 +2980,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 28,
       sourceCoverage: 64,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'imf-direction-of-trade', 'ucdp'],
+      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'imf-direction-of-trade', 'ucdp', 'transparency-intl'],
       assumptions: ['Traditional neutrality enables Oman to serve as a back-channel for Iran-US contacts.', 'Post-Qaboos succession is consolidating without destabilising the balancing strategy.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -2008,6 +2994,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 70,
       },
+      economicStats: {
+        gdpBillionUsd: 115,
+        gdpGrowthPct: 1.8,
+        gdpPerCapitaUsd: 22000,
+        inflationPct: 1.2,
+        tradeGdpPct: 100,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 6.0,
+        militaryExpGdpPct: 5.2,
+        activePersonnelThousands: 43.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'yemen',
@@ -2020,7 +3019,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 91,
       sourceCoverage: 44,
       lastUpdated: '2026-05-10',
-      sourceIds: ['ucdp', 'iiss-military-balance', 'csis-sanctions', 'world-bank-wdi'],
+      sourceIds: ['ucdp', 'iiss-military-balance', 'csis-sanctions', 'world-bank-wdi', 'acled', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Civil war and Houthi control of the north makes a unified state a distant prospect.', 'Red Sea shipping attacks by Houthis have internationalised the conflict.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2034,6 +3033,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 18,
       },
+      economicStats: {
+        gdpBillionUsd: 21,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 600,
+        inflationPct: 25.0,
+        tradeGdpPct: 25,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 2.4,
+        activePersonnelThousands: 30.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'lebanon',
@@ -2046,7 +3058,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 78,
       sourceCoverage: 55,
       lastUpdated: '2026-05-10',
-      sourceIds: ['ucdp', 'iiss-military-balance', 'csis-sanctions', 'vdem'],
+      sourceIds: ['ucdp', 'iiss-military-balance', 'csis-sanctions', 'vdem', 'transparency-intl'],
       assumptions: ['Hezbollah remains the dominant armed actor and shapes state foreign policy.', 'Post-war reconstruction requires international engagement that Hezbollah veto power can obstruct.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2060,6 +3072,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 30,
       },
+      economicStats: {
+        gdpBillionUsd: 22,
+        gdpGrowthPct: 3.0,
+        gdpPerCapitaUsd: 3500,
+        inflationPct: 50.0,
+        tradeGdpPct: 50,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 2.3,
+        activePersonnelThousands: 72.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'libya',
@@ -2072,7 +3097,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 79,
       sourceCoverage: 45,
       lastUpdated: '2026-05-10',
-      sourceIds: ['ucdp', 'iiss-military-balance', 'csis-sanctions', 'vdem'],
+      sourceIds: ['ucdp', 'iiss-military-balance', 'csis-sanctions', 'vdem', 'acled', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Dual-authority split between Tripoli and Tobruk governments persists.', 'Foreign military involvement by Turkey, Russia, and UAE sustains a proxy competition.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2085,6 +3110,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'medium',
         cohesion: 20,
+      },
+      economicStats: {
+        gdpBillionUsd: 42,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 6200,
+        inflationPct: 2.5,
+        tradeGdpPct: 50,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 1.7,
+        activePersonnelThousands: 96.0,
+        nuclearArmed: false,
       },
     },
     // ─── South-Eastern Asia ────────────────────────────────────────────────────
@@ -2099,7 +3137,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 24,
       sourceCoverage: 82,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'wto-profile', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Changi basing access for the US Navy is the cornerstone of Singapore deterrence.', 'Trade hub role requires meticulous balancing between US security and China economic ties.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -2113,6 +3151,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 78,
       },
+      economicStats: {
+        gdpBillionUsd: 500,
+        gdpGrowthPct: 2.7,
+        gdpPerCapitaUsd: 88000,
+        inflationPct: 2.4,
+        tradeGdpPct: 320,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 12.0,
+        militaryExpGdpPct: 2.4,
+        activePersonnelThousands: 71.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'malaysia',
@@ -2125,7 +3176,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 32,
       sourceCoverage: 74,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'wto-profile', 'un-comtrade', 'transparency-intl'],
       assumptions: ['Non-alignment sustains pragmatic economic engagement with China despite SCS disputes.', 'Domestic ethnic and religious politics constrain foreign policy flexibility.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2139,6 +3190,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 60,
       },
+      economicStats: {
+        gdpBillionUsd: 430,
+        gdpGrowthPct: 4.4,
+        gdpPerCapitaUsd: 12500,
+        inflationPct: 1.8,
+        tradeGdpPct: 145,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 1.0,
+        activePersonnelThousands: 109.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'cambodia',
@@ -2151,7 +3215,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 40,
       sourceCoverage: 56,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'world-bank-wdi', 'iiss-military-balance', 'imf-direction-of-trade'],
+      sourceIds: ['vdem', 'world-bank-wdi', 'iiss-military-balance', 'imf-direction-of-trade', 'transparency-intl', 'world-factbook'],
       assumptions: ['Hun-family rule remains stable with Chinese economic and diplomatic backing.', 'Ream Naval Base expansion cements China strategic footprint in the Gulf of Thailand.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2165,6 +3229,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 55,
       },
+      economicStats: {
+        gdpBillionUsd: 30,
+        gdpGrowthPct: 5.8,
+        gdpPerCapitaUsd: 1800,
+        inflationPct: 2.5,
+        tradeGdpPct: 115,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.6,
+        militaryExpGdpPct: 2.0,
+        activePersonnelThousands: 124.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'laos',
@@ -2177,7 +3254,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 36,
       sourceCoverage: 50,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'world-bank-wdi', 'imf-direction-of-trade', 'wto-profile'],
+      sourceIds: ['vdem', 'world-bank-wdi', 'imf-direction-of-trade', 'wto-profile', 'transparency-intl', 'world-factbook'],
       assumptions: ['BRI Laos-China Railway debt is the primary leverage point for Chinese influence.', 'One-party state stability is maintained through economic dependence on China.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2190,6 +3267,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 60,
+      },
+      economicStats: {
+        gdpBillionUsd: 15,
+        gdpGrowthPct: 4.5,
+        gdpPerCapitaUsd: 1900,
+        inflationPct: 22.0,
+        tradeGdpPct: 70,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.7,
+        activePersonnelThousands: 29.0,
+        nuclearArmed: false,
       },
     },
     // ─── Southern Asia ─────────────────────────────────────────────────────────
@@ -2204,7 +3294,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 43,
       sourceCoverage: 62,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'iiss-military-balance', 'transparency-intl', 'world-factbook'],
       assumptions: ['Debt restructuring with the IMF is stabilising the economy after 2022 collapse.', 'India-China competition for influence at Colombo and Hambantota ports sustains strategic leverage.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2218,6 +3308,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 50,
       },
+      economicStats: {
+        gdpBillionUsd: 84,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 3800,
+        inflationPct: 4.5,
+        tradeGdpPct: 43,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.5,
+        militaryExpGdpPct: 1.8,
+        activePersonnelThousands: 244.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'nepal',
@@ -2230,7 +3333,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 38,
       sourceCoverage: 58,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'ucdp'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'ucdp', 'transparency-intl', 'world-factbook'],
       assumptions: ['India remains the dominant economic and security partner despite growing Chinese investment.', 'Himalayan border disputes with both China and India constrain foreign policy options.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2244,6 +3347,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 48,
       },
+      economicStats: {
+        gdpBillionUsd: 45,
+        gdpGrowthPct: 4.5,
+        gdpPerCapitaUsd: 1500,
+        inflationPct: 5.0,
+        tradeGdpPct: 45,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.4,
+        militaryExpGdpPct: 0.9,
+        activePersonnelThousands: 96.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'afghanistan',
@@ -2256,7 +3372,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 86,
       sourceCoverage: 42,
       lastUpdated: '2026-05-10',
-      sourceIds: ['ucdp', 'vdem', 'csis-sanctions', 'iiss-military-balance'],
+      sourceIds: ['ucdp', 'vdem', 'csis-sanctions', 'iiss-military-balance', 'acled', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Taliban government remains unrecognised but controls territory without near-term threat to power.', 'Humanitarian crisis and sanctions severely limit state capacity and external engagement.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2269,6 +3385,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'low',
         cohesion: 22,
+      },
+      economicStats: {
+        gdpBillionUsd: 14,
+        gdpGrowthPct: -0.5,
+        gdpPerCapitaUsd: 350,
+        inflationPct: 10.0,
+        tradeGdpPct: 30,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 2.1,
+        activePersonnelThousands: 300.0,
+        nuclearArmed: false,
       },
     },
     // ─── Eastern Asia ──────────────────────────────────────────────────────────
@@ -2283,7 +3412,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 30,
       sourceCoverage: 60,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'iiss-military-balance', 'transparency-intl', 'world-factbook'],
       assumptions: ['Third Neighbor policy cultivates US, EU, and Japan ties to reduce dependence on Russia and China.', 'Mining export concentration towards China creates structural economic dependency.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2296,6 +3425,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 60,
+      },
+      economicStats: {
+        gdpBillionUsd: 22,
+        gdpGrowthPct: 5.6,
+        gdpPerCapitaUsd: 6400,
+        inflationPct: 8.0,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.5,
+        activePersonnelThousands: 10.0,
+        nuclearArmed: false,
       },
     },
     // ─── Oceania ───────────────────────────────────────────────────────────────
@@ -2310,7 +3452,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 18,
       sourceCoverage: 85,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance'],
+      sourceIds: ['world-bank-wdi', 'sipri-milex', 'vdem', 'iiss-military-balance', 'transparency-intl'],
       assumptions: ['Five Eyes and ANZUS underpin the security posture despite non-AUKUS status.', 'China is the largest trading partner, creating economic tension with the security framework.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -2323,6 +3465,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 78,
+      },
+      economicStats: {
+        gdpBillionUsd: 250,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 48000,
+        inflationPct: 3.0,
+        tradeGdpPct: 57,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.8,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 15.0,
+        nuclearArmed: false,
       },
     },
     // ─── Northern Africa ───────────────────────────────────────────────────────
@@ -2337,7 +3492,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 46,
       sourceCoverage: 58,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade', 'transparency-intl'],
       assumptions: ['Military establishment retains decisive political control.', 'Gas exports to Europe increase leverage following the Russia-Ukraine energy shock.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -2351,6 +3506,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 52,
       },
+      economicStats: {
+        gdpBillionUsd: 220,
+        gdpGrowthPct: 4.1,
+        gdpPerCapitaUsd: 4800,
+        inflationPct: 5.3,
+        tradeGdpPct: 50,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 10.0,
+        militaryExpGdpPct: 4.5,
+        activePersonnelThousands: 130.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'tunisia',
@@ -2363,7 +3531,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 50,
       sourceCoverage: 60,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'freedom-house', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'freedom-house', 'imf-direction-of-trade', 'transparency-intl'],
       assumptions: ['Saied consolidation has reversed the post-Arab Spring democratic transition.', 'Migration pressure at the European periphery sustains EU financial dependence on Tunisian cooperation.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2376,6 +3544,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'medium',
         cohesion: 44,
+      },
+      economicStats: {
+        gdpBillionUsd: 48,
+        gdpGrowthPct: 1.0,
+        gdpPerCapitaUsd: 3900,
+        inflationPct: 7.5,
+        tradeGdpPct: 100,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 2.1,
+        activePersonnelThousands: 36.0,
+        nuclearArmed: false,
       },
     },
     // ─── Sub-Saharan Africa ────────────────────────────────────────────────────
@@ -2390,7 +3571,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 48,
       sourceCoverage: 62,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'ucdp', 'vdem', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'ucdp', 'vdem', 'imf-direction-of-trade', 'acled', 'transparency-intl'],
       assumptions: ['East African hub role sustains US and Western engagement despite domestic governance pressures.', 'Al-Shabaab threat from Somalia remains the primary security concern.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2404,6 +3585,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 48,
       },
+      economicStats: {
+        gdpBillionUsd: 110,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 2000,
+        inflationPct: 6.5,
+        tradeGdpPct: 30,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 0.9,
+        activePersonnelThousands: 24.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'tanzania',
@@ -2416,7 +3610,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 36,
       sourceCoverage: 58,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'ucdp'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'ucdp', 'acled', 'transparency-intl'],
       assumptions: ['Non-alignment allows pragmatic engagement with both China and the West.', 'Natural gas development is reshaping the economy and inviting greater external interest.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2430,6 +3624,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 52,
       },
+      economicStats: {
+        gdpBillionUsd: 80,
+        gdpGrowthPct: 5.5,
+        gdpPerCapitaUsd: 1200,
+        inflationPct: 4.0,
+        tradeGdpPct: 25,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 0.9,
+        activePersonnelThousands: 27.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'ghana',
@@ -2442,7 +3649,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 38,
       sourceCoverage: 60,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'ucdp'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'ucdp', 'acled', 'transparency-intl'],
       assumptions: ['Democratic consolidation remains a regional exception as Sahel instability intensifies.', 'IMF debt restructuring limits fiscal space but avoids a systemic economic crisis.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2456,6 +3663,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 55,
       },
+      economicStats: {
+        gdpBillionUsd: 75,
+        gdpGrowthPct: 4.7,
+        gdpPerCapitaUsd: 2200,
+        inflationPct: 22.0,
+        tradeGdpPct: 55,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 0.4,
+        activePersonnelThousands: 15.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'dem-rep-congo',
@@ -2468,7 +3688,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 73,
       sourceCoverage: 48,
       lastUpdated: '2026-05-10',
-      sourceIds: ['ucdp', 'vdem', 'world-bank-wdi', 'iiss-military-balance'],
+      sourceIds: ['ucdp', 'vdem', 'world-bank-wdi', 'iiss-military-balance', 'acled', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Eastern DRC remains a persistent conflict zone driven by M23 and over 100 armed groups.', 'Critical mineral wealth attracts external actors and sustains proxy competition.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2482,6 +3702,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 28,
       },
+      economicStats: {
+        gdpBillionUsd: 75,
+        gdpGrowthPct: 6.2,
+        gdpPerCapitaUsd: 800,
+        inflationPct: 14.0,
+        tradeGdpPct: 35,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 0.9,
+        activePersonnelThousands: 134.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'angola',
@@ -2494,7 +3727,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 40,
       sourceCoverage: 55,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'wto-profile', 'transparency-intl'],
       assumptions: ['MPLA maintains political stability through oil revenue redistribution.', 'Diversifying partnerships between China, the US, and EU reflects resource-driven pragmatism.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2508,6 +3741,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 52,
       },
+      economicStats: {
+        gdpBillionUsd: 92,
+        gdpGrowthPct: 3.0,
+        gdpPerCapitaUsd: 2500,
+        inflationPct: 25.0,
+        tradeGdpPct: 65,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.7,
+        militaryExpGdpPct: 1.8,
+        activePersonnelThousands: 107.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'sudan',
@@ -2520,7 +3766,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 84,
       sourceCoverage: 45,
       lastUpdated: '2026-05-10',
-      sourceIds: ['ucdp', 'vdem', 'iiss-military-balance', 'csis-sanctions'],
+      sourceIds: ['ucdp', 'vdem', 'iiss-military-balance', 'csis-sanctions', 'acled', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ["SAF-RSF civil war has created one of the world's worst humanitarian crises.", 'External actors including UAE, Russia, and Egypt back competing factions, prolonging the conflict.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2534,6 +3780,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 20,
       },
+      economicStats: {
+        gdpBillionUsd: 42,
+        gdpGrowthPct: 1.0,
+        gdpPerCapitaUsd: 900,
+        inflationPct: 100.0,
+        tradeGdpPct: 12,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 2.4,
+        activePersonnelThousands: 109.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'south-sudan',
@@ -2546,7 +3805,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 88,
       sourceCoverage: 38,
       lastUpdated: '2026-05-10',
-      sourceIds: ['ucdp', 'vdem', 'iiss-military-balance', 'world-bank-wdi'],
+      sourceIds: ['ucdp', 'vdem', 'iiss-military-balance', 'world-bank-wdi', 'acled', 'icg-crisiswatch', 'transparency-intl', 'world-factbook'],
       assumptions: ['State fragility and elite conflict over oil revenues sustain cycles of political violence.', 'Oil export dependence on Sudan pipeline routes creates structural vulnerability.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2560,6 +3819,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 16,
       },
+      economicStats: {
+        gdpBillionUsd: 4,
+        gdpGrowthPct: -2.0,
+        gdpPerCapitaUsd: 350,
+        inflationPct: 60.0,
+        tradeGdpPct: 25,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 17.5,
+        activePersonnelThousands: 185.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'somalia',
@@ -2572,7 +3844,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 85,
       sourceCoverage: 38,
       lastUpdated: '2026-05-10',
-      sourceIds: ['ucdp', 'vdem', 'iiss-military-balance', 'world-bank-wdi'],
+      sourceIds: ['ucdp', 'vdem', 'iiss-military-balance', 'world-bank-wdi', 'acled', 'icg-crisiswatch', 'transparency-intl', 'world-factbook'],
       assumptions: ['Al-Shabaab controls substantial rural territory despite ATMIS and Somali army operations.', 'Federal government authority remains weak and contested by clan-based regional administrations.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2586,6 +3858,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 15,
       },
+      economicStats: {
+        gdpBillionUsd: 11,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 650,
+        inflationPct: 8.0,
+        tradeGdpPct: 25,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.9,
+        activePersonnelThousands: 20.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'zimbabwe',
@@ -2598,7 +3883,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 55,
       sourceCoverage: 52,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'world-bank-wdi', 'freedom-house', 'csis-sanctions'],
+      sourceIds: ['vdem', 'world-bank-wdi', 'freedom-house', 'csis-sanctions', 'acled', 'transparency-intl'],
       assumptions: ['ZANU-PF retains power through coercion and patronage despite economic fragility.', 'Critical mineral wealth in lithium and platinum attracts Chinese investment and reduces Western sanction leverage.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2612,6 +3897,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 42,
       },
+      economicStats: {
+        gdpBillionUsd: 26,
+        gdpGrowthPct: 3.0,
+        gdpPerCapitaUsd: 1600,
+        inflationPct: 150.0,
+        tradeGdpPct: 43,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 1.2,
+        activePersonnelThousands: 29.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'mozambique',
@@ -2624,7 +3922,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 54,
       sourceCoverage: 52,
       lastUpdated: '2026-05-10',
-      sourceIds: ['ucdp', 'vdem', 'world-bank-wdi', 'imf-direction-of-trade'],
+      sourceIds: ['ucdp', 'vdem', 'world-bank-wdi', 'imf-direction-of-trade', 'acled', 'transparency-intl'],
       assumptions: ['Cabo Delgado Islamist insurgency disrupts LNG development and requires SADC military support.', 'LNG wealth from Rovuma basin could transform the economy but remains conditional on security stabilisation.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2638,6 +3936,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 40,
       },
+      economicStats: {
+        gdpBillionUsd: 17,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 500,
+        inflationPct: 6.5,
+        tradeGdpPct: 75,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.2,
+        militaryExpGdpPct: 1.2,
+        activePersonnelThousands: 12.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'rwanda',
@@ -2650,7 +3961,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 50,
       sourceCoverage: 56,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'ucdp', 'world-bank-wdi', 'iiss-military-balance'],
+      sourceIds: ['vdem', 'ucdp', 'world-bank-wdi', 'iiss-military-balance', 'acled', 'transparency-intl'],
       assumptions: ['Kagame government maintains tight political control while projecting regional security leadership.', 'M23 support in eastern DRC sustains mineral access but deepens regional rivalry with Congo.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2664,6 +3975,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 58,
       },
+      economicStats: {
+        gdpBillionUsd: 14,
+        gdpGrowthPct: 7.2,
+        gdpPerCapitaUsd: 1000,
+        inflationPct: 5.0,
+        tradeGdpPct: 38,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 2.1,
+        activePersonnelThousands: 33.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'uganda',
@@ -2676,7 +4000,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 50,
       sourceCoverage: 55,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'ucdp', 'world-bank-wdi', 'iiss-military-balance'],
+      sourceIds: ['vdem', 'ucdp', 'world-bank-wdi', 'iiss-military-balance', 'acled', 'transparency-intl'],
       assumptions: ['Museveni remains politically dominant with military backing.', 'DRC and South Sudan instability spillover sustains a persistent security burden.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2690,6 +4014,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 46,
       },
+      economicStats: {
+        gdpBillionUsd: 50,
+        gdpGrowthPct: 6.0,
+        gdpPerCapitaUsd: 1000,
+        inflationPct: 4.5,
+        tradeGdpPct: 28,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.8,
+        militaryExpGdpPct: 1.6,
+        activePersonnelThousands: 46.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'mali',
@@ -2702,7 +4039,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 77,
       sourceCoverage: 40,
       lastUpdated: '2026-05-10',
-      sourceIds: ['ucdp', 'vdem', 'iiss-military-balance', 'csis-sanctions'],
+      sourceIds: ['ucdp', 'vdem', 'iiss-military-balance', 'csis-sanctions', 'acled', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['Military junta expelled French forces and relies on Russian Africa Corps for security.', 'Jihadist insurgency in the centre and north is not being reversed despite Russia support.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2716,6 +4053,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 25,
       },
+      economicStats: {
+        gdpBillionUsd: 18,
+        gdpGrowthPct: 4.5,
+        gdpPerCapitaUsd: 850,
+        inflationPct: 3.0,
+        tradeGdpPct: 40,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 3.9,
+        activePersonnelThousands: 21.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'niger',
@@ -2728,7 +4078,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 71,
       sourceCoverage: 40,
       lastUpdated: '2026-05-10',
-      sourceIds: ['ucdp', 'vdem', 'iiss-military-balance', 'world-bank-wdi'],
+      sourceIds: ['ucdp', 'vdem', 'iiss-military-balance', 'world-bank-wdi', 'acled', 'icg-crisiswatch', 'transparency-intl'],
       assumptions: ['2023 coup expelled US and French forces; Russia alignment is deepening.', 'Uranium export wealth is a leverage point with Western partners seeking alternative supplies.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2742,6 +4092,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 28,
       },
+      economicStats: {
+        gdpBillionUsd: 15,
+        gdpGrowthPct: 6.9,
+        gdpPerCapitaUsd: 600,
+        inflationPct: 2.5,
+        tradeGdpPct: 35,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 2.0,
+        activePersonnelThousands: 25.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'cote-divoire',
@@ -2754,7 +4117,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 40,
       sourceCoverage: 55,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'ucdp'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'ucdp', 'acled', 'transparency-intl'],
       assumptions: ['French security partnership sustains the regime despite anti-French sentiment in the region.', 'Cocoa export dominance makes global commodity prices a key economic driver.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2768,6 +4131,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 50,
       },
+      economicStats: {
+        gdpBillionUsd: 80,
+        gdpGrowthPct: 6.5,
+        gdpPerCapitaUsd: 2800,
+        inflationPct: 2.5,
+        tradeGdpPct: 50,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.9,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 26.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'cameroon',
@@ -2780,7 +4156,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 55,
       sourceCoverage: 52,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'imf-direction-of-trade', 'acled', 'transparency-intl'],
       assumptions: ['Biya regime persists through patronage networks despite Anglophone separatist conflict.', 'Oil revenues are declining while governance and security challenges are intensifying.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2794,6 +4170,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 38,
       },
+      economicStats: {
+        gdpBillionUsd: 48,
+        gdpGrowthPct: 4.0,
+        gdpPerCapitaUsd: 1700,
+        inflationPct: 3.5,
+        tradeGdpPct: 38,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.6,
+        militaryExpGdpPct: 1.3,
+        activePersonnelThousands: 47.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'senegal',
@@ -2806,7 +4195,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 34,
       sourceCoverage: 58,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'freedom-house'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'freedom-house', 'transparency-intl'],
       assumptions: ['Democratic transition to Faye government consolidates Senegal as a regional stability anchor.', 'Oil and gas production from Sangomar field is reshaping the economic and diplomatic outlook.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2819,6 +4208,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'medium',
         cohesion: 55,
+      },
+      economicStats: {
+        gdpBillionUsd: 32,
+        gdpGrowthPct: 7.5,
+        gdpPerCapitaUsd: 1800,
+        inflationPct: 3.5,
+        tradeGdpPct: 55,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 1.6,
+        activePersonnelThousands: 19.0,
+        nuclearArmed: false,
       },
     },
     // ─── Americas ──────────────────────────────────────────────────────────────
@@ -2833,7 +4235,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 48,
       sourceCoverage: 68,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'ucdp', 'vdem', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'ucdp', 'vdem', 'imf-direction-of-trade', 'transparency-intl'],
       assumptions: ['Petro government is recalibrating US security partnership while maintaining economic ties.', 'Guerrilla and narco-criminal violence remains structurally embedded despite successive peace processes.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -2847,6 +4249,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 48,
       },
+      economicStats: {
+        gdpBillionUsd: 363,
+        gdpGrowthPct: 1.7,
+        gdpPerCapitaUsd: 7000,
+        inflationPct: 7.5,
+        tradeGdpPct: 40,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 12.0,
+        militaryExpGdpPct: 3.3,
+        activePersonnelThousands: 295.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'chile',
@@ -2859,7 +4274,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 26,
       sourceCoverage: 72,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'wto-profile', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'wto-profile', 'imf-direction-of-trade', 'transparency-intl'],
       assumptions: ['Lithium and copper dominance make Chile a key actor in the global critical minerals competition.', 'Democratic institutions are stable despite the constitutional reform failure and social volatility.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2873,6 +4288,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 54,
       },
+      economicStats: {
+        gdpBillionUsd: 335,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 17000,
+        inflationPct: 3.9,
+        tradeGdpPct: 63,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 10.0,
+        militaryExpGdpPct: 3.0,
+        activePersonnelThousands: 63.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'peru',
@@ -2885,7 +4313,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 40,
       sourceCoverage: 66,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'ucdp'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'ucdp', 'transparency-intl'],
       assumptions: ['Political instability with rapid presidential turnover weakens institutional governance.', 'Copper and mining wealth sustains the economy but is vulnerable to commodity price cycles.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2899,6 +4327,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 44,
       },
+      economicStats: {
+        gdpBillionUsd: 270,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 7600,
+        inflationPct: 3.5,
+        tradeGdpPct: 48,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 96.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'cuba',
@@ -2911,7 +4352,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 62,
       sourceCoverage: 50,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'csis-sanctions', 'freedom-house', 'imf-direction-of-trade'],
+      sourceIds: ['vdem', 'csis-sanctions', 'freedom-house', 'imf-direction-of-trade', 'transparency-intl', 'world-factbook'],
       assumptions: ['US embargo remains the defining external constraint on the economy.', 'Russia and China provide limited but essential diplomatic cover and economic relief.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2925,6 +4366,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 48,
       },
+      economicStats: {
+        gdpBillionUsd: 107,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 9500,
+        inflationPct: 30.0,
+        tradeGdpPct: 30,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 0.7,
+        activePersonnelThousands: 49.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'bolivia',
@@ -2937,7 +4391,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 38,
       sourceCoverage: 60,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'ucdp'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'ucdp', 'transparency-intl', 'world-factbook'],
       assumptions: ['Lithium reserve dominance makes Bolivia central to the global battery supply chain competition.', 'Political polarisation between MAS factions creates governance instability without systemic collapse.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2951,6 +4405,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 44,
       },
+      economicStats: {
+        gdpBillionUsd: 46,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 3700,
+        inflationPct: 5.0,
+        tradeGdpPct: 55,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 37.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'ecuador',
@@ -2963,7 +4430,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 42,
       sourceCoverage: 62,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'imf-direction-of-trade', 'transparency-intl', 'world-factbook'],
       assumptions: ['Criminal gang violence has escalated to near-insurgency levels, straining state capacity.', 'Oil export dependency makes the economy highly sensitive to global price cycles.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -2977,6 +4444,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 44,
       },
+      economicStats: {
+        gdpBillionUsd: 115,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 6300,
+        inflationPct: 2.3,
+        tradeGdpPct: 58,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 2.6,
+        activePersonnelThousands: 40.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'paraguay',
@@ -2989,7 +4469,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 34,
       sourceCoverage: 58,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'wto-profile', 'transparency-intl', 'world-factbook'],
       assumptions: ['Paraguay is one of the few remaining countries with formal Taiwan diplomatic recognition.', 'Itaipú hydroelectric power and soy exports sustain economic ties with Brazil and Argentina.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -3003,6 +4483,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 54,
       },
+      economicStats: {
+        gdpBillionUsd: 44,
+        gdpGrowthPct: 3.8,
+        gdpPerCapitaUsd: 6200,
+        inflationPct: 4.2,
+        tradeGdpPct: 80,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 19.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'uruguay',
@@ -3015,7 +4508,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 18,
       sourceCoverage: 72,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'wto-profile', 'transparency-intl', 'world-factbook'],
       assumptions: ['Strong institutions and rule of law make Uruguay the most stable state in South America.', 'Dependence on Brazilian and Argentine markets creates vulnerability to regional economic shocks.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -3029,6 +4522,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 70,
       },
+      economicStats: {
+        gdpBillionUsd: 77,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 22000,
+        inflationPct: 5.4,
+        tradeGdpPct: 45,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 1.3,
+        activePersonnelThousands: 23.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'guatemala',
@@ -3041,7 +4547,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 45,
       sourceCoverage: 58,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'imf-direction-of-trade', 'transparency-intl', 'world-factbook'],
       assumptions: ['Arévalo government faces entrenched corruption networks that constrain reform.', 'Migration pressure and narco-trafficking sustain close but fraught US security engagement.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -3055,6 +4561,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 44,
       },
+      economicStats: {
+        gdpBillionUsd: 100,
+        gdpGrowthPct: 3.6,
+        gdpPerCapitaUsd: 5600,
+        inflationPct: 4.5,
+        tradeGdpPct: 48,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.4,
+        militaryExpGdpPct: 0.4,
+        activePersonnelThousands: 24.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'ireland',
@@ -3067,7 +4586,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 14,
       sourceCoverage: 88,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'freedom-house'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'freedom-house', 'transparency-intl'],
       assumptions: ['Constitutional military neutrality holds despite EU pressure to deepen defense cooperation.', 'Brexit border arrangements with Northern Ireland remain stable but politically sensitive.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -3081,6 +4600,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 78,
       },
+      economicStats: {
+        gdpBillionUsd: 530,
+        gdpGrowthPct: 3.9,
+        gdpPerCapitaUsd: 100000,
+        inflationPct: 1.5,
+        tradeGdpPct: 230,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.6,
+        militaryExpGdpPct: 0.3,
+        activePersonnelThousands: 10.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'iceland',
@@ -3093,7 +4625,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 12,
       sourceCoverage: 86,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'freedom-house'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'freedom-house', 'transparency-intl', 'world-factbook'],
       assumptions: ['Defense entirely depends on US bilateral agreement and NATO allies; no standing army.', 'Strategic North Atlantic position raises NATO ISR demand as Russian sub activity persists.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -3107,6 +4639,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 80,
       },
+      economicStats: {
+        gdpBillionUsd: 31,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 80000,
+        inflationPct: 6.0,
+        tradeGdpPct: 92,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.2,
+        activePersonnelThousands: 0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'luxembourg',
@@ -3119,7 +4664,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 9,
       sourceCoverage: 89,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'freedom-house'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'freedom-house', 'transparency-intl', 'world-factbook'],
       assumptions: ['Embedded EU-institutional role limits idiosyncratic political risk.', 'Financial-services concentration is the dominant economic exposure.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -3133,6 +4678,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 82,
       },
+      economicStats: {
+        gdpBillionUsd: 90,
+        gdpGrowthPct: 1.8,
+        gdpPerCapitaUsd: 135000,
+        inflationPct: 2.0,
+        tradeGdpPct: 370,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 0.6,
+        activePersonnelThousands: 1.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'slovenia',
@@ -3145,7 +4703,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 17,
       sourceCoverage: 84,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade', 'transparency-intl'],
       assumptions: ['EU and NATO membership stabilize the strategic outlook.', 'Adriatic logistics role expands with port investment at Koper.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -3159,6 +4717,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 70,
       },
+      economicStats: {
+        gdpBillionUsd: 65,
+        gdpGrowthPct: 1.2,
+        gdpPerCapitaUsd: 31000,
+        inflationPct: 1.5,
+        tradeGdpPct: 170,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 8.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'cyprus',
@@ -3171,7 +4742,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 28,
       sourceCoverage: 82,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'imf-direction-of-trade', 'transparency-intl'],
       assumptions: ['Frozen division line drives chronic but contained tension with the north.', 'EastMed gas exploration in the EEZ raises recurring friction with Turkey.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -3185,6 +4756,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 60,
       },
+      economicStats: {
+        gdpBillionUsd: 33,
+        gdpGrowthPct: 3.3,
+        gdpPerCapitaUsd: 37000,
+        inflationPct: 2.5,
+        tradeGdpPct: 155,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 15.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'albania',
@@ -3197,7 +4781,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 22,
       sourceCoverage: 76,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'freedom-house'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'freedom-house', 'transparency-intl', 'world-factbook'],
       assumptions: ['NATO membership anchors security alignment with the West.', 'EU accession path remains open but slow due to rule-of-law conditionality.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -3211,6 +4795,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 58,
       },
+      economicStats: {
+        gdpBillionUsd: 22,
+        gdpGrowthPct: 3.7,
+        gdpPerCapitaUsd: 7600,
+        inflationPct: 2.6,
+        tradeGdpPct: 70,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 1.4,
+        activePersonnelThousands: 9.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'bosnia-and-herzegovina',
@@ -3223,7 +4820,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 38,
       sourceCoverage: 71,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'freedom-house'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'freedom-house', 'transparency-intl'],
       assumptions: ['Dayton governance structure remains brittle but holds short of formal collapse.', 'Russian and Serbian leverage amplifies Republika Srpska secession rhetoric.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -3237,6 +4834,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 42,
       },
+      economicStats: {
+        gdpBillionUsd: 27,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 8300,
+        inflationPct: 2.5,
+        tradeGdpPct: 100,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 10.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'north-macedonia',
@@ -3249,7 +4859,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 21,
       sourceCoverage: 73,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'freedom-house'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'freedom-house', 'transparency-intl', 'world-factbook'],
       assumptions: ['NATO membership is stable; bilateral disputes with Bulgaria still block EU progress.', 'Demographic and inter-ethnic political balance constrains coalition flexibility.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -3263,6 +4873,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 56,
       },
+      economicStats: {
+        gdpBillionUsd: 15,
+        gdpGrowthPct: 2.0,
+        gdpPerCapitaUsd: 8000,
+        inflationPct: 2.5,
+        tradeGdpPct: 110,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.2,
+        militaryExpGdpPct: 1.3,
+        activePersonnelThousands: 8.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'montenegro',
@@ -3275,7 +4898,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 24,
       sourceCoverage: 70,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'freedom-house'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'freedom-house', 'transparency-intl', 'world-factbook'],
       assumptions: ['NATO membership reduces direct Russian leverage but does not eliminate covert influence.', 'Internal polarization between pro-EU and pro-Serbian camps persists.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -3289,6 +4912,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 52,
       },
+      economicStats: {
+        gdpBillionUsd: 7,
+        gdpGrowthPct: 3.6,
+        gdpPerCapitaUsd: 11000,
+        inflationPct: 3.5,
+        tradeGdpPct: 115,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 1.6,
+        activePersonnelThousands: 2.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'kosovo',
@@ -3301,7 +4937,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 35,
       sourceCoverage: 64,
       lastUpdated: '2026-05-10',
-      sourceIds: ['vdem', 'ucdp', 'freedom-house', 'iiss-military-balance'],
+      sourceIds: ['vdem', 'ucdp', 'freedom-house', 'iiss-military-balance', 'transparency-intl', 'world-factbook'],
       assumptions: ['Serbian non-recognition continues to limit UN access and international integration.', 'KFOR presence keeps Serb-Kosovar friction below the threshold of open conflict.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -3315,6 +4951,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 50,
       },
+      economicStats: {
+        gdpBillionUsd: 10,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 5500,
+        inflationPct: 2.0,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 1.0,
+        activePersonnelThousands: 5.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'bahrain',
@@ -3327,7 +4976,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 32,
       sourceCoverage: 75,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'freedom-house', 'csis-sanctions'],
+      sourceIds: ['world-bank-wdi', 'iiss-military-balance', 'freedom-house', 'csis-sanctions', 'transparency-intl', 'world-factbook'],
       assumptions: ['US Fifth Fleet basing is the central security anchor for the regime.', 'Sectarian tension management depends on continued GCC fiscal backing.'],
       indicators: {
         militaryTreatyLevel: 'high',
@@ -3341,6 +4990,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 48,
       },
+      economicStats: {
+        gdpBillionUsd: 45,
+        gdpGrowthPct: 3.0,
+        gdpPerCapitaUsd: 28000,
+        inflationPct: 1.5,
+        tradeGdpPct: 140,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.7,
+        militaryExpGdpPct: 3.8,
+        activePersonnelThousands: 10.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'costa-rica',
@@ -3353,7 +5015,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 14,
       sourceCoverage: 80,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'freedom-house'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'freedom-house', 'transparency-intl', 'world-factbook'],
       assumptions: ['Constitutional ban on a standing army remains uncontested.', 'Trade-led development model is exposed to US economic cycles and migration pressure.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -3367,6 +5029,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 72,
       },
+      economicStats: {
+        gdpBillionUsd: 75,
+        gdpGrowthPct: 4.0,
+        gdpPerCapitaUsd: 14500,
+        inflationPct: 2.8,
+        tradeGdpPct: 60,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0,
+        militaryExpGdpPct: 0.0,
+        activePersonnelThousands: 0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'panama',
@@ -3379,7 +5054,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 24,
       sourceCoverage: 78,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'wto-profile'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'imf-direction-of-trade', 'wto-profile', 'transparency-intl', 'world-factbook'],
       assumptions: ['Canal sovereignty is non-negotiable; rhetorical pressure from Washington raises diplomatic friction.', 'Drought-driven canal capacity is a structural infrastructure risk.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -3393,6 +5068,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 60,
       },
+      economicStats: {
+        gdpBillionUsd: 75,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 17000,
+        inflationPct: 1.0,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 0.7,
+        activePersonnelThousands: 12.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'dominican-republic',
@@ -3405,7 +5093,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 28,
       sourceCoverage: 71,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'ucdp', 'imf-direction-of-trade', 'transparency-intl', 'world-factbook'],
       assumptions: ['Border with Haiti requires sustained migration enforcement and humanitarian response.', 'Tourism and remittances tie growth tightly to the US economic cycle.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -3419,6 +5107,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 58,
       },
+      economicStats: {
+        gdpBillionUsd: 120,
+        gdpGrowthPct: 5.2,
+        gdpPerCapitaUsd: 11000,
+        inflationPct: 4.5,
+        tradeGdpPct: 40,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.8,
+        militaryExpGdpPct: 0.7,
+        activePersonnelThousands: 56.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'botswana',
@@ -3431,7 +5132,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 17,
       sourceCoverage: 76,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'freedom-house', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'freedom-house', 'imf-direction-of-trade', 'transparency-intl', 'world-factbook'],
       assumptions: ['Diamond-export concentration is the dominant macroeconomic risk.', 'Democratic continuity remains a regional outlier.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -3445,6 +5146,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 66,
       },
+      economicStats: {
+        gdpBillionUsd: 20,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 8000,
+        inflationPct: 3.5,
+        tradeGdpPct: 95,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 2.5,
+        activePersonnelThousands: 9.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'zambia',
@@ -3457,7 +5171,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 32,
       sourceCoverage: 68,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'freedom-house', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'freedom-house', 'imf-direction-of-trade', 'transparency-intl', 'world-factbook'],
       assumptions: ['Sovereign debt restructuring is the dominant macroeconomic constraint.', 'China and the US compete for influence over copper supply chains.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -3471,6 +5185,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 50,
       },
+      economicStats: {
+        gdpBillionUsd: 28,
+        gdpGrowthPct: 4.7,
+        gdpPerCapitaUsd: 1400,
+        inflationPct: 13.0,
+        tradeGdpPct: 45,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 16.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'burkina-faso',
@@ -3483,7 +5210,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 76,
       sourceCoverage: 56,
       lastUpdated: '2026-05-10',
-      sourceIds: ['ucdp', 'vdem', 'iiss-military-balance', 'csis-sanctions'],
+      sourceIds: ['ucdp', 'vdem', 'iiss-military-balance', 'csis-sanctions', 'acled', 'icg-crisiswatch', 'transparency-intl', 'world-factbook'],
       assumptions: ["Junta has formally aligned with Russia's Africa Corps and exited ECOWAS into the AES bloc.", 'Insurgency controls a large share of rural territory; central government writ is contested.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -3497,6 +5224,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 30,
       },
+      economicStats: {
+        gdpBillionUsd: 18,
+        gdpGrowthPct: 4.0,
+        gdpPerCapitaUsd: 800,
+        inflationPct: 3.0,
+        tradeGdpPct: 33,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 3.9,
+        activePersonnelThousands: 16.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'papua-new-guinea',
@@ -3509,7 +5249,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 34,
       sourceCoverage: 60,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade', 'world-factbook'],
       assumptions: ['Australia-PNG defense treaty anchors security; China courts infrastructure influence.', 'Internal tribal tension drives episodic instability that strains state capacity.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -3523,6 +5263,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 44,
       },
+      economicStats: {
+        gdpBillionUsd: 30,
+        gdpGrowthPct: 4.5,
+        gdpPerCapitaUsd: 3100,
+        inflationPct: 4.0,
+        tradeGdpPct: 85,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.4,
+        activePersonnelThousands: 4,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'brunei',
@@ -3535,7 +5288,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 18,
       sourceCoverage: 68,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'iiss-military-balance', 'imf-direction-of-trade', 'world-factbook'],
       assumptions: ['Sultanate stability rests on hydrocarbon rents and a small population.', 'South China Sea claim is asserted but pursued via ASEAN diplomatic channels.'],
       indicators: {
         militaryTreatyLevel: 'medium',
@@ -3549,6 +5302,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 64,
       },
+      economicStats: {
+        gdpBillionUsd: 15,
+        gdpGrowthPct: 1.6,
+        gdpPerCapitaUsd: 33000,
+        inflationPct: 0.4,
+        tradeGdpPct: 100,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.4,
+        militaryExpGdpPct: 2.8,
+        activePersonnelThousands: 8.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'madagascar',
@@ -3561,7 +5327,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       baselineRisk: 28,
       sourceCoverage: 60,
       lastUpdated: '2026-05-10',
-      sourceIds: ['world-bank-wdi', 'vdem', 'freedom-house', 'imf-direction-of-trade'],
+      sourceIds: ['world-bank-wdi', 'vdem', 'freedom-house', 'imf-direction-of-trade', 'world-factbook'],
       assumptions: ['Cyclone exposure compounds chronic food-security pressure.', 'France retains strong economic and historical ties; India deepens Indian Ocean engagement.'],
       indicators: {
         militaryTreatyLevel: 'low',
@@ -3574,6 +5340,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 46,
+      },
+      economicStats: {
+        gdpBillionUsd: 15,
+        gdpGrowthPct: 4.2,
+        gdpPerCapitaUsd: 500,
+        inflationPct: 8.5,
+        tradeGdpPct: 60,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.7,
+        activePersonnelThousands: 13.5,
+        nuclearArmed: false,
       },
     },
   ],

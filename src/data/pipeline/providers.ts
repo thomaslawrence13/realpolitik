@@ -2,7 +2,7 @@ import type { CountryProfile, Tier } from '../../types';
 import type { LiveData } from '../worldBankClient';
 import { countryIso2 } from '../worldBankClient';
 import type { IndicatorObservation } from './types';
-import { toCohesionValue, toMilitaryTier, toStabilityTier, toTradeTier } from './transformers';
+import { toCohesionValue, toMilitaryTier, toRuleOfLawTier, toStabilityTier, toTradeTier } from './transformers';
 
 const nowIsoDate = () => new Date().toISOString().slice(0, 10);
 
@@ -69,15 +69,30 @@ export const buildWorldBankObservations = (
       });
     }
 
+    const ruleOfLaw = toRuleOfLawTier(live.ruleOfLaw[iso]);
+    if (ruleOfLaw !== null) {
+      observations.push({
+        providerId: 'world-bank-live',
+        sourceId: 'world-bank-wdi',
+        countryId: profile.id,
+        indicator: 'regimeStability',
+        value: ruleOfLaw,
+        observedAt,
+        method: 'api',
+        confidence: 0.82,
+      });
+    }
+
     const gdpGrowth = live.gdpGrowth[iso];
     const inflation = live.inflation[iso];
-    if (gdpGrowth != null || inflation != null) {
+    const unemployment = live.unemployment[iso];
+    if (gdpGrowth != null || inflation != null || unemployment != null) {
       observations.push({
         providerId: 'world-bank-live',
         sourceId: 'world-bank-wdi',
         countryId: profile.id,
         indicator: 'cohesion',
-        value: toCohesionValue(profile.indicators.cohesion, gdpGrowth, inflation),
+        value: toCohesionValue(profile.indicators.cohesion, gdpGrowth, inflation, unemployment),
         observedAt,
         method: 'api',
         confidence: 0.7,

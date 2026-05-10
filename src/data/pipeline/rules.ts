@@ -28,16 +28,16 @@ export const indicatorQualityRules: Record<IndicatorKey, IndicatorQualityRule> =
 };
 
 export const indicatorSourcePriority: Record<IndicatorKey, string[]> = {
-  militaryTreatyLevel: ['world-bank-wdi', 'iiss-military-balance', 'sipri-milex'],
-  tradeExposure: ['world-bank-wdi', 'imf-direction-of-trade', 'wto-profile'],
-  regimeStability: ['world-bank-wdi', 'freedom-house', 'vdem'],
-  cohesion: ['world-bank-wdi', 'imf-direction-of-trade'],
-  conflictPressure: ['ucdp', 'iiss-military-balance'],
-  conflictHistory: ['ucdp', 'iiss-military-balance'],
+  militaryTreatyLevel: ['world-bank-wdi', 'iiss-military-balance', 'sipri-milex', 'world-factbook'],
+  tradeExposure: ['world-bank-wdi', 'un-comtrade', 'imf-direction-of-trade', 'wto-profile'],
+  regimeStability: ['world-bank-wdi', 'transparency-intl', 'freedom-house', 'vdem'],
+  cohesion: ['world-bank-wdi', 'imf-direction-of-trade', 'un-comtrade'],
+  conflictPressure: ['acled', 'ucdp', 'icg-crisiswatch', 'iiss-military-balance'],
+  conflictHistory: ['acled', 'ucdp', 'icg-crisiswatch', 'iiss-military-balance'],
   sanctionsExposure: ['csis-sanctions', 'imf-direction-of-trade'],
-  tradeDependence: ['imf-direction-of-trade', 'wto-profile', 'world-bank-wdi'],
-  ideology: ['vdem', 'freedom-house'],
-  borderDisputes: ['iiss-military-balance', 'ucdp'],
+  tradeDependence: ['un-comtrade', 'imf-direction-of-trade', 'wto-profile', 'world-bank-wdi'],
+  ideology: ['transparency-intl', 'vdem', 'freedom-house'],
+  borderDisputes: ['iiss-military-balance', 'ucdp', 'icg-crisiswatch'],
 };
 
 export const relationshipDimensions: RelationshipDimensionKey[] = [
@@ -55,9 +55,9 @@ export const relationshipDimensionQualityRules: Record<RelationshipDimensionKey,
 };
 
 export const relationshipDimensionSourcePriority: Record<RelationshipDimensionKey, string[]> = {
-  cooperation: ['iiss-military-balance', 'imf-direction-of-trade', 'ucdp'],
-  hostility: ['ucdp', 'iiss-military-balance'],
-  dependency: ['imf-direction-of-trade', 'wto-profile', 'world-bank-wdi'],
+  cooperation: ['iiss-military-balance', 'imf-direction-of-trade', 'un-comtrade', 'ucdp'],
+  hostility: ['acled', 'ucdp', 'icg-crisiswatch', 'iiss-military-balance'],
+  dependency: ['un-comtrade', 'imf-direction-of-trade', 'wto-profile', 'world-bank-wdi'],
   deterrence: ['iiss-military-balance', 'sipri-milex'],
 };
 
