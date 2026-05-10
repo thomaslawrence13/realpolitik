@@ -4613,7 +4613,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       militaryStats: {
         militaryExpBillionUsd: 0.1,
         militaryExpGdpPct: 0.2,
-        activePersonnelThousands: 0.0,
+        activePersonnelThousands: 0,
         nuclearArmed: false,
       },
     },
@@ -5001,9 +5001,9 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeGdpPct: 60,
       },
       militaryStats: {
-        militaryExpBillionUsd: 0.0,
+        militaryExpBillionUsd: 0,
         militaryExpGdpPct: 0.0,
-        activePersonnelThousands: 0.0,
+        activePersonnelThousands: 0,
         nuclearArmed: false,
       },
     },
@@ -5237,7 +5237,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       militaryStats: {
         militaryExpBillionUsd: 0.1,
         militaryExpGdpPct: 0.4,
-        activePersonnelThousands: 3.5,
+        activePersonnelThousands: 4,
         nuclearArmed: false,
       },
     },
