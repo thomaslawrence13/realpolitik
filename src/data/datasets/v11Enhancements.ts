@@ -582,7 +582,7 @@ export const v11Enhancements: Record<string, CountryV11Enhancement> = {
     criticalMinerals: [
       { mineral: 'potash', role: 'producer', globalSharePct: 18 },
     ],
-    softPower: { reachScore: 12, globalLanguageHost: false, notes: 'Regime pariah; Russian proxy; sanctions isolation.' },
+    softPower: { reachScore: 12, globalLanguageHost: false, notes: 'Internationally isolated regime; Russian proxy; sanctions isolation.' },
   },
 
   'belgium': {
@@ -647,7 +647,7 @@ export const v11Enhancements: Record<string, CountryV11Enhancement> = {
     fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 58, fxReservesMonthsImports: 2, primaryBalanceGdpPct: -6.0, notes: 'Junta rule; jihadist insurgency; aid flows disrupted.' },
     foodWater: { foodImportDependencePct: 15, waterStressIndex: 3, arableLandHaPerCapita: 0.36, cerealExporter: false, notes: 'Food crisis; displacement from Sahel conflict.' },
     diplomatic: { unVotingAlignmentBlocA: 18, unVotingAlignmentBlocB: 75, defensePacts: ['AES'], igoMemberships: ['AU', 'AES', 'OIC', 'NAM'] },
-    softPower: { reachScore: 8, globalLanguageHost: false, notes: 'Junta-led; regional pariah; France expulsion signal.' },
+    softPower: { reachScore: 8, globalLanguageHost: false, notes: 'Junta-led; regionally isolated; France expulsion signal.' },
   },
 
   'cambodia': {
@@ -977,7 +977,7 @@ export const v11Enhancements: Record<string, CountryV11Enhancement> = {
     criticalMinerals: [
       { mineral: 'manganese', role: 'producer', globalSharePct: 0.5 },
     ],
-    softPower: { reachScore: 8, globalLanguageHost: true, notes: 'Junta-led pariah; gold mining leverage.' },
+    softPower: { reachScore: 8, globalLanguageHost: true, notes: 'Junta-led; internationally isolated; gold mining leverage.' },
   },
 
   'moldova': {
@@ -1029,7 +1029,7 @@ export const v11Enhancements: Record<string, CountryV11Enhancement> = {
       { mineral: 'tungsten', role: 'producer', globalSharePct: 5 },
       { mineral: 'nickel', role: 'producer', globalSharePct: 1 },
     ],
-    softPower: { reachScore: 8, globalLanguageHost: false, notes: 'Junta-pariah; Rohingya genocide cloud; jade/gem leverage.' },
+    softPower: { reachScore: 8, globalLanguageHost: false, notes: 'Junta-led; limited international engagement; Rohingya crisis overhang; jade/gem leverage.' },
   },
 
   'nepal': {
@@ -1056,7 +1056,7 @@ export const v11Enhancements: Record<string, CountryV11Enhancement> = {
     criticalMinerals: [
       { mineral: 'uranium', role: 'producer', globalSharePct: 5 },
     ],
-    softPower: { reachScore: 6, globalLanguageHost: false, notes: 'Uranium leverage; junta pariah.' },
+    softPower: { reachScore: 6, globalLanguageHost: false, notes: 'Uranium leverage; junta-led; internationally isolated.' },
   },
 
   'north-macedonia': {
