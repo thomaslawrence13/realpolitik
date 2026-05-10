@@ -1,7 +1,7 @@
 import type { DatasetBundle } from '../../types';
 
 export const geopoliticalDatasetV1: DatasetBundle = {
-  version: '2026.05-data-prototype-v7',
+  version: '2026.05-data-prototype-v8',
   scenarioTimeline: ['2026', '2027', '2028', '2029', '2030', '2031', '2032', '2033', '2034', '2035'],
   methodologyNotes: [
     'This build uses a versioned dataset boundary so the UI can move off hardcoded country state and onto replaceable data snapshots.',
@@ -14,6 +14,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
     'The simulation remains exploratory and should be calibrated against historical backtesting before stronger predictive claims are made.',
     'v6 expands country coverage from 46 to 114 parameterised states, adding all major geopolitical actors across Europe, the Middle East, Central Asia, South and South-East Asia, Sub-Saharan Africa, and the Americas; bilateral relationships increased from 52 to 111.',
     'v7 fills remaining European gaps (Ireland, Iceland, Luxembourg, Slovenia, Cyprus, Albania, Bosnia and Herzegovina, North Macedonia, Montenegro, Kosovo) and adds further depth across the Caribbean, Central America, Sub-Saharan Africa, the Sahel, Oceania, the Gulf, and South-East Asia, taking coverage to 134 parameterised states and 146 bilateral relationships.',
+    'v8 revamps country data with explicit economic and military statistics for all 134 parameterised states: nominal GDP (billions USD), GDP growth rate, GDP per capita, consumer inflation, trade-to-GDP ratio, defence spending (billions USD and % of GDP), active military personnel, and nuclear-armed status. Values are ~2024 estimates sourced from IMF WEO, SIPRI Military Expenditure Database, and IISS Military Balance.',
   ],
   sources: [
     {
@@ -106,6 +107,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 74,
       },
+      economicStats: {
+        gdpBillionUsd: 28700,
+        gdpGrowthPct: 2.8,
+        gdpPerCapitaUsd: 85500,
+        inflationPct: 3.1,
+        tradeGdpPct: 27,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 916.0,
+        militaryExpGdpPct: 3.2,
+        activePersonnelThousands: 1390.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'china',
@@ -131,6 +145,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 81,
+      },
+      economicStats: {
+        gdpBillionUsd: 18500,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 13000,
+        inflationPct: 0.2,
+        tradeGdpPct: 37,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 296.0,
+        militaryExpGdpPct: 1.6,
+        activePersonnelThousands: 2035.0,
+        nuclearArmed: true,
       },
     },
     {
@@ -158,6 +185,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 58,
       },
+      economicStats: {
+        gdpBillionUsd: 2000,
+        gdpGrowthPct: 3.6,
+        gdpPerCapitaUsd: 13800,
+        inflationPct: 7.4,
+        tradeGdpPct: 48,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 109.0,
+        militaryExpGdpPct: 5.7,
+        activePersonnelThousands: 900.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'india',
@@ -183,6 +223,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 67,
+      },
+      economicStats: {
+        gdpBillionUsd: 3730,
+        gdpGrowthPct: 6.5,
+        gdpPerCapitaUsd: 2600,
+        inflationPct: 4.8,
+        tradeGdpPct: 44,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 83.0,
+        militaryExpGdpPct: 2.4,
+        activePersonnelThousands: 1455.0,
+        nuclearArmed: true,
       },
     },
     {
@@ -210,6 +263,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 71,
       },
+      economicStats: {
+        gdpBillionUsd: 4460,
+        gdpGrowthPct: -0.3,
+        gdpPerCapitaUsd: 53600,
+        inflationPct: 2.2,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 90.0,
+        militaryExpGdpPct: 2.0,
+        activePersonnelThousands: 181.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'poland',
@@ -235,6 +301,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'medium',
         cohesion: 65,
+      },
+      economicStats: {
+        gdpBillionUsd: 870,
+        gdpGrowthPct: 2.9,
+        gdpPerCapitaUsd: 22800,
+        inflationPct: 3.9,
+        tradeGdpPct: 115,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 34.0,
+        militaryExpGdpPct: 4.0,
+        activePersonnelThousands: 209.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -262,6 +341,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 59,
       },
+      economicStats: {
+        gdpBillionUsd: 1110,
+        gdpGrowthPct: 3.2,
+        gdpPerCapitaUsd: 13000,
+        inflationPct: 58.5,
+        tradeGdpPct: 60,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 41.0,
+        militaryExpGdpPct: 3.7,
+        activePersonnelThousands: 355.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'japan',
@@ -287,6 +379,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 77,
+      },
+      economicStats: {
+        gdpBillionUsd: 4210,
+        gdpGrowthPct: -0.1,
+        gdpPerCapitaUsd: 33900,
+        inflationPct: 2.7,
+        tradeGdpPct: 40,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 55.0,
+        militaryExpGdpPct: 1.3,
+        activePersonnelThousands: 247.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -314,6 +419,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 48,
       },
+      economicStats: {
+        gdpBillionUsd: 430,
+        gdpGrowthPct: 4.7,
+        gdpPerCapitaUsd: 5000,
+        inflationPct: 42.0,
+        tradeGdpPct: 30,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 10.0,
+        militaryExpGdpPct: 2.3,
+        activePersonnelThousands: 580.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'saudi-arabia',
@@ -339,6 +457,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 64,
+      },
+      economicStats: {
+        gdpBillionUsd: 1100,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 30500,
+        inflationPct: 1.7,
+        tradeGdpPct: 85,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 75.0,
+        militaryExpGdpPct: 6.8,
+        activePersonnelThousands: 257.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -366,6 +497,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 68,
       },
+      economicStats: {
+        gdpBillionUsd: 2170,
+        gdpGrowthPct: 2.9,
+        gdpPerCapitaUsd: 10100,
+        inflationPct: 4.5,
+        tradeGdpPct: 34,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 21.0,
+        militaryExpGdpPct: 1.0,
+        activePersonnelThousands: 334.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'ukraine',
@@ -391,6 +535,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'medium',
         cohesion: 54,
+      },
+      economicStats: {
+        gdpBillionUsd: 175,
+        gdpGrowthPct: 4.0,
+        gdpPerCapitaUsd: 4700,
+        inflationPct: 9.7,
+        tradeGdpPct: 65,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 66.0,
+        militaryExpGdpPct: 37.5,
+        activePersonnelThousands: 800.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -418,6 +575,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 70,
       },
+      economicStats: {
+        gdpBillionUsd: 3130,
+        gdpGrowthPct: 1.1,
+        gdpPerCapitaUsd: 47600,
+        inflationPct: 2.3,
+        tradeGdpPct: 68,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 61.0,
+        militaryExpGdpPct: 2.0,
+        activePersonnelThousands: 205.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'united-kingdom',
@@ -443,6 +613,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'medium',
         cohesion: 69,
+      },
+      economicStats: {
+        gdpBillionUsd: 3400,
+        gdpGrowthPct: 0.9,
+        gdpPerCapitaUsd: 49300,
+        inflationPct: 2.5,
+        tradeGdpPct: 63,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 82.0,
+        militaryExpGdpPct: 2.4,
+        activePersonnelThousands: 149.0,
+        nuclearArmed: true,
       },
     },
     {
@@ -470,6 +653,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 76,
       },
+      economicStats: {
+        gdpBillionUsd: 2140,
+        gdpGrowthPct: 1.2,
+        gdpPerCapitaUsd: 53400,
+        inflationPct: 2.7,
+        tradeGdpPct: 67,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 28.0,
+        militaryExpGdpPct: 1.3,
+        activePersonnelThousands: 67.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'mexico',
@@ -495,6 +691,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 58,
+      },
+      economicStats: {
+        gdpBillionUsd: 1800,
+        gdpGrowthPct: 1.6,
+        gdpPerCapitaUsd: 13800,
+        inflationPct: 4.8,
+        tradeGdpPct: 78,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 8.0,
+        militaryExpGdpPct: 0.4,
+        activePersonnelThousands: 278.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -522,6 +731,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 52,
       },
+      economicStats: {
+        gdpBillionUsd: 600,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 13200,
+        inflationPct: 120.0,
+        tradeGdpPct: 30,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 0.5,
+        activePersonnelThousands: 73.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'venezuela',
@@ -547,6 +769,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 40,
+      },
+      economicStats: {
+        gdpBillionUsd: 92,
+        gdpGrowthPct: 4.0,
+        gdpPerCapitaUsd: 3200,
+        inflationPct: 100.0,
+        tradeGdpPct: 40,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 3.3,
+        activePersonnelThousands: 123.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -574,6 +809,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 73,
       },
+      economicStats: {
+        gdpBillionUsd: 1790,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 67800,
+        inflationPct: 3.2,
+        tradeGdpPct: 47,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 36.0,
+        militaryExpGdpPct: 2.0,
+        activePersonnelThousands: 60.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'south-korea',
@@ -599,6 +847,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 70,
+      },
+      economicStats: {
+        gdpBillionUsd: 1760,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 34000,
+        inflationPct: 2.3,
+        tradeGdpPct: 88,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 50.0,
+        militaryExpGdpPct: 2.8,
+        activePersonnelThousands: 500.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -626,6 +887,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 65,
       },
+      economicStats: {
+        gdpBillionUsd: 1370,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 4900,
+        inflationPct: 2.8,
+        tradeGdpPct: 38,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 10.0,
+        militaryExpGdpPct: 0.7,
+        activePersonnelThousands: 395.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'vietnam',
@@ -651,6 +925,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 72,
+      },
+      economicStats: {
+        gdpBillionUsd: 430,
+        gdpGrowthPct: 6.9,
+        gdpPerCapitaUsd: 4300,
+        inflationPct: 4.2,
+        tradeGdpPct: 185,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 7.0,
+        militaryExpGdpPct: 1.6,
+        activePersonnelThousands: 482.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -678,6 +965,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 60,
       },
+      economicStats: {
+        gdpBillionUsd: 545,
+        gdpGrowthPct: 2.7,
+        gdpPerCapitaUsd: 7600,
+        inflationPct: 0.4,
+        tradeGdpPct: 125,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 8.0,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 361.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'philippines',
@@ -703,6 +1003,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 62,
+      },
+      economicStats: {
+        gdpBillionUsd: 440,
+        gdpGrowthPct: 5.2,
+        gdpPerCapitaUsd: 3800,
+        inflationPct: 3.5,
+        tradeGdpPct: 68,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 6.0,
+        militaryExpGdpPct: 1.3,
+        activePersonnelThousands: 163.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -730,6 +1043,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 28,
       },
+      economicStats: {
+        gdpBillionUsd: 65,
+        gdpGrowthPct: 1.0,
+        gdpPerCapitaUsd: 1200,
+        inflationPct: 15.0,
+        tradeGdpPct: 30,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 4.5,
+        activePersonnelThousands: 406.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'bangladesh',
@@ -755,6 +1081,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 47,
+      },
+      economicStats: {
+        gdpBillionUsd: 460,
+        gdpGrowthPct: 5.7,
+        gdpPerCapitaUsd: 2700,
+        inflationPct: 9.5,
+        tradeGdpPct: 43,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 0.9,
+        activePersonnelThousands: 166.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -782,6 +1121,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 43,
       },
+      economicStats: {
+        gdpBillionUsd: 375,
+        gdpGrowthPct: 2.4,
+        gdpPerCapitaUsd: 1600,
+        inflationPct: 22.8,
+        tradeGdpPct: 27,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 10.0,
+        militaryExpGdpPct: 2.7,
+        activePersonnelThousands: 654.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'israel',
@@ -807,6 +1159,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'medium',
         cohesion: 55,
+      },
+      economicStats: {
+        gdpBillionUsd: 520,
+        gdpGrowthPct: 1.2,
+        gdpPerCapitaUsd: 55000,
+        inflationPct: 3.5,
+        tradeGdpPct: 62,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 28.0,
+        militaryExpGdpPct: 5.3,
+        activePersonnelThousands: 170.0,
+        nuclearArmed: true,
       },
     },
     {
@@ -834,6 +1199,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 36,
       },
+      economicStats: {
+        gdpBillionUsd: 270,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 6200,
+        inflationPct: 3.5,
+        tradeGdpPct: 70,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 165.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'uae',
@@ -859,6 +1237,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 70,
+      },
+      economicStats: {
+        gdpBillionUsd: 520,
+        gdpGrowthPct: 4.0,
+        gdpPerCapitaUsd: 53100,
+        inflationPct: 2.3,
+        tradeGdpPct: 170,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 23.0,
+        militaryExpGdpPct: 4.4,
+        activePersonnelThousands: 63.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -886,6 +1277,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 24,
       },
+      economicStats: {
+        gdpBillionUsd: 22,
+        gdpGrowthPct: -0.5,
+        gdpPerCapitaUsd: 1300,
+        inflationPct: 80.0,
+        tradeGdpPct: 35,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 4.5,
+        activePersonnelThousands: 130.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'taiwan',
@@ -911,6 +1315,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 74,
+      },
+      economicStats: {
+        gdpBillionUsd: 760,
+        gdpGrowthPct: 4.9,
+        gdpPerCapitaUsd: 33000,
+        inflationPct: 2.5,
+        tradeGdpPct: 115,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 19.0,
+        militaryExpGdpPct: 2.5,
+        activePersonnelThousands: 175.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -938,6 +1355,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 65,
       },
+      economicStats: {
+        gdpBillionUsd: 28,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 1100,
+        inflationPct: 5.0,
+        tradeGdpPct: 15,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 14.3,
+        activePersonnelThousands: 1280.0,
+        nuclearArmed: true,
+      },
     },
     {
       id: 'egypt',
@@ -963,6 +1393,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'medium',
         cohesion: 55,
+      },
+      economicStats: {
+        gdpBillionUsd: 395,
+        gdpGrowthPct: 2.7,
+        gdpPerCapitaUsd: 3400,
+        inflationPct: 30.0,
+        tradeGdpPct: 33,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 5.0,
+        militaryExpGdpPct: 1.2,
+        activePersonnelThousands: 440.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -990,6 +1433,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 41,
       },
+      economicStats: {
+        gdpBillionUsd: 390,
+        gdpGrowthPct: 3.3,
+        gdpPerCapitaUsd: 1700,
+        inflationPct: 28.9,
+        tradeGdpPct: 27,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 0.8,
+        activePersonnelThousands: 143.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'south-africa',
@@ -1015,6 +1471,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 49,
+      },
+      economicStats: {
+        gdpBillionUsd: 380,
+        gdpGrowthPct: 0.6,
+        gdpPerCapitaUsd: 6100,
+        inflationPct: 4.7,
+        tradeGdpPct: 58,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 0.8,
+        activePersonnelThousands: 78.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1042,6 +1511,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 38,
       },
+      economicStats: {
+        gdpBillionUsd: 155,
+        gdpGrowthPct: 7.5,
+        gdpPerCapitaUsd: 1200,
+        inflationPct: 30.0,
+        tradeGdpPct: 25,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 0.6,
+        activePersonnelThousands: 162.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'morocco',
@@ -1067,6 +1549,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'medium',
         cohesion: 62,
+      },
+      economicStats: {
+        gdpBillionUsd: 145,
+        gdpGrowthPct: 3.1,
+        gdpPerCapitaUsd: 3800,
+        inflationPct: 1.2,
+        tradeGdpPct: 73,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 5.0,
+        militaryExpGdpPct: 3.5,
+        activePersonnelThousands: 196.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1094,6 +1589,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 61,
       },
+      economicStats: {
+        gdpBillionUsd: 2260,
+        gdpGrowthPct: 0.7,
+        gdpPerCapitaUsd: 38400,
+        inflationPct: 1.2,
+        tradeGdpPct: 67,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 36.0,
+        militaryExpGdpPct: 1.6,
+        activePersonnelThousands: 165.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'spain',
@@ -1119,6 +1627,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 58,
+      },
+      economicStats: {
+        gdpBillionUsd: 1620,
+        gdpGrowthPct: 3.2,
+        gdpPerCapitaUsd: 33800,
+        inflationPct: 2.8,
+        tradeGdpPct: 73,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 23.0,
+        militaryExpGdpPct: 1.4,
+        activePersonnelThousands: 122.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1146,6 +1667,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 82,
       },
+      economicStats: {
+        gdpBillionUsd: 590,
+        gdpGrowthPct: 1.6,
+        gdpPerCapitaUsd: 105000,
+        inflationPct: 3.3,
+        tradeGdpPct: 80,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 11.0,
+        militaryExpGdpPct: 1.9,
+        activePersonnelThousands: 27.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'sweden',
@@ -1171,6 +1705,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 78,
+      },
+      economicStats: {
+        gdpBillionUsd: 590,
+        gdpGrowthPct: 0.5,
+        gdpPerCapitaUsd: 55500,
+        inflationPct: 2.6,
+        tradeGdpPct: 88,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 12.0,
+        militaryExpGdpPct: 2.0,
+        activePersonnelThousands: 24.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1198,6 +1745,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 80,
       },
+      economicStats: {
+        gdpBillionUsd: 300,
+        gdpGrowthPct: 0.4,
+        gdpPerCapitaUsd: 53700,
+        inflationPct: 1.5,
+        tradeGdpPct: 85,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 8.0,
+        militaryExpGdpPct: 2.8,
+        activePersonnelThousands: 23.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'greece',
@@ -1223,6 +1783,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'medium',
         cohesion: 60,
+      },
+      economicStats: {
+        gdpBillionUsd: 240,
+        gdpGrowthPct: 2.3,
+        gdpPerCapitaUsd: 23400,
+        inflationPct: 2.9,
+        tradeGdpPct: 67,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 7.0,
+        militaryExpGdpPct: 3.1,
+        activePersonnelThousands: 142.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1250,6 +1823,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 60,
       },
+      economicStats: {
+        gdpBillionUsd: 260,
+        gdpGrowthPct: 4.6,
+        gdpPerCapitaUsd: 12700,
+        inflationPct: 8.4,
+        tradeGdpPct: 65,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 74.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'serbia',
@@ -1275,6 +1861,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'medium',
         cohesion: 55,
+      },
+      economicStats: {
+        gdpBillionUsd: 73,
+        gdpGrowthPct: 3.7,
+        gdpPerCapitaUsd: 12000,
+        inflationPct: 4.5,
+        tradeGdpPct: 110,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 2.0,
+        militaryExpGdpPct: 2.2,
+        activePersonnelThousands: 28.0,
+        nuclearArmed: false,
       },
     },
     // ─── Europe ────────────────────────────────────────────────────────────────
@@ -1303,6 +1902,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 72,
       },
+      economicStats: {
+        gdpBillionUsd: 1130,
+        gdpGrowthPct: 0.9,
+        gdpPerCapitaUsd: 63000,
+        inflationPct: 2.7,
+        tradeGdpPct: 155,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 16.0,
+        militaryExpGdpPct: 1.4,
+        activePersonnelThousands: 41.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'belgium',
@@ -1328,6 +1940,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 55,
+      },
+      economicStats: {
+        gdpBillionUsd: 640,
+        gdpGrowthPct: 1.4,
+        gdpPerCapitaUsd: 54600,
+        inflationPct: 3.4,
+        tradeGdpPct: 170,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 7.0,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 25.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1355,6 +1980,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 80,
       },
+      economicStats: {
+        gdpBillionUsd: 890,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 100000,
+        inflationPct: 1.1,
+        tradeGdpPct: 118,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 5.0,
+        militaryExpGdpPct: 0.6,
+        activePersonnelThousands: 20.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'austria',
@@ -1380,6 +2018,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 68,
+      },
+      economicStats: {
+        gdpBillionUsd: 530,
+        gdpGrowthPct: 0.9,
+        gdpPerCapitaUsd: 58400,
+        inflationPct: 2.8,
+        tradeGdpPct: 105,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 0.8,
+        activePersonnelThousands: 22.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1407,6 +2058,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 80,
       },
+      economicStats: {
+        gdpBillionUsd: 400,
+        gdpGrowthPct: 1.8,
+        gdpPerCapitaUsd: 67900,
+        inflationPct: 2.7,
+        tradeGdpPct: 110,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 9.0,
+        militaryExpGdpPct: 2.3,
+        activePersonnelThousands: 17.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'czechia',
@@ -1432,6 +2096,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 68,
+      },
+      economicStats: {
+        gdpBillionUsd: 330,
+        gdpGrowthPct: 1.6,
+        gdpPerCapitaUsd: 30800,
+        inflationPct: 2.4,
+        tradeGdpPct: 155,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 5.0,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 30.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1459,6 +2136,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 55,
       },
+      economicStats: {
+        gdpBillionUsd: 200,
+        gdpGrowthPct: 2.0,
+        gdpPerCapitaUsd: 21100,
+        inflationPct: 3.7,
+        tradeGdpPct: 160,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 1.7,
+        activePersonnelThousands: 37.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'romania',
@@ -1484,6 +2174,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'medium',
         cohesion: 60,
+      },
+      economicStats: {
+        gdpBillionUsd: 345,
+        gdpGrowthPct: 1.8,
+        gdpPerCapitaUsd: 18200,
+        inflationPct: 5.0,
+        tradeGdpPct: 80,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 8.0,
+        militaryExpGdpPct: 2.3,
+        activePersonnelThousands: 68.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1511,6 +2214,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 68,
       },
+      economicStats: {
+        gdpBillionUsd: 280,
+        gdpGrowthPct: 1.9,
+        gdpPerCapitaUsd: 27300,
+        inflationPct: 2.3,
+        tradeGdpPct: 93,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 1.4,
+        activePersonnelThousands: 33.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'bulgaria',
@@ -1536,6 +2252,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'medium',
         cohesion: 52,
+      },
+      economicStats: {
+        gdpBillionUsd: 100,
+        gdpGrowthPct: 2.1,
+        gdpPerCapitaUsd: 15000,
+        inflationPct: 3.0,
+        tradeGdpPct: 115,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 2.8,
+        activePersonnelThousands: 30.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1563,6 +2292,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 62,
       },
+      economicStats: {
+        gdpBillionUsd: 77,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 19800,
+        inflationPct: 3.5,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 2.0,
+        militaryExpGdpPct: 2.6,
+        activePersonnelThousands: 16.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'slovakia',
@@ -1588,6 +2330,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 54,
+      },
+      economicStats: {
+        gdpBillionUsd: 120,
+        gdpGrowthPct: 2.1,
+        gdpPerCapitaUsd: 22100,
+        inflationPct: 2.8,
+        tradeGdpPct: 175,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 2.3,
+        activePersonnelThousands: 16.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1615,6 +2370,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 70,
       },
+      economicStats: {
+        gdpBillionUsd: 38,
+        gdpGrowthPct: 1.8,
+        gdpPerCapitaUsd: 28900,
+        inflationPct: 3.5,
+        tradeGdpPct: 135,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 3.0,
+        activePersonnelThousands: 8.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'latvia',
@@ -1640,6 +2408,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'medium',
         cohesion: 64,
+      },
+      economicStats: {
+        gdpBillionUsd: 43,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 23200,
+        inflationPct: 2.6,
+        tradeGdpPct: 125,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 3.2,
+        activePersonnelThousands: 7.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1667,6 +2448,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 66,
       },
+      economicStats: {
+        gdpBillionUsd: 73,
+        gdpGrowthPct: 2.2,
+        gdpPerCapitaUsd: 27200,
+        inflationPct: 3.0,
+        tradeGdpPct: 130,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 2.0,
+        militaryExpGdpPct: 3.0,
+        activePersonnelThousands: 18.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'belarus',
@@ -1693,6 +2487,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 45,
       },
+      economicStats: {
+        gdpBillionUsd: 73,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 7900,
+        inflationPct: 5.6,
+        tradeGdpPct: 100,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 2.0,
+        militaryExpGdpPct: 2.2,
+        activePersonnelThousands: 48.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'moldova',
@@ -1718,6 +2525,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 50,
+      },
+      economicStats: {
+        gdpBillionUsd: 15,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 5800,
+        inflationPct: 7.0,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.6,
+        activePersonnelThousands: 5.0,
+        nuclearArmed: false,
       },
     },
     // ─── Caucasus ──────────────────────────────────────────────────────────────
@@ -1746,6 +2566,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 65,
       },
+      economicStats: {
+        gdpBillionUsd: 78,
+        gdpGrowthPct: 3.0,
+        gdpPerCapitaUsd: 7600,
+        inflationPct: 3.6,
+        tradeGdpPct: 65,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 3.8,
+        activePersonnelThousands: 66.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'armenia',
@@ -1772,6 +2605,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 55,
       },
+      economicStats: {
+        gdpBillionUsd: 22,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 7400,
+        inflationPct: 1.5,
+        tradeGdpPct: 80,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.8,
+        militaryExpGdpPct: 3.9,
+        activePersonnelThousands: 45.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'georgia',
@@ -1797,6 +2643,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'medium',
         cohesion: 50,
+      },
+      economicStats: {
+        gdpBillionUsd: 27,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 7400,
+        inflationPct: 2.5,
+        tradeGdpPct: 98,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 1.8,
+        activePersonnelThousands: 37.0,
+        nuclearArmed: false,
       },
     },
     // ─── Central Asia ──────────────────────────────────────────────────────────
@@ -1825,6 +2684,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 58,
       },
+      economicStats: {
+        gdpBillionUsd: 100,
+        gdpGrowthPct: 6.5,
+        gdpPerCapitaUsd: 2800,
+        inflationPct: 8.0,
+        tradeGdpPct: 53,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.5,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 67.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'tajikistan',
@@ -1850,6 +2722,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'medium',
         cohesion: 52,
+      },
+      economicStats: {
+        gdpBillionUsd: 12,
+        gdpGrowthPct: 8.0,
+        gdpPerCapitaUsd: 1200,
+        inflationPct: 6.5,
+        tradeGdpPct: 65,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 2.5,
+        activePersonnelThousands: 8.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1877,6 +2762,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 48,
       },
+      economicStats: {
+        gdpBillionUsd: 13,
+        gdpGrowthPct: 6.0,
+        gdpPerCapitaUsd: 1900,
+        inflationPct: 7.5,
+        tradeGdpPct: 120,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.2,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 11.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'turkmenistan',
@@ -1902,6 +2800,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 55,
+      },
+      economicStats: {
+        gdpBillionUsd: 55,
+        gdpGrowthPct: 6.2,
+        gdpPerCapitaUsd: 8500,
+        inflationPct: 8.0,
+        tradeGdpPct: 60,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.6,
+        militaryExpGdpPct: 2.9,
+        activePersonnelThousands: 37.0,
+        nuclearArmed: false,
       },
     },
     // ─── Middle East ───────────────────────────────────────────────────────────
@@ -1930,6 +2841,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 52,
       },
+      economicStats: {
+        gdpBillionUsd: 50,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 4600,
+        inflationPct: 2.5,
+        tradeGdpPct: 85,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 2.2,
+        militaryExpGdpPct: 4.5,
+        activePersonnelThousands: 101.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'kuwait',
@@ -1955,6 +2879,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 60,
+      },
+      economicStats: {
+        gdpBillionUsd: 130,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 30000,
+        inflationPct: 2.3,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 7.0,
+        militaryExpGdpPct: 5.4,
+        activePersonnelThousands: 18.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -1982,6 +2919,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 66,
       },
+      economicStats: {
+        gdpBillionUsd: 220,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 75000,
+        inflationPct: 1.0,
+        tradeGdpPct: 100,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 7.0,
+        militaryExpGdpPct: 3.2,
+        activePersonnelThousands: 16.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'oman',
@@ -2007,6 +2957,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 70,
+      },
+      economicStats: {
+        gdpBillionUsd: 115,
+        gdpGrowthPct: 1.8,
+        gdpPerCapitaUsd: 22000,
+        inflationPct: 1.2,
+        tradeGdpPct: 100,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 6.0,
+        militaryExpGdpPct: 5.2,
+        activePersonnelThousands: 43.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -2034,6 +2997,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 18,
       },
+      economicStats: {
+        gdpBillionUsd: 21,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 600,
+        inflationPct: 25.0,
+        tradeGdpPct: 25,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 2.4,
+        activePersonnelThousands: 30.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'lebanon',
@@ -2060,6 +3036,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 30,
       },
+      economicStats: {
+        gdpBillionUsd: 22,
+        gdpGrowthPct: 3.0,
+        gdpPerCapitaUsd: 3500,
+        inflationPct: 50.0,
+        tradeGdpPct: 50,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 2.3,
+        activePersonnelThousands: 72.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'libya',
@@ -2085,6 +3074,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'medium',
         cohesion: 20,
+      },
+      economicStats: {
+        gdpBillionUsd: 42,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 6200,
+        inflationPct: 2.5,
+        tradeGdpPct: 50,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 1.7,
+        activePersonnelThousands: 96.0,
+        nuclearArmed: false,
       },
     },
     // ─── South-Eastern Asia ────────────────────────────────────────────────────
@@ -2113,6 +3115,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 78,
       },
+      economicStats: {
+        gdpBillionUsd: 500,
+        gdpGrowthPct: 2.7,
+        gdpPerCapitaUsd: 88000,
+        inflationPct: 2.4,
+        tradeGdpPct: 320,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 12.0,
+        militaryExpGdpPct: 2.4,
+        activePersonnelThousands: 71.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'malaysia',
@@ -2138,6 +3153,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 60,
+      },
+      economicStats: {
+        gdpBillionUsd: 430,
+        gdpGrowthPct: 4.4,
+        gdpPerCapitaUsd: 12500,
+        inflationPct: 1.8,
+        tradeGdpPct: 145,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 1.0,
+        activePersonnelThousands: 109.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -2165,6 +3193,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 55,
       },
+      economicStats: {
+        gdpBillionUsd: 30,
+        gdpGrowthPct: 5.8,
+        gdpPerCapitaUsd: 1800,
+        inflationPct: 2.5,
+        tradeGdpPct: 115,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.6,
+        militaryExpGdpPct: 2.0,
+        activePersonnelThousands: 124.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'laos',
@@ -2190,6 +3231,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 60,
+      },
+      economicStats: {
+        gdpBillionUsd: 15,
+        gdpGrowthPct: 4.5,
+        gdpPerCapitaUsd: 1900,
+        inflationPct: 22.0,
+        tradeGdpPct: 70,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.7,
+        activePersonnelThousands: 29.0,
+        nuclearArmed: false,
       },
     },
     // ─── Southern Asia ─────────────────────────────────────────────────────────
@@ -2218,6 +3272,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 50,
       },
+      economicStats: {
+        gdpBillionUsd: 84,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 3800,
+        inflationPct: 4.5,
+        tradeGdpPct: 43,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.5,
+        militaryExpGdpPct: 1.8,
+        activePersonnelThousands: 244.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'nepal',
@@ -2244,6 +3311,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 48,
       },
+      economicStats: {
+        gdpBillionUsd: 45,
+        gdpGrowthPct: 4.5,
+        gdpPerCapitaUsd: 1500,
+        inflationPct: 5.0,
+        tradeGdpPct: 45,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.4,
+        militaryExpGdpPct: 0.9,
+        activePersonnelThousands: 96.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'afghanistan',
@@ -2269,6 +3349,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'low',
         cohesion: 22,
+      },
+      economicStats: {
+        gdpBillionUsd: 14,
+        gdpGrowthPct: -0.5,
+        gdpPerCapitaUsd: 350,
+        inflationPct: 10.0,
+        tradeGdpPct: 30,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 2.1,
+        activePersonnelThousands: 300.0,
+        nuclearArmed: false,
       },
     },
     // ─── Eastern Asia ──────────────────────────────────────────────────────────
@@ -2297,6 +3390,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 60,
       },
+      economicStats: {
+        gdpBillionUsd: 22,
+        gdpGrowthPct: 5.6,
+        gdpPerCapitaUsd: 6400,
+        inflationPct: 8.0,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.5,
+        activePersonnelThousands: 10.0,
+        nuclearArmed: false,
+      },
     },
     // ─── Oceania ───────────────────────────────────────────────────────────────
     {
@@ -2323,6 +3429,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 78,
+      },
+      economicStats: {
+        gdpBillionUsd: 250,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 48000,
+        inflationPct: 3.0,
+        tradeGdpPct: 57,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.8,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 15.0,
+        nuclearArmed: false,
       },
     },
     // ─── Northern Africa ───────────────────────────────────────────────────────
@@ -2351,6 +3470,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 52,
       },
+      economicStats: {
+        gdpBillionUsd: 220,
+        gdpGrowthPct: 4.1,
+        gdpPerCapitaUsd: 4800,
+        inflationPct: 5.3,
+        tradeGdpPct: 50,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 10.0,
+        militaryExpGdpPct: 4.5,
+        activePersonnelThousands: 130.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'tunisia',
@@ -2376,6 +3508,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'medium',
         cohesion: 44,
+      },
+      economicStats: {
+        gdpBillionUsd: 48,
+        gdpGrowthPct: 1.0,
+        gdpPerCapitaUsd: 3900,
+        inflationPct: 7.5,
+        tradeGdpPct: 100,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 2.1,
+        activePersonnelThousands: 36.0,
+        nuclearArmed: false,
       },
     },
     // ─── Sub-Saharan Africa ────────────────────────────────────────────────────
@@ -2404,6 +3549,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 48,
       },
+      economicStats: {
+        gdpBillionUsd: 110,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 2000,
+        inflationPct: 6.5,
+        tradeGdpPct: 30,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 0.9,
+        activePersonnelThousands: 24.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'tanzania',
@@ -2429,6 +3587,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'medium',
         cohesion: 52,
+      },
+      economicStats: {
+        gdpBillionUsd: 80,
+        gdpGrowthPct: 5.5,
+        gdpPerCapitaUsd: 1200,
+        inflationPct: 4.0,
+        tradeGdpPct: 25,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 0.9,
+        activePersonnelThousands: 27.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -2456,6 +3627,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 55,
       },
+      economicStats: {
+        gdpBillionUsd: 75,
+        gdpGrowthPct: 4.7,
+        gdpPerCapitaUsd: 2200,
+        inflationPct: 22.0,
+        tradeGdpPct: 55,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 0.4,
+        activePersonnelThousands: 15.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'dem-rep-congo',
@@ -2481,6 +3665,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'medium',
         cohesion: 28,
+      },
+      economicStats: {
+        gdpBillionUsd: 75,
+        gdpGrowthPct: 6.2,
+        gdpPerCapitaUsd: 800,
+        inflationPct: 14.0,
+        tradeGdpPct: 35,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 0.9,
+        activePersonnelThousands: 134.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -2508,6 +3705,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 52,
       },
+      economicStats: {
+        gdpBillionUsd: 92,
+        gdpGrowthPct: 3.0,
+        gdpPerCapitaUsd: 2500,
+        inflationPct: 25.0,
+        tradeGdpPct: 65,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.7,
+        militaryExpGdpPct: 1.8,
+        activePersonnelThousands: 107.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'sudan',
@@ -2533,6 +3743,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'low',
         cohesion: 20,
+      },
+      economicStats: {
+        gdpBillionUsd: 42,
+        gdpGrowthPct: 1.0,
+        gdpPerCapitaUsd: 900,
+        inflationPct: 100.0,
+        tradeGdpPct: 12,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 2.4,
+        activePersonnelThousands: 109.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -2560,6 +3783,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 16,
       },
+      economicStats: {
+        gdpBillionUsd: 4,
+        gdpGrowthPct: -2.0,
+        gdpPerCapitaUsd: 350,
+        inflationPct: 60.0,
+        tradeGdpPct: 25,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 17.5,
+        activePersonnelThousands: 185.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'somalia',
@@ -2585,6 +3821,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'low',
         cohesion: 15,
+      },
+      economicStats: {
+        gdpBillionUsd: 11,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 650,
+        inflationPct: 8.0,
+        tradeGdpPct: 25,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.9,
+        activePersonnelThousands: 20.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -2612,6 +3861,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 42,
       },
+      economicStats: {
+        gdpBillionUsd: 26,
+        gdpGrowthPct: 3.0,
+        gdpPerCapitaUsd: 1600,
+        inflationPct: 150.0,
+        tradeGdpPct: 43,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 1.2,
+        activePersonnelThousands: 29.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'mozambique',
@@ -2637,6 +3899,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'medium',
         cohesion: 40,
+      },
+      economicStats: {
+        gdpBillionUsd: 17,
+        gdpGrowthPct: 5.0,
+        gdpPerCapitaUsd: 500,
+        inflationPct: 6.5,
+        tradeGdpPct: 75,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.2,
+        militaryExpGdpPct: 1.2,
+        activePersonnelThousands: 12.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -2664,6 +3939,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 58,
       },
+      economicStats: {
+        gdpBillionUsd: 14,
+        gdpGrowthPct: 7.2,
+        gdpPerCapitaUsd: 1000,
+        inflationPct: 5.0,
+        tradeGdpPct: 38,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 2.1,
+        activePersonnelThousands: 33.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'uganda',
@@ -2689,6 +3977,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'low',
         cohesion: 46,
+      },
+      economicStats: {
+        gdpBillionUsd: 50,
+        gdpGrowthPct: 6.0,
+        gdpPerCapitaUsd: 1000,
+        inflationPct: 4.5,
+        tradeGdpPct: 28,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.8,
+        militaryExpGdpPct: 1.6,
+        activePersonnelThousands: 46.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -2716,6 +4017,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'low',
         cohesion: 25,
       },
+      economicStats: {
+        gdpBillionUsd: 18,
+        gdpGrowthPct: 4.5,
+        gdpPerCapitaUsd: 850,
+        inflationPct: 3.0,
+        tradeGdpPct: 40,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 3.9,
+        activePersonnelThousands: 21.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'niger',
@@ -2741,6 +4055,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'low',
         cohesion: 28,
+      },
+      economicStats: {
+        gdpBillionUsd: 15,
+        gdpGrowthPct: 6.9,
+        gdpPerCapitaUsd: 600,
+        inflationPct: 2.5,
+        tradeGdpPct: 35,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 2.0,
+        activePersonnelThousands: 25.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -2768,6 +4095,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 50,
       },
+      economicStats: {
+        gdpBillionUsd: 80,
+        gdpGrowthPct: 6.5,
+        gdpPerCapitaUsd: 2800,
+        inflationPct: 2.5,
+        tradeGdpPct: 50,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.9,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 26.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'cameroon',
@@ -2794,6 +4134,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 38,
       },
+      economicStats: {
+        gdpBillionUsd: 48,
+        gdpGrowthPct: 4.0,
+        gdpPerCapitaUsd: 1700,
+        inflationPct: 3.5,
+        tradeGdpPct: 38,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.6,
+        militaryExpGdpPct: 1.3,
+        activePersonnelThousands: 47.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'senegal',
@@ -2819,6 +4172,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'medium',
         cohesion: 55,
+      },
+      economicStats: {
+        gdpBillionUsd: 32,
+        gdpGrowthPct: 7.5,
+        gdpPerCapitaUsd: 1800,
+        inflationPct: 3.5,
+        tradeGdpPct: 55,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 1.6,
+        activePersonnelThousands: 19.0,
+        nuclearArmed: false,
       },
     },
     // ─── Americas ──────────────────────────────────────────────────────────────
@@ -2847,6 +4213,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 48,
       },
+      economicStats: {
+        gdpBillionUsd: 363,
+        gdpGrowthPct: 1.7,
+        gdpPerCapitaUsd: 7000,
+        inflationPct: 7.5,
+        tradeGdpPct: 40,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 12.0,
+        militaryExpGdpPct: 3.3,
+        activePersonnelThousands: 295.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'chile',
@@ -2872,6 +4251,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 54,
+      },
+      economicStats: {
+        gdpBillionUsd: 335,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 17000,
+        inflationPct: 3.9,
+        tradeGdpPct: 63,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 10.0,
+        militaryExpGdpPct: 3.0,
+        activePersonnelThousands: 63.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -2899,6 +4291,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 44,
       },
+      economicStats: {
+        gdpBillionUsd: 270,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 7600,
+        inflationPct: 3.5,
+        tradeGdpPct: 48,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 4.0,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 96.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'cuba',
@@ -2924,6 +4329,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'medium',
         cohesion: 48,
+      },
+      economicStats: {
+        gdpBillionUsd: 107,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 9500,
+        inflationPct: 30.0,
+        tradeGdpPct: 30,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 0.7,
+        activePersonnelThousands: 49.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -2951,6 +4369,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 44,
       },
+      economicStats: {
+        gdpBillionUsd: 46,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 3700,
+        inflationPct: 5.0,
+        tradeGdpPct: 55,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 37.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'ecuador',
@@ -2976,6 +4407,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'medium',
         cohesion: 44,
+      },
+      economicStats: {
+        gdpBillionUsd: 115,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 6300,
+        inflationPct: 2.3,
+        tradeGdpPct: 58,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 3.0,
+        militaryExpGdpPct: 2.6,
+        activePersonnelThousands: 40.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -3003,6 +4447,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 54,
       },
+      economicStats: {
+        gdpBillionUsd: 44,
+        gdpGrowthPct: 3.8,
+        gdpPerCapitaUsd: 6200,
+        inflationPct: 4.2,
+        tradeGdpPct: 80,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 19.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'uruguay',
@@ -3028,6 +4485,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'medium',
         cohesion: 70,
+      },
+      economicStats: {
+        gdpBillionUsd: 77,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 22000,
+        inflationPct: 5.4,
+        tradeGdpPct: 45,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 1.3,
+        activePersonnelThousands: 23.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -3055,6 +4525,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 44,
       },
+      economicStats: {
+        gdpBillionUsd: 100,
+        gdpGrowthPct: 3.6,
+        gdpPerCapitaUsd: 5600,
+        inflationPct: 4.5,
+        tradeGdpPct: 48,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.4,
+        militaryExpGdpPct: 0.4,
+        activePersonnelThousands: 24.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'ireland',
@@ -3080,6 +4563,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 78,
+      },
+      economicStats: {
+        gdpBillionUsd: 530,
+        gdpGrowthPct: 3.9,
+        gdpPerCapitaUsd: 100000,
+        inflationPct: 1.5,
+        tradeGdpPct: 230,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.6,
+        militaryExpGdpPct: 0.3,
+        activePersonnelThousands: 10.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -3107,6 +4603,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 80,
       },
+      economicStats: {
+        gdpBillionUsd: 31,
+        gdpGrowthPct: 1.5,
+        gdpPerCapitaUsd: 80000,
+        inflationPct: 6.0,
+        tradeGdpPct: 92,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.2,
+        activePersonnelThousands: 0.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'luxembourg',
@@ -3132,6 +4641,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 82,
+      },
+      economicStats: {
+        gdpBillionUsd: 90,
+        gdpGrowthPct: 1.8,
+        gdpPerCapitaUsd: 135000,
+        inflationPct: 2.0,
+        tradeGdpPct: 370,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 0.6,
+        activePersonnelThousands: 1.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -3159,6 +4681,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 70,
       },
+      economicStats: {
+        gdpBillionUsd: 65,
+        gdpGrowthPct: 1.2,
+        gdpPerCapitaUsd: 31000,
+        inflationPct: 1.5,
+        tradeGdpPct: 170,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.0,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 8.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'cyprus',
@@ -3184,6 +4719,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'medium',
         cohesion: 60,
+      },
+      economicStats: {
+        gdpBillionUsd: 33,
+        gdpGrowthPct: 3.3,
+        gdpPerCapitaUsd: 37000,
+        inflationPct: 2.5,
+        tradeGdpPct: 155,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 1.5,
+        activePersonnelThousands: 15.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -3211,6 +4759,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 58,
       },
+      economicStats: {
+        gdpBillionUsd: 22,
+        gdpGrowthPct: 3.7,
+        gdpPerCapitaUsd: 7600,
+        inflationPct: 2.6,
+        tradeGdpPct: 70,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 1.4,
+        activePersonnelThousands: 9.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'bosnia-and-herzegovina',
@@ -3236,6 +4797,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'medium',
         cohesion: 42,
+      },
+      economicStats: {
+        gdpBillionUsd: 27,
+        gdpGrowthPct: 2.5,
+        gdpPerCapitaUsd: 8300,
+        inflationPct: 2.5,
+        tradeGdpPct: 100,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 10.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -3263,6 +4837,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'medium',
         cohesion: 56,
       },
+      economicStats: {
+        gdpBillionUsd: 15,
+        gdpGrowthPct: 2.0,
+        gdpPerCapitaUsd: 8000,
+        inflationPct: 2.5,
+        tradeGdpPct: 110,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.2,
+        militaryExpGdpPct: 1.3,
+        activePersonnelThousands: 8.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'montenegro',
@@ -3288,6 +4875,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 52,
+      },
+      economicStats: {
+        gdpBillionUsd: 7,
+        gdpGrowthPct: 3.6,
+        gdpPerCapitaUsd: 11000,
+        inflationPct: 3.5,
+        tradeGdpPct: 115,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 1.6,
+        activePersonnelThousands: 2.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -3315,6 +4915,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 50,
       },
+      economicStats: {
+        gdpBillionUsd: 10,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 5500,
+        inflationPct: 2.0,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 1.0,
+        activePersonnelThousands: 5.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'bahrain',
@@ -3340,6 +4953,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'medium',
         tradeDependence: 'high',
         cohesion: 48,
+      },
+      economicStats: {
+        gdpBillionUsd: 45,
+        gdpGrowthPct: 3.0,
+        gdpPerCapitaUsd: 28000,
+        inflationPct: 1.5,
+        tradeGdpPct: 140,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 1.7,
+        militaryExpGdpPct: 3.8,
+        activePersonnelThousands: 10.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -3367,6 +4993,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 72,
       },
+      economicStats: {
+        gdpBillionUsd: 75,
+        gdpGrowthPct: 4.0,
+        gdpPerCapitaUsd: 14500,
+        inflationPct: 2.8,
+        tradeGdpPct: 60,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.0,
+        militaryExpGdpPct: 0.0,
+        activePersonnelThousands: 0.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'panama',
@@ -3392,6 +5031,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 60,
+      },
+      economicStats: {
+        gdpBillionUsd: 75,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 17000,
+        inflationPct: 1.0,
+        tradeGdpPct: 90,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 0.7,
+        activePersonnelThousands: 12.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -3419,6 +5071,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 58,
       },
+      economicStats: {
+        gdpBillionUsd: 120,
+        gdpGrowthPct: 5.2,
+        gdpPerCapitaUsd: 11000,
+        inflationPct: 4.5,
+        tradeGdpPct: 40,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.8,
+        militaryExpGdpPct: 0.7,
+        activePersonnelThousands: 56.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'botswana',
@@ -3444,6 +5109,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 66,
+      },
+      economicStats: {
+        gdpBillionUsd: 20,
+        gdpGrowthPct: 3.5,
+        gdpPerCapitaUsd: 8000,
+        inflationPct: 3.5,
+        tradeGdpPct: 95,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.5,
+        militaryExpGdpPct: 2.5,
+        activePersonnelThousands: 9.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -3471,6 +5149,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 50,
       },
+      economicStats: {
+        gdpBillionUsd: 28,
+        gdpGrowthPct: 4.7,
+        gdpPerCapitaUsd: 1400,
+        inflationPct: 13.0,
+        tradeGdpPct: 45,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.3,
+        militaryExpGdpPct: 1.1,
+        activePersonnelThousands: 16.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'burkina-faso',
@@ -3496,6 +5187,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'high',
         tradeDependence: 'medium',
         cohesion: 30,
+      },
+      economicStats: {
+        gdpBillionUsd: 18,
+        gdpGrowthPct: 4.0,
+        gdpPerCapitaUsd: 800,
+        inflationPct: 3.0,
+        tradeGdpPct: 33,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.7,
+        militaryExpGdpPct: 3.9,
+        activePersonnelThousands: 16.0,
+        nuclearArmed: false,
       },
     },
     {
@@ -3523,6 +5227,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 44,
       },
+      economicStats: {
+        gdpBillionUsd: 30,
+        gdpGrowthPct: 4.5,
+        gdpPerCapitaUsd: 3100,
+        inflationPct: 4.0,
+        tradeGdpPct: 85,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.4,
+        activePersonnelThousands: 3.5,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'brunei',
@@ -3549,6 +5266,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         tradeDependence: 'high',
         cohesion: 64,
       },
+      economicStats: {
+        gdpBillionUsd: 15,
+        gdpGrowthPct: 1.6,
+        gdpPerCapitaUsd: 33000,
+        inflationPct: 0.4,
+        tradeGdpPct: 100,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.4,
+        militaryExpGdpPct: 2.8,
+        activePersonnelThousands: 8.0,
+        nuclearArmed: false,
+      },
     },
     {
       id: 'madagascar',
@@ -3574,6 +5304,19 @@ export const geopoliticalDatasetV1: DatasetBundle = {
         conflictHistory: 'low',
         tradeDependence: 'high',
         cohesion: 46,
+      },
+      economicStats: {
+        gdpBillionUsd: 15,
+        gdpGrowthPct: 4.2,
+        gdpPerCapitaUsd: 500,
+        inflationPct: 8.5,
+        tradeGdpPct: 60,
+      },
+      militaryStats: {
+        militaryExpBillionUsd: 0.1,
+        militaryExpGdpPct: 0.7,
+        activePersonnelThousands: 13.5,
+        nuclearArmed: false,
       },
     },
   ],
