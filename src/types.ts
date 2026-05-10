@@ -4,7 +4,15 @@ export type Tier = 'low' | 'medium' | 'high';
 export type RelationshipDimension = 'cooperation' | 'hostility' | 'dependency' | 'deterrence';
 export type OverlayMode = 'none' | RelationshipDimension;
 export type WeightSetKey = 'baseline' | 'hardPower' | 'economicStress';
-export type MapFillMode = 'alignment' | 'risk' | 'confidence' | 'shift';
+export type MapFillMode =
+  | 'alignment'
+  | 'risk'
+  | 'confidence'
+  | 'shift'
+  | 'gdpPerCapita'
+  | 'nuclearArmed'
+  | 'militaryBurden'
+  | 'regime';
 
 export interface DatasetSource {
   id: string;

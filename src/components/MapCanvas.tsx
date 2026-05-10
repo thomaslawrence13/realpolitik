@@ -4,6 +4,7 @@ import type {
   Alignment,
   MapFillMode,
   OverlayMode,
+  RegimeType,
   RelationshipDimension,
   SimulatedCountry,
 } from '../types';
@@ -57,6 +58,10 @@ const fillModeOptions: ReadonlyArray<{ value: MapFillMode; label: string; hint: 
   { value: 'risk', label: 'Risk', hint: 'Green → red as escalation risk rises' },
   { value: 'confidence', label: 'Confidence', hint: 'Brighter = higher confidence' },
   { value: 'shift', label: 'Shift', hint: 'Highlights countries that diverge from baseline' },
+  { value: 'gdpPerCapita', label: 'GDP/cap', hint: 'Choropleth by GDP per capita (USD)' },
+  { value: 'nuclearArmed', label: 'Nuclear', hint: 'Highlight nuclear-armed states' },
+  { value: 'militaryBurden', label: 'Mil.%GDP', hint: 'Military expenditure as % of GDP' },
+  { value: 'regime', label: 'Regime', hint: 'Color by regime type (democracy / hybrid / authoritarian)' },
 ];
 
 // Risk gradient: low (green) → medium (amber) → high (red).
@@ -91,6 +96,42 @@ const confidenceColor = (confidence: number): string => {
   return lerpColor('#1e3a8a', '#67e8f9', t);
 };
 
+// GDP per capita: log-scale purple (< $1 K) → amber (~$10 K) → green (>$100 K).
+const GDP_POOR = '#581c87';
+const GDP_MID  = '#f59e0b';
+const GDP_RICH = '#22c55e';
+const gdpPerCapitaColor = (gdp: number | undefined): string => {
+  if (!gdp) return NEUTRAL;
+  // log10 scale: $1 K → 0, $10 K → 0.5, $100 K → 1
+  const t = Math.max(0, Math.min(1, (Math.log10(Math.max(1, gdp)) - 3) / 2));
+  if (t < 0.5) return lerpColor(GDP_POOR, GDP_MID, t * 2);
+  return lerpColor(GDP_MID, GDP_RICH, (t - 0.5) * 2);
+};
+
+// Nuclear-armed: vivid yellow (armed) vs deep navy (unarmed).
+const NUCLEAR_YES = '#fef08a';
+const NUCLEAR_NO  = '#1b2d4a';
+const nuclearArmedColor = (armed: boolean | undefined): string => {
+  if (armed === undefined) return NEUTRAL;
+  return armed ? NUCLEAR_YES : NUCLEAR_NO;
+};
+
+// Military burden: sky blue (0 %) → red (≥ 5 % GDP).
+const MIL_LOW  = '#0ea5e9';
+const MIL_HIGH = '#f87171';
+const militaryBurdenColor = (pct: number | undefined): string => {
+  if (pct == null) return NEUTRAL;
+  const t = Math.max(0, Math.min(1, pct / 5));
+  return lerpColor(MIL_LOW, MIL_HIGH, t);
+};
+
+// Regime type: fixed palette.
+const regimeTypeColor: Record<RegimeType, string> = {
+  democracy:     '#22d3ee',
+  hybrid:        '#f59e0b',
+  authoritarian: '#f87171',
+};
+
 type FillResolverArgs = {
   simulated: SimulatedCountry;
   baseline?: SimulatedCountry;
@@ -102,6 +143,10 @@ const resolveFill = (mode: MapFillMode, args: FillResolverArgs): string => {
   if (mode === 'alignment') return alignmentColor[simulated.alignment];
   if (mode === 'risk') return riskColor(simulated.risk);
   if (mode === 'confidence') return confidenceColor(simulated.confidence);
+  if (mode === 'gdpPerCapita') return gdpPerCapitaColor(simulated.profile.economicStats?.gdpPerCapitaUsd);
+  if (mode === 'nuclearArmed') return nuclearArmedColor(simulated.profile.militaryStats?.nuclearArmed);
+  if (mode === 'militaryBurden') return militaryBurdenColor(simulated.profile.militaryStats?.militaryExpGdpPct);
+  if (mode === 'regime') return regimeTypeColor[simulated.profile.regimeType];
   // shift: highlight countries whose risk or alignment diverged from baseline.
   if (!baseline) return alignmentColor[simulated.alignment];
   const alignmentChanged = simulated.alignment !== baseline.alignment;
@@ -367,7 +412,7 @@ export function MapCanvas({
       const cx = clamp(x + 16, 12, w - 220);
       if (hoverCardRef.current) {
         hoverCardRef.current.style.left = `${cx}px`;
-        hoverCardRef.current.style.top = `${clamp(y + 16, 12, h - 90)}px`;
+        hoverCardRef.current.style.top = `${clamp(y + 16, 12, h - 115)}px`;
       }
       if (hoverCardMutedRef.current) {
         hoverCardMutedRef.current.style.left = `${cx}px`;
@@ -537,7 +582,7 @@ export function MapCanvas({
             className="hover-card"
             style={{
               left: clamp(hoverPos.x + 16, 12, (frameRef.current?.clientWidth ?? 800) - 220),
-              top: clamp(hoverPos.y + 16, 12, (frameRef.current?.clientHeight ?? 600) - 90),
+              top: clamp(hoverPos.y + 16, 12, (frameRef.current?.clientHeight ?? 600) - 115),
             }}
           >
             <strong>{hovered.profile.displayName}</strong>
@@ -558,6 +603,30 @@ export function MapCanvas({
                 <em>Conf</em>
                 {hovered.confidence}%
               </span>
+              {fillMode === 'gdpPerCapita' && hovered.profile.economicStats && (
+                <span>
+                  <em>GDP/cap</em>
+                  ${hovered.profile.economicStats.gdpPerCapitaUsd.toLocaleString()}
+                </span>
+              )}
+              {fillMode === 'nuclearArmed' && hovered.profile.militaryStats && (
+                <span>
+                  <em>Nuclear</em>
+                  {hovered.profile.militaryStats.nuclearArmed ? 'Armed' : 'No'}
+                </span>
+              )}
+              {fillMode === 'militaryBurden' && hovered.profile.militaryStats && (
+                <span>
+                  <em>Mil.%GDP</em>
+                  {hovered.profile.militaryStats.militaryExpGdpPct.toFixed(1)}%
+                </span>
+              )}
+              {fillMode === 'regime' && (
+                <span>
+                  <em>Regime</em>
+                  {hovered.profile.regimeType.charAt(0).toUpperCase() + hovered.profile.regimeType.slice(1)}
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -629,6 +698,66 @@ export function MapCanvas({
               <span className="legend-chip">
                 <i style={{ background: '#c77dff' }} aria-hidden />
                 Alignment shifted
+              </span>
+            </>
+          )}
+          {fillMode === 'gdpPerCapita' && (
+            <>
+              <span className="legend-chip">
+                <i style={{ background: GDP_POOR }} aria-hidden />
+                &lt; $1 K
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: GDP_MID }} aria-hidden />
+                ~$10 K
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: GDP_RICH }} aria-hidden />
+                &gt; $100 K
+              </span>
+            </>
+          )}
+          {fillMode === 'nuclearArmed' && (
+            <>
+              <span className="legend-chip">
+                <i style={{ background: NUCLEAR_YES }} aria-hidden />
+                Nuclear armed
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: NUCLEAR_NO }} aria-hidden />
+                Non-nuclear
+              </span>
+            </>
+          )}
+          {fillMode === 'militaryBurden' && (
+            <>
+              <span className="legend-chip">
+                <i style={{ background: MIL_LOW }} aria-hidden />
+                Low (&lt; 1%)
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: lerpColor(MIL_LOW, MIL_HIGH, 0.5) }} aria-hidden />
+                ~2.5%
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: MIL_HIGH }} aria-hidden />
+                High (5%+)
+              </span>
+            </>
+          )}
+          {fillMode === 'regime' && (
+            <>
+              <span className="legend-chip">
+                <i style={{ background: regimeTypeColor.democracy }} aria-hidden />
+                Democracy
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: regimeTypeColor.hybrid }} aria-hidden />
+                Hybrid
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: regimeTypeColor.authoritarian }} aria-hidden />
+                Authoritarian
               </span>
             </>
           )}
