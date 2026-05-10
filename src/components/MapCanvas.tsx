@@ -28,8 +28,15 @@ const ZOOM_STEP = 0.3;
 const PAN_MARGIN = 80;
 // Approximate pixel height of the main hover card (used to clamp card position near the bottom edge)
 const HOVER_CARD_HEIGHT = 115;
+// Country label rendering constants — used when zoom ≥ LABELS_ZOOM_THRESHOLD
+const LABELS_ZOOM_THRESHOLD = 2.5;
+const LABEL_BASE_FONT_SIZE = 4.5; // SVG units; divided by zoom to stay constant on screen
+const LABEL_STROKE_WIDTH = 0.8;   // SVG units; divided by zoom to stay constant on screen
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+/** Capitalise the first letter of a string (used in hover card labels). */
+const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
 /** Prevent the map from being dragged completely off-screen. */
 function clampOffset(offset: { x: number; y: number }, zoom: number) {
@@ -374,6 +381,10 @@ export function MapCanvas({
     () => new Set(overlayConnections.map((connection) => connection.mapName)),
     [overlayConnections],
   );
+
+  // Memoize once — the centroid map never changes, so converting it outside the
+  // JSX here avoids recreating the array on every render when labels are visible.
+  const centroidEntries = useMemo(() => Array.from(countryCentroids.entries()), []);
   // ── Internal hover state (kept here so App.tsx never re-renders on hover) ─────
   const [hoveredName, setHoveredName] = useState<string | null>(null);
   // Refs so pointer handlers always see the latest value without stale closures
@@ -629,8 +640,8 @@ export function MapCanvas({
                 </g>
               ))}
 
-            {/* Country name labels — visible when zoomed in beyond 2.5× */}
-            {zoom >= 2.5 && Array.from(countryCentroids.entries()).map(([name, [cx, cy]]) => {
+            {/* Country name labels — visible when zoomed in beyond LABELS_ZOOM_THRESHOLD */}
+            {zoom >= LABELS_ZOOM_THRESHOLD && centroidEntries.map(([name, [cx, cy]]) => {
               const isParameterized = byName.has(name);
               if (!isParameterized) return null;
               return (
@@ -638,12 +649,12 @@ export function MapCanvas({
                   key={`label-${name}`}
                   x={cx}
                   y={cy}
-                  fontSize={4.5 * invZoom}
+                  fontSize={LABEL_BASE_FONT_SIZE * invZoom}
                   textAnchor="middle"
                   dominantBaseline="middle"
                   fill="rgba(248,250,252,0.9)"
                   stroke="rgba(5,9,18,0.6)"
-                  strokeWidth={0.8 * invZoom}
+                  strokeWidth={LABEL_STROKE_WIDTH * invZoom}
                   paintOrder="stroke"
                   style={{ pointerEvents: 'none', fontWeight: 600, letterSpacing: '0.01em' }}
                 >
@@ -690,7 +701,7 @@ export function MapCanvas({
               {fillMode === 'gdpGrowth' && hovered.profile.economicStats?.gdpGrowthPct != null && (
                 <span>
                   <em>Growth</em>
-                  {hovered.profile.economicStats.gdpGrowthPct > 0 ? '+' : ''}{hovered.profile.economicStats.gdpGrowthPct.toFixed(1)}%
+                  {(() => { const g = hovered.profile.economicStats!.gdpGrowthPct; return `${g > 0 ? '+' : ''}${g.toFixed(1)}%`; })()}
                 </span>
               )}
               {fillMode === 'inflation' && hovered.profile.economicStats?.inflationPct != null && (
@@ -720,13 +731,13 @@ export function MapCanvas({
               {fillMode === 'regime' && (
                 <span>
                   <em>Regime</em>
-                  {hovered.profile.regimeType.charAt(0).toUpperCase() + hovered.profile.regimeType.slice(1)}
+                  {capitalize(hovered.profile.regimeType)}
                 </span>
               )}
               {fillMode === 'conflictPressure' && (
                 <span>
                   <em>Conflict</em>
-                  {hovered.profile.indicators.conflictPressure.charAt(0).toUpperCase() + hovered.profile.indicators.conflictPressure.slice(1)}
+                  {capitalize(hovered.profile.indicators.conflictPressure)}
                 </span>
               )}
             </div>
