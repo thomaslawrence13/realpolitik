@@ -8,12 +8,15 @@ type Props = {
   datasetVersion: string;
   countryCount: number;
   liveDataStatus: 'loading' | 'live' | 'error';
+  onRetryLiveData: () => void;
   leftOpen: boolean;
   rightOpen: boolean;
   drawerOpen: boolean;
+  helpOpen: boolean;
   onToggleLeft: () => void;
   onToggleRight: () => void;
   onToggleDrawer: () => void;
+  onToggleHelp: () => void;
   isPlaying: boolean;
   onTogglePlay: () => void;
   activeEventCount: number;
@@ -27,12 +30,15 @@ export function TopBar({
   datasetVersion,
   countryCount,
   liveDataStatus,
+  onRetryLiveData,
   leftOpen,
   rightOpen,
   drawerOpen,
+  helpOpen,
   onToggleLeft,
   onToggleRight,
   onToggleDrawer,
+  onToggleHelp,
   isPlaying,
   onTogglePlay,
   activeEventCount,
@@ -64,6 +70,11 @@ export function TopBar({
             >
               {liveDataStatus === 'live' ? 'live data' : liveDataStatus === 'error' ? 'static data' : 'updating…'}
             </span>
+            {liveDataStatus === 'error' && (
+              <button type="button" className="live-status-retry" onClick={onRetryLiveData}>
+                Retry
+              </button>
+            )}
           </span>
         </div>
       </div>
@@ -153,6 +164,9 @@ export function TopBar({
         </IconButton>
         <IconButton label="Toggle inspector (])" active={rightOpen} onClick={onToggleRight}>
           <SvgIcon.PanelRight />
+        </IconButton>
+        <IconButton label="Keyboard shortcuts (?)" active={helpOpen} onClick={onToggleHelp}>
+          <SvgIcon.Info />
         </IconButton>
       </div>
     </header>
