@@ -61,9 +61,13 @@ const fillModeOptions: ReadonlyArray<{ value: MapFillMode; label: string; hint: 
   { value: 'confidence', label: 'Confidence', hint: 'Brighter = higher confidence' },
   { value: 'shift', label: 'Shift', hint: 'Highlights countries that diverge from baseline' },
   { value: 'gdpPerCapita', label: 'GDP/cap', hint: 'Choropleth by GDP per capita (USD)' },
+  { value: 'gdpGrowth', label: 'GDP Δ', hint: 'GDP growth rate — red for contraction, green for fast growth' },
+  { value: 'inflation', label: 'Inflation', hint: 'Consumer price inflation — green (low) → red (high)' },
+  { value: 'tradeOpenness', label: 'Trade', hint: 'Total trade as % of GDP — economic openness' },
   { value: 'nuclearArmed', label: 'Nuclear', hint: 'Highlight nuclear-armed states' },
   { value: 'militaryBurden', label: 'Mil.%GDP', hint: 'Military expenditure as % of GDP' },
   { value: 'regime', label: 'Regime', hint: 'Color by regime type (democracy / hybrid / authoritarian)' },
+  { value: 'conflictPressure', label: 'Conflict', hint: 'Indicator-based conflict pressure (low / medium / high)' },
 ];
 
 // Risk gradient: low (green) → medium (amber) → high (red).
@@ -134,6 +138,50 @@ const regimeTypeColor: Record<RegimeType, string> = {
   authoritarian: '#f87171',
 };
 
+// GDP growth: diverging — contraction (red) → 0 % (neutral) → fast growth (green).
+const GROWTH_NEG  = '#f87171';
+const GROWTH_ZERO = '#334155';
+const GROWTH_POS  = '#34d399';
+const gdpGrowthColor = (growthPct: number | undefined): string => {
+  if (growthPct == null) return NEUTRAL;
+  if (growthPct < 0) {
+    const t = Math.max(0, Math.min(1, -growthPct / 6)); // saturates at −6 %
+    return lerpColor(GROWTH_ZERO, GROWTH_NEG, t);
+  }
+  const t = Math.max(0, Math.min(1, growthPct / 8)); // saturates at +8 %
+  return lerpColor(GROWTH_ZERO, GROWTH_POS, t);
+};
+
+// Inflation: low (cool green) → moderate (amber) → high (hot red).
+const INFL_LOW  = '#34d399';
+const INFL_MED  = '#fbbf24';
+const INFL_HIGH = '#f87171';
+const inflationColor = (inflPct: number | undefined): string => {
+  if (inflPct == null) return NEUTRAL;
+  const t = Math.max(0, Math.min(1, inflPct / 20)); // saturates at 20 %
+  if (t < 0.25) return lerpColor(INFL_LOW, INFL_MED, t * 4);
+  return lerpColor(INFL_MED, INFL_HIGH, Math.min(1, (t - 0.25) * (1 / 0.75)));
+};
+
+// Trade openness: navy (closed) → bright sky-blue (very open, > 150 % GDP).
+const TRADE_LOW  = '#1e3a5f';
+const TRADE_HIGH = '#38bdf8';
+const tradeOpennessColor = (tradePct: number | undefined): string => {
+  if (tradePct == null) return NEUTRAL;
+  const t = Math.max(0, Math.min(1, tradePct / 150));
+  return lerpColor(TRADE_LOW, TRADE_HIGH, t);
+};
+
+// Conflict pressure tier: three-stop scale.
+const CONFLICT_LOW  = '#34d399';
+const CONFLICT_MED  = '#fbbf24';
+const CONFLICT_HIGH = '#f87171';
+const conflictPressureColor: Record<string, string> = {
+  low:    CONFLICT_LOW,
+  medium: CONFLICT_MED,
+  high:   CONFLICT_HIGH,
+};
+
 type FillResolverArgs = {
   simulated: SimulatedCountry;
   baseline?: SimulatedCountry;
@@ -146,9 +194,14 @@ const resolveFill = (mode: MapFillMode, args: FillResolverArgs): string => {
   if (mode === 'risk') return riskColor(simulated.risk);
   if (mode === 'confidence') return confidenceColor(simulated.confidence);
   if (mode === 'gdpPerCapita') return gdpPerCapitaColor(simulated.profile.economicStats?.gdpPerCapitaUsd);
+  if (mode === 'gdpGrowth') return gdpGrowthColor(simulated.profile.economicStats?.gdpGrowthPct);
+  if (mode === 'inflation') return inflationColor(simulated.profile.economicStats?.inflationPct);
+  if (mode === 'tradeOpenness') return tradeOpennessColor(simulated.profile.economicStats?.tradeGdpPct);
   if (mode === 'nuclearArmed') return nuclearArmedColor(simulated.profile.militaryStats?.nuclearArmed);
   if (mode === 'militaryBurden') return militaryBurdenColor(simulated.profile.militaryStats?.militaryExpGdpPct);
   if (mode === 'regime') return regimeTypeColor[simulated.profile.regimeType];
+  if (mode === 'conflictPressure')
+    return conflictPressureColor[simulated.profile.indicators.conflictPressure] ?? NEUTRAL;
   // shift: highlight countries whose risk or alignment diverged from baseline.
   if (!baseline) return alignmentColor[simulated.alignment];
   const alignmentChanged = simulated.alignment !== baseline.alignment;
@@ -575,6 +628,29 @@ export function MapCanvas({
                   />
                 </g>
               ))}
+
+            {/* Country name labels — visible when zoomed in beyond 2.5× */}
+            {zoom >= 2.5 && Array.from(countryCentroids.entries()).map(([name, [cx, cy]]) => {
+              const isParameterized = byName.has(name);
+              if (!isParameterized) return null;
+              return (
+                <text
+                  key={`label-${name}`}
+                  x={cx}
+                  y={cy}
+                  fontSize={4.5 * invZoom}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill="rgba(248,250,252,0.9)"
+                  stroke="rgba(5,9,18,0.6)"
+                  strokeWidth={0.8 * invZoom}
+                  paintOrder="stroke"
+                  style={{ pointerEvents: 'none', fontWeight: 600, letterSpacing: '0.01em' }}
+                >
+                  {name}
+                </text>
+              );
+            })}
           </g>
         </svg>
 
@@ -611,6 +687,24 @@ export function MapCanvas({
                   ${hovered.profile.economicStats.gdpPerCapitaUsd.toLocaleString()}
                 </span>
               )}
+              {fillMode === 'gdpGrowth' && hovered.profile.economicStats?.gdpGrowthPct != null && (
+                <span>
+                  <em>Growth</em>
+                  {hovered.profile.economicStats.gdpGrowthPct > 0 ? '+' : ''}{hovered.profile.economicStats.gdpGrowthPct.toFixed(1)}%
+                </span>
+              )}
+              {fillMode === 'inflation' && hovered.profile.economicStats?.inflationPct != null && (
+                <span>
+                  <em>Inflation</em>
+                  {hovered.profile.economicStats.inflationPct.toFixed(1)}%
+                </span>
+              )}
+              {fillMode === 'tradeOpenness' && hovered.profile.economicStats?.tradeGdpPct != null && (
+                <span>
+                  <em>Trade/GDP</em>
+                  {Math.round(hovered.profile.economicStats.tradeGdpPct)}%
+                </span>
+              )}
               {fillMode === 'nuclearArmed' && hovered.profile.militaryStats && (
                 <span>
                   <em>Nuclear</em>
@@ -627,6 +721,12 @@ export function MapCanvas({
                 <span>
                   <em>Regime</em>
                   {hovered.profile.regimeType.charAt(0).toUpperCase() + hovered.profile.regimeType.slice(1)}
+                </span>
+              )}
+              {fillMode === 'conflictPressure' && (
+                <span>
+                  <em>Conflict</em>
+                  {hovered.profile.indicators.conflictPressure.charAt(0).toUpperCase() + hovered.profile.indicators.conflictPressure.slice(1)}
                 </span>
               )}
             </div>
@@ -656,32 +756,20 @@ export function MapCanvas({
               </span>
             ))}
           {fillMode === 'risk' && (
-            <>
-              <span className="legend-chip">
-                <i style={{ background: RISK_LOW }} aria-hidden />
-                Low
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${RISK_LOW}, ${RISK_MED}, ${RISK_HIGH})` }} />
+              <span className="legend-gradient-labels">
+                <span>Low</span><span>Medium</span><span>High</span>
               </span>
-              <span className="legend-chip">
-                <i style={{ background: RISK_MED }} aria-hidden />
-                Medium
-              </span>
-              <span className="legend-chip">
-                <i style={{ background: RISK_HIGH }} aria-hidden />
-                High
-              </span>
-            </>
+            </span>
           )}
           {fillMode === 'confidence' && (
-            <>
-              <span className="legend-chip">
-                <i style={{ background: '#1e3a8a' }} aria-hidden />
-                Low
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, #1e3a8a, #67e8f9)` }} />
+              <span className="legend-gradient-labels">
+                <span>Low</span><span>High</span>
               </span>
-              <span className="legend-chip">
-                <i style={{ background: '#67e8f9' }} aria-hidden />
-                High
-              </span>
-            </>
+            </span>
           )}
           {fillMode === 'shift' && (
             <>
@@ -704,20 +792,36 @@ export function MapCanvas({
             </>
           )}
           {fillMode === 'gdpPerCapita' && (
-            <>
-              <span className="legend-chip">
-                <i style={{ background: GDP_POOR }} aria-hidden />
-                &lt; $1 K
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${GDP_POOR}, ${GDP_MID}, ${GDP_RICH})` }} />
+              <span className="legend-gradient-labels">
+                <span>&lt; $1 K</span><span>~$10 K</span><span>&gt; $100 K</span>
               </span>
-              <span className="legend-chip">
-                <i style={{ background: GDP_MID }} aria-hidden />
-                ~$10 K
+            </span>
+          )}
+          {fillMode === 'gdpGrowth' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${GROWTH_NEG}, ${GROWTH_ZERO}, ${GROWTH_POS})` }} />
+              <span className="legend-gradient-labels">
+                <span>−6%</span><span>0%</span><span>+8%</span>
               </span>
-              <span className="legend-chip">
-                <i style={{ background: GDP_RICH }} aria-hidden />
-                &gt; $100 K
+            </span>
+          )}
+          {fillMode === 'inflation' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${INFL_LOW}, ${INFL_MED}, ${INFL_HIGH})` }} />
+              <span className="legend-gradient-labels">
+                <span>Low</span><span>~5%</span><span>20%+</span>
               </span>
-            </>
+            </span>
+          )}
+          {fillMode === 'tradeOpenness' && (
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${TRADE_LOW}, ${TRADE_HIGH})` }} />
+              <span className="legend-gradient-labels">
+                <span>Closed</span><span>Open (150%+ GDP)</span>
+              </span>
+            </span>
           )}
           {fillMode === 'nuclearArmed' && (
             <>
@@ -732,20 +836,12 @@ export function MapCanvas({
             </>
           )}
           {fillMode === 'militaryBurden' && (
-            <>
-              <span className="legend-chip">
-                <i style={{ background: MIL_LOW }} aria-hidden />
-                Low (&lt; 1%)
+            <span className="legend-gradient-bar">
+              <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${MIL_LOW}, ${MIL_HIGH})` }} />
+              <span className="legend-gradient-labels">
+                <span>&lt; 1%</span><span>5%+ GDP</span>
               </span>
-              <span className="legend-chip">
-                <i style={{ background: lerpColor(MIL_LOW, MIL_HIGH, 0.5) }} aria-hidden />
-                ~2.5%
-              </span>
-              <span className="legend-chip">
-                <i style={{ background: MIL_HIGH }} aria-hidden />
-                High (5%+)
-              </span>
-            </>
+            </span>
           )}
           {fillMode === 'regime' && (
             <>
@@ -760,6 +856,22 @@ export function MapCanvas({
               <span className="legend-chip">
                 <i style={{ background: regimeTypeColor.authoritarian }} aria-hidden />
                 Authoritarian
+              </span>
+            </>
+          )}
+          {fillMode === 'conflictPressure' && (
+            <>
+              <span className="legend-chip">
+                <i style={{ background: CONFLICT_LOW }} aria-hidden />
+                Low
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: CONFLICT_MED }} aria-hidden />
+                Medium
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: CONFLICT_HIGH }} aria-hidden />
+                High
               </span>
             </>
           )}

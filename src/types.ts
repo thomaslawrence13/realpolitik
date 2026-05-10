@@ -10,9 +10,13 @@ export type MapFillMode =
   | 'confidence'
   | 'shift'
   | 'gdpPerCapita'
+  | 'gdpGrowth'
+  | 'inflation'
+  | 'tradeOpenness'
   | 'nuclearArmed'
   | 'militaryBurden'
-  | 'regime';
+  | 'regime'
+  | 'conflictPressure';
 
 export interface DatasetSource {
   id: string;

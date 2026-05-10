@@ -999,6 +999,31 @@ input[type='range']::-moz-range-thumb {
   border-radius: var(--r-pill);
 }
 
+/* Continuous gradient scale bar for numeric choropleth fill modes */
+.legend-gradient-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.35rem 0.55rem;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  min-width: 160px;
+}
+
+.legend-gradient-swatch {
+  display: block;
+  height: 8px;
+  border-radius: var(--r-pill);
+}
+
+.legend-gradient-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.66rem;
+  color: var(--text-3);
+}
+
 .map-overlay-toggle {
   position: absolute;
   top: 1rem;
