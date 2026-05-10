@@ -131,6 +131,15 @@ const alignmentColor: Record<Alignment, string> = {
 const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
 
 const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 1080;
+const isWelcomeDismissed = () => {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.localStorage.getItem(WELCOME_DISMISSED_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
 const markWelcomeDismissed = () => {
   if (typeof window === 'undefined') return;
   try {
@@ -173,10 +182,7 @@ export default function App() {
     persisted?.comparisonScenarioId ?? null,
   );
   const [helpOpen, setHelpOpen] = useState(false);
-  const [welcomeOpen, setWelcomeOpen] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem(WELCOME_DISMISSED_KEY) !== '1';
-  });
+  const [welcomeOpen, setWelcomeOpen] = useState<boolean>(() => !isWelcomeDismissed());
   const [importError, setImportError] = useState<string | null>(null);
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>('idle');
   const [pendingDelete, setPendingDelete] = useState<SavedScenario | null>(null);
@@ -204,7 +210,7 @@ export default function App() {
       .catch(() => {
         if (!controller.signal.aborted) setLiveDataStatus('error');
       });
-  }, []);
+  }, [countryProfiles]);
 
   useEffect(() => {
     loadLiveData();
