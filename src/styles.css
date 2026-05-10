@@ -2821,3 +2821,323 @@ input[type='range']::-moz-range-thumb {
   line-height: 1.5;
   margin: 0;
 }
+
+/* ----------------------------------------------------------------------------
+ * Scenario history v2 — toolbar, CRUD actions, and compare/rename UI
+ * ------------------------------------------------------------------------- */
+.history-wrap {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.history-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.7rem;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.history-toolbar-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.history-toolbar-meta strong {
+  font-size: 0.85rem;
+  color: var(--text-1);
+}
+
+.history-toolbar-meta span {
+  font-size: 0.74rem;
+  color: var(--text-4);
+}
+
+.history-toolbar-actions {
+  display: inline-flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  padding: 0.32rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.history-import-error {
+  padding: 0.6rem 0.85rem;
+}
+
+.history-card-compare {
+  border-color: var(--accent-line);
+  box-shadow: 0 0 0 1px var(--accent-line) inset;
+}
+
+.history-rename-trigger {
+  background: transparent;
+  border: 1px dashed transparent;
+  border-radius: var(--r-sm);
+  padding: 0.05rem 0.3rem;
+  margin: -0.05rem -0.3rem;
+  cursor: text;
+  color: inherit;
+  text-align: left;
+}
+
+.history-rename-trigger strong {
+  font-size: 0.88rem;
+  color: var(--text-1);
+}
+
+.history-rename-trigger:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+
+.history-rename-input {
+  font: inherit;
+  color: var(--text-1);
+  background: var(--surface-2);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-sm);
+  padding: 0.15rem 0.4rem;
+  outline: none;
+  min-width: 0;
+  flex: 1;
+}
+
+.history-card-actions {
+  display: inline-flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.history-card-actions .btn {
+  flex: 0 1 auto;
+}
+
+.history-delete-btn {
+  margin-left: auto;
+  padding: 0.3rem 0.45rem;
+  color: var(--text-3);
+}
+
+.history-delete-btn:hover {
+  color: var(--risk-high);
+  border-color: var(--risk-high);
+}
+
+/* ----------------------------------------------------------------------------
+ * Comparison panel inside the inspector
+ * ------------------------------------------------------------------------- */
+.comparison-section {
+  border-top: 1px solid var(--border);
+  padding-top: 0.85rem;
+  margin-top: 0.3rem;
+}
+
+.comparison-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.55rem;
+}
+
+.comparison-header .section-title {
+  margin-bottom: 0.15rem;
+}
+
+.comparison-sub {
+  margin: 0;
+  font-size: 0.74rem;
+  color: var(--text-4);
+  line-height: 1.4;
+}
+
+.comparison-rows {
+  display: grid;
+  gap: 0.3rem;
+  background: var(--surface-1);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-md);
+  padding: 0.55rem 0.7rem;
+}
+
+.comparison-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+}
+
+.comparison-row-label {
+  color: var(--text-3);
+}
+
+.comparison-row-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.comparison-gap {
+  font-style: normal;
+  font-size: 0.7rem;
+  color: var(--text-4);
+  font-weight: 500;
+}
+
+.comparison-gap-up {
+  color: var(--risk-high);
+}
+
+.comparison-gap-down {
+  color: var(--risk-low);
+}
+
+.alignment-pill-sm {
+  font-size: 0.72rem;
+  padding: 0.12rem 0.5rem;
+}
+
+/* ----------------------------------------------------------------------------
+ * Modal (shortcuts help)
+ * ------------------------------------------------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(2, 6, 23, 0.62);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: modal-fade 120ms ease-out;
+}
+
+@keyframes modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  width: min(560px, 100%);
+  max-height: min(80vh, 720px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 1rem 1.2rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+  color: var(--text-1);
+}
+
+.modal-header p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-3);
+}
+
+.modal-close {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-3);
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: var(--text-1);
+  border-color: var(--border-strong);
+}
+
+.modal-body {
+  padding: 0.85rem 1.2rem 1.1rem;
+  overflow-y: auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.shortcuts-group h3 {
+  margin: 0 0 0.45rem;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-4);
+}
+
+.shortcuts-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.shortcuts-group li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.82rem;
+  color: var(--text-2);
+  padding: 0.3rem 0.5rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+
+.shortcut-keys {
+  display: inline-flex;
+  gap: 0.3rem;
+  min-width: 90px;
+}
+
+.shortcut-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  padding: 0.05rem 0.4rem;
+  font-family: 'SF Mono', ui-monospace, 'Cascadia Code', Menlo, monospace;
+  font-size: 0.72rem;
+  color: var(--accent-hi);
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: var(--r-sm);
+}
+
+.shortcut-desc {
+  color: var(--text-2);
+}

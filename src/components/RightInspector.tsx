@@ -28,6 +28,9 @@ type Props = {
   tab: InspectorTab;
   onTabChange: (tab: InspectorTab) => void;
   onSelectRelated: (mapName: string) => void;
+  comparisonSelected: SimulatedCountry | null;
+  comparisonScenarioName: string | null;
+  onClearComparison: () => void;
 };
 
 const formatPercent = (value: number) => `${value}%`;
@@ -73,6 +76,9 @@ export function RightInspector({
   tab,
   onTabChange,
   onSelectRelated,
+  comparisonSelected,
+  comparisonScenarioName,
+  onClearComparison,
 }: Props) {
   const alignmentChanged = selected.alignment !== baselineSelected.alignment;
 
@@ -124,6 +130,9 @@ export function RightInspector({
             alignmentChanged={alignmentChanged}
             alignmentColor={alignmentColor}
             alignmentLabel={alignmentLabel}
+            comparisonSelected={comparisonSelected}
+            comparisonScenarioName={comparisonScenarioName}
+            onClearComparison={onClearComparison}
           />
         )}
 
@@ -154,6 +163,9 @@ function OverviewPanel({
   alignmentChanged,
   alignmentColor,
   alignmentLabel,
+  comparisonSelected,
+  comparisonScenarioName,
+  onClearComparison,
 }: {
   selected: SimulatedCountry;
   baselineSelected: SimulatedCountry;
@@ -162,6 +174,9 @@ function OverviewPanel({
   alignmentChanged: boolean;
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
+  comparisonSelected: SimulatedCountry | null;
+  comparisonScenarioName: string | null;
+  onClearComparison: () => void;
 }) {
   return (
     <div className="panel-stack">
@@ -264,6 +279,98 @@ function OverviewPanel({
             size="sm"
           />
         </div>
+      </div>
+
+      {comparisonSelected && comparisonScenarioName && (
+        <ComparisonSection
+          comparisonSelected={comparisonSelected}
+          comparisonScenarioName={comparisonScenarioName}
+          activeSelected={selected}
+          alignmentColor={alignmentColor}
+          alignmentLabel={alignmentLabel}
+          onClearComparison={onClearComparison}
+        />
+      )}
+    </div>
+  );
+}
+
+function ComparisonSection({
+  comparisonSelected,
+  comparisonScenarioName,
+  activeSelected,
+  alignmentColor,
+  alignmentLabel,
+  onClearComparison,
+}: {
+  comparisonSelected: SimulatedCountry;
+  comparisonScenarioName: string;
+  activeSelected: SimulatedCountry;
+  alignmentColor: Record<Alignment, string>;
+  alignmentLabel: Record<Alignment, string>;
+  onClearComparison: () => void;
+}) {
+  const riskGap = activeSelected.risk - comparisonSelected.risk;
+  const confidenceGap = activeSelected.confidence - comparisonSelected.confidence;
+  return (
+    <div className="section comparison-section">
+      <header className="comparison-header">
+        <div>
+          <h3 className="section-title">Comparison · {comparisonScenarioName}</h3>
+          <p className="comparison-sub">
+            How this country fares in the pinned saved scenario versus the active scenario.
+          </p>
+        </div>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={onClearComparison}>
+          Clear
+        </button>
+      </header>
+
+      <div className="comparison-rows">
+        <div className="comparison-row">
+          <span className="comparison-row-label">Alignment</span>
+          <span
+            className="alignment-pill alignment-pill-sm"
+            style={{
+              color: alignmentColor[comparisonSelected.alignment],
+              borderColor: `${alignmentColor[comparisonSelected.alignment]}55`,
+              background: `${alignmentColor[comparisonSelected.alignment]}14`,
+            }}
+          >
+            <i style={{ background: alignmentColor[comparisonSelected.alignment] }} aria-hidden />
+            {alignmentLabel[comparisonSelected.alignment]}
+          </span>
+        </div>
+        <div className="comparison-row">
+          <span className="comparison-row-label">Risk</span>
+          <strong className="comparison-row-value">
+            {comparisonSelected.risk}%
+            <em className={`comparison-gap ${riskGap > 0 ? 'comparison-gap-up' : riskGap < 0 ? 'comparison-gap-down' : ''}`}>
+              active {riskGap > 0 ? '+' : ''}{riskGap}
+            </em>
+          </strong>
+        </div>
+        <div className="comparison-row">
+          <span className="comparison-row-label">Confidence</span>
+          <strong className="comparison-row-value">
+            {comparisonSelected.confidence}%
+            <em className={`comparison-gap ${confidenceGap > 0 ? 'comparison-gap-up' : confidenceGap < 0 ? 'comparison-gap-down' : ''}`}>
+              active {confidenceGap > 0 ? '+' : ''}{confidenceGap}
+            </em>
+          </strong>
+        </div>
+        {(['blocA', 'blocB', 'nonAligned'] as const).map((key) => (
+          <div key={key} className="comparison-row">
+            <span className="comparison-row-label">P({alignmentLabel[key as Alignment]})</span>
+            <strong className="comparison-row-value">
+              {comparisonSelected.probabilities[key]}%
+              <em className="comparison-gap">
+                active {activeSelected.probabilities[key] > comparisonSelected.probabilities[key] ? '+' : ''}
+                {activeSelected.probabilities[key] - comparisonSelected.probabilities[key]}
+              </em>
+            </strong>
+          </div>
+        ))}
       </div>
     </div>
   );
