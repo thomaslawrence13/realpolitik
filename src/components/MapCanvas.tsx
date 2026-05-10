@@ -146,18 +146,23 @@ const regimeTypeColor: Record<RegimeType, string> = {
 };
 
 // GDP growth: diverging — contraction (red) → 0 % (neutral) → fast growth (green).
+// Scale saturates symmetrically at ±8 % to keep the gradient comparable across directions.
 const GROWTH_NEG  = '#f87171';
 const GROWTH_ZERO = '#334155';
 const GROWTH_POS  = '#34d399';
+const GROWTH_SATURATION_PCT = 8; // ± % at which the gradient is fully saturated
 const gdpGrowthColor = (growthPct: number | undefined): string => {
   if (growthPct == null) return NEUTRAL;
   if (growthPct < 0) {
-    const t = Math.max(0, Math.min(1, -growthPct / 6)); // saturates at −6 %
+    const t = Math.max(0, Math.min(1, -growthPct / GROWTH_SATURATION_PCT));
     return lerpColor(GROWTH_ZERO, GROWTH_NEG, t);
   }
-  const t = Math.max(0, Math.min(1, growthPct / 8)); // saturates at +8 %
+  const t = Math.max(0, Math.min(1, growthPct / GROWTH_SATURATION_PCT));
   return lerpColor(GROWTH_ZERO, GROWTH_POS, t);
 };
+
+/** Format a GDP growth percentage for display (e.g. "+3.1%" or "−1.4%"). */
+const formatGrowthPct = (pct: number) => `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`;
 
 // Inflation: low (cool green) → moderate (amber) → high (hot red).
 const INFL_LOW  = '#34d399';
@@ -701,7 +706,7 @@ export function MapCanvas({
               {fillMode === 'gdpGrowth' && hovered.profile.economicStats?.gdpGrowthPct != null && (
                 <span>
                   <em>Growth</em>
-                  {(() => { const g = hovered.profile.economicStats!.gdpGrowthPct; return `${g > 0 ? '+' : ''}${g.toFixed(1)}%`; })()}
+                  {formatGrowthPct(hovered.profile.economicStats.gdpGrowthPct)}
                 </span>
               )}
               {fillMode === 'inflation' && hovered.profile.economicStats?.inflationPct != null && (
@@ -814,7 +819,7 @@ export function MapCanvas({
             <span className="legend-gradient-bar">
               <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${GROWTH_NEG}, ${GROWTH_ZERO}, ${GROWTH_POS})` }} />
               <span className="legend-gradient-labels">
-                <span>−6%</span><span>0%</span><span>+8%</span>
+                <span>−8%</span><span>0%</span><span>+8%</span>
               </span>
             </span>
           )}
