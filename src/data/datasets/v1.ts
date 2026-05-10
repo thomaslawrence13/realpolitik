@@ -2520,7 +2520,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       sourceCoverage: 45,
       lastUpdated: '2026-05-10',
       sourceIds: ['ucdp', 'vdem', 'iiss-military-balance', 'csis-sanctions'],
-      assumptions: ['SAF-RSF civil war has created one of the world worst humanitarian crises.', 'External actors including UAE, Russia, and Egypt back competing factions, prolonging the conflict.'],
+      assumptions: ["SAF-RSF civil war has created one of the world's worst humanitarian crises.", 'External actors including UAE, Russia, and Egypt back competing factions, prolonging the conflict.'],
       indicators: {
         militaryTreatyLevel: 'low',
         tradeExposure: 'low',
