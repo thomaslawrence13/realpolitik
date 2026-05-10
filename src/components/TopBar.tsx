@@ -11,9 +11,11 @@ type Props = {
   leftOpen: boolean;
   rightOpen: boolean;
   drawerOpen: boolean;
+  helpOpen: boolean;
   onToggleLeft: () => void;
   onToggleRight: () => void;
   onToggleDrawer: () => void;
+  onToggleHelp: () => void;
   isPlaying: boolean;
   onTogglePlay: () => void;
   activeEventCount: number;
@@ -30,9 +32,11 @@ export function TopBar({
   leftOpen,
   rightOpen,
   drawerOpen,
+  helpOpen,
   onToggleLeft,
   onToggleRight,
   onToggleDrawer,
+  onToggleHelp,
   isPlaying,
   onTogglePlay,
   activeEventCount,
@@ -153,6 +157,9 @@ export function TopBar({
         </IconButton>
         <IconButton label="Toggle inspector (])" active={rightOpen} onClick={onToggleRight}>
           <SvgIcon.PanelRight />
+        </IconButton>
+        <IconButton label="Keyboard shortcuts (?)" active={helpOpen} onClick={onToggleHelp}>
+          <SvgIcon.Info />
         </IconButton>
       </div>
     </header>

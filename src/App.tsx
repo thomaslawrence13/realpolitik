@@ -701,9 +701,11 @@ export default function App() {
         leftOpen={leftOpen}
         rightOpen={rightOpen}
         drawerOpen={drawerOpen}
+        helpOpen={helpOpen}
         onToggleLeft={() => setLeftOpen((value) => !value)}
         onToggleRight={() => setRightOpen((value) => !value)}
         onToggleDrawer={() => setDrawerOpen((value) => !value)}
+        onToggleHelp={() => setHelpOpen((value) => !value)}
         isPlaying={isPlaying}
         onTogglePlay={handleTogglePlay}
         activeEventCount={activeEventIds.length}
