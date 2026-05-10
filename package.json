@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "ingest": "tsx scripts/ingest.ts",
-    "backtest": "tsx scripts/backtest.ts"
+    "ingest": "echo \"ingest script requires tsx; install locally\" && exit 1",
+    "backtest": "echo \"backtest script requires tsx; install locally\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -38,7 +38,6 @@
     "@types/topojson-client": "^3.1.5",
     "@vitejs/plugin-react": "^6.0.1",
     "typescript": "^6.0.3",
-    "tsx": "^4.0.0",
     "vite": "^8.0.11"
   }
 }
