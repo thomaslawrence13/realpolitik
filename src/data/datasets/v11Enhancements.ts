@@ -690,7 +690,7 @@ export const v11Enhancements: Record<string, CountryV11Enhancement> = {
       { mineral: 'nickel', role: 'producer', globalSharePct: 2 },
       { mineral: 'copper', role: 'producer', globalSharePct: 0.5 },
     ],
-    softPower: { reachScore: 35, inboundStudentsThousands: 8, globalLanguageHost: false, notes: 'Peace process diplomacy; coca coca-leaf narrative.' },
+    softPower: { reachScore: 35, inboundStudentsThousands: 8, globalLanguageHost: false, notes: 'Peace process diplomacy; coca-leaf narrative.' },
   },
 
   'costa-rica': {
