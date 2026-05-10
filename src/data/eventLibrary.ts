@@ -199,6 +199,71 @@ export const eventLibrary: EventTemplate[] = [
     inputs: { sanctionShock: 25, treatyShift: 15, electionVolatility: 10 },
     regionTags: ['Eastern Asia', 'North America', 'Europe', 'Oceania'],
   },
+
+  // v11 additions — leverage cyber, fiscal, food/water, diplomatic and critical-mineral data
+  {
+    id: 'systemic-cyber-attack',
+    name: 'Systemic Cyber Attack on Critical Infrastructure',
+    category: 'compound',
+    summary:
+      'Coordinated intrusions strike power grids, financial-clearing systems, and undersea cables. Defensive-cyber-light states face cascade failures; offensive-cyber peers manage attribution disputes that risk kinetic spillover.',
+    inputs: { sanctionShock: 25, invasionPressure: 12, electionVolatility: 18 },
+    regionTags: ['Global'],
+  },
+  {
+    id: 'taiwan-semiconductor-shock',
+    name: 'Taiwan Semiconductor Supply Shock',
+    category: 'economic',
+    summary:
+      'Disruption at Taiwan fabs collapses leading-node chip supply for 6–18 months. Allied governments compete for allocations; consumer-electronics inflation spills into political volatility.',
+    inputs: { sanctionShock: 35, electionVolatility: 25, treatyShift: 10 },
+    regionTags: ['Eastern Asia', 'North America', 'Europe'],
+  },
+  {
+    id: 'hormuz-canal-closure',
+    name: 'Strait of Hormuz / Suez Canal Closure',
+    category: 'military',
+    summary:
+      'A maritime chokepoint is closed by attack or blockade. ~25% of seaborne oil and a fifth of global trade re-routes around the Cape, spiking insurance premiums and hardening import-dependent economies.',
+    inputs: { invasionPressure: 35, sanctionShock: 25, treatyShift: 10 },
+    regionTags: ['Western Asia', 'Northern Africa', 'Europe', 'Eastern Asia'],
+  },
+  {
+    id: 'water-stress-conflict',
+    name: 'Transboundary Water-Stress Conflict',
+    category: 'political',
+    summary:
+      'Compounded drought and upstream-dam disputes (GERD, Tigris-Euphrates, Indus, Mekong) push downstream states toward open friction. Domestic legitimacy of incumbents falters as water rationing bites.',
+    inputs: { invasionPressure: 18, electionVolatility: 28, coupRisk: 18 },
+    regionTags: ['Northern Africa', 'Western Asia', 'Southern Asia', 'South-Eastern Asia'],
+  },
+  {
+    id: 'sovereign-default-cascade',
+    name: 'Frontier-Market Sovereign Default Cascade',
+    category: 'economic',
+    summary:
+      'A sequence of distressed-rated sovereigns enters selective default. Bilateral and Paris-Club restructurings drag on; political legitimacy in receiving polities collapses under austerity.',
+    inputs: { sanctionShock: 28, electionVolatility: 35, coupRisk: 22 },
+    regionTags: ['Africa', 'Southern Asia', 'Americas'],
+  },
+  {
+    id: 'un-bloc-vote-realignment',
+    name: 'UN General Assembly Bloc Realignment',
+    category: 'political',
+    summary:
+      'A high-profile vote (Israel/Palestine, Russia/Ukraine, Taiwan strait) crystallizes new voting coalitions. Soft-power realignments translate into trade-and-arms reorientation over 6–24 months.',
+    inputs: { treatyShift: -10, electionVolatility: 12, sanctionShock: 8 },
+    regionTags: ['Global'],
+  },
+  {
+    id: 'cobalt-rare-earth-cartel',
+    name: 'Cobalt / Rare-Earth Producer Cartel',
+    category: 'economic',
+    summary:
+      'DRC, Indonesia, China-processing actors coordinate output ceilings on cobalt and rare-earth concentrate. Battery and defense-electronics costs spike across consuming blocs.',
+    inputs: { sanctionShock: 30, treatyShift: 8 },
+    regionTags: ['Africa', 'Eastern Asia', 'North America', 'Europe'],
+  },
 ];
 
 export const eventById = new Map(eventLibrary.map((event) => [event.id, event]));

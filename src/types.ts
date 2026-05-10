@@ -20,7 +20,19 @@ export type MapFillMode =
   | 'population'
   | 'medianAge'
   | 'energyExports'
-  | 'demographicPressure';
+  | 'demographicPressure'
+  // v11 fill modes
+  | 'cyberCapability'
+  | 'internetFreedom'
+  | 'foodImportDependence'
+  | 'waterStress'
+  | 'debtVulnerability'
+  | 'sovereignRating'
+  | 'unVotingBlocA'
+  | 'unVotingBlocB'
+  | 'criticalMineralIntensity'
+  | 'softPower'
+  | 'defensePactDensity';
 
 export interface DatasetSource {
   id: string;
@@ -113,6 +125,102 @@ export interface GeoCentroid {
   lng: number;
 }
 
+/** Cyber capability and information posture (v11). */
+export interface CyberProfile {
+  /** Offensive cyber capability tier (low / medium / high). */
+  offensiveTier: Tier;
+  /** Defensive / resilience tier (low / medium / high). */
+  defensiveTier: Tier;
+  /** Internet freedom score 0–100 (Freedom House proxy; 100 = fully free). */
+  internetFreedomScore: number;
+  /** Internet penetration rate (% of population using internet). */
+  internetPenetrationPct: number;
+  /** Whether the state mandates data localization or maintains a sovereign internet posture. */
+  dataLocalization: boolean;
+  /** Optional notes (capabilities, recent incidents, sponsoring organizations). */
+  notes?: string;
+}
+
+/** Fiscal vulnerability and sovereign credit posture (v11). */
+export interface FiscalProfile {
+  /** Sovereign credit rating tier:
+   *   investment = AAA→BBB-, speculative = BB+→B-, distressed = CCC and below. */
+  sovereignRatingTier: 'investment' | 'speculative' | 'distressed';
+  /** External debt as % of GDP. */
+  externalDebtGdpPct: number;
+  /** FX reserves expressed as months of import cover. */
+  fxReservesMonthsImports: number;
+  /** Primary balance as % of GDP (negative = deficit). */
+  primaryBalanceGdpPct?: number;
+  /** Optional notes (IMF program, recent debt restructure, currency regime). */
+  notes?: string;
+}
+
+/** Food and water security posture (v11). */
+export interface FoodWaterProfile {
+  /** Food import dependency: net food imports as % of consumption. Negative = net exporter. */
+  foodImportDependencePct: number;
+  /** Water stress index 1–5 (1 = abundant, 5 = extreme stress; WRI Aqueduct proxy). */
+  waterStressIndex: number;
+  /** Arable land per capita, hectares. */
+  arableLandHaPerCapita: number;
+  /** Whether the country is a top-20 global cereal exporter. */
+  cerealExporter: boolean;
+  /** Optional notes (climate exposure, key crops, irrigation strain). */
+  notes?: string;
+}
+
+/** Diplomatic posture: UN voting alignment, defense pacts, multilateral memberships (v11). */
+export interface DiplomaticProfile {
+  /** UN General Assembly voting agreement with bloc anchors, 0–100 scale.
+   *  blocA anchor = United States; blocB anchor = China/Russia consensus. */
+  unVotingAlignmentBlocA: number;
+  unVotingAlignmentBlocB: number;
+  /** Active defense pacts (NATO, AUKUS, CSTO, ANZUS, MDT, RIMPAC, etc.). */
+  defensePacts: string[];
+  /** Major intergovernmental memberships (BRICS, G7, G20, OECD, OPEC, ASEAN, EU, SCO, etc.). */
+  igoMemberships: string[];
+  /** Active treaty review or accession track (optional). */
+  pendingAccession?: string[];
+}
+
+/** Per-mineral role in critical-supply chains (v11). */
+export type CriticalMineralRole = 'producer' | 'processor' | 'consumer' | 'reserves';
+
+export interface CriticalMineralEntry {
+  mineral:
+    | 'lithium'
+    | 'cobalt'
+    | 'nickel'
+    | 'copper'
+    | 'rareEarths'
+    | 'gallium'
+    | 'germanium'
+    | 'graphite'
+    | 'uranium'
+    | 'platinumGroup'
+    | 'manganese'
+    | 'tungsten'
+    | 'titanium'
+    | 'phosphate'
+    | 'potash';
+  role: CriticalMineralRole;
+  /** Approximate share of global activity for this role (0–100). */
+  globalSharePct?: number;
+}
+
+/** Soft-power and cultural reach proxy (v11). */
+export interface SoftPowerProfile {
+  /** Composite reach score 0–100 (cultural exports, diaspora, language reach, education). */
+  reachScore: number;
+  /** Inbound international students (thousands, ~most-recent year). */
+  inboundStudentsThousands?: number;
+  /** Whether the official or de-facto language is a top-10 global language. */
+  globalLanguageHost: boolean;
+  /** Optional notes (BBC/CNN/Al Jazeera/CCTV reach, diaspora corridors). */
+  notes?: string;
+}
+
 export interface CountryRecord {
   id: string;
   mapName: string;
@@ -139,6 +247,18 @@ export interface CountryRecord {
   topTradePartners?: TopTradePartner[];
   /** Approximate geographic centroid. */
   geo?: GeoCentroid;
+  /** Cyber capability and information posture (v11). */
+  cyber?: CyberProfile;
+  /** Fiscal vulnerability and sovereign credit posture (v11). */
+  fiscal?: FiscalProfile;
+  /** Food and water security posture (v11). */
+  foodWater?: FoodWaterProfile;
+  /** Diplomatic posture: UN voting alignment, defense pacts, multilateral memberships (v11). */
+  diplomatic?: DiplomaticProfile;
+  /** Critical-mineral roles by mineral (v11). */
+  criticalMinerals?: CriticalMineralEntry[];
+  /** Soft-power and cultural reach proxy (v11). */
+  softPower?: SoftPowerProfile;
 }
 
 export interface RelationshipEdge {
