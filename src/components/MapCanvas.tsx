@@ -459,9 +459,10 @@ export function MapCanvas({
           }}
         >
           <defs>
+            {/* Navy ocean — saturated blue at the focus, deepening toward the edges. */}
             <radialGradient id="map-glow" cx="50%" cy="40%" r="60%">
-              <stop offset="0%" stopColor="#0e1d3a" stopOpacity="1" />
-              <stop offset="100%" stopColor="#04070d" stopOpacity="1" />
+              <stop offset="0%" stopColor="#1e3a8a" stopOpacity="1" />
+              <stop offset="100%" stopColor="#0a1f4a" stopOpacity="1" />
             </radialGradient>
             <pattern id="map-grid" width="40" height="40" patternUnits="userSpaceOnUse">
               <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148,163,184,0.05)" strokeWidth="0.5" />
