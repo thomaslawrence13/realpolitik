@@ -1,15 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type {
+  Alignment,
   EventCategory,
   EventTemplate,
   SavedScenario,
   ScenarioInputs,
+  SimulatedCountry,
   SimulationWeightSet,
   WeightSetKey,
 } from '../types';
 import { Slider, SvgIcon, Tabs } from './ui';
+import { MoversPanel } from './MoversPanel';
 
-export type DrawerTab = 'scenario' | 'feed' | 'history' | 'methodology';
+export type DrawerTab = 'scenario' | 'feed' | 'movers' | 'history' | 'methodology';
 
 export type EventFeedItem = {
   title: string;
@@ -33,6 +37,8 @@ type Props = {
   savedScenarios: SavedScenario[];
   onSaveScenario: () => void;
   onResetScenario: () => void;
+  onShareScenario: () => void;
+  shareStatus: 'idle' | 'copied' | 'error';
   onLoadScenario: (scenario: SavedScenario) => void;
   onDeleteScenario: (id: string) => void;
   onRenameScenario: (id: string, nextName: string) => void;
@@ -51,6 +57,15 @@ type Props = {
   onResizeStart: (startClientY: number) => void;
   onResizeStep: (delta: number) => void;
   onResizeTo: (edge: 'min' | 'max') => void;
+  movers: {
+    active: SimulatedCountry[];
+    baselineByName: Map<string, SimulatedCountry>;
+    comparisonByName: Map<string, SimulatedCountry> | null;
+    comparisonScenarioName: string | null;
+    onSelectCountry: (mapName: string) => void;
+    alignmentColor: Record<Alignment, string>;
+    alignmentLabel: Record<Alignment, string>;
+  };
 };
 
 export function BottomDrawer({
@@ -69,6 +84,8 @@ export function BottomDrawer({
   savedScenarios,
   onSaveScenario,
   onResetScenario,
+  onShareScenario,
+  shareStatus,
   onLoadScenario,
   onDeleteScenario,
   onRenameScenario,
@@ -87,6 +104,7 @@ export function BottomDrawer({
   onResizeStart,
   onResizeStep,
   onResizeTo,
+  movers,
 }: Props) {
   return (
     <section className={`drawer ${open ? 'drawer-open' : 'drawer-closed'}`} aria-hidden={!open}>
@@ -113,6 +131,7 @@ export function BottomDrawer({
           options={[
             { value: 'scenario', label: 'Scenario lab' },
             { value: 'feed', label: 'Events', count: activeEventIds.length > 0 ? activeEventIds.length : undefined },
+            { value: 'movers', label: 'Movers' },
             { value: 'history', label: 'History', count: savedScenarios.length },
             { value: 'methodology', label: 'Methodology' },
           ]}
@@ -135,6 +154,8 @@ export function BottomDrawer({
             weightSets={weightSets}
             onSaveScenario={onSaveScenario}
             onResetScenario={onResetScenario}
+            onShareScenario={onShareScenario}
+            shareStatus={shareStatus}
           />
         )}
 
@@ -145,6 +166,18 @@ export function BottomDrawer({
             onApply={onApplyEvent}
             onRemove={onRemoveEvent}
             scenarioFeed={eventFeed}
+          />
+        )}
+
+        {tab === 'movers' && (
+          <MoversPanel
+            active={movers.active}
+            baselineByName={movers.baselineByName}
+            comparisonByName={movers.comparisonByName}
+            comparisonScenarioName={movers.comparisonScenarioName}
+            onSelectCountry={movers.onSelectCountry}
+            alignmentColor={movers.alignmentColor}
+            alignmentLabel={movers.alignmentLabel}
           />
         )}
 
@@ -181,6 +214,8 @@ function ScenarioPanel({
   weightSets,
   onSaveScenario,
   onResetScenario,
+  onShareScenario,
+  shareStatus,
 }: {
   scenarioName: string;
   onScenarioNameChange: (v: string) => void;
@@ -192,7 +227,19 @@ function ScenarioPanel({
   weightSets: SimulationWeightSet[];
   onSaveScenario: () => void;
   onResetScenario: () => void;
+  onShareScenario: () => void;
+  shareStatus: 'idle' | 'copied' | 'error';
 }) {
+  const shareLabel: Record<'idle' | 'copied' | 'error', ReactNode> = {
+    idle: 'Share link',
+    copied: 'Copied!',
+    error: 'Copy failed',
+  };
+  const shareTitle: Record<'idle' | 'copied' | 'error', string> = {
+    idle: 'Copy a URL that opens this scenario',
+    copied: 'Link copied to clipboard',
+    error: 'Could not access the clipboard',
+  };
   return (
     <div className="scenario-panel">
       <div className="scenario-meta">
@@ -226,6 +273,14 @@ function ScenarioPanel({
           <button type="button" className="btn btn-ghost" onClick={onResetScenario}>
             <SvgIcon.Reset />
             Reset
+          </button>
+          <button
+            type="button"
+            className={`btn btn-ghost share-btn ${shareStatus !== 'idle' ? `share-btn-${shareStatus}` : ''}`}
+            onClick={onShareScenario}
+            title={shareTitle[shareStatus]}
+          >
+            {shareLabel[shareStatus]}
           </button>
           <button type="button" className="btn btn-primary" onClick={onSaveScenario}>
             Save scenario

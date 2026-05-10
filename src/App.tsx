@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
 import type { ChangeEvent, CSSProperties } from 'react';
 import {
   allianceNetworks,
   countryProfiles,
   datasetVersion,
-  getCountryByMapName,
   methodologyNotes,
   scenarioTimeline,
 } from './data/countryData';
@@ -18,14 +17,13 @@ import {
 import type {
   Alignment,
   Filters,
+  MapFillMode,
   OverlayMode,
-  RelationshipDimension,
   SavedScenario,
   ScenarioInputs,
   SimulatedCountry,
   WeightSetKey,
 } from './types';
-import { countryCentroids } from './lib/map';
 import { fetchLiveData } from './data/worldBankClient';
 import { enrichProfiles } from './data/liveEnrichment';
 import { eventLibrary, eventById } from './data/eventLibrary';
@@ -35,15 +33,22 @@ import {
   parseScenariosFile,
   savePersistedState,
 } from './lib/persistence';
+import {
+  buildShareableUrl,
+  clearHash,
+  decodeStateFromHash,
+} from './lib/urlState';
 import { TopBar } from './components/TopBar';
 import { LeftRail } from './components/LeftRail';
-import { MapCanvas } from './components/MapCanvas';
 import { RightInspector } from './components/RightInspector';
-import type { InspectorTab } from './components/RightInspector';
+import type { InspectorTab, SparklineSeries } from './components/RightInspector';
 import { BottomDrawer } from './components/BottomDrawer';
 import type { DrawerTab, EventFeedItem } from './components/BottomDrawer';
-import type { OverlayConnection } from './components/MapCanvas';
 import { ShortcutsHelp } from './components/ShortcutsHelp';
+import { UndoToast } from './components/UndoToast';
+
+// Lazy-load MapCanvas so the world-atlas TopoJSON ships in its own async chunk.
+const MapCanvas = lazy(() => import('./components/MapCanvas').then((m) => ({ default: m.MapCanvas })));
 
 const defaultFilters: Filters = {
   allianceNetwork: 'all',
@@ -120,37 +125,48 @@ const alignmentColor: Record<Alignment, string> = {
 
 const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
 
-const getRelationshipMetric = (
-  mode: RelationshipDimension,
-  relationship: { cooperation: number; hostility: number; dependency: number; deterrence: number },
-) => relationship[mode];
-
 const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 1080;
 
 const persisted = loadPersistedState();
+// URL hash beats persistence so shared links always reflect the link payload.
+const fromHash = decodeStateFromHash();
+if (fromHash) clearHash();
 
 export default function App() {
-  const [timelineIndex, setTimelineIndex] = useState(persisted?.timelineIndex ?? 0);
+  const [timelineIndex, setTimelineIndex] = useState(
+    fromHash?.timelineIndex ?? persisted?.timelineIndex ?? 0,
+  );
   const [filters, setFilters] = useState<Filters>(persisted?.filters ?? defaultFilters);
   const [search, setSearch] = useState('');
   const [selectedCountry, setSelectedCountry] = useState<string>(
-    persisted?.selectedCountry ?? 'United States of America',
+    fromHash?.selectedCountry ?? persisted?.selectedCountry ?? 'United States of America',
   );
   const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMode ?? 'cooperation');
-  const [scenarioName, setScenarioName] = useState(persisted?.scenarioName ?? 'Baseline+');
-  const [scenarioInputs, setScenarioInputs] = useState<ScenarioInputs>(
-    persisted?.scenarioInputs ?? { ...defaultScenarioInputs },
+  const [mapFillMode, setMapFillMode] = useState<MapFillMode>(persisted?.mapFillMode ?? 'alignment');
+  const [scenarioName, setScenarioName] = useState(
+    fromHash?.scenarioName ?? persisted?.scenarioName ?? 'Baseline+',
   );
-  const [weightSetKey, setWeightSetKey] = useState<WeightSetKey>(persisted?.weightSetKey ?? 'baseline');
+  const [scenarioInputs, setScenarioInputs] = useState<ScenarioInputs>(
+    fromHash?.scenarioInputs ?? persisted?.scenarioInputs ?? { ...defaultScenarioInputs },
+  );
+  const [weightSetKey, setWeightSetKey] = useState<WeightSetKey>(
+    fromHash?.weightSetKey ?? persisted?.weightSetKey ?? 'baseline',
+  );
   const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>(persisted?.savedScenarios ?? []);
-  const [activeEventIds, setActiveEventIds] = useState<string[]>(persisted?.activeEventIds ?? []);
+  const [activeEventIds, setActiveEventIds] = useState<string[]>(
+    fromHash?.activeEventIds ?? persisted?.activeEventIds ?? [],
+  );
   const [comparisonScenarioId, setComparisonScenarioId] = useState<string | null>(
     persisted?.comparisonScenarioId ?? null,
   );
   const [helpOpen, setHelpOpen] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+  const [pendingDelete, setPendingDelete] = useState<SavedScenario | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const shareResetRef = useRef<number | null>(null);
+  const undoTimeoutRef = useRef<number | null>(null);
 
   // Live World Bank data enrichment — starts with static profiles and upgrades
   // in the background. Failures fall back silently to the static dataset.
@@ -342,42 +358,6 @@ export default function App() {
   const selectedRiskDelta = Math.round(selected.risk - baselineSelected.risk);
   const selectedConfidenceDelta = Math.round(selected.confidence - baselineSelected.confidence);
 
-  const overlayConnections = useMemo<OverlayConnection[]>(() => {
-    if (overlayMode === 'none') return [];
-    // Use the static profile (not the simulated result) so this only recomputes when the
-    // selected country or overlay mode changes — not on every scenario-slider adjustment.
-    const profile = getCountryByMapName(selectedCountry);
-    if (!profile) return [];
-    const sourceCentroid = countryCentroids.get(selectedCountry);
-    if (!sourceCentroid) return [];
-    const [sourceX, sourceY] = sourceCentroid;
-
-    return profile.relationships
-      .map((relationship) => {
-        const targetCentroid = countryCentroids.get(relationship.mapName);
-        if (!targetCentroid) return null;
-        return {
-          countryId: relationship.countryId,
-          mapName: relationship.mapName,
-          displayName: relationship.displayName,
-          score: getRelationshipMetric(overlayMode, relationship),
-          x1: sourceX,
-          y1: sourceY,
-          x2: targetCentroid[0],
-          y2: targetCentroid[1],
-        };
-      })
-      .filter((connection): connection is OverlayConnection => Boolean(connection))
-      .filter((connection) => connection.score >= 40)
-      .sort((left, right) => right.score - left.score)
-      .slice(0, 6);
-  }, [overlayMode, selectedCountry]);
-
-  const relatedNames = useMemo(
-    () => new Set(overlayConnections.map((connection) => connection.mapName)),
-    [overlayConnections],
-  );
-
   const eventFeed = useMemo<EventFeedItem[]>(() => {
     return filtered
       .slice()
@@ -404,19 +384,61 @@ export default function App() {
     [comparisonScenarioId, savedScenarios],
   );
 
-  const comparisonSelected = useMemo<SimulatedCountry | null>(() => {
-    if (!comparisonScenario) return null;
-    const profile = activeProfiles.find((entry) => entry.mapName === selectedCountry);
-    if (!profile) return null;
+  const comparisonSimulated = useMemo<SimulatedCountry[]>(() => {
+    if (!comparisonScenario) return [];
     const compEffective = computeEffectiveInputs(
       comparisonScenario.inputs,
       comparisonScenario.activeEventIds ?? [],
     );
-    return simulateCountry(profile, comparisonScenario.timelineIndex, {
-      scenarioInputs: compEffective,
-      weightSet: getSimulationWeightSet(comparisonScenario.weightSetKey),
-    });
-  }, [activeProfiles, comparisonScenario, selectedCountry]);
+    const compWeights = getSimulationWeightSet(comparisonScenario.weightSetKey);
+    return activeProfiles.map((profile) =>
+      simulateCountry(profile, comparisonScenario.timelineIndex, {
+        scenarioInputs: compEffective,
+        weightSet: compWeights,
+      }),
+    );
+  }, [activeProfiles, comparisonScenario]);
+
+  const comparisonByName = useMemo(() => {
+    if (comparisonSimulated.length === 0) return null;
+    return new Map(comparisonSimulated.map((entry) => [entry.profile.mapName, entry]));
+  }, [comparisonSimulated]);
+
+  const comparisonSelected = useMemo<SimulatedCountry | null>(() => {
+    if (!comparisonByName) return null;
+    return comparisonByName.get(selectedCountry) ?? null;
+  }, [comparisonByName, selectedCountry]);
+
+  // Per-year risk for the selected country across the full timeline. Used by the
+  // inspector sparkline. Computed only when the year-list or scenario inputs change.
+  const selectedSparkline = useMemo<SparklineSeries | null>(() => {
+    const profile = activeProfiles.find((entry) => entry.mapName === selectedCountry);
+    if (!profile) return null;
+    const active = scenarioTimeline.map((_, index) =>
+      Math.round(
+        simulateCountry(profile, index, {
+          scenarioInputs: effectiveInputs,
+          weightSet: activeWeightSet,
+          includeHistory: false,
+        }).risk,
+      ),
+    );
+    const baseline = scenarioTimeline.map((_, index) =>
+      Math.round(
+        simulateCountry(profile, index, {
+          scenarioInputs: defaultScenarioInputs,
+          weightSet: baselineWeightSet,
+          includeHistory: false,
+        }).risk,
+      ),
+    );
+    return {
+      labels: scenarioTimeline.slice(),
+      active,
+      baseline,
+      currentIndex: timelineIndex,
+    };
+  }, [activeProfiles, activeWeightSet, effectiveInputs, selectedCountry, timelineIndex]);
 
   const handleScenarioInputChange = <K extends keyof ScenarioInputs>(key: K, value: number) => {
     setScenarioInputs((current) => ({ ...current, [key]: value }));
@@ -463,9 +485,33 @@ export default function App() {
   };
 
   const deleteScenario = (id: string) => {
-    setSavedScenarios((current) => current.filter((scenario) => scenario.id !== id));
+    setSavedScenarios((current) => {
+      const target = current.find((scenario) => scenario.id === id);
+      if (target) {
+        if (undoTimeoutRef.current) window.clearTimeout(undoTimeoutRef.current);
+        // The undo toast itself dismisses after 6s and clears pendingDelete.
+        setPendingDelete(target);
+      }
+      return current.filter((scenario) => scenario.id !== id);
+    });
     setComparisonScenarioId((current) => (current === id ? null : current));
   };
+
+  const restoreDeleted = useCallback(() => {
+    setPendingDelete((current) => {
+      if (!current) return null;
+      setSavedScenarios((scenarios) =>
+        scenarios.some((scenario) => scenario.id === current.id)
+          ? scenarios
+          : [current, ...scenarios].slice(0, 24),
+      );
+      return null;
+    });
+  }, []);
+
+  const dismissPendingDelete = useCallback(() => {
+    setPendingDelete(null);
+  }, []);
 
   const renameScenario = (id: string, nextName: string) => {
     const trimmed = nextName.trim();
@@ -518,6 +564,32 @@ export default function App() {
 
   const clearComparison = () => setComparisonScenarioId(null);
 
+  const shareCurrentScenario = useCallback(async () => {
+    const url = buildShareableUrl({
+      scenarioName,
+      scenarioInputs,
+      weightSetKey,
+      activeEventIds,
+      timelineIndex,
+      selectedCountry,
+    });
+    if (shareResetRef.current) window.clearTimeout(shareResetRef.current);
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareStatus('copied');
+    } catch {
+      setShareStatus('error');
+    }
+    shareResetRef.current = window.setTimeout(() => setShareStatus('idle'), 1800);
+  }, [activeEventIds, scenarioInputs, scenarioName, selectedCountry, timelineIndex, weightSetKey]);
+
+  const handleSelectCountryFromMovers = useCallback(
+    (mapName: string) => {
+      if (byName.has(mapName)) setSelectedCountry(mapName);
+    },
+    [byName],
+  );
+
   const handleSelectFromInspector = (mapName: string) => {
     if (byName.has(mapName)) setSelectedCountry(mapName);
   };
@@ -542,6 +614,7 @@ export default function App() {
       filters,
       timelineIndex,
       overlayMode,
+      mapFillMode,
       inspectorTab,
       drawerTab,
       drawerOpen,
@@ -558,12 +631,21 @@ export default function App() {
     filters,
     timelineIndex,
     overlayMode,
+    mapFillMode,
     inspectorTab,
     drawerTab,
     drawerOpen,
     drawerHeight,
     comparisonScenarioId,
   ]);
+
+  // Cleanup the share-status timer on unmount.
+  useEffect(() => {
+    return () => {
+      if (shareResetRef.current) window.clearTimeout(shareResetRef.current);
+      if (undoTimeoutRef.current) window.clearTimeout(undoTimeoutRef.current);
+    };
+  }, []);
 
   return (
     <div
@@ -608,18 +690,21 @@ export default function App() {
         searchInputRef={searchInputRef}
       />
 
-      <MapCanvas
-        byName={byName}
-        visibleNames={visibleNames}
-        selectedName={selectedCountry}
-        onSelect={setSelectedCountry}
-        overlayMode={overlayMode}
-        onOverlayModeChange={setOverlayMode}
-        overlayConnections={overlayConnections}
-        relatedNames={relatedNames}
-        alignmentColor={alignmentColor}
-        alignmentLabel={alignmentLabel}
-      />
+      <Suspense fallback={<div className="map map-fallback" aria-busy>Loading map…</div>}>
+        <MapCanvas
+          byName={byName}
+          baselineByName={baselineByName}
+          visibleNames={visibleNames}
+          selectedName={selectedCountry}
+          onSelect={setSelectedCountry}
+          overlayMode={overlayMode}
+          onOverlayModeChange={setOverlayMode}
+          fillMode={mapFillMode}
+          onFillModeChange={setMapFillMode}
+          alignmentColor={alignmentColor}
+          alignmentLabel={alignmentLabel}
+        />
+      </Suspense>
 
       <RightInspector
         open={rightOpen}
@@ -638,6 +723,7 @@ export default function App() {
         comparisonSelected={comparisonSelected}
         comparisonScenarioName={comparisonScenario?.name ?? null}
         onClearComparison={clearComparison}
+        sparkline={selectedSparkline}
       />
 
       <BottomDrawer
@@ -656,6 +742,8 @@ export default function App() {
         savedScenarios={savedScenarios}
         onSaveScenario={saveScenario}
         onResetScenario={resetScenario}
+        onShareScenario={shareCurrentScenario}
+        shareStatus={shareStatus}
         onLoadScenario={loadScenario}
         onDeleteScenario={deleteScenario}
         onRenameScenario={renameScenario}
@@ -674,6 +762,15 @@ export default function App() {
         onResizeStart={handleDrawerResizeStart}
         onResizeStep={handleDrawerResizeStep}
         onResizeTo={handleDrawerResizeTo}
+        movers={{
+          active: simulated,
+          baselineByName,
+          comparisonByName,
+          comparisonScenarioName: comparisonScenario?.name ?? null,
+          onSelectCountry: handleSelectCountryFromMovers,
+          alignmentColor,
+          alignmentLabel,
+        }}
       />
 
       <input
@@ -685,6 +782,15 @@ export default function App() {
       />
 
       <ShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+
+      {pendingDelete && (
+        <UndoToast
+          message={`Deleted “${pendingDelete.name}”`}
+          durationMs={6000}
+          onUndo={restoreDeleted}
+          onDismiss={dismissPendingDelete}
+        />
+      )}
     </div>
   );
 }

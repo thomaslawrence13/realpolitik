@@ -1,4 +1,11 @@
-import type { Filters, OverlayMode, SavedScenario, ScenarioInputs, WeightSetKey } from '../types';
+import type {
+  Filters,
+  MapFillMode,
+  OverlayMode,
+  SavedScenario,
+  ScenarioInputs,
+  WeightSetKey,
+} from '../types';
 import type { DrawerTab } from '../components/BottomDrawer';
 import type { InspectorTab } from '../components/RightInspector';
 
@@ -17,6 +24,7 @@ export interface PersistedState {
   filters: Filters;
   timelineIndex: number;
   overlayMode: OverlayMode;
+  mapFillMode: MapFillMode;
   inspectorTab: InspectorTab;
   drawerTab: DrawerTab;
   drawerOpen: boolean;
