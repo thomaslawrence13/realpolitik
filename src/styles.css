@@ -3514,3 +3514,110 @@ input[type='range']::-moz-range-thumb {
   background: var(--accent-line);
   transition: width 50ms linear;
 }
+
+/* ----------------------------------------------------------------------------
+ * Profile tab
+ * ------------------------------------------------------------------------- */
+.profile-section {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.profile-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0;
+}
+
+.profile-section-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+/* 2-column grid of stat cards */
+.profile-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.profile-stat {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0.55rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.profile-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-3);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.profile-stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.2;
+}
+
+.profile-stat-value[data-tone='positive'] { color: var(--risk-low); }
+.profile-stat-value[data-tone='negative'] { color: var(--risk-high); }
+.profile-stat-value[data-tone='neutral']  { color: var(--risk-med); }
+
+.profile-stat-sub {
+  font-size: 0.65rem;
+  color: var(--text-4);
+  font-weight: 400;
+}
+
+/* Indicators grid */
+.profile-indicator-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.profile-indicator-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.profile-indicator-key {
+  font-size: 0.78rem;
+  color: var(--text-2);
+}
+
+.profile-indicator-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--r-pill);
+  border: 1px solid currentColor;
+  white-space: nowrap;
+  background: transparent;
+}
+
+.profile-indicator-badge-neutral {
+  color: var(--text-3);
+  border-color: var(--border-strong);
+}
