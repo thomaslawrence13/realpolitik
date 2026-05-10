@@ -107,7 +107,13 @@ The project includes an off-main-thread data ingestion and backtesting pipeline 
 
 ### Ingestion
 
-Externally sourced signals (IMF, SIPRI, UN Comtrade) can be fetched and integrated into the dataset payload:
+The ingestion workflow now executes locally and writes three auditable artifacts under `src/data/datasets`:
+
+- `ingested_snapshot.json` — normalized World Bank indicator snapshot used by the pipeline
+- `ingest_manifest.json` — coverage, missingness, and newest-observation metadata per indicator
+- `raw/world_bank_latest.json` — raw provider payload preserved for audit/debugging
+
+Current automated coverage is focused on World Bank series already used by the app: military expenditure, trade openness, GDP growth, inflation, political stability, rule of law, and unemployment.
 
 ```bash
 npm run ingest

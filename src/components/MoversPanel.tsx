@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Alignment, SimulatedCountry } from '../types';
+import { summarizeCountryTrust, TrustTag } from './provenance';
 
 type MoverEntry = {
   mapName: string;
@@ -159,6 +160,7 @@ function MoversList({
           const riskClass = mover.riskDelta > 0 ? 'mover-up' : mover.riskDelta < 0 ? 'mover-down' : '';
           const confidenceClass =
             mover.confidenceDelta > 0 ? 'mover-down' : mover.confidenceDelta < 0 ? 'mover-up' : '';
+          const trust = summarizeCountryTrust(mover.active.profile);
           return (
             <li key={mover.mapName}>
               <button type="button" className="mover-row" onClick={() => onSelect(mover.mapName)}>
@@ -169,8 +171,12 @@ function MoversList({
                     aria-hidden
                   />
                   <span className="mover-name">
-                    <strong>{mover.displayName}</strong>
+                    <span className="mover-name-row">
+                      <strong>{mover.displayName}</strong>
+                      <TrustTag summary={trust} />
+                    </span>
                     <em>{mover.region}</em>
+                    <small className="mover-trust-detail">{trust.detail}</small>
                   </span>
                 </span>
                 <span className="mover-row-stats">

@@ -58,6 +58,18 @@ const selectObservation = <K extends IndicatorKey>(
 
 const dedupeReasons = (reasons: string[]) => Array.from(new Set(reasons));
 
+const classifyEvidence = (
+  method: IndicatorTelemetry['method'],
+  stale: boolean,
+  confidence: number,
+  minimumConfidence: number,
+): IndicatorTelemetry['evidenceClass'] => {
+  if (method === 'derived') return 'derived';
+  if (stale || confidence < minimumConfidence) return 'fallback';
+  if (method === 'expert-curated') return 'estimated';
+  return 'observed';
+};
+
 const setIndicatorValue = <K extends IndicatorKey>(
   indicators: CountryIndicators,
   indicator: K,
@@ -119,6 +131,7 @@ export const enrichCountryWithObservations = (
       confidence,
       stale,
       method: selected.method,
+      evidenceClass: classifyEvidence(selected.method, stale, confidence, rule.minimumConfidence),
     });
 
     if (rule.includeInCoverage) coveragePresent += 1;

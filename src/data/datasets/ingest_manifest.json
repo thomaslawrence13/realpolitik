@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-05-10T22:21:04.787Z",
+  "provider": "world-bank-open-data",
+  "requestedCountryCount": 134,
+  "indicators": [
+    {
+      "snapshotKey": "world_bank_military_expenditure_pct",
+      "code": "MS.MIL.XPND.GD.ZS",
+      "label": "Military expenditure (% of GDP)",
+      "coverageCount": 119,
+      "missingCountryCount": 15,
+      "newestObservation": "2024"
+    },
+    {
+      "snapshotKey": "world_bank_trade_pct",
+      "code": "TG.VAL.TOTL.GD.ZS",
+      "label": "Trade (% of GDP)",
+      "coverageCount": 130,
+      "missingCountryCount": 4,
+      "newestObservation": "2024"
+    },
+    {
+      "snapshotKey": "world_bank_gdp_growth",
+      "code": "NY.GDP.MKTP.KD.ZG",
+      "label": "GDP growth (annual %)",
+      "coverageCount": 130,
+      "missingCountryCount": 4,
+      "newestObservation": "2023"
+    },
+    {
+      "snapshotKey": "world_bank_inflation",
+      "code": "FP.CPI.TOTL.ZG",
+      "label": "Inflation, consumer prices (annual %)",
+      "coverageCount": 123,
+      "missingCountryCount": 11,
+      "newestObservation": "2024"
+    },
+    {
+      "snapshotKey": "world_bank_political_stability",
+      "code": "GOV_WGI_PV.EST",
+      "label": "Political stability and absence of violence",
+      "coverageCount": 133,
+      "missingCountryCount": 1,
+      "newestObservation": "2024"
+    },
+    {
+      "snapshotKey": "world_bank_rule_of_law",
+      "code": "GOV_WGI_RL.EST",
+      "label": "Rule of law",
+      "coverageCount": 133,
+      "missingCountryCount": 1,
+      "newestObservation": "2024"
+    },
+    {
+      "snapshotKey": "world_bank_unemployment",
+      "code": "SL.UEM.TOTL.ZS",
+      "label": "Unemployment, total (% of labour force)",
+      "coverageCount": 130,
+      "missingCountryCount": 4,
+      "newestObservation": "2025"
+    }
+  ]
+}

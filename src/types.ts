@@ -327,6 +327,7 @@ export interface IndicatorTelemetry {
   confidence: number;
   stale: boolean;
   method: 'api' | 'snapshot' | 'expert-curated' | 'derived';
+  evidenceClass: 'observed' | 'estimated' | 'fallback' | 'derived';
 }
 
 export interface CountryDataQuality {
@@ -355,6 +356,24 @@ export interface InformationQualityTelemetry {
   lowQualityCount: number;
   topInformationCountries: CountryInformationScore[];
   weakestInformationCountries: CountryInformationScore[];
+}
+
+export interface IngestIndicatorTelemetry {
+  snapshotKey: string;
+  code: string;
+  label: string;
+  coverageCount: number;
+  missingCountryCount: number;
+  newestObservation: string | null;
+}
+
+export interface IngestTelemetry {
+  generatedAt: string;
+  provider: string;
+  requestedCountryCount: number;
+  averageCoveragePct: number;
+  strongestIndicators: IngestIndicatorTelemetry[];
+  weakestIndicators: IngestIndicatorTelemetry[];
 }
 
 export interface ProbabilitySet {

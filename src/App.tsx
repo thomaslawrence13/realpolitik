@@ -4,6 +4,7 @@ import {
   allianceNetworks,
   countryProfiles,
   datasetVersion,
+  ingestTelemetry,
   informationQualityTelemetry,
   methodologyNotes,
   scenarioTimeline,
@@ -847,6 +848,7 @@ export default function App() {
         eventFeed={eventFeed}
         methodologyNotes={methodologyNotes}
         informationQuality={informationQualityTelemetry}
+        ingestTelemetry={ingestTelemetry}
         scenarioTimeline={scenarioTimeline}
         events={eventLibrary}
         activeEventIds={activeEventIds}
@@ -864,6 +866,7 @@ export default function App() {
           alignmentColor,
           alignmentLabel,
         }}
+        indexCountries={railCountries}
       />
 
       <input

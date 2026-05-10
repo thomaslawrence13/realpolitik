@@ -17,6 +17,7 @@ import {
 } from '../lib/map';
 import { getRiskTier } from '../simulation';
 import { IconButton, SvgIcon } from './ui';
+import { summarizeCountryTrust, TrustTag } from './provenance';
 
 // Factors used to normalize WheelEvent.deltaY across different deltaMode values
 const WHEEL_LINE_PX = 17;  // approximate pixels per "line" scroll unit
@@ -911,7 +912,10 @@ export function MapCanvas({
               top: clamp(hoverPos.y + 16, 12, (frameRef.current?.clientHeight ?? 600) - HOVER_CARD_HEIGHT),
             }}
           >
-            <strong>{hovered.profile.displayName}</strong>
+            <div className="hover-card-header">
+              <strong>{hovered.profile.displayName}</strong>
+              <TrustTag summary={summarizeCountryTrust(hovered.profile)} />
+            </div>
             <span className="hover-card-row">
               <span
                 className="hover-dot"
@@ -920,6 +924,7 @@ export function MapCanvas({
               />
               {alignmentLabel[hovered.alignment]}
             </span>
+            <span className="hover-card-provenance">{summarizeCountryTrust(hovered.profile).detail}</span>
             <div className="hover-stats">
               <span>
                 <em>Risk</em>

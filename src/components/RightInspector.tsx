@@ -5,6 +5,7 @@ import type {
   ConfidenceExplanation,
   ContributionLine,
   CountryIndicators,
+  IndicatorTelemetry,
   EconomicStats,
   MilitaryStats,
   ProbabilityExplanation,
@@ -53,6 +54,36 @@ const formatTitle = (value: string) =>
   value.length === 0 ? value : value.charAt(0).toUpperCase() + value.slice(1);
 const formatIndicatorLabel = (value: string) =>
   value.replace(/([A-Z])/g, ' $1').trim().replace(/^./, (v) => v.toUpperCase());
+const formatEvidenceClass = (value: 'observed' | 'estimated' | 'fallback' | 'derived') =>
+  value.charAt(0).toUpperCase() + value.slice(1);
+
+const getIndicatorTelemetry = (
+  selected: SimulatedCountry,
+  indicator: keyof CountryIndicators,
+): IndicatorTelemetry | null => {
+  return selected.profile.dataQuality?.indicators.find((entry) => entry.indicator === indicator) ?? null;
+};
+
+function MetricTelemetryTag({
+  entry,
+  fallbackLabel,
+}: {
+  entry?: IndicatorTelemetry | null;
+  fallbackLabel?: string;
+}) {
+  if (!entry && !fallbackLabel) return null;
+  const label = entry
+    ? `${formatEvidenceClass(entry.evidenceClass)} · ${entry.sourceId} · ${entry.observedAt}${entry.stale ? ' · stale' : ''}`
+    : fallbackLabel;
+  const tone = entry?.evidenceClass === 'fallback'
+    ? 'warning'
+    : entry?.evidenceClass === 'derived'
+      ? 'derived'
+      : entry?.evidenceClass === 'observed'
+        ? 'observed'
+        : 'neutral';
+  return <span className={`metric-telemetry-tag metric-telemetry-tag-${tone}`}>{label}</span>;
+}
 
 const riskTier = (value: number): Tier => {
   if (value >= 65) return 'high';
@@ -215,6 +246,10 @@ function OverviewPanel({
   onClearComparison: () => void;
   sparkline: SparklineSeries | null;
 }) {
+  const tradeTelemetry = getIndicatorTelemetry(selected, 'tradeExposure');
+  const regimeTelemetry = getIndicatorTelemetry(selected, 'regimeStability');
+  const cohesionTelemetry = getIndicatorTelemetry(selected, 'cohesion');
+
   return (
     <div className="panel-stack">
       <div className="overview-strip" aria-label="At a glance">
@@ -246,8 +281,22 @@ function OverviewPanel({
           tone={riskTier(selected.risk)}
           explanation={<RiskExplainer explanation={selected.explanation.risk} />}
         />
-        <MetricCard label="Source coverage" value={formatPercent(selected.profile.sourceCoverage)} />
-        <MetricCard label="Last updated" value={selected.profile.lastUpdated} size="sm" />
+        <MetricCard
+          label="Source coverage"
+          value={formatPercent(selected.profile.sourceCoverage)}
+          hint={<MetricTelemetryTag fallbackLabel="Profile coverage" />}
+        />
+        <MetricCard
+          label="Last updated"
+          value={selected.profile.lastUpdated}
+          hint={
+            <MetricTelemetryTag
+              entry={regimeTelemetry ?? cohesionTelemetry ?? tradeTelemetry}
+              fallbackLabel="Best available profile timestamp"
+            />
+          }
+          size="sm"
+        />
       </div>
 
       {sparkline && sparkline.active.length > 1 && (
@@ -378,12 +427,14 @@ function ProfileStat({
   comparisonValue,
   sub,
   tone,
+  telemetry,
 }: {
   label: string;
   value: ReactNode;
   comparisonValue?: ReactNode;
   sub?: string;
   tone?: 'positive' | 'negative' | 'neutral';
+  telemetry?: ReactNode;
 }) {
   return (
     <div className="profile-stat">
@@ -402,6 +453,7 @@ function ProfileStat({
         )}
       </div>
       {sub && <span className="profile-stat-sub">{sub}</span>}
+      {telemetry}
     </div>
   );
 }
@@ -419,6 +471,9 @@ function ProfilePanel({
   const econ = profile.economicStats;
   const mil = profile.militaryStats;
   const ind = profile.indicators;
+  const tradeTelemetry = getIndicatorTelemetry(selected, 'tradeExposure');
+  const militaryTelemetry = getIndicatorTelemetry(selected, 'militaryTreatyLevel');
+  const cohesionTelemetry = getIndicatorTelemetry(selected, 'cohesion');
 
   return (
     <div className="panel-stack">
@@ -481,6 +536,7 @@ function ProfilePanel({
             label="Trade / GDP"
             value={`${econ.tradeGdpPct}%`}
             sub="openness"
+            telemetry={<MetricTelemetryTag entry={tradeTelemetry} fallbackLabel="Curated economic snapshot" />}
           />
         </ProfileStatGrid>
       )}
@@ -497,6 +553,7 @@ function ProfilePanel({
             label="Spending / GDP"
             value={`${mil.militaryExpGdpPct}%`}
             sub="burden"
+            telemetry={<MetricTelemetryTag entry={militaryTelemetry} fallbackLabel="Curated military snapshot" />}
           />
           <ProfileStat
             label="Active personnel"
@@ -522,12 +579,18 @@ function ProfilePanel({
             .filter(([key]) => key !== 'cohesion')
             .map(([key, value]) => (
               <div key={key} className="profile-indicator-row">
-                <span className="profile-indicator-key">{formatIndicatorLabel(String(key))}</span>
+                <div className="profile-indicator-meta">
+                  <span className="profile-indicator-key">{formatIndicatorLabel(String(key))}</span>
+                  <MetricTelemetryTag entry={getIndicatorTelemetry(selected, key)} />
+                </div>
                 <IndicatorBadge value={String(value)} />
               </div>
             ))}
           <div className="profile-indicator-row">
-            <span className="profile-indicator-key">Cohesion score</span>
+            <div className="profile-indicator-meta">
+              <span className="profile-indicator-key">Cohesion score</span>
+              <MetricTelemetryTag entry={cohesionTelemetry} />
+            </div>
             <span className="profile-indicator-badge profile-indicator-badge-neutral">
               {ind.cohesion}
             </span>
@@ -557,6 +620,7 @@ function ProfilePanel({
           <ProfileStat
             label="Source coverage"
             value={`${profile.sourceCoverage}%`}
+            telemetry={<MetricTelemetryTag fallbackLabel="Profile coverage" />}
           />
           <ProfileStat
             label="Relationships"
@@ -916,7 +980,7 @@ function SourcesPanel({
                     {formatIndicatorLabel(entry.indicator)} · {entry.sourceId}
                   </span>
                   <strong>
-                    {entry.observedAt} · {Math.round(entry.confidence * 100)}%
+                    {formatEvidenceClass(entry.evidenceClass)} · {entry.observedAt} · {Math.round(entry.confidence * 100)}%
                     {entry.stale ? ' · stale' : ''}
                   </strong>
                 </li>

@@ -1,8 +1,11 @@
 import { geopoliticalDatasetV1 } from './datasets/v1';
 import { v10Enhancements } from './datasets/v10Enhancements';
 import { v11Enhancements } from './datasets/v11Enhancements';
+import ingestManifest from './datasets/ingest_manifest.json';
 import type {
   CountryIndicators,
+  IngestIndicatorTelemetry,
+  IngestTelemetry,
   CountryProfile,
   CountryInformationScore,
   CountryRelationship,
@@ -369,6 +372,7 @@ const deriveCountryDataQuality = (country: CountryRecord) => {
     confidence,
     stale,
     method: 'expert-curated',
+    evidenceClass: stale ? 'fallback' : 'estimated',
     indicator,
   }));
 
@@ -487,6 +491,33 @@ export const informationQualityTelemetry: InformationQualityTelemetry = {
   lowQualityCount: countryInformationScores.filter((c) => c.informationScore < 55).length,
   topInformationCountries: countryInformationScores.slice(0, 15),
   weakestInformationCountries: countryInformationScores.slice(-15).reverse(),
+};
+
+const ingestIndicators = ingestManifest.indicators as IngestIndicatorTelemetry[];
+
+export const ingestTelemetry: IngestTelemetry = {
+  generatedAt: ingestManifest.generatedAt,
+  provider: ingestManifest.provider,
+  requestedCountryCount: ingestManifest.requestedCountryCount,
+  averageCoveragePct:
+    ingestIndicators.length === 0
+      ? 0
+      : Math.round(
+          (ingestIndicators.reduce(
+            (sum, indicator) => sum + indicator.coverageCount / ingestManifest.requestedCountryCount,
+            0,
+          ) /
+            ingestIndicators.length) *
+            1000,
+        ) / 10,
+  strongestIndicators: ingestIndicators
+    .slice()
+    .sort((left, right) => right.coverageCount - left.coverageCount || left.label.localeCompare(right.label))
+    .slice(0, 4),
+  weakestIndicators: ingestIndicators
+    .slice()
+    .sort((left, right) => left.coverageCount - right.coverageCount || left.label.localeCompare(right.label))
+    .slice(0, 4),
 };
 
 // O(1) lookup maps for country access

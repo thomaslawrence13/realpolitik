@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent, MutableRefObject } from 'react';
 import type { Alignment, Filters, RegimeType, SimulatedCountry, Tier } from '../types';
 import { Segmented, SvgIcon } from './ui';
+import { summarizeCountryTrust, TrustTag } from './provenance';
 
 type Props = {
   open: boolean;
@@ -375,6 +376,7 @@ export function LeftRail({
               )}
               {group.items.map((country) => {
                 const isSelected = country.profile.mapName === selectedName;
+                const trust = summarizeCountryTrust(country.profile);
                 return (
                   <button
                     key={country.profile.id}
@@ -391,10 +393,14 @@ export function LeftRail({
                       aria-hidden
                     />
                     <span className="country-text">
-                      <strong className="country-name">{country.profile.displayName}</strong>
+                        <span className="country-name-row">
+                          <strong className="country-name">{country.profile.displayName}</strong>
+                          <TrustTag summary={trust} />
+                        </span>
                       <span className="country-sub">
                         {formatTitle(country.profile.region)} · {alignmentLabel[country.alignment]}
                       </span>
+                        <span className="country-trust-detail">{trust.detail}</span>
                     </span>
                     <span className={`country-risk risk-${getRiskTier(country.risk)}`}>
                       {country.risk}%

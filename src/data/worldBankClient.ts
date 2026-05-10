@@ -175,6 +175,22 @@ export type WbIndicator =
   | 'RL.EST'             // Rule of Law (WGI, –2.5 to +2.5)
   | 'SL.UEM.TOTL.ZS';   // Unemployment, total (% of labour force)
 
+const indicatorSourceId: Partial<Record<WbIndicator, string>> = {
+  // Worldwide Governance Indicators live under source 3 rather than the default WDI source.
+  'PV.EST': '3',
+  'RL.EST': '3',
+};
+
+const indicatorRequestCode: Record<WbIndicator, string> = {
+  'MS.MIL.XPND.GD.ZS': 'MS.MIL.XPND.GD.ZS',
+  'TG.VAL.TOTL.GD.ZS': 'TG.VAL.TOTL.GD.ZS',
+  'NY.GDP.MKTP.KD.ZG': 'NY.GDP.MKTP.KD.ZG',
+  'FP.CPI.TOTL.ZG': 'FP.CPI.TOTL.ZG',
+  'PV.EST': 'GOV_WGI_PV.EST',
+  'RL.EST': 'GOV_WGI_RL.EST',
+  'SL.UEM.TOTL.ZS': 'SL.UEM.TOTL.ZS',
+};
+
 interface WbDataPoint {
   country: { id: string; value: string };
   date: string;
@@ -223,7 +239,8 @@ export const fetchIndicator = async (
 
   const isoCodes = Object.values(countryIso2).join(';');
   // per_page=1000 accommodates 134 countries × 3 years = 402 rows with headroom.
-  const url = `${WB_API}/country/${isoCodes}/indicator/${indicator}?format=json&mrv=3&per_page=1000`;
+  const sourceParam = indicatorSourceId[indicator] ? `&source=${indicatorSourceId[indicator]}` : '';
+  const url = `${WB_API}/country/${isoCodes}/indicator/${indicatorRequestCode[indicator]}?format=json&mrv=3&per_page=1000${sourceParam}`;
 
   const response = await fetch(url, { signal });
   if (!response.ok) throw new Error(`World Bank API (${indicator}): HTTP ${response.status}`);

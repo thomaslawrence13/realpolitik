@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type {
   Alignment,
   EventCategory,
   EventTemplate,
+  IngestTelemetry,
   InformationQualityTelemetry,
   SavedScenario,
   ScenarioInputs,
@@ -13,8 +14,9 @@ import type {
 } from '../types';
 import { Slider, SvgIcon, Tabs } from './ui';
 import { MoversPanel } from './MoversPanel';
+import { summarizeCountryTrust, TrustTag } from './provenance';
 
-export type DrawerTab = 'scenario' | 'feed' | 'movers' | 'history' | 'methodology';
+export type DrawerTab = 'scenario' | 'feed' | 'movers' | 'index' | 'history' | 'methodology';
 
 export type EventFeedItem = {
   title: string;
@@ -51,6 +53,7 @@ type Props = {
   eventFeed: EventFeedItem[];
   methodologyNotes: string[];
   informationQuality: InformationQualityTelemetry;
+  ingestTelemetry: IngestTelemetry;
   scenarioTimeline: string[];
   events: EventTemplate[];
   activeEventIds: string[];
@@ -68,6 +71,7 @@ type Props = {
     alignmentColor: Record<Alignment, string>;
     alignmentLabel: Record<Alignment, string>;
   };
+  indexCountries: SimulatedCountry[];
 };
 
 export function BottomDrawer({
@@ -99,6 +103,7 @@ export function BottomDrawer({
   eventFeed,
   methodologyNotes,
   informationQuality,
+  ingestTelemetry,
   scenarioTimeline,
   events,
   activeEventIds,
@@ -108,6 +113,7 @@ export function BottomDrawer({
   onResizeStep,
   onResizeTo,
   movers,
+  indexCountries,
 }: Props) {
   return (
     <section className={`drawer ${open ? 'drawer-open' : 'drawer-closed'}`} aria-hidden={!open}>
@@ -135,6 +141,7 @@ export function BottomDrawer({
             { value: 'scenario', label: 'Scenario lab' },
             { value: 'feed', label: 'Events', count: activeEventIds.length > 0 ? activeEventIds.length : undefined },
             { value: 'movers', label: 'Movers' },
+            { value: 'index', label: 'Index' },
             { value: 'history', label: 'History', count: savedScenarios.length },
             { value: 'methodology', label: 'Methodology' },
           ]}
@@ -184,6 +191,8 @@ export function BottomDrawer({
           />
         )}
 
+        {tab === 'index' && <IndexPanel countries={indexCountries} />}
+
         {tab === 'history' && (
           <HistoryPanel
             scenarios={savedScenarios}
@@ -200,9 +209,121 @@ export function BottomDrawer({
           />
         )}
 
-        {tab === 'methodology' && <MethodologyPanel notes={methodologyNotes} informationQuality={informationQuality} />}
+        {tab === 'methodology' && (
+          <MethodologyPanel
+            notes={methodologyNotes}
+            informationQuality={informationQuality}
+            ingestTelemetry={ingestTelemetry}
+          />
+        )}
       </div>
     </section>
+  );
+}
+
+type IndexMetric = 'coverage' | 'confidence' | 'risk';
+
+function IndexPanel({ countries }: { countries: SimulatedCountry[] }) {
+  const [metric, setMetric] = useState<IndexMetric>('coverage');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const ranked = useMemo(() => {
+    const next = countries.slice();
+    next.sort((left, right) => {
+      if (metric === 'coverage') {
+        return right.profile.sourceCoverage - left.profile.sourceCoverage || left.profile.displayName.localeCompare(right.profile.displayName);
+      }
+      if (metric === 'confidence') {
+        return right.confidence - left.confidence || left.profile.displayName.localeCompare(right.profile.displayName);
+      }
+      return right.risk - left.risk || left.profile.displayName.localeCompare(right.profile.displayName);
+    });
+    return next;
+  }, [countries, metric]);
+
+  const compared = ranked.filter((country) => selectedIds.includes(country.profile.id)).slice(0, 2);
+
+  const toggleCountry = (countryId: string) => {
+    setSelectedIds((current) =>
+      current.includes(countryId)
+        ? current.filter((id) => id !== countryId)
+        : [...current.slice(-1), countryId],
+    );
+  };
+
+  return (
+    <div className="index-panel">
+      <div className="index-toolbar">
+        <div>
+          <strong>Factual index</strong>
+          <p className="movers-empty">Rank countries by coverage, confidence, or risk before opening the inspector.</p>
+        </div>
+        <label className="index-toolbar-field">
+          <span>Rank by</span>
+          <select value={metric} onChange={(event) => setMetric(event.target.value as IndexMetric)}>
+            <option value="coverage">Coverage</option>
+            <option value="confidence">Confidence</option>
+            <option value="risk">Risk</option>
+          </select>
+        </label>
+      </div>
+
+      <div className="index-layout">
+        <section className="index-list-section">
+          <h3 className="movers-section-title">Country rankings</h3>
+          <div className="index-list">
+            {ranked.slice(0, 24).map((country, index) => {
+              const trust = summarizeCountryTrust(country.profile);
+              return (
+                <button
+                  key={country.profile.id}
+                  type="button"
+                  className={`index-row ${selectedIds.includes(country.profile.id) ? 'index-row-active' : ''}`}
+                  onClick={() => toggleCountry(country.profile.id)}
+                >
+                  <span className="index-rank">#{index + 1}</span>
+                  <span className="index-main">
+                    <span className="index-main-row">
+                      <strong>{country.profile.displayName}</strong>
+                      <TrustTag summary={trust} />
+                    </span>
+                    <span className="index-sub">{country.profile.region} · updated {country.profile.lastUpdated}</span>
+                    <span className="index-sub">{trust.detail}</span>
+                  </span>
+                  <span className="index-score">
+                    {metric === 'coverage' ? `${country.profile.sourceCoverage}%` : metric === 'confidence' ? `${country.confidence}%` : `${country.risk}%`}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="index-compare-section">
+          <h3 className="movers-section-title">Compare countries</h3>
+          {compared.length === 0 ? (
+            <p className="movers-empty">Select up to two countries from the ranking to compare trust and core metrics.</p>
+          ) : (
+            <div className="index-compare-grid">
+              {compared.map((country) => {
+                const trust = summarizeCountryTrust(country.profile);
+                return (
+                  <article key={country.profile.id} className="methodology-priority-card">
+                    <header>
+                      <strong>{country.profile.displayName}</strong>
+                      <TrustTag summary={trust} />
+                    </header>
+                    <p>{country.profile.region} · coverage {country.profile.sourceCoverage}% · updated {country.profile.lastUpdated}</p>
+                    <p>Risk {country.risk}% · Confidence {country.confidence}% · Relationships {country.profile.relationships.length}</p>
+                    <p>{trust.detail}</p>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
   );
 }
 
@@ -672,9 +793,11 @@ function HistoryCard({
 function MethodologyPanel({
   notes,
   informationQuality,
+  ingestTelemetry,
 }: {
   notes: string[];
   informationQuality: InformationQualityTelemetry;
+  ingestTelemetry: IngestTelemetry;
 }) {
   const priorityCountries = informationQuality.weakestInformationCountries.slice(0, 8);
   return (
@@ -717,6 +840,35 @@ function MethodologyPanel({
                   ))}
                 </div>
               )}
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="scenario-meta-card">
+        <strong>Ingest coverage telemetry</strong>
+        <p className="methodology-telemetry-line">
+          Generated {new Date(ingestTelemetry.generatedAt).toLocaleDateString()} · Average indicator coverage {ingestTelemetry.averageCoveragePct}%
+        </p>
+        <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+          Provider: {ingestTelemetry.provider} · Requested countries: {ingestTelemetry.requestedCountryCount}
+        </p>
+        <div className="methodology-priority-grid">
+          {ingestTelemetry.strongestIndicators.map((indicator) => (
+            <article key={`strong-${indicator.snapshotKey}`} className="methodology-priority-card">
+              <header>
+                <strong>{indicator.label}</strong>
+                <span className="methodology-priority-score">{indicator.coverageCount}</span>
+              </header>
+              <p>Strongest coverage · Missing {indicator.missingCountryCount} · Latest {indicator.newestObservation ?? 'n/a'}</p>
+            </article>
+          ))}
+          {ingestTelemetry.weakestIndicators.map((indicator) => (
+            <article key={`weak-${indicator.snapshotKey}`} className="methodology-priority-card">
+              <header>
+                <strong>{indicator.label}</strong>
+                <span className="methodology-priority-score">{indicator.coverageCount}</span>
+              </header>
+              <p>Weakest coverage · Missing {indicator.missingCountryCount} · Latest {indicator.newestObservation ?? 'n/a'}</p>
             </article>
           ))}
         </div>
