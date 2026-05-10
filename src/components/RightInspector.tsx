@@ -98,7 +98,8 @@ export function RightInspector({
 
   // Scroll the panel body back to the top whenever the selected country changes.
   useEffect(() => {
-    bodyRef.current?.scrollTo({ top: 0 });
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    bodyRef.current?.scrollTo({ top: 0, behavior: prefersReduced ? 'instant' : 'smooth' });
   }, [selected.profile.id]);
 
   return (
@@ -134,7 +135,7 @@ export function RightInspector({
         options={[
           { value: 'overview', label: 'Overview' },
           { value: 'profile', label: 'Profile' },
-          { value: 'relationships', label: 'Relations', count: selected.profile.relationships.length },
+          { value: 'relationships', label: 'Relationships', count: selected.profile.relationships.length },
           { value: 'drivers', label: 'Drivers' },
           { value: 'sources', label: 'Sources', count: selected.profile.sources.length },
         ]}
@@ -352,7 +353,7 @@ function ProfileStatGrid({
   return (
     <div className="profile-section">
       <h3 className="profile-section-title">
-        <span className="profile-section-icon" aria-hidden>{icon}</span>
+        <span className="profile-section-icon" aria-hidden={true}>{icon}</span>
         {title}
       </h3>
       <div className="profile-stat-grid">{children}</div>
@@ -396,7 +397,7 @@ function ProfilePanel({ selected }: { selected: SimulatedCountry }) {
       {/* ── Identity ── */}
       <div className="profile-section">
         <h3 className="profile-section-title">
-          <span className="profile-section-icon" aria-hidden>🌐</span>
+          <span className="profile-section-icon" aria-hidden={true}>🌐</span>
           Identity
         </h3>
         <ul className="kv-list">
@@ -485,7 +486,7 @@ function ProfilePanel({ selected }: { selected: SimulatedCountry }) {
       {/* ── Geopolitical indicators ── */}
       <div className="profile-section">
         <h3 className="profile-section-title">
-          <span className="profile-section-icon" aria-hidden>⚖️</span>
+          <span className="profile-section-icon" aria-hidden={true}>⚖️</span>
           Geopolitical indicators
         </h3>
         <div className="profile-indicator-grid">
@@ -509,7 +510,7 @@ function ProfilePanel({ selected }: { selected: SimulatedCountry }) {
       {/* ── Model outputs (quick reference) ── */}
       <div className="profile-section">
         <h3 className="profile-section-title">
-          <span className="profile-section-icon" aria-hidden>📊</span>
+          <span className="profile-section-icon" aria-hidden={true}>📊</span>
           Model outputs
         </h3>
         <div className="profile-stat-grid">
