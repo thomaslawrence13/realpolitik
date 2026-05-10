@@ -336,6 +336,27 @@ export interface CountryDataQuality {
   indicators: IndicatorTelemetry[];
 }
 
+export interface CountryInformationScore {
+  countryId: string;
+  displayName: string;
+  informationScore: number;
+  yearsStale: number;
+  sourceCoverage: number;
+  completeness: number;
+  stale: boolean;
+  gaps: string[];
+}
+
+export interface InformationQualityTelemetry {
+  assessedAt: string;
+  averageInformationScore: number;
+  staleCountryCount: number;
+  highQualityCount: number;
+  lowQualityCount: number;
+  topInformationCountries: CountryInformationScore[];
+  weakestInformationCountries: CountryInformationScore[];
+}
+
 export interface ProbabilitySet {
   blocA: number;
   blocB: number;

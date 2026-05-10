@@ -4,6 +4,7 @@ import type {
   Alignment,
   EventCategory,
   EventTemplate,
+  InformationQualityTelemetry,
   SavedScenario,
   ScenarioInputs,
   SimulatedCountry,
@@ -49,6 +50,7 @@ type Props = {
   onToggleComparison: (id: string) => void;
   eventFeed: EventFeedItem[];
   methodologyNotes: string[];
+  informationQuality: InformationQualityTelemetry;
   scenarioTimeline: string[];
   events: EventTemplate[];
   activeEventIds: string[];
@@ -96,6 +98,7 @@ export function BottomDrawer({
   onToggleComparison,
   eventFeed,
   methodologyNotes,
+  informationQuality,
   scenarioTimeline,
   events,
   activeEventIds,
@@ -197,7 +200,7 @@ export function BottomDrawer({
           />
         )}
 
-        {tab === 'methodology' && <MethodologyPanel notes={methodologyNotes} />}
+        {tab === 'methodology' && <MethodologyPanel notes={methodologyNotes} informationQuality={informationQuality} />}
       </div>
     </section>
   );
@@ -666,12 +669,58 @@ function HistoryCard({
   );
 }
 
-function MethodologyPanel({ notes }: { notes: string[] }) {
+function MethodologyPanel({
+  notes,
+  informationQuality,
+}: {
+  notes: string[];
+  informationQuality: InformationQualityTelemetry;
+}) {
+  const priorityCountries = informationQuality.weakestInformationCountries.slice(0, 8);
   return (
-    <ul className="methodology-list">
-      {notes.map((note) => (
-        <li key={note}>{note}</li>
-      ))}
-    </ul>
+    <div className="methodology-panel">
+      <ul className="methodology-list">
+        {notes.map((note) => (
+          <li key={note}>{note}</li>
+        ))}
+      </ul>
+      <section className="scenario-meta-card">
+        <strong>Information quality telemetry</strong>
+        <p className="methodology-telemetry-line">
+          Assessed {new Date(informationQuality.assessedAt).toLocaleDateString()} · Average score {informationQuality.averageInformationScore}
+        </p>
+        <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+          High quality: {informationQuality.highQualityCount} · Low quality: {informationQuality.lowQualityCount} · Stale records: {informationQuality.staleCountryCount}
+        </p>
+        <div className="methodology-priority-targets">
+          <strong className="methodology-priority-label">Priority refresh targets:</strong>{' '}
+          {priorityCountries
+            .slice(0, 5)
+            .map((country) => `${country.displayName} (${country.informationScore})`)
+            .join(', ')}
+        </div>
+        <div className="methodology-priority-grid">
+          {priorityCountries.map((country) => (
+            <article key={country.countryId} className="methodology-priority-card">
+              <header>
+                <strong>{country.displayName}</strong>
+                <span className="methodology-priority-score">{country.informationScore}</span>
+              </header>
+              <p>
+                Coverage {country.sourceCoverage}% · Completeness {Math.round(country.completeness * 100)}%
+                {country.stale ? ` · ${country.yearsStale}y stale` : ''}
+              </p>
+              {country.gaps.length > 0 && (
+                <div className="methodology-priority-gaps">
+                  {country.gaps.slice(0, 3).map((gap) => (
+                    <span key={`${country.countryId}-${gap}`}>{gap}</span>
+                  ))}
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
