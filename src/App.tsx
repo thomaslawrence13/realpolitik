@@ -594,6 +594,16 @@ export default function App() {
     if (byName.has(mapName)) setSelectedCountry(mapName);
   };
 
+  /** Selecting a country from the map also ensures the right panel is open and shows the overview. */
+  const handleSelectFromMap = useCallback(
+    (mapName: string) => {
+      setSelectedCountry(mapName);
+      setRightOpen(true);
+      setInspectorTab('overview');
+    },
+    [],
+  );
+
   const totalCountries = activeProfiles.length;
   const shellStyle = { '--drawer-h': `${drawerHeight}px` } as CSSProperties;
   const handleTimelineChange = (index: number) => {
@@ -696,7 +706,7 @@ export default function App() {
           baselineByName={baselineByName}
           visibleNames={visibleNames}
           selectedName={selectedCountry}
-          onSelect={setSelectedCountry}
+          onSelect={handleSelectFromMap}
           overlayMode={overlayMode}
           onOverlayModeChange={setOverlayMode}
           fillMode={mapFillMode}

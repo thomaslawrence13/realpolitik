@@ -1,8 +1,10 @@
+import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import type {
   Alignment,
   ConfidenceExplanation,
   ContributionLine,
+  CountryIndicators,
   EconomicStats,
   MilitaryStats,
   ProbabilityExplanation,
@@ -14,7 +16,7 @@ import type {
 } from '../types';
 import { BarRow, MetricCard, Tabs } from './ui';
 
-export type InspectorTab = 'overview' | 'relationships' | 'drivers' | 'sources';
+export type InspectorTab = 'overview' | 'profile' | 'relationships' | 'drivers' | 'sources';
 
 type Props = {
   open: boolean;
@@ -92,6 +94,12 @@ export function RightInspector({
   sparkline,
 }: Props) {
   const alignmentChanged = selected.alignment !== baselineSelected.alignment;
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+
+  // Scroll the panel body back to the top whenever the selected country changes.
+  useEffect(() => {
+    bodyRef.current?.scrollTo({ top: 0 });
+  }, [selected.profile.id]);
 
   return (
     <aside className="inspector" aria-label="Country inspector" aria-hidden={!open} {...(!open && { inert: true })}>
@@ -125,13 +133,14 @@ export function RightInspector({
         size="sm"
         options={[
           { value: 'overview', label: 'Overview' },
-          { value: 'relationships', label: 'Relationships', count: selected.profile.relationships.length },
+          { value: 'profile', label: 'Profile' },
+          { value: 'relationships', label: 'Relations', count: selected.profile.relationships.length },
           { value: 'drivers', label: 'Drivers' },
           { value: 'sources', label: 'Sources', count: selected.profile.sources.length },
         ]}
       />
 
-      <div className="inspector-body">
+      <div className="inspector-body" ref={bodyRef}>
         {tab === 'overview' && (
           <OverviewPanel
             selected={selected}
@@ -147,6 +156,8 @@ export function RightInspector({
             sparkline={sparkline}
           />
         )}
+
+        {tab === 'profile' && <ProfilePanel selected={selected} />}
 
         {tab === 'relationships' && (
           <RelationshipsPanel selected={selected} onSelectRelated={onSelectRelated} />
@@ -312,6 +323,216 @@ function OverviewPanel({
           onClearComparison={onClearComparison}
         />
       )}
+    </div>
+  );
+}
+
+// ─── Profile tab — complete country data snapshot ────────────────────────────
+
+function IndicatorBadge({ value }: { value: string }) {
+  const tier = value as 'low' | 'medium' | 'high';
+  const color =
+    tier === 'high' ? 'var(--risk-high)' : tier === 'medium' ? 'var(--risk-med)' : 'var(--risk-low)';
+  return (
+    <span className="profile-indicator-badge" style={{ color, borderColor: `${color}44` }}>
+      {formatTitle(value)}
+    </span>
+  );
+}
+
+function ProfileStatGrid({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="profile-section">
+      <h3 className="profile-section-title">
+        <span className="profile-section-icon" aria-hidden>{icon}</span>
+        {title}
+      </h3>
+      <div className="profile-stat-grid">{children}</div>
+    </div>
+  );
+}
+
+function ProfileStat({
+  label,
+  value,
+  sub,
+  tone,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  tone?: 'positive' | 'negative' | 'neutral';
+}) {
+  return (
+    <div className="profile-stat">
+      <span className="profile-stat-label">{label}</span>
+      <strong
+        className="profile-stat-value"
+        data-tone={tone}
+      >
+        {value}
+      </strong>
+      {sub && <span className="profile-stat-sub">{sub}</span>}
+    </div>
+  );
+}
+
+function ProfilePanel({ selected }: { selected: SimulatedCountry }) {
+  const { profile } = selected;
+  const econ = profile.economicStats;
+  const mil = profile.militaryStats;
+  const ind = profile.indicators;
+
+  return (
+    <div className="panel-stack">
+      {/* ── Identity ── */}
+      <div className="profile-section">
+        <h3 className="profile-section-title">
+          <span className="profile-section-icon" aria-hidden>🌐</span>
+          Identity
+        </h3>
+        <ul className="kv-list">
+          <li>
+            <span>Region</span>
+            <strong>{formatTitle(profile.region)}</strong>
+          </li>
+          <li>
+            <span>Subregion</span>
+            <strong>{formatTitle(profile.subregion)}</strong>
+          </li>
+          <li>
+            <span>Alliance network</span>
+            <strong>{profile.allianceNetwork}</strong>
+          </li>
+          <li>
+            <span>Regime type</span>
+            <strong>{formatTitle(profile.regimeType)}</strong>
+          </li>
+          <li>
+            <span>Last updated</span>
+            <strong>{profile.lastUpdated}</strong>
+          </li>
+        </ul>
+      </div>
+
+      {/* ── Economic statistics ── */}
+      {econ && (
+        <ProfileStatGrid title="Economy" icon="📈">
+          <ProfileStat
+            label="GDP"
+            value={`$${econ.gdpBillionUsd.toLocaleString()}B`}
+            sub="nominal USD"
+          />
+          <ProfileStat
+            label="GDP per capita"
+            value={`$${econ.gdpPerCapitaUsd.toLocaleString()}`}
+            sub="nominal USD"
+          />
+          <ProfileStat
+            label="GDP growth"
+            value={`${econ.gdpGrowthPct > 0 ? '+' : ''}${econ.gdpGrowthPct}%`}
+            tone={econ.gdpGrowthPct >= 0 ? 'positive' : 'negative'}
+            sub="annual"
+          />
+          <ProfileStat
+            label="Inflation"
+            value={`${econ.inflationPct}%`}
+            tone={econ.inflationPct > 10 ? 'negative' : econ.inflationPct < 4 ? 'positive' : 'neutral'}
+            sub="CPI annual"
+          />
+          <ProfileStat
+            label="Trade / GDP"
+            value={`${econ.tradeGdpPct}%`}
+            sub="openness"
+          />
+        </ProfileStatGrid>
+      )}
+
+      {/* ── Military statistics ── */}
+      {mil && (
+        <ProfileStatGrid title="Military" icon="🛡">
+          <ProfileStat
+            label="Defence spending"
+            value={`$${mil.militaryExpBillionUsd.toLocaleString()}B`}
+            sub="annual"
+          />
+          <ProfileStat
+            label="Spending / GDP"
+            value={`${mil.militaryExpGdpPct}%`}
+            sub="burden"
+          />
+          <ProfileStat
+            label="Active personnel"
+            value={mil.activePersonnelThousands > 0 ? `${mil.activePersonnelThousands.toLocaleString()}k` : '—'}
+            sub="troops"
+          />
+          <ProfileStat
+            label="Nuclear armed"
+            value={mil.nuclearArmed ? 'Yes' : 'No'}
+            tone={mil.nuclearArmed ? 'negative' : 'neutral'}
+          />
+        </ProfileStatGrid>
+      )}
+
+      {/* ── Geopolitical indicators ── */}
+      <div className="profile-section">
+        <h3 className="profile-section-title">
+          <span className="profile-section-icon" aria-hidden>⚖️</span>
+          Geopolitical indicators
+        </h3>
+        <div className="profile-indicator-grid">
+          {(Object.entries(ind) as [keyof CountryIndicators, string | number][])
+            .filter(([key]) => key !== 'cohesion')
+            .map(([key, value]) => (
+              <div key={key} className="profile-indicator-row">
+                <span className="profile-indicator-key">{formatIndicatorLabel(String(key))}</span>
+                <IndicatorBadge value={String(value)} />
+              </div>
+            ))}
+          <div className="profile-indicator-row">
+            <span className="profile-indicator-key">Cohesion score</span>
+            <span className="profile-indicator-badge profile-indicator-badge-neutral">
+              {ind.cohesion}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Model outputs (quick reference) ── */}
+      <div className="profile-section">
+        <h3 className="profile-section-title">
+          <span className="profile-section-icon" aria-hidden>📊</span>
+          Model outputs
+        </h3>
+        <div className="profile-stat-grid">
+          <ProfileStat
+            label="Escalation risk"
+            value={`${selected.risk}%`}
+            tone={selected.risk >= 65 ? 'negative' : selected.risk >= 40 ? 'neutral' : 'positive'}
+          />
+          <ProfileStat
+            label="Confidence"
+            value={`${selected.confidence}%`}
+          />
+          <ProfileStat
+            label="Source coverage"
+            value={`${profile.sourceCoverage}%`}
+          />
+          <ProfileStat
+            label="Relationships"
+            value={String(profile.relationships.length)}
+            sub="parameterised edges"
+          />
+        </div>
+      </div>
     </div>
   );
 }
