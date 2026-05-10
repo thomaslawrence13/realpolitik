@@ -398,7 +398,7 @@ const countries = enhancedCountries
   }))
   .sort((left, right) => left.displayName.localeCompare(right.displayName));
 
-export const datasetVersion = '0.12.0';
+export const datasetVersion = '0.13.0';
 export const methodologyNotes = [
   ...dataset.methodologyNotes,
   'v11 (data enhancement): adds cyber, fiscal, food/water, diplomatic, critical-mineral and soft-power dimensions for ~50 strategic actors.',
@@ -406,6 +406,7 @@ export const methodologyNotes = [
   'v11 derives ~hundreds of additional relationship edges from top trade-partner shares, shared defense pacts and IGO memberships, and opposing-bloc anchors. Derived edges are tagged sourceId="v11-derived" and ranked below explicit ones in pipeline reconciliation.',
   'v12 (information quality): computes per-country information scores based on source coverage, dimensional completeness, and recency to spotlight stale or sparse records.',
   'v12 also emits per-country dataQuality telemetry (indicator confidence, staleness, and degraded reasons) to make remediation workflows explicit.',
+  'v13 (coverage expansion): adds cyber, fiscal, food/water, diplomatic, critical-mineral and soft-power dimensions for 88 additional countries, bringing strategic-dimension coverage to ~140 actors.',
 ];
 export const scenarioTimeline = dataset.scenarioTimeline;
 export const countryProfiles = countries;
