@@ -176,23 +176,52 @@ export const simulateCountry = (
   const coupShock = scenarioInputs.coupRisk * weightSet.coup;
   const economicShock = (scenarioInputs.sanctionShock * 0.55 + Math.max(0, -scenarioInputs.treatyShift) * 0.35) * weightSet.economic;
 
-  const tradeExposure = tierValue[profile.indicators.tradeExposure];
-  const military = clamp(tierValue[profile.indicators.militaryTreatyLevel] + treatyShock * 0.55, 0, 100);
+  // v10 numeric overlays: when EconomicStats / MilitaryStats / EnergyProfile are present,
+  // use them as fine-grained modifiers on top of the existing tier-based logic. Profiles
+  // without these fields fall through unchanged.
+  const econ = profile.economicStats;
+  const mil = profile.militaryStats;
+  const energy = profile.energy;
+
+  // GDP growth contributes to cohesion (positive = stabilizing, recession = destabilizing).
+  // Clamped to ±6 cohesion points to keep tiers as primary driver.
+  const gdpCohesionDelta = econ ? clamp((econ.gdpGrowthPct - 2) * 0.9, -6, 6) : 0;
+  // Inflation above 8% drains cohesion sharply; below 8% no penalty.
+  const inflationCohesionDelta = econ ? -Math.min(8, Math.max(0, econ.inflationPct - 8) * 0.7) : 0;
+  // Defence burden % GDP feeds deterrence: >3% → up to +6, <1% → up to -3.
+  const militaryBurdenBoost = mil ? clamp((mil.militaryExpGdpPct - 2) * 2.0, -3, 6) : 0;
+  // Trade-to-GDP overlays trade dependence: small economies with high trade share are
+  // structurally more dependent on external partners.
+  const tradeOpennessDelta = econ ? clamp((econ.tradeGdpPct - 50) * 0.12, -6, 8) : 0;
+  // Energy import dependence amplifies sanctions exposure beyond the cross-check tier.
+  const energySanctionsDelta = energy && energy.energyImportDependencePct > 0
+    ? Math.min(10, energy.energyImportDependencePct * 0.08)
+    : 0;
+  // Nuclear-armed bonus for deterrence component (used in relationship deterrence summary).
+  const nuclearDeterrenceBoost = mil?.nuclearArmed ? 6 : 0;
+
+  const tradeExposure = clamp(tierValue[profile.indicators.tradeExposure] + tradeOpennessDelta * 0.5, 0, 100);
+  const military = clamp(tierValue[profile.indicators.militaryTreatyLevel] + treatyShock * 0.55 + militaryBurdenBoost, 0, 100);
   const conflict = clamp(tierValue[profile.indicators.conflictPressure] + invasionShock * 0.8 + coupShock * 0.12, 0, 100);
-  const sanctions = clamp(tierValue[profile.indicators.sanctionsExposure] + sanctionsShock * 0.72, 0, 100);
+  const sanctions = clamp(tierValue[profile.indicators.sanctionsExposure] + sanctionsShock * 0.72 + energySanctionsDelta, 0, 100);
   const ideology = tierValue[profile.indicators.ideology];
   const borderDisputes = clamp(tierValue[profile.indicators.borderDisputes] + invasionShock * 0.45, 0, 100);
   const regimeStability = clamp(tierValue[profile.indicators.regimeStability] - electionShock * 0.55 - coupShock * 0.75, 0, 100);
   const conflictHistory = tierValue[profile.indicators.conflictHistory];
-  const tradeDependence = clamp(tierValue[profile.indicators.tradeDependence] + economicShock * 0.28, 0, 100);
-  const cohesion = clamp(profile.indicators.cohesion - electionShock * 0.35 - coupShock * 0.45 + treatyShock * 0.08, 0, 100);
+  const tradeDependence = clamp(tierValue[profile.indicators.tradeDependence] + economicShock * 0.28 + tradeOpennessDelta, 0, 100);
+  const cohesion = clamp(
+    profile.indicators.cohesion - electionShock * 0.35 - coupShock * 0.45 + treatyShock * 0.08
+    + gdpCohesionDelta + inflationCohesionDelta,
+    0,
+    100,
+  );
 
   const baseRelationships = summarizeRelationships(profile);
   const relationshipSummary: RelationshipSummary = {
     cooperation: Math.round(clamp(baseRelationships.cooperation + treatyShock * 0.35 - sanctionsShock * 0.12 - invasionShock * 0.25, 0, 100)),
     hostility: Math.round(clamp(baseRelationships.hostility + invasionShock * 0.6 + sanctionsShock * 0.25 - treatyShock * 0.15, 0, 100)),
     dependency: Math.round(clamp(baseRelationships.dependency + sanctionsShock * 0.18 + economicShock * 0.2, 0, 100)),
-    deterrence: Math.round(clamp(baseRelationships.deterrence + invasionShock * 0.28 + treatyShock * 0.14, 0, 100)),
+    deterrence: Math.round(clamp(baseRelationships.deterrence + invasionShock * 0.28 + treatyShock * 0.14 + nuclearDeterrenceBoost, 0, 100)),
     tension: 0,
   };
   relationshipSummary.tension = Math.round((relationshipSummary.hostility + relationshipSummary.deterrence + conflict) / 3);

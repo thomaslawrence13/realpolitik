@@ -3,6 +3,8 @@ import type { RelationshipEdge } from '../../types';
 import type { RelationshipObservation } from './types';
 import { tierToScore } from './rules';
 
+const nowIsoDate = () => new Date().toISOString().slice(0, 10);
+
 /** Pick the best matching source for an edge from available sources, falling back to the first listed.
  *  Returns 'unknown' only when the edge has no sourceIds at all — callers should treat this as a
  *  data-quality gap rather than a hard error.
@@ -128,6 +130,58 @@ export const buildDerivedRelationshipObservations = (
       };
       observations.push({ ...baseObs, sourceCountryId: edge.sourceCountryId, targetCountryId: edge.targetCountryId });
       observations.push({ ...baseObs, sourceCountryId: edge.targetCountryId, targetCountryId: edge.sourceCountryId });
+    }
+  }
+
+  return observations;
+};
+
+/**
+ * Derives high-confidence directional dependency observations from each country's top
+ * trade partners (UN Comtrade-attributed). Trade share is mapped to a 0–100 dependency
+ * value with a square-root curve that rewards concentration: 25% share ≈ 65, 50% ≈ 90.
+ *
+ * Confidence (0.78) is intentionally set above the snapshot baseline (0.74) so a
+ * country-attested top-partner share will outrank an expert-curated snapshot value
+ * when both are available. This shifts dependency from a symmetric tier-average to a
+ * concrete observable.
+ */
+export const buildTradePartnerDependencyObservations = (
+  profiles: CountryProfile[],
+  edges: RelationshipEdge[],
+): RelationshipObservation[] => {
+  const observedAt = nowIsoDate();
+  const observations: RelationshipObservation[] = [];
+
+  // Restrict observations to country pairs that already have an edge in the graph,
+  // so we don't introduce dependency signals for pairs the model cannot otherwise see.
+  const edgePairs = new Set<string>();
+  for (const edge of edges) {
+    edgePairs.add(`${edge.sourceCountryId}::${edge.targetCountryId}`);
+    edgePairs.add(`${edge.targetCountryId}::${edge.sourceCountryId}`);
+  }
+
+  for (const profile of profiles) {
+    const partners = profile.topTradePartners;
+    if (!partners || partners.length === 0) continue;
+
+    for (const partner of partners) {
+      if (!edgePairs.has(`${profile.id}::${partner.countryId}`)) continue;
+
+      // share% → dependency score using sqrt curve, capped at 95.
+      const dependency = Math.min(95, Math.round(Math.sqrt(partner.sharePct) * 13));
+
+      observations.push({
+        providerId: 'trade-partner-derived',
+        sourceId: 'un-comtrade',
+        sourceCountryId: profile.id,
+        targetCountryId: partner.countryId,
+        dimension: 'dependency',
+        value: dependency,
+        observedAt,
+        method: 'derived',
+        confidence: 0.78,
+      });
     }
   }
 

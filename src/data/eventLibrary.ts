@@ -134,6 +134,71 @@ export const eventLibrary: EventTemplate[] = [
     inputs: { sanctionShock: 20, electionVolatility: 25, coupRisk: 20, invasionPressure: 15 },
     regionTags: ['Global'],
   },
+
+  // v10 additions — leverage new energy, demographic, and trade-partner data
+  {
+    id: 'food-security-shock',
+    name: 'Global Food Security Shock',
+    category: 'economic',
+    summary:
+      'Compound failures in major grain belts (Black Sea + South Asia) and fertilizer supply spike food prices. Import-dependent economies see sharp social pressure and unrest in youth-bulge demographies.',
+    inputs: { sanctionShock: 18, electionVolatility: 30, coupRisk: 15 },
+    regionTags: ['Africa', 'Western Asia', 'Southern Asia'],
+  },
+  {
+    id: 'debt-currency-cascade',
+    name: 'Emerging-Market Debt Cascade',
+    category: 'economic',
+    summary:
+      'Dollar strength and refinancing walls trigger sovereign-debt crises across exposed emerging markets. IMF programs proliferate; political volatility spikes where austerity bites hardest.',
+    inputs: { sanctionShock: 25, electionVolatility: 35, coupRisk: 18 },
+    regionTags: ['Africa', 'Americas', 'Southern Asia'],
+  },
+  {
+    id: 'energy-weaponization',
+    name: 'Energy Supply Weaponization',
+    category: 'economic',
+    summary:
+      'Major exporters coordinate supply cuts targeting consuming-country alliances. LNG-import-dependent economies bear the brunt; treaty cohesion strained as energy costs reorder priorities.',
+    inputs: { sanctionShock: 30, treatyShift: -20, electionVolatility: 20 },
+    regionTags: ['Europe', 'Eastern Asia', 'Western Asia'],
+  },
+  {
+    id: 'climate-displacement',
+    name: 'Climate Displacement Crisis',
+    category: 'compound',
+    summary:
+      'Compounded heat, drought, and coastal-flooding events trigger mass cross-border displacement. Receiving states face acute political volatility; origin states see governance collapse.',
+    inputs: { electionVolatility: 30, coupRisk: 22, invasionPressure: 12 },
+    regionTags: ['Southern Asia', 'Africa', 'Eastern Mediterranean', 'Central America'],
+  },
+  {
+    id: 'critical-minerals-decoupling',
+    name: 'Critical Minerals Decoupling',
+    category: 'economic',
+    summary:
+      'Export controls on rare earths, gallium, germanium, and processed lithium fragment the high-tech supply chain. Producers bloc-shop; consumers race to onshore mineral processing capacity.',
+    inputs: { sanctionShock: 35, treatyShift: 5 },
+    regionTags: ['Eastern Asia', 'North America', 'Africa', 'Oceania'],
+  },
+  {
+    id: 'demographic-collapse',
+    name: 'Aging-Population Fiscal Squeeze',
+    category: 'political',
+    summary:
+      'Countries with median age above 45 hit fiscal walls as labour-force contraction collides with pension and healthcare costs. Domestic politics turn inward; defense and aid budgets compete with entitlements.',
+    inputs: { treatyShift: -15, electionVolatility: 25, sanctionShock: 5 },
+    regionTags: ['Eastern Asia', 'Southern Europe', 'Western Europe'],
+  },
+  {
+    id: 'tech-sovereignty-race',
+    name: 'AI & Semiconductor Sovereignty Race',
+    category: 'compound',
+    summary:
+      'Allied blocs accelerate domestic AI compute and semiconductor capacity. Export controls harden; non-aligned states are pressured into supply-chain choices that constrain their strategic flexibility.',
+    inputs: { sanctionShock: 25, treatyShift: 15, electionVolatility: 10 },
+    regionTags: ['Eastern Asia', 'North America', 'Europe', 'Oceania'],
+  },
 ];
 
 export const eventById = new Map(eventLibrary.map((event) => [event.id, event]));

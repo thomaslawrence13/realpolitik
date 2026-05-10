@@ -169,3 +169,96 @@ export const buildGovernanceCrossCheckObservations = (profiles: CountryProfile[]
     confidence: 0.48,
   }));
 };
+
+/**
+ * Energy-sanctions cross-check: countries with high energy-import dependence get a
+ * cross-check observation that elevates their sanctionsExposure indicator. Net energy
+ * exporters (negative dependence) are not affected — they are typically the parties
+ * applying or being targeted by sanctions, and their exposure is driven by other channels.
+ *
+ * The provider runs only on countries that have a `energy` profile; all others fall
+ * through to the existing snapshot signal.
+ */
+export const buildEnergySanctionsCrossCheckObservations = (
+  profiles: CountryProfile[],
+): IndicatorObservation[] => {
+  const observedAt = nowIsoDate();
+  const observations: IndicatorObservation[] = [];
+
+  for (const profile of profiles) {
+    const energy = profile.energy;
+    if (!energy) continue;
+
+    // Only countries with positive (i.e. real) energy import dependence get a cross-check.
+    // Score: <30% → low, 30–60% → medium, >60% → high.
+    const dep = energy.energyImportDependencePct;
+    if (dep <= 0) continue;
+
+    let value: Tier;
+    if (dep > 60) value = 'high';
+    else if (dep >= 30) value = 'medium';
+    else value = 'low';
+
+    observations.push({
+      providerId: 'energy-sanctions-cross-check',
+      sourceId: 'iea-weo',
+      countryId: profile.id,
+      indicator: 'sanctionsExposure',
+      value,
+      observedAt,
+      method: 'derived',
+      confidence: 0.55,
+    });
+  }
+
+  return observations;
+};
+
+/**
+ * Demographic-pressure cross-check on cohesion. A youth bulge with weak labour-market
+ * absorption tends to depress political cohesion, while extreme aging populations tend
+ * to constrain growth-driven cohesion gains. The provider emits only when demographic
+ * data is available so countries without a profile are unaffected.
+ */
+export const buildDemographicCohesionObservations = (
+  profiles: CountryProfile[],
+): IndicatorObservation[] => {
+  const observedAt = nowIsoDate();
+  const observations: IndicatorObservation[] = [];
+
+  for (const profile of profiles) {
+    const demo = profile.demographics;
+    if (!demo) continue;
+
+    let delta = 0;
+    // Youth bulge: every percentage point above 25% subtracts 0.6 cohesion (capped at -8).
+    if (demo.youthSharePct > 25) {
+      delta -= Math.min(8, (demo.youthSharePct - 25) * 0.6);
+    }
+    // Aging: median age above 45 subtracts up to -4 (slow growth, fiscal stress).
+    if (demo.medianAge > 45) {
+      delta -= Math.min(4, (demo.medianAge - 45) * 0.4);
+    }
+    // Net out-migration above 5/1000 subtracts up to -3 (brain drain, displacement).
+    if (demo.netMigrationPer1000 != null && demo.netMigrationPer1000 < -5) {
+      delta -= Math.min(3, Math.abs(demo.netMigrationPer1000 + 5) * 0.4);
+    }
+
+    if (delta === 0) continue;
+
+    const adjusted = Math.max(0, Math.min(100, profile.indicators.cohesion + Math.round(delta)));
+
+    observations.push({
+      providerId: 'demographic-cohesion-cross-check',
+      sourceId: 'un-desa-population',
+      countryId: profile.id,
+      indicator: 'cohesion',
+      value: adjusted,
+      observedAt,
+      method: 'derived',
+      confidence: 0.58,
+    });
+  }
+
+  return observations;
+};

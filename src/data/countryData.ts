@@ -1,9 +1,25 @@
 import { geopoliticalDatasetV1 } from './datasets/v1';
+import { v10Enhancements } from './datasets/v10Enhancements';
 import type { CountryProfile, CountryRelationship, CountryRecord, DatasetSource, RelationshipEdge } from '../types';
 
 const dataset = geopoliticalDatasetV1;
 const sourceById = new Map(dataset.sources.map((source) => [source.id, source]));
-const countryById = new Map(dataset.countries.map((country) => [country.id, country]));
+
+// Apply v10 supplemental fields (demographics, energy, top trade partners, geo)
+// to country records before the rest of the data layer indexes them.
+const enhancedCountries = dataset.countries.map((country) => {
+  const enhancement = v10Enhancements[country.id];
+  if (!enhancement) return country;
+  return {
+    ...country,
+    ...(enhancement.demographics && { demographics: enhancement.demographics }),
+    ...(enhancement.energy && { energy: enhancement.energy }),
+    ...(enhancement.topTradePartners && { topTradePartners: enhancement.topTradePartners }),
+    ...(enhancement.geo && { geo: enhancement.geo }),
+  };
+});
+
+const countryById = new Map(enhancedCountries.map((country) => [country.id, country]));
 
 // Build adjacency index once so buildRelationships is O(1) per country instead of O(N×R)
 const relationshipsByCountryId = new Map<string, RelationshipEdge[]>();
@@ -51,7 +67,7 @@ const buildRelationships = (countryId: string) => {
     .sort((left, right) => right.tension - left.tension);
 };
 
-const countries = dataset.countries
+const countries = enhancedCountries
   .map<CountryProfile>((country) => ({
     ...country,
     sources: resolveSources(country.sourceIds),
