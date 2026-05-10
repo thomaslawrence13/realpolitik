@@ -28,7 +28,18 @@ type Props = {
   tab: InspectorTab;
   onTabChange: (tab: InspectorTab) => void;
   onSelectRelated: (mapName: string) => void;
+  comparisonSelected: SimulatedCountry | null;
+  comparisonScenarioName: string | null;
+  onClearComparison: () => void;
+  sparkline: SparklineSeries | null;
 };
+
+export interface SparklineSeries {
+  labels: string[];
+  active: number[];
+  baseline: number[];
+  currentIndex: number;
+}
 
 const formatPercent = (value: number) => `${value}%`;
 const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
@@ -73,6 +84,10 @@ export function RightInspector({
   tab,
   onTabChange,
   onSelectRelated,
+  comparisonSelected,
+  comparisonScenarioName,
+  onClearComparison,
+  sparkline,
 }: Props) {
   const alignmentChanged = selected.alignment !== baselineSelected.alignment;
 
@@ -124,6 +139,10 @@ export function RightInspector({
             alignmentChanged={alignmentChanged}
             alignmentColor={alignmentColor}
             alignmentLabel={alignmentLabel}
+            comparisonSelected={comparisonSelected}
+            comparisonScenarioName={comparisonScenarioName}
+            onClearComparison={onClearComparison}
+            sparkline={sparkline}
           />
         )}
 
@@ -154,6 +173,10 @@ function OverviewPanel({
   alignmentChanged,
   alignmentColor,
   alignmentLabel,
+  comparisonSelected,
+  comparisonScenarioName,
+  onClearComparison,
+  sparkline,
 }: {
   selected: SimulatedCountry;
   baselineSelected: SimulatedCountry;
@@ -162,6 +185,10 @@ function OverviewPanel({
   alignmentChanged: boolean;
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
+  comparisonSelected: SimulatedCountry | null;
+  comparisonScenarioName: string | null;
+  onClearComparison: () => void;
+  sparkline: SparklineSeries | null;
 }) {
   return (
     <div className="panel-stack">
@@ -197,6 +224,13 @@ function OverviewPanel({
         <MetricCard label="Source coverage" value={formatPercent(selected.profile.sourceCoverage)} />
         <MetricCard label="Last updated" value={selected.profile.lastUpdated} size="sm" />
       </div>
+
+      {sparkline && sparkline.active.length > 1 && (
+        <div className="section">
+          <h3 className="section-title">Risk trajectory</h3>
+          <RiskSparkline series={sparkline} />
+        </div>
+      )}
 
       {alignmentChanged && (
         <div className="callout callout-warning">
@@ -264,6 +298,98 @@ function OverviewPanel({
             size="sm"
           />
         </div>
+      </div>
+
+      {comparisonSelected && comparisonScenarioName && (
+        <ComparisonSection
+          comparisonSelected={comparisonSelected}
+          comparisonScenarioName={comparisonScenarioName}
+          activeSelected={selected}
+          alignmentColor={alignmentColor}
+          alignmentLabel={alignmentLabel}
+          onClearComparison={onClearComparison}
+        />
+      )}
+    </div>
+  );
+}
+
+function ComparisonSection({
+  comparisonSelected,
+  comparisonScenarioName,
+  activeSelected,
+  alignmentColor,
+  alignmentLabel,
+  onClearComparison,
+}: {
+  comparisonSelected: SimulatedCountry;
+  comparisonScenarioName: string;
+  activeSelected: SimulatedCountry;
+  alignmentColor: Record<Alignment, string>;
+  alignmentLabel: Record<Alignment, string>;
+  onClearComparison: () => void;
+}) {
+  const riskGap = activeSelected.risk - comparisonSelected.risk;
+  const confidenceGap = activeSelected.confidence - comparisonSelected.confidence;
+  return (
+    <div className="section comparison-section">
+      <header className="comparison-header">
+        <div>
+          <h3 className="section-title">Comparison · {comparisonScenarioName}</h3>
+          <p className="comparison-sub">
+            How this country fares in the pinned saved scenario versus the active scenario.
+          </p>
+        </div>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={onClearComparison}>
+          Clear
+        </button>
+      </header>
+
+      <div className="comparison-rows">
+        <div className="comparison-row">
+          <span className="comparison-row-label">Alignment</span>
+          <span
+            className="alignment-pill alignment-pill-sm"
+            style={{
+              color: alignmentColor[comparisonSelected.alignment],
+              borderColor: `${alignmentColor[comparisonSelected.alignment]}55`,
+              background: `${alignmentColor[comparisonSelected.alignment]}14`,
+            }}
+          >
+            <i style={{ background: alignmentColor[comparisonSelected.alignment] }} aria-hidden />
+            {alignmentLabel[comparisonSelected.alignment]}
+          </span>
+        </div>
+        <div className="comparison-row">
+          <span className="comparison-row-label">Risk</span>
+          <strong className="comparison-row-value">
+            {comparisonSelected.risk}%
+            <em className={`comparison-gap ${riskGap > 0 ? 'comparison-gap-up' : riskGap < 0 ? 'comparison-gap-down' : ''}`}>
+              active {riskGap > 0 ? '+' : ''}{riskGap}
+            </em>
+          </strong>
+        </div>
+        <div className="comparison-row">
+          <span className="comparison-row-label">Confidence</span>
+          <strong className="comparison-row-value">
+            {comparisonSelected.confidence}%
+            <em className={`comparison-gap ${confidenceGap > 0 ? 'comparison-gap-up' : confidenceGap < 0 ? 'comparison-gap-down' : ''}`}>
+              active {confidenceGap > 0 ? '+' : ''}{confidenceGap}
+            </em>
+          </strong>
+        </div>
+        {(['blocA', 'blocB', 'nonAligned'] as const).map((key) => (
+          <div key={key} className="comparison-row">
+            <span className="comparison-row-label">P({alignmentLabel[key as Alignment]})</span>
+            <strong className="comparison-row-value">
+              {comparisonSelected.probabilities[key]}%
+              <em className="comparison-gap">
+                active {activeSelected.probabilities[key] > comparisonSelected.probabilities[key] ? '+' : ''}
+                {activeSelected.probabilities[key] - comparisonSelected.probabilities[key]}
+              </em>
+            </strong>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -527,6 +653,67 @@ function EmptyState({ title, body }: { title: string; body: string }) {
     <div className="empty-state">
       <strong>{title}</strong>
       <p>{body}</p>
+    </div>
+  );
+}
+
+function RiskSparkline({ series }: { series: SparklineSeries }) {
+  const width = 320;
+  const height = 72;
+  const padX = 8;
+  const padY = 10;
+  const innerW = width - padX * 2;
+  const innerH = height - padY * 2;
+  const max = 100;
+  const min = 0;
+  const xFor = (i: number) =>
+    padX + (series.active.length === 1 ? innerW / 2 : (i * innerW) / (series.active.length - 1));
+  const yFor = (value: number) => padY + innerH - ((value - min) / (max - min)) * innerH;
+  const toPath = (values: number[]) =>
+    values.map((value, index) => `${index === 0 ? 'M' : 'L'}${xFor(index)},${yFor(value)}`).join(' ');
+  const activePath = toPath(series.active);
+  const baselinePath = toPath(series.baseline);
+  const currentX = xFor(series.currentIndex);
+  const currentY = yFor(series.active[series.currentIndex] ?? series.active[series.active.length - 1]);
+
+  return (
+    <div className="sparkline-card">
+      <div className="sparkline-legend">
+        <span className="sparkline-key sparkline-key-active">
+          <i aria-hidden /> Active
+        </span>
+        <span className="sparkline-key sparkline-key-baseline">
+          <i aria-hidden /> Baseline
+        </span>
+      </div>
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        preserveAspectRatio="none"
+        className="sparkline-svg"
+        aria-label="Risk trajectory across the timeline"
+      >
+        <line x1={padX} x2={width - padX} y1={yFor(50)} y2={yFor(50)} className="sparkline-grid" />
+        <path d={baselinePath} className="sparkline-path sparkline-path-baseline" />
+        <path d={activePath} className="sparkline-path sparkline-path-active" />
+        <line
+          x1={currentX}
+          x2={currentX}
+          y1={padY}
+          y2={height - padY}
+          className="sparkline-cursor"
+        />
+        <circle cx={currentX} cy={currentY} r={3.5} className="sparkline-marker" />
+      </svg>
+      <div className="sparkline-axis">
+        {series.labels.map((label, index) => (
+          <span
+            key={label}
+            className={`sparkline-axis-label ${index === series.currentIndex ? 'is-current' : ''}`}
+          >
+            {label}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent, MutableRefObject } from 'react';
 import type { Alignment, Filters, RegimeType, SimulatedCountry, Tier } from '../types';
 import { Segmented, SvgIcon } from './ui';
 
@@ -16,6 +16,7 @@ type Props = {
   alliances: readonly string[];
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
+  searchInputRef?: MutableRefObject<HTMLInputElement | null>;
 };
 
 const tierOptions = [
@@ -80,6 +81,7 @@ export function LeftRail({
   alliances,
   alignmentColor,
   alignmentLabel,
+  searchInputRef,
 }: Props) {
   const [filtersExpanded, setFiltersExpanded] = useState(true);
   const [sortMode, setSortMode] = useState<SortMode>('riskDesc');
@@ -195,6 +197,7 @@ export function LeftRail({
             <SvgIcon.Search />
           </span>
           <input
+            ref={searchInputRef}
             type="search"
             value={search}
             placeholder="Search country or region…"

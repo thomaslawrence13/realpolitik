@@ -1,15 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type {
+  Alignment,
   EventCategory,
   EventTemplate,
   SavedScenario,
   ScenarioInputs,
+  SimulatedCountry,
   SimulationWeightSet,
   WeightSetKey,
 } from '../types';
 import { Slider, SvgIcon, Tabs } from './ui';
+import { MoversPanel } from './MoversPanel';
 
-export type DrawerTab = 'scenario' | 'feed' | 'history' | 'methodology';
+export type DrawerTab = 'scenario' | 'feed' | 'movers' | 'history' | 'methodology';
 
 export type EventFeedItem = {
   title: string;
@@ -33,7 +37,16 @@ type Props = {
   savedScenarios: SavedScenario[];
   onSaveScenario: () => void;
   onResetScenario: () => void;
+  onShareScenario: () => void;
+  shareStatus: 'idle' | 'copied' | 'error';
   onLoadScenario: (scenario: SavedScenario) => void;
+  onDeleteScenario: (id: string) => void;
+  onRenameScenario: (id: string, nextName: string) => void;
+  onExportScenarios: (id?: string) => void;
+  onImportScenarios: () => void;
+  importError: string | null;
+  comparisonScenarioId: string | null;
+  onToggleComparison: (id: string) => void;
   eventFeed: EventFeedItem[];
   methodologyNotes: string[];
   scenarioTimeline: string[];
@@ -44,6 +57,15 @@ type Props = {
   onResizeStart: (startClientY: number) => void;
   onResizeStep: (delta: number) => void;
   onResizeTo: (edge: 'min' | 'max') => void;
+  movers: {
+    active: SimulatedCountry[];
+    baselineByName: Map<string, SimulatedCountry>;
+    comparisonByName: Map<string, SimulatedCountry> | null;
+    comparisonScenarioName: string | null;
+    onSelectCountry: (mapName: string) => void;
+    alignmentColor: Record<Alignment, string>;
+    alignmentLabel: Record<Alignment, string>;
+  };
 };
 
 export function BottomDrawer({
@@ -62,7 +84,16 @@ export function BottomDrawer({
   savedScenarios,
   onSaveScenario,
   onResetScenario,
+  onShareScenario,
+  shareStatus,
   onLoadScenario,
+  onDeleteScenario,
+  onRenameScenario,
+  onExportScenarios,
+  onImportScenarios,
+  importError,
+  comparisonScenarioId,
+  onToggleComparison,
   eventFeed,
   methodologyNotes,
   scenarioTimeline,
@@ -73,6 +104,7 @@ export function BottomDrawer({
   onResizeStart,
   onResizeStep,
   onResizeTo,
+  movers,
 }: Props) {
   return (
     <section className={`drawer ${open ? 'drawer-open' : 'drawer-closed'}`} aria-hidden={!open}>
@@ -99,6 +131,7 @@ export function BottomDrawer({
           options={[
             { value: 'scenario', label: 'Scenario lab' },
             { value: 'feed', label: 'Events', count: activeEventIds.length > 0 ? activeEventIds.length : undefined },
+            { value: 'movers', label: 'Movers' },
             { value: 'history', label: 'History', count: savedScenarios.length },
             { value: 'methodology', label: 'Methodology' },
           ]}
@@ -121,6 +154,8 @@ export function BottomDrawer({
             weightSets={weightSets}
             onSaveScenario={onSaveScenario}
             onResetScenario={onResetScenario}
+            onShareScenario={onShareScenario}
+            shareStatus={shareStatus}
           />
         )}
 
@@ -134,12 +169,31 @@ export function BottomDrawer({
           />
         )}
 
+        {tab === 'movers' && (
+          <MoversPanel
+            active={movers.active}
+            baselineByName={movers.baselineByName}
+            comparisonByName={movers.comparisonByName}
+            comparisonScenarioName={movers.comparisonScenarioName}
+            onSelectCountry={movers.onSelectCountry}
+            alignmentColor={movers.alignmentColor}
+            alignmentLabel={movers.alignmentLabel}
+          />
+        )}
+
         {tab === 'history' && (
           <HistoryPanel
             scenarios={savedScenarios}
             timeline={scenarioTimeline}
             weightSets={weightSets}
             onLoad={onLoadScenario}
+            onDelete={onDeleteScenario}
+            onRename={onRenameScenario}
+            onExport={onExportScenarios}
+            onImport={onImportScenarios}
+            importError={importError}
+            comparisonScenarioId={comparisonScenarioId}
+            onToggleCompare={onToggleComparison}
           />
         )}
 
@@ -160,6 +214,8 @@ function ScenarioPanel({
   weightSets,
   onSaveScenario,
   onResetScenario,
+  onShareScenario,
+  shareStatus,
 }: {
   scenarioName: string;
   onScenarioNameChange: (v: string) => void;
@@ -171,7 +227,19 @@ function ScenarioPanel({
   weightSets: SimulationWeightSet[];
   onSaveScenario: () => void;
   onResetScenario: () => void;
+  onShareScenario: () => void;
+  shareStatus: 'idle' | 'copied' | 'error';
 }) {
+  const shareLabel: Record<'idle' | 'copied' | 'error', ReactNode> = {
+    idle: 'Share link',
+    copied: 'Copied!',
+    error: 'Copy failed',
+  };
+  const shareTitle: Record<'idle' | 'copied' | 'error', string> = {
+    idle: 'Copy a URL that opens this scenario',
+    copied: 'Link copied to clipboard',
+    error: 'Could not access the clipboard',
+  };
   return (
     <div className="scenario-panel">
       <div className="scenario-meta">
@@ -205,6 +273,14 @@ function ScenarioPanel({
           <button type="button" className="btn btn-ghost" onClick={onResetScenario}>
             <SvgIcon.Reset />
             Reset
+          </button>
+          <button
+            type="button"
+            className={`btn btn-ghost share-btn ${shareStatus !== 'idle' ? `share-btn-${shareStatus}` : ''}`}
+            onClick={onShareScenario}
+            title={shareTitle[shareStatus]}
+          >
+            {shareLabel[shareStatus]}
           </button>
           <button type="button" className="btn btn-primary" onClick={onSaveScenario}>
             Save scenario
@@ -371,58 +447,217 @@ function HistoryPanel({
   timeline,
   weightSets,
   onLoad,
+  onDelete,
+  onRename,
+  onExport,
+  onImport,
+  importError,
+  comparisonScenarioId,
+  onToggleCompare,
 }: {
   scenarios: SavedScenario[];
   timeline: string[];
   weightSets: SimulationWeightSet[];
   onLoad: (s: SavedScenario) => void;
+  onDelete: (id: string) => void;
+  onRename: (id: string, name: string) => void;
+  onExport: (id?: string) => void;
+  onImport: () => void;
+  importError: string | null;
+  comparisonScenarioId: string | null;
+  onToggleCompare: (id: string) => void;
 }) {
-  if (scenarios.length === 0) {
-    return (
-      <div className="empty-state">
-        <strong>No saved scenarios yet</strong>
-        <p>Save the current assumptions to compare baseline against edited outcomes over time.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="history">
-      {scenarios.map((scenario) => {
-        const weightSet = weightSets.find((entry) => entry.key === scenario.weightSetKey);
-        const summaryItems = [
-          { abbr: 'S', label: 'Sanctions', value: scenario.inputs.sanctionShock, signed: false },
-          { abbr: 'T', label: 'Treaty', value: scenario.inputs.treatyShift, signed: true },
-          { abbr: 'E', label: 'Election', value: scenario.inputs.electionVolatility, signed: false },
-          { abbr: 'I', label: 'Invasion', value: scenario.inputs.invasionPressure, signed: false },
-          { abbr: 'C', label: 'Coup', value: scenario.inputs.coupRisk, signed: false },
-        ];
-        return (
-          <article key={scenario.id} className="history-card">
-            <header>
-              <strong>{scenario.name}</strong>
-              <span>{timeline[scenario.timelineIndex]}</span>
-            </header>
-            <p>{weightSet?.label ?? 'Custom weighting'}</p>
-            <div className="history-summary-chips">
-              {summaryItems.map(({ abbr, label, value, signed }) => (
-                <span
-                  key={abbr}
-                  className={`history-input-chip ${value !== 0 ? 'history-input-chip-active' : ''}`}
-                  title={`${label}: ${signed && value > 0 ? '+' : ''}${value}`}
-                >
-                  <em>{abbr}</em>
-                  <strong>{signed && value > 0 ? '+' : ''}{value}</strong>
-                </span>
-              ))}
-            </div>
-            <button type="button" className="btn btn-ghost" onClick={() => onLoad(scenario)}>
-              Load scenario
-            </button>
-          </article>
-        );
-      })}
+    <div className="history-wrap">
+      <div className="history-toolbar">
+        <div className="history-toolbar-meta">
+          <strong>Saved scenarios</strong>
+          <span>{scenarios.length} saved</span>
+        </div>
+        <div className="history-toolbar-actions">
+          <button type="button" className="btn btn-ghost btn-sm" onClick={onImport}>
+            <SvgIcon.Plus />
+            Import JSON
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => onExport()}
+            disabled={scenarios.length === 0}
+          >
+            Export all
+          </button>
+        </div>
+      </div>
+
+      {importError && (
+        <div className="callout callout-warning history-import-error">
+          <strong>Could not import scenarios</strong>
+          <p>{importError}</p>
+        </div>
+      )}
+
+      {scenarios.length === 0 ? (
+        <div className="empty-state">
+          <strong>No saved scenarios yet</strong>
+          <p>Save the current assumptions, or import a JSON file to get started.</p>
+        </div>
+      ) : (
+        <div className="history">
+          {scenarios.map((scenario) => (
+            <HistoryCard
+              key={scenario.id}
+              scenario={scenario}
+              timeline={timeline}
+              weightSets={weightSets}
+              onLoad={onLoad}
+              onDelete={onDelete}
+              onRename={onRename}
+              onExport={onExport}
+              isComparison={comparisonScenarioId === scenario.id}
+              onToggleCompare={onToggleCompare}
+            />
+          ))}
+        </div>
+      )}
     </div>
+  );
+}
+
+function HistoryCard({
+  scenario,
+  timeline,
+  weightSets,
+  onLoad,
+  onDelete,
+  onRename,
+  onExport,
+  isComparison,
+  onToggleCompare,
+}: {
+  scenario: SavedScenario;
+  timeline: string[];
+  weightSets: SimulationWeightSet[];
+  onLoad: (s: SavedScenario) => void;
+  onDelete: (id: string) => void;
+  onRename: (id: string, name: string) => void;
+  onExport: (id?: string) => void;
+  isComparison: boolean;
+  onToggleCompare: (id: string) => void;
+}) {
+  const [renaming, setRenaming] = useState(false);
+  const [draftName, setDraftName] = useState(scenario.name);
+  const renameInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (renaming) {
+      renameInputRef.current?.focus();
+      renameInputRef.current?.select();
+    }
+  }, [renaming]);
+
+  const commitRename = () => {
+    const next = draftName.trim();
+    if (next && next !== scenario.name) {
+      onRename(scenario.id, next);
+    } else {
+      setDraftName(scenario.name);
+    }
+    setRenaming(false);
+  };
+
+  const cancelRename = () => {
+    setDraftName(scenario.name);
+    setRenaming(false);
+  };
+
+  const weightSet = weightSets.find((entry) => entry.key === scenario.weightSetKey);
+  const summaryItems = [
+    { abbr: 'S', label: 'Sanctions', value: scenario.inputs.sanctionShock, signed: false },
+    { abbr: 'T', label: 'Treaty', value: scenario.inputs.treatyShift, signed: true },
+    { abbr: 'E', label: 'Election', value: scenario.inputs.electionVolatility, signed: false },
+    { abbr: 'I', label: 'Invasion', value: scenario.inputs.invasionPressure, signed: false },
+    { abbr: 'C', label: 'Coup', value: scenario.inputs.coupRisk, signed: false },
+  ];
+  return (
+    <article className={`history-card ${isComparison ? 'history-card-compare' : ''}`}>
+      <header>
+        {renaming ? (
+          <input
+            ref={renameInputRef}
+            className="history-rename-input"
+            value={draftName}
+            onChange={(event) => setDraftName(event.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                commitRename();
+              }
+              if (event.key === 'Escape') {
+                event.preventDefault();
+                cancelRename();
+              }
+            }}
+            spellCheck={false}
+            aria-label="Rename scenario"
+          />
+        ) : (
+          <button
+            type="button"
+            className="history-rename-trigger"
+            onClick={() => setRenaming(true)}
+            title="Click to rename"
+          >
+            <strong>{scenario.name}</strong>
+          </button>
+        )}
+        <span>{timeline[scenario.timelineIndex]}</span>
+      </header>
+      <p>{weightSet?.label ?? 'Custom weighting'}</p>
+      <div className="history-summary-chips">
+        {summaryItems.map(({ abbr, label, value, signed }) => (
+          <span
+            key={abbr}
+            className={`history-input-chip ${value !== 0 ? 'history-input-chip-active' : ''}`}
+            title={`${label}: ${signed && value > 0 ? '+' : ''}${value}`}
+          >
+            <em>{abbr}</em>
+            <strong>{signed && value > 0 ? '+' : ''}{value}</strong>
+          </span>
+        ))}
+      </div>
+      <div className="history-card-actions">
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => onLoad(scenario)}>
+          Load
+        </button>
+        <button
+          type="button"
+          className={`btn btn-sm ${isComparison ? 'btn-primary' : 'btn-ghost'}`}
+          onClick={() => onToggleCompare(scenario.id)}
+          title={isComparison ? 'Stop comparing this scenario' : 'Pin as comparison track'}
+        >
+          {isComparison ? 'Comparing' : 'Compare'}
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => onExport(scenario.id)}
+          title="Download this scenario as JSON"
+        >
+          Export
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm history-delete-btn"
+          onClick={() => onDelete(scenario.id)}
+          aria-label={`Delete ${scenario.name}`}
+          title="Delete scenario"
+        >
+          <SvgIcon.X />
+        </button>
+      </div>
+    </article>
   );
 }
 

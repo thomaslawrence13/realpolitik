@@ -1,12 +1,19 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { MutableRefObject, PointerEvent as ReactPointerEvent } from 'react';
 import type {
   Alignment,
+  MapFillMode,
   OverlayMode,
   RelationshipDimension,
   SimulatedCountry,
 } from '../types';
-import { MAP_HEIGHT, MAP_WIDTH, countries, countryPathStrings } from '../lib/map';
+import {
+  MAP_HEIGHT,
+  MAP_WIDTH,
+  countries,
+  countryCentroids,
+  countryPathStrings,
+} from '../lib/map';
 import { getRiskTier } from '../simulation';
 import { IconButton, SvgIcon } from './ui';
 
@@ -45,16 +52,78 @@ const overlayColor: Record<RelationshipDimension, string> = {
 
 const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
 
+const fillModeOptions: ReadonlyArray<{ value: MapFillMode; label: string; hint: string }> = [
+  { value: 'alignment', label: 'Alignment', hint: 'Color by current bloc alignment' },
+  { value: 'risk', label: 'Risk', hint: 'Green → red as escalation risk rises' },
+  { value: 'confidence', label: 'Confidence', hint: 'Brighter = higher confidence' },
+  { value: 'shift', label: 'Shift', hint: 'Highlights countries that diverge from baseline' },
+];
+
+// Risk gradient: low (green) → medium (amber) → high (red).
+const RISK_LOW = '#34d399';
+const RISK_MED = '#fbbf24';
+const RISK_HIGH = '#f87171';
+const NEUTRAL = '#1b2538';
+
+const lerpColor = (from: string, to: string, t: number): string => {
+  const parse = (hex: string) => [
+    parseInt(hex.slice(1, 3), 16),
+    parseInt(hex.slice(3, 5), 16),
+    parseInt(hex.slice(5, 7), 16),
+  ];
+  const [fr, fg, fb] = parse(from);
+  const [tr, tg, tb] = parse(to);
+  const r = Math.round(fr + (tr - fr) * t);
+  const g = Math.round(fg + (tg - fg) * t);
+  const b = Math.round(fb + (tb - fb) * t);
+  return `rgb(${r}, ${g}, ${b})`;
+};
+
+const riskColor = (risk: number): string => {
+  const t = Math.max(0, Math.min(1, risk / 100));
+  if (t < 0.5) return lerpColor(RISK_LOW, RISK_MED, t * 2);
+  return lerpColor(RISK_MED, RISK_HIGH, (t - 0.5) * 2);
+};
+
+const confidenceColor = (confidence: number): string => {
+  // Darker blue (low) to bright cyan (high).
+  const t = Math.max(0, Math.min(1, (confidence - 30) / 60));
+  return lerpColor('#1e3a8a', '#67e8f9', t);
+};
+
+type FillResolverArgs = {
+  simulated: SimulatedCountry;
+  baseline?: SimulatedCountry;
+  alignmentColor: Record<Alignment, string>;
+};
+
+const resolveFill = (mode: MapFillMode, args: FillResolverArgs): string => {
+  const { simulated, baseline, alignmentColor } = args;
+  if (mode === 'alignment') return alignmentColor[simulated.alignment];
+  if (mode === 'risk') return riskColor(simulated.risk);
+  if (mode === 'confidence') return confidenceColor(simulated.confidence);
+  // shift: highlight countries whose risk or alignment diverged from baseline.
+  if (!baseline) return alignmentColor[simulated.alignment];
+  const alignmentChanged = simulated.alignment !== baseline.alignment;
+  const riskGap = simulated.risk - baseline.risk;
+  if (alignmentChanged) return alignmentColor[simulated.alignment];
+  if (Math.abs(riskGap) < 4) return NEUTRAL;
+  return riskGap > 0 ? lerpColor(NEUTRAL, RISK_HIGH, Math.min(1, riskGap / 30))
+    : lerpColor(NEUTRAL, RISK_LOW, Math.min(1, -riskGap / 30));
+};
+
 // ─── Memoized country paths layer ────────────────────────────────────────────
 // Defined outside MapCanvas so React.memo has stable component identity.
 // Only re-renders when alignment data, filters, selection, or overlays change —
 // NOT on hover or zoom/pan.
 type CountryLayersProps = {
   byName: Map<string, SimulatedCountry>;
+  baselineByName: Map<string, SimulatedCountry>;
   visibleNames: Set<string>;
   selectedName: string;
   relatedNames: Set<string>;
   overlayMode: OverlayMode;
+  fillMode: MapFillMode;
   alignmentColor: Record<Alignment, string>;
   setHoveredName: (name: string | null) => void;
   hoveredNameRef: MutableRefObject<string | null>;
@@ -65,10 +134,12 @@ import type React from 'react';
 
 const CountryLayers = memo(function CountryLayers({
   byName,
+  baselineByName,
   visibleNames,
   selectedName,
   relatedNames,
   overlayMode,
+  fillMode,
   alignmentColor,
   setHoveredName,
   hoveredNameRef,
@@ -79,12 +150,15 @@ const CountryLayers = memo(function CountryLayers({
       {countries.map((country) => {
         const name = country.properties.name;
         const simulated = byName.get(name);
+        const baseline = baselineByName.get(name);
         const isParameterized = Boolean(simulated);
         const isVisible = isParameterized && visibleNames.has(name);
         const isSelected = selectedName === name;
         const isRelated = relatedNames.has(name);
 
-        const fill = simulated ? alignmentColor[simulated.alignment] : '#1b2538';
+        const fill = simulated
+          ? resolveFill(fillMode, { simulated, baseline, alignmentColor })
+          : NEUTRAL;
         const opacity = !isParameterized ? 0.3 : isVisible ? 1 : 0.2;
 
         let stroke = 'rgba(148,163,184,0.18)';
@@ -134,30 +208,72 @@ export type OverlayConnection = {
 
 type Props = {
   byName: Map<string, SimulatedCountry>;
+  baselineByName: Map<string, SimulatedCountry>;
   visibleNames: Set<string>;
   selectedName: string;
   onSelect: (name: string) => void;
   overlayMode: OverlayMode;
   onOverlayModeChange: (mode: OverlayMode) => void;
-  overlayConnections: OverlayConnection[];
-  relatedNames: Set<string>;
+  fillMode: MapFillMode;
+  onFillModeChange: (mode: MapFillMode) => void;
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
 };
 
+const getRelationshipMetric = (
+  mode: RelationshipDimension,
+  relationship: { cooperation: number; hostility: number; dependency: number; deterrence: number },
+) => relationship[mode];
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export function MapCanvas({
   byName,
+  baselineByName,
   visibleNames,
   selectedName,
   onSelect,
   overlayMode,
   onOverlayModeChange,
-  overlayConnections,
-  relatedNames,
+  fillMode,
+  onFillModeChange,
   alignmentColor,
   alignmentLabel,
 }: Props) {
+  // Overlay connections derive entirely from byName + selection + overlay mode,
+  // so MapCanvas owns the computation. App.tsx no longer needs lib/map at all,
+  // which lets the world-atlas TopoJSON ride along with this component's chunk.
+  const overlayConnections = useMemo<OverlayConnection[]>(() => {
+    if (overlayMode === 'none') return [];
+    const sourceCentroid = countryCentroids.get(selectedName);
+    if (!sourceCentroid) return [];
+    const profile = byName.get(selectedName)?.profile;
+    if (!profile) return [];
+    const [sourceX, sourceY] = sourceCentroid;
+    return profile.relationships
+      .map((relationship) => {
+        const targetCentroid = countryCentroids.get(relationship.mapName);
+        if (!targetCentroid) return null;
+        return {
+          countryId: relationship.countryId,
+          mapName: relationship.mapName,
+          displayName: relationship.displayName,
+          score: getRelationshipMetric(overlayMode, relationship),
+          x1: sourceX,
+          y1: sourceY,
+          x2: targetCentroid[0],
+          y2: targetCentroid[1],
+        };
+      })
+      .filter((connection): connection is OverlayConnection => Boolean(connection))
+      .filter((connection) => connection.score >= 40)
+      .sort((left, right) => right.score - left.score)
+      .slice(0, 6);
+  }, [byName, overlayMode, selectedName]);
+
+  const relatedNames = useMemo(
+    () => new Set(overlayConnections.map((connection) => connection.mapName)),
+    [overlayConnections],
+  );
   // ── Internal hover state (kept here so App.tsx never re-renders on hover) ─────
   const [hoveredName, setHoveredName] = useState<string | null>(null);
   // Refs so pointer handlers always see the latest value without stale closures
@@ -343,9 +459,10 @@ export function MapCanvas({
           }}
         >
           <defs>
+            {/* Navy ocean — saturated blue at the focus, deepening toward the edges. */}
             <radialGradient id="map-glow" cx="50%" cy="40%" r="60%">
-              <stop offset="0%" stopColor="#0e1d3a" stopOpacity="1" />
-              <stop offset="100%" stopColor="#04070d" stopOpacity="1" />
+              <stop offset="0%" stopColor="#1e3a8a" stopOpacity="1" />
+              <stop offset="100%" stopColor="#0a1f4a" stopOpacity="1" />
             </radialGradient>
             <pattern id="map-grid" width="40" height="40" patternUnits="userSpaceOnUse">
               <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148,163,184,0.05)" strokeWidth="0.5" />
@@ -367,10 +484,12 @@ export function MapCanvas({
             {/* Memoized — only re-renders when data/selection/overlay changes, not on hover or zoom */}
             <CountryLayers
               byName={byName}
+              baselineByName={baselineByName}
               visibleNames={visibleNames}
               selectedName={selectedName}
               relatedNames={relatedNames}
               overlayMode={overlayMode}
+              fillMode={fillMode}
               alignmentColor={alignmentColor}
               setHoveredName={setHoveredName}
               hoveredNameRef={hoveredNameRef}
@@ -458,12 +577,78 @@ export function MapCanvas({
         )}
 
         <div className="map-legend">
-          {(Object.keys(alignmentLabel) as Alignment[]).map((key) => (
-            <span key={key} className="legend-chip">
-              <i style={{ background: alignmentColor[key] }} aria-hidden />
-              {alignmentLabel[key]}
-            </span>
-          ))}
+          {fillMode === 'alignment' &&
+            (Object.keys(alignmentLabel) as Alignment[]).map((key) => (
+              <span key={key} className="legend-chip">
+                <i style={{ background: alignmentColor[key] }} aria-hidden />
+                {alignmentLabel[key]}
+              </span>
+            ))}
+          {fillMode === 'risk' && (
+            <>
+              <span className="legend-chip">
+                <i style={{ background: RISK_LOW }} aria-hidden />
+                Low
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: RISK_MED }} aria-hidden />
+                Medium
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: RISK_HIGH }} aria-hidden />
+                High
+              </span>
+            </>
+          )}
+          {fillMode === 'confidence' && (
+            <>
+              <span className="legend-chip">
+                <i style={{ background: '#1e3a8a' }} aria-hidden />
+                Low
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: '#67e8f9' }} aria-hidden />
+                High
+              </span>
+            </>
+          )}
+          {fillMode === 'shift' && (
+            <>
+              <span className="legend-chip">
+                <i style={{ background: NEUTRAL }} aria-hidden />
+                Tracks baseline
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: RISK_LOW }} aria-hidden />
+                Risk down
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: RISK_HIGH }} aria-hidden />
+                Risk up
+              </span>
+              <span className="legend-chip">
+                <i style={{ background: '#c77dff' }} aria-hidden />
+                Alignment shifted
+              </span>
+            </>
+          )}
+        </div>
+
+        <div className="map-fill-toggle">
+          <span className="map-overlay-label">Fill</span>
+          <div className="map-overlay-row">
+            {fillModeOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`overlay-btn ${fillMode === option.value ? 'overlay-btn-active' : ''}`}
+                onClick={() => onFillModeChange(option.value)}
+                title={option.hint}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="map-overlay-toggle">
