@@ -498,4 +498,844 @@ export const v11Enhancements: Record<string, CountryV11Enhancement> = {
     ],
     softPower: { reachScore: 40, inboundStudentsThousands: 10, globalLanguageHost: true, notes: 'Medical-diplomacy + revolutionary-narrative reach.' },
   },
+
+  'afghanistan': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 6, internetPenetrationPct: 18, dataLocalization: false, notes: 'Taliban regime; near-total internet repression, minimal infrastructure.' },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 8, fxReservesMonthsImports: 0.5, primaryBalanceGdpPct: -12.0, notes: 'Aid-dependent; frozen reserves; collapsing formal economy.' },
+    foodWater: { foodImportDependencePct: 38, waterStressIndex: 4, arableLandHaPerCapita: 0.23, cerealExporter: false, notes: 'Chronic food insecurity; drought-prone; irrigation collapse.' },
+    diplomatic: { unVotingAlignmentBlocA: 10, unVotingAlignmentBlocB: 55, defensePacts: [], igoMemberships: ['OIC', 'ECO', 'SAARC'] },
+    criticalMinerals: [
+      { mineral: 'lithium', role: 'reserves', globalSharePct: 2 },
+      { mineral: 'copper', role: 'reserves', globalSharePct: 1 },
+      { mineral: 'rareEarths', role: 'reserves', globalSharePct: 1 },
+    ],
+    softPower: { reachScore: 5, globalLanguageHost: false, notes: 'Pariah state; near-zero soft power projection.' },
+  },
+
+  'albania': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 68, internetPenetrationPct: 79, dataLocalization: false, notes: 'NATO member; EU accession driving cyber reforms after 2022 Iranian hack.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 62, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -1.5, notes: 'Remittances-supported; improving fiscal trajectory.' },
+    foodWater: { foodImportDependencePct: 30, waterStressIndex: 2, arableLandHaPerCapita: 0.21, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 85, unVotingAlignmentBlocB: 22, defensePacts: ['NATO'], igoMemberships: ['NATO', 'OSCE', 'OIC'] },
+    softPower: { reachScore: 22, globalLanguageHost: false, notes: 'EU accession candidate; diaspora leverage.' },
+  },
+
+  'angola': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 40, internetPenetrationPct: 36, dataLocalization: false, notes: 'Limited cyber capacity; growing digital infrastructure.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 88, fxReservesMonthsImports: 7, primaryBalanceGdpPct: 2.5, notes: 'Oil-revenue dependent; Chinese debt significant.' },
+    foodWater: { foodImportDependencePct: 45, waterStressIndex: 2, arableLandHaPerCapita: 0.42, cerealExporter: false, notes: 'High import dependence despite large arable land potential.' },
+    diplomatic: { unVotingAlignmentBlocA: 32, unVotingAlignmentBlocB: 65, defensePacts: ['AU'], igoMemberships: ['AU', 'SADC', 'OPEC', 'CPLP'] },
+    criticalMinerals: [
+      { mineral: 'manganese', role: 'producer', globalSharePct: 1 },
+    ],
+    softPower: { reachScore: 20, globalLanguageHost: false, notes: 'Oil diplomacy; Lusophone cultural links.' },
+  },
+
+  'armenia': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 62, internetPenetrationPct: 79, dataLocalization: false, notes: 'Improving post-CSTO fallout; tech sector growing.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 72, fxReservesMonthsImports: 4.5, primaryBalanceGdpPct: -2.0 },
+    foodWater: { foodImportDependencePct: 40, waterStressIndex: 3, arableLandHaPerCapita: 0.15, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 42, unVotingAlignmentBlocB: 58, defensePacts: [], igoMemberships: ['CSTO', 'EAEU', 'CIS', 'CoE', 'OSCE'] },
+    softPower: { reachScore: 28, globalLanguageHost: false, notes: 'Diaspora in France, US, Russia; genocide recognition diplomacy.' },
+  },
+
+  'austria': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'high', internetFreedomScore: 82, internetPenetrationPct: 92, dataLocalization: false, notes: 'EU hub; strong GDPR enforcement; Vienna as diplomatic hub.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 78, fxReservesMonthsImports: 5, primaryBalanceGdpPct: -1.2 },
+    foodWater: { foodImportDependencePct: 15, waterStressIndex: 1, arableLandHaPerCapita: 0.18, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 80, unVotingAlignmentBlocB: 28, defensePacts: [], igoMemberships: ['EU', 'OSCE', 'OECD', 'CoE'] },
+    softPower: { reachScore: 62, inboundStudentsThousands: 90, globalLanguageHost: true, notes: 'Vienna-based multilateral institutions; classical music heritage.' },
+  },
+
+  'azerbaijan': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 30, internetPenetrationPct: 85, dataLocalization: true, notes: 'Authoritarian digital control; Israeli cyber-tool imports.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 18, fxReservesMonthsImports: 12, primaryBalanceGdpPct: 3.5, notes: 'SOFAZ SWF buffers; oil/gas dependent.' },
+    foodWater: { foodImportDependencePct: 25, waterStressIndex: 3, arableLandHaPerCapita: 0.22, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 38, unVotingAlignmentBlocB: 58, defensePacts: [], igoMemberships: ['CIS', 'OIC', 'OSCE', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'copper', role: 'producer', globalSharePct: 0.3 },
+    ],
+    softPower: { reachScore: 30, globalLanguageHost: false, notes: 'Energy corridor leverage; Aliyev brand diplomacy; COP29 host.' },
+  },
+
+  'bahrain': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 25, internetPenetrationPct: 99, dataLocalization: false, notes: 'NSO Pegasus use documented; US 5th Fleet host.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 128, fxReservesMonthsImports: 3, primaryBalanceGdpPct: -4.0, notes: 'High debt but GCC backstop; oil revenue declining.' },
+    foodWater: { foodImportDependencePct: 90, waterStressIndex: 5, arableLandHaPerCapita: 0.01, cerealExporter: false, notes: 'Nearly all food imported; desalination-dependent.' },
+    diplomatic: { unVotingAlignmentBlocA: 58, unVotingAlignmentBlocB: 48, defensePacts: ['GCC'], igoMemberships: ['GCC', 'AL', 'OIC', 'NAM'] },
+    softPower: { reachScore: 28, globalLanguageHost: false, notes: 'Financial services hub; F1 Grand Prix; US base.' },
+  },
+
+  'bangladesh': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 40, internetPenetrationPct: 44, dataLocalization: false, notes: 'Central bank hack 2016; growing digital infrastructure.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 22, fxReservesMonthsImports: 3, primaryBalanceGdpPct: -3.5, notes: 'FX reserves strained post-2022; IMF programme.' },
+    foodWater: { foodImportDependencePct: 12, waterStressIndex: 3, arableLandHaPerCapita: 0.06, cerealExporter: false, notes: 'Rice self-sufficient mostly; Ganges water-sharing tensions with India.' },
+    diplomatic: { unVotingAlignmentBlocA: 32, unVotingAlignmentBlocB: 65, defensePacts: [], igoMemberships: ['SAARC', 'OIC', 'Commonwealth', 'NAM'] },
+    softPower: { reachScore: 22, globalLanguageHost: false, notes: 'Garment diplomacy; UN peacekeeping top contributor.' },
+  },
+
+  'belarus': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 18, internetPenetrationPct: 83, dataLocalization: true, notes: 'KGB cyber ops; Lukashenko regime; tight internet control.' },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 78, fxReservesMonthsImports: 3, primaryBalanceGdpPct: -2.0, notes: 'Western-sanctioned; Russian subsidy dependent.' },
+    foodWater: { foodImportDependencePct: -10, waterStressIndex: 1, arableLandHaPerCapita: 0.56, cerealExporter: true, notes: 'Net food exporter; potash fertilizer major producer.' },
+    diplomatic: { unVotingAlignmentBlocA: 8, unVotingAlignmentBlocB: 92, defensePacts: ['CSTO'], igoMemberships: ['CSTO', 'EAEU', 'CIS', 'SCO'] },
+    criticalMinerals: [
+      { mineral: 'potash', role: 'producer', globalSharePct: 18 },
+    ],
+    softPower: { reachScore: 12, globalLanguageHost: false, notes: 'Internationally isolated regime; Russian proxy; sanctions isolation.' },
+  },
+
+  'belgium': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'high', internetFreedomScore: 84, internetPenetrationPct: 93, dataLocalization: false, notes: 'NATO HQ host; CCB leads national cyber policy; EU institutions hub.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 106, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -3.5 },
+    foodWater: { foodImportDependencePct: 10, waterStressIndex: 2, arableLandHaPerCapita: 0.08, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 88, unVotingAlignmentBlocB: 20, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OECD', 'CoE', 'G10'] },
+    softPower: { reachScore: 62, inboundStudentsThousands: 50, globalLanguageHost: true, notes: 'NATO/EU headquarters; multilateral convening power.' },
+  },
+
+  'bolivia': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 62, internetPenetrationPct: 57, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 55, fxReservesMonthsImports: 2.5, primaryBalanceGdpPct: -8.0, notes: 'FX reserves depleted; gas revenue declining.' },
+    foodWater: { foodImportDependencePct: -5, waterStressIndex: 2, arableLandHaPerCapita: 0.42, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 28, unVotingAlignmentBlocB: 68, defensePacts: [], igoMemberships: ['CELAC', 'ALBA', 'Mercosur', 'OAS', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'lithium', role: 'reserves', globalSharePct: 21 },
+      { mineral: 'potash', role: 'reserves', globalSharePct: 1 },
+    ],
+    softPower: { reachScore: 18, globalLanguageHost: false, notes: 'Lithium diplomacy; ALBA alignment.' },
+  },
+
+  'bosnia-and-herzegovina': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 65, internetPenetrationPct: 75, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 52, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -1.0 },
+    foodWater: { foodImportDependencePct: 28, waterStressIndex: 1, arableLandHaPerCapita: 0.28, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 72, unVotingAlignmentBlocB: 38, defensePacts: [], igoMemberships: ['OSCE', 'CoE'], pendingAccession: ['EU', 'NATO'] },
+    softPower: { reachScore: 15, globalLanguageHost: false, notes: 'EU candidate; Dayton accord legacy; Republika Srpska Russia alignment complicates.' },
+  },
+
+  'botswana': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 65, internetPenetrationPct: 68, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 22, fxReservesMonthsImports: 8, primaryBalanceGdpPct: -3.0, notes: 'Diamond-revenue buffered; solid reserves.' },
+    foodWater: { foodImportDependencePct: 40, waterStressIndex: 4, arableLandHaPerCapita: 0.16, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 52, unVotingAlignmentBlocB: 45, defensePacts: ['AU'], igoMemberships: ['AU', 'SADC', 'Commonwealth', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'manganese', role: 'producer', globalSharePct: 1 },
+      { mineral: 'copper', role: 'producer', globalSharePct: 0.5 },
+    ],
+    softPower: { reachScore: 28, globalLanguageHost: false, notes: 'Diamond industry diplomacy; democratic governance model.' },
+  },
+
+  'brunei': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 45, internetPenetrationPct: 96, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 3, fxReservesMonthsImports: 20, primaryBalanceGdpPct: 5.0, notes: 'Tiny debt; BIA SWF; oil/gas rich.' },
+    foodWater: { foodImportDependencePct: 75, waterStressIndex: 1, arableLandHaPerCapita: 0.05, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 42, unVotingAlignmentBlocB: 55, defensePacts: ['ASEAN'], igoMemberships: ['ASEAN', 'RCEP', 'OIC', 'Commonwealth', 'NAM'] },
+    criticalMinerals: [],
+    softPower: { reachScore: 18, globalLanguageHost: false, notes: 'Sultanate energy diplomacy; ASEAN membership.' },
+  },
+
+  'bulgaria': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 68, internetPenetrationPct: 78, dataLocalization: false, notes: 'NATO/EU member; 2019 NRA data breach; IT sector growing.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 58, fxReservesMonthsImports: 6, primaryBalanceGdpPct: -2.0 },
+    foodWater: { foodImportDependencePct: -5, waterStressIndex: 2, arableLandHaPerCapita: 0.44, cerealExporter: true },
+    diplomatic: { unVotingAlignmentBlocA: 82, unVotingAlignmentBlocB: 25, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OSCE', 'CoE'] },
+    softPower: { reachScore: 28, inboundStudentsThousands: 12, globalLanguageHost: false },
+  },
+
+  'burkina-faso': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 42, internetPenetrationPct: 22, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 58, fxReservesMonthsImports: 2, primaryBalanceGdpPct: -6.0, notes: 'Junta rule; jihadist insurgency; aid flows disrupted.' },
+    foodWater: { foodImportDependencePct: 15, waterStressIndex: 3, arableLandHaPerCapita: 0.36, cerealExporter: false, notes: 'Food crisis; displacement from Sahel conflict.' },
+    diplomatic: { unVotingAlignmentBlocA: 18, unVotingAlignmentBlocB: 75, defensePacts: ['AES'], igoMemberships: ['AU', 'AES', 'OIC', 'NAM'] },
+    softPower: { reachScore: 8, globalLanguageHost: false, notes: 'Junta-led; regionally isolated; France expulsion signal.' },
+  },
+
+  'cambodia': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 32, internetPenetrationPct: 60, dataLocalization: false, notes: 'Hun Sen/Hun Manet dynasty; internet suppression; scam compound hub.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 35, fxReservesMonthsImports: 8, primaryBalanceGdpPct: -4.5, notes: 'Chinese FDI heavy; garment-export dependent.' },
+    foodWater: { foodImportDependencePct: -5, waterStressIndex: 2, arableLandHaPerCapita: 0.30, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 22, unVotingAlignmentBlocB: 78, defensePacts: ['ASEAN'], igoMemberships: ['ASEAN', 'RCEP', 'NAM'] },
+    softPower: { reachScore: 18, globalLanguageHost: false, notes: 'Angkor Wat tourism; Chinese-aligned government.' },
+  },
+
+  'cameroon': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 38, internetPenetrationPct: 35, dataLocalization: false, notes: 'Internet shutdowns in Anglophone regions; Biya regime.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 48, fxReservesMonthsImports: 3, primaryBalanceGdpPct: -2.5 },
+    foodWater: { foodImportDependencePct: 15, waterStressIndex: 2, arableLandHaPerCapita: 0.35, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 35, unVotingAlignmentBlocB: 60, defensePacts: ['AU'], igoMemberships: ['AU', 'CEMAC', 'OIC', 'Commonwealth', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'cobalt', role: 'producer', globalSharePct: 0.2 },
+    ],
+    softPower: { reachScore: 18, globalLanguageHost: true, notes: 'Bilingual (FR/EN); Francophone Africa influence.' },
+  },
+
+  'chile': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 70, internetPenetrationPct: 90, dataLocalization: false, notes: 'CSIRT-GOB national team; data protection reform.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 88, fxReservesMonthsImports: 8, primaryBalanceGdpPct: -1.5, notes: 'Copper stabilisation fund; investment-grade LatAm anchor.' },
+    foodWater: { foodImportDependencePct: -15, waterStressIndex: 3, arableLandHaPerCapita: 0.09, cerealExporter: false, notes: 'Net food exporter (fruit, wine, salmon); Atacama water stress.' },
+    diplomatic: { unVotingAlignmentBlocA: 65, unVotingAlignmentBlocB: 38, defensePacts: [], igoMemberships: ['CELAC', 'APEC', 'OECD', 'OAS', 'CPTPP'] },
+    criticalMinerals: [
+      { mineral: 'copper', role: 'producer', globalSharePct: 27 },
+      { mineral: 'lithium', role: 'producer', globalSharePct: 26 },
+    ],
+    softPower: { reachScore: 42, inboundStudentsThousands: 14, globalLanguageHost: false, notes: 'OECD member; copper/lithium diplomacy; democratic model.' },
+  },
+
+  'colombia': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 65, internetPenetrationPct: 73, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 58, fxReservesMonthsImports: 6, primaryBalanceGdpPct: -3.5 },
+    foodWater: { foodImportDependencePct: 5, waterStressIndex: 2, arableLandHaPerCapita: 0.12, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 62, unVotingAlignmentBlocB: 40, defensePacts: [], igoMemberships: ['OAS', 'CELAC', 'APEC', 'OECD', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'nickel', role: 'producer', globalSharePct: 2 },
+      { mineral: 'copper', role: 'producer', globalSharePct: 0.5 },
+    ],
+    softPower: { reachScore: 35, inboundStudentsThousands: 8, globalLanguageHost: false, notes: 'Peace process diplomacy; coca-leaf narrative.' },
+  },
+
+  'costa-rica': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 72, internetPenetrationPct: 85, dataLocalization: false, notes: '2022 Conti ransomware national emergency; post-attack reforms.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 70, fxReservesMonthsImports: 5, primaryBalanceGdpPct: 1.0, notes: 'Fiscal reform 2019; primary surplus achieved.' },
+    foodWater: { foodImportDependencePct: -10, waterStressIndex: 1, arableLandHaPerCapita: 0.10, cerealExporter: false, notes: 'Net food exporter; tropical ag.' },
+    diplomatic: { unVotingAlignmentBlocA: 72, unVotingAlignmentBlocB: 30, defensePacts: [], igoMemberships: ['OAS', 'CELAC', 'SICA', 'OECD', 'CPTPP'] },
+    softPower: { reachScore: 40, inboundStudentsThousands: 6, globalLanguageHost: false, notes: 'Eco-tourism brand; no army; green energy pioneer.' },
+  },
+
+  'cote-divoire': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 48, internetPenetrationPct: 46, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 62, fxReservesMonthsImports: 3.5, primaryBalanceGdpPct: -2.0, notes: 'CFA franc; cocoa-revenue dependent.' },
+    foodWater: { foodImportDependencePct: -20, waterStressIndex: 2, arableLandHaPerCapita: 0.28, cerealExporter: false, notes: 'World\'s largest cocoa exporter.' },
+    diplomatic: { unVotingAlignmentBlocA: 42, unVotingAlignmentBlocB: 55, defensePacts: ['AU'], igoMemberships: ['AU', 'ECOWAS', 'OIC', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'manganese', role: 'producer', globalSharePct: 0.5 },
+    ],
+    softPower: { reachScore: 22, globalLanguageHost: true, notes: 'WAEMU economic hub; Abidjan financial centre.' },
+  },
+
+  'croatia': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 72, internetPenetrationPct: 83, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 72, fxReservesMonthsImports: 6, primaryBalanceGdpPct: 0.5, notes: 'Euro adopted 2023; Schengen accession.' },
+    foodWater: { foodImportDependencePct: 10, waterStressIndex: 1, arableLandHaPerCapita: 0.22, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 84, unVotingAlignmentBlocB: 24, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OSCE', 'CoE'] },
+    softPower: { reachScore: 32, inboundStudentsThousands: 8, globalLanguageHost: false, notes: 'Tourism (Dalmatian coast); EU/NATO member.' },
+  },
+
+  'cyprus': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 76, internetPenetrationPct: 88, dataLocalization: false, notes: 'EU member; financial services hub; regional tension with Turkey.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 90, fxReservesMonthsImports: 5, primaryBalanceGdpPct: 1.5, notes: 'Post-2013 bail-in recovery; banking restructured.' },
+    foodWater: { foodImportDependencePct: 55, waterStressIndex: 4, arableLandHaPerCapita: 0.11, cerealExporter: false, notes: 'High food import dependence; severe water stress.' },
+    diplomatic: { unVotingAlignmentBlocA: 78, unVotingAlignmentBlocB: 30, defensePacts: [], igoMemberships: ['EU', 'OSCE', 'CoE', 'Commonwealth', 'NAM'] },
+    softPower: { reachScore: 30, globalLanguageHost: false, notes: 'Financial services centre; Russia-linked capital historical flows.' },
+  },
+
+  'czechia': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'high', internetFreedomScore: 78, internetPenetrationPct: 88, dataLocalization: false, notes: 'NUKIB national cyber authority; strong EU/NATO alignment; Huawei ban.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 40, fxReservesMonthsImports: 6, primaryBalanceGdpPct: -2.5 },
+    foodWater: { foodImportDependencePct: 8, waterStressIndex: 2, arableLandHaPerCapita: 0.30, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 86, unVotingAlignmentBlocB: 22, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OSCE', 'OECD', 'CoE'] },
+    softPower: { reachScore: 40, inboundStudentsThousands: 45, globalLanguageHost: false, notes: 'Prague tech hub; Velvet Revolution democratic brand.' },
+  },
+
+  'dem-rep-congo': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 35, internetPenetrationPct: 28, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 28, fxReservesMonthsImports: 1.5, primaryBalanceGdpPct: -4.0, notes: 'Ongoing conflict; humanitarian crisis; aid dependent.' },
+    foodWater: { foodImportDependencePct: 20, waterStressIndex: 1, arableLandHaPerCapita: 0.30, cerealExporter: false, notes: 'Congo River basin; vast arable land but conflict disrupts.' },
+    diplomatic: { unVotingAlignmentBlocA: 30, unVotingAlignmentBlocB: 62, defensePacts: ['AU'], igoMemberships: ['AU', 'SADC', 'CEEAC', 'OIF', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'cobalt', role: 'producer', globalSharePct: 70 },
+      { mineral: 'copper', role: 'producer', globalSharePct: 8 },
+      { mineral: 'manganese', role: 'producer', globalSharePct: 1 },
+    ],
+    softPower: { reachScore: 12, globalLanguageHost: true, notes: 'French-language cultural ties; cobalt leverage.' },
+  },
+
+  'denmark': {
+    cyber: { offensiveTier: 'high', defensiveTier: 'high', internetFreedomScore: 88, internetPenetrationPct: 98, dataLocalization: false, notes: 'CFCS intelligence integration; Greenland strategic significance.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 35, fxReservesMonthsImports: 6, primaryBalanceGdpPct: 2.5 },
+    foodWater: { foodImportDependencePct: -25, waterStressIndex: 1, arableLandHaPerCapita: 0.44, cerealExporter: true, notes: 'Major pork/dairy exporter; net food exporter.' },
+    diplomatic: { unVotingAlignmentBlocA: 90, unVotingAlignmentBlocB: 18, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OECD', 'CoE', 'Nordic Council'] },
+    softPower: { reachScore: 60, inboundStudentsThousands: 30, globalLanguageHost: false, notes: 'Greenland/Arctic strategic asset; Nordic model diplomacy.' },
+  },
+
+  'dominican-republic': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 62, internetPenetrationPct: 80, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 60, fxReservesMonthsImports: 4.5, primaryBalanceGdpPct: -1.0 },
+    foodWater: { foodImportDependencePct: 25, waterStressIndex: 2, arableLandHaPerCapita: 0.10, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 68, unVotingAlignmentBlocB: 35, defensePacts: [], igoMemberships: ['OAS', 'CELAC', 'SICA', 'CARICOM'] },
+    softPower: { reachScore: 25, globalLanguageHost: false, notes: 'Tourism hub; baseball diplomacy; Caribbean leadership.' },
+  },
+
+  'ecuador': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 62, internetPenetrationPct: 68, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 58, fxReservesMonthsImports: 3, primaryBalanceGdpPct: -2.0, notes: 'Dollarised economy; IMF programme; oil dependent.' },
+    foodWater: { foodImportDependencePct: -10, waterStressIndex: 2, arableLandHaPerCapita: 0.08, cerealExporter: false, notes: 'Banana, shrimp, cocoa net exporter.' },
+    diplomatic: { unVotingAlignmentBlocA: 55, unVotingAlignmentBlocB: 42, defensePacts: [], igoMemberships: ['OAS', 'CELAC', 'CAN', 'UNASUR'] },
+    criticalMinerals: [
+      { mineral: 'copper', role: 'producer', globalSharePct: 0.5 },
+    ],
+    softPower: { reachScore: 22, globalLanguageHost: false, notes: 'Galapagos eco-diplomacy; banana export leverage.' },
+  },
+
+  'estonia': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'high', internetFreedomScore: 88, internetPenetrationPct: 93, dataLocalization: false, notes: 'Post-2007 attack global cyber leader; NATO CCDCOE HQ Tallinn; e-governance pioneer.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 20, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -2.0 },
+    foodWater: { foodImportDependencePct: 10, waterStressIndex: 1, arableLandHaPerCapita: 0.40, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 92, unVotingAlignmentBlocB: 15, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OSCE', 'OECD', 'CoE'] },
+    softPower: { reachScore: 45, globalLanguageHost: false, notes: 'Digital-nation brand; Skype birthplace; Tallinn Manual soft power.' },
+  },
+
+  'finland': {
+    cyber: { offensiveTier: 'high', defensiveTier: 'high', internetFreedomScore: 90, internetPenetrationPct: 95, dataLocalization: false, notes: 'TRAFICOM NCSC-FI; NATO member 2023; Nordic cyber cooperation.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 44, fxReservesMonthsImports: 5, primaryBalanceGdpPct: -2.5 },
+    foodWater: { foodImportDependencePct: 5, waterStressIndex: 1, arableLandHaPerCapita: 0.42, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 90, unVotingAlignmentBlocB: 18, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OSCE', 'OECD', 'CoE', 'Nordic Council'] },
+    softPower: { reachScore: 55, inboundStudentsThousands: 20, globalLanguageHost: false, notes: 'Education model (PISA); Nordic brand; Nokia legacy.' },
+  },
+
+  'georgia': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 62, internetPenetrationPct: 75, dataLocalization: false, notes: '2008 cyberattacks during Russian war; developing CERT capacity.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 102, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -2.5, notes: 'Russia-linked oligarch influence; IMF-supported.' },
+    foodWater: { foodImportDependencePct: 35, waterStressIndex: 2, arableLandHaPerCapita: 0.12, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 52, unVotingAlignmentBlocB: 45, defensePacts: [], igoMemberships: ['CoE', 'OSCE', 'GUAM'], pendingAccession: ['EU', 'NATO'] },
+    softPower: { reachScore: 25, globalLanguageHost: false, notes: 'Wine/tourism brand; EU candidate; contested between blocs.' },
+  },
+
+  'ghana': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 62, internetPenetrationPct: 55, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 98, fxReservesMonthsImports: 2, primaryBalanceGdpPct: -3.0, notes: 'IMF bailout 2023; domestic debt exchange; recovery track.' },
+    foodWater: { foodImportDependencePct: 15, waterStressIndex: 2, arableLandHaPerCapita: 0.18, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 48, unVotingAlignmentBlocB: 48, defensePacts: ['AU'], igoMemberships: ['AU', 'ECOWAS', 'Commonwealth', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'manganese', role: 'producer', globalSharePct: 2 },
+      { mineral: 'graphite', role: 'producer', globalSharePct: 1 },
+    ],
+    softPower: { reachScore: 30, inboundStudentsThousands: 6, globalLanguageHost: false, notes: 'Pan-African hub; stable democracy brand; Year of Return diaspora.' },
+  },
+
+  'greece': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 72, internetPenetrationPct: 85, dataLocalization: false, notes: 'Predator spyware scandal; NATO/EU member; Hellenic NCSA.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 168, fxReservesMonthsImports: 3, primaryBalanceGdpPct: 2.0, notes: 'Post-Troika recovery; highest debt/GDP in EU.' },
+    foodWater: { foodImportDependencePct: 10, waterStressIndex: 3, arableLandHaPerCapita: 0.22, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 82, unVotingAlignmentBlocB: 26, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OSCE', 'OECD', 'CoE'] },
+    softPower: { reachScore: 50, inboundStudentsThousands: 35, globalLanguageHost: false, notes: 'Classical heritage diplomacy; Orthodox Church reach; shipping power.' },
+  },
+
+  'guatemala': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 58, internetPenetrationPct: 52, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 30, fxReservesMonthsImports: 5, primaryBalanceGdpPct: -1.5 },
+    foodWater: { foodImportDependencePct: -5, waterStressIndex: 2, arableLandHaPerCapita: 0.08, cerealExporter: false, notes: 'Coffee/banana exporter; inequality undermines food security.' },
+    diplomatic: { unVotingAlignmentBlocA: 65, unVotingAlignmentBlocB: 35, defensePacts: [], igoMemberships: ['OAS', 'CELAC', 'SICA', 'CACM'] },
+    softPower: { reachScore: 18, globalLanguageHost: false },
+  },
+
+  'hungary': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 62, internetPenetrationPct: 88, dataLocalization: false, notes: 'Pegasus spyware use against journalists; Orbán-aligned digital policy.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 68, fxReservesMonthsImports: 5, primaryBalanceGdpPct: -4.5, notes: 'High deficit; EU funds withheld over rule-of-law; forint volatility.' },
+    foodWater: { foodImportDependencePct: -20, waterStressIndex: 2, arableLandHaPerCapita: 0.44, cerealExporter: true },
+    diplomatic: { unVotingAlignmentBlocA: 62, unVotingAlignmentBlocB: 48, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OSCE', 'OECD', 'CoE'] },
+    criticalMinerals: [
+      { mineral: 'lithium', role: 'processor', globalSharePct: 0 },
+    ],
+    softPower: { reachScore: 32, inboundStudentsThousands: 25, globalLanguageHost: false, notes: 'Orbán illiberal-democratic export; Budapest as alternative EU capital.' },
+  },
+
+  'iceland': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'high', internetFreedomScore: 92, internetPenetrationPct: 99, dataLocalization: false, notes: 'CERT-IS; data centre hub due to geothermal; strong press freedom.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 68, fxReservesMonthsImports: 5, primaryBalanceGdpPct: -0.5 },
+    foodWater: { foodImportDependencePct: -30, waterStressIndex: 1, arableLandHaPerCapita: 1.20, cerealExporter: false, notes: 'Major fish exporter; abundant freshwater.' },
+    diplomatic: { unVotingAlignmentBlocA: 88, unVotingAlignmentBlocB: 20, defensePacts: ['NATO'], igoMemberships: ['NATO', 'OSCE', 'OECD', 'CoE', 'Nordic Council', 'EEA'] },
+    softPower: { reachScore: 40, globalLanguageHost: false, notes: 'Arctic Council; renewable energy model; fishing rights diplomacy.' },
+  },
+
+  'ireland': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'high', internetFreedomScore: 86, internetPenetrationPct: 94, dataLocalization: false, notes: 'NCSC Ireland; EU Big Tech DPA lead regulator (GDPR); HSE ransomware 2021.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 42, fxReservesMonthsImports: 5, primaryBalanceGdpPct: 4.0, notes: 'Corporate-tax surplus; Apple tax windfall; GDP distorted by MNC.' },
+    foodWater: { foodImportDependencePct: -20, waterStressIndex: 1, arableLandHaPerCapita: 0.30, cerealExporter: false, notes: 'Major dairy/beef exporter.' },
+    diplomatic: { unVotingAlignmentBlocA: 82, unVotingAlignmentBlocB: 25, defensePacts: [], igoMemberships: ['EU', 'OECD', 'CoE', 'Commonwealth'] },
+    softPower: { reachScore: 55, inboundStudentsThousands: 35, globalLanguageHost: true, notes: 'Global Irish diaspora; EU Big Tech hub; English-language advantage.' },
+  },
+
+  'jordan': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 35, internetPenetrationPct: 85, dataLocalization: false, notes: 'US-supported cyber reforms; NSO Pegasus use documented.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 112, fxReservesMonthsImports: 7, primaryBalanceGdpPct: -2.5, notes: 'Donor-dependent; Gulf grants; IMF programme.' },
+    foodWater: { foodImportDependencePct: 85, waterStressIndex: 5, arableLandHaPerCapita: 0.02, cerealExporter: false, notes: 'World\'s second-most water-scarce country; 90%+ food imported.' },
+    diplomatic: { unVotingAlignmentBlocA: 55, unVotingAlignmentBlocB: 48, defensePacts: [], igoMemberships: ['AL', 'OIC', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'phosphate', role: 'producer', globalSharePct: 8 },
+    ],
+    softPower: { reachScore: 35, globalLanguageHost: false, notes: 'Hashemite legitimacy; refugee-hosting capacity; Palestinian issue centrality.' },
+  },
+
+  'kosovo': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 70, internetPenetrationPct: 91, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 22, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -2.0, notes: 'Euro-ised; remittance-dependent; EU and US partial recognition.' },
+    foodWater: { foodImportDependencePct: 40, waterStressIndex: 2, arableLandHaPerCapita: 0.14, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 80, unVotingAlignmentBlocB: 28, defensePacts: [], igoMemberships: ['IMF', 'WB'], pendingAccession: ['EU', 'NATO', 'UN'] },
+    softPower: { reachScore: 12, globalLanguageHost: false, notes: 'US/NATO dependency; limited UN membership; Serbian dispute.' },
+  },
+
+  'kuwait': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 30, internetPenetrationPct: 99, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 12, fxReservesMonthsImports: 24, primaryBalanceGdpPct: 8.0, notes: 'KIA SWF among world\'s largest; oil-funded surpluses.' },
+    foodWater: { foodImportDependencePct: 92, waterStressIndex: 5, arableLandHaPerCapita: 0.01, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 55, unVotingAlignmentBlocB: 48, defensePacts: ['GCC'], igoMemberships: ['GCC', 'AL', 'OIC', 'OPEC', 'NAM'] },
+    softPower: { reachScore: 35, globalLanguageHost: false, notes: 'SWF financial diplomacy; Palestinian solidarity; Gulf mediation role.' },
+  },
+
+  'kyrgyzstan': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 38, internetPenetrationPct: 48, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 68, fxReservesMonthsImports: 3.5, primaryBalanceGdpPct: -4.0, notes: 'Remittance-dependent; gold-mining revenue; China debt.' },
+    foodWater: { foodImportDependencePct: 30, waterStressIndex: 2, arableLandHaPerCapita: 0.26, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 22, unVotingAlignmentBlocB: 78, defensePacts: ['CSTO'], igoMemberships: ['CSTO', 'EAEU', 'CIS', 'SCO', 'OIC'] },
+    criticalMinerals: [
+      { mineral: 'uranium', role: 'producer', globalSharePct: 0.5 },
+    ],
+    softPower: { reachScore: 10, globalLanguageHost: false },
+  },
+
+  'laos': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 24, internetPenetrationPct: 52, dataLocalization: false, notes: 'One-party communist; minimal cyber capacity; Chinese infrastructure.' },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 125, fxReservesMonthsImports: 1.5, primaryBalanceGdpPct: -6.0, notes: 'Debt trap risk; Chinese loans dominant; kip collapse 2022-24.' },
+    foodWater: { foodImportDependencePct: 5, waterStressIndex: 1, arableLandHaPerCapita: 0.22, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 18, unVotingAlignmentBlocB: 82, defensePacts: ['ASEAN'], igoMemberships: ['ASEAN', 'RCEP', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'potash', role: 'producer', globalSharePct: 0.5 },
+    ],
+    softPower: { reachScore: 10, globalLanguageHost: false, notes: 'Chinese Belt and Road showcase; battery of Southeast Asia (hydropower).' },
+  },
+
+  'latvia': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'high', internetFreedomScore: 84, internetPenetrationPct: 90, dataLocalization: false, notes: 'CERT-LV; NATO/EU member; front-line Russia threat awareness.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 46, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -2.5 },
+    foodWater: { foodImportDependencePct: -5, waterStressIndex: 1, arableLandHaPerCapita: 0.64, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 91, unVotingAlignmentBlocB: 16, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OSCE', 'OECD', 'CoE'] },
+    softPower: { reachScore: 30, globalLanguageHost: false, notes: 'Baltic digital hub; NATO eastern flank emphasis.' },
+  },
+
+  'lebanon': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 42, internetPenetrationPct: 78, dataLocalization: false, notes: 'Hezbollah cyber units; state collapse limits official capacity.' },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 280, fxReservesMonthsImports: 0.5, primaryBalanceGdpPct: -18.0, notes: 'Worst financial collapse in modern history; pound hyperinflation.' },
+    foodWater: { foodImportDependencePct: 85, waterStressIndex: 4, arableLandHaPerCapita: 0.04, cerealExporter: false, notes: 'Beirut port blast 2020 destroyed grain stores; near-total import dependency.' },
+    diplomatic: { unVotingAlignmentBlocA: 35, unVotingAlignmentBlocB: 60, defensePacts: [], igoMemberships: ['AL', 'OIC', 'NAM'] },
+    softPower: { reachScore: 28, globalLanguageHost: false, notes: 'Large, influential global diaspora; Francophone culture; banking heritage.' },
+  },
+
+  'libya': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 20, internetPenetrationPct: 56, dataLocalization: false, notes: 'Dual-authority collapse; internet weaponised by factions.' },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 10, fxReservesMonthsImports: 25, primaryBalanceGdpPct: 2.0, notes: 'LIA SWF frozen; oil revenue disputed between factions; anomalous reserve level.' },
+    foodWater: { foodImportDependencePct: 88, waterStressIndex: 5, arableLandHaPerCapita: 0.15, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 22, unVotingAlignmentBlocB: 65, defensePacts: [], igoMemberships: ['AL', 'AU', 'OIC', 'OPEC', 'NAM'] },
+    criticalMinerals: [],
+    softPower: { reachScore: 8, globalLanguageHost: false, notes: 'Failed-state status; oil leverage fragmented by factions.' },
+  },
+
+  'lithuania': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'high', internetFreedomScore: 84, internetPenetrationPct: 89, dataLocalization: false, notes: 'NKSC; NATO front-line member; Huawei 5G concerns raised.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 50, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -1.5 },
+    foodWater: { foodImportDependencePct: -10, waterStressIndex: 1, arableLandHaPerCapita: 0.56, cerealExporter: true },
+    diplomatic: { unVotingAlignmentBlocA: 92, unVotingAlignmentBlocB: 15, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OSCE', 'OECD', 'CoE'] },
+    softPower: { reachScore: 32, globalLanguageHost: false, notes: 'Baltic NATO anchor; Taiwan chip diplomacy; China decoupling leader.' },
+  },
+
+  'luxembourg': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'high', internetFreedomScore: 86, internetPenetrationPct: 99, dataLocalization: false, notes: 'CIRCL; EU financial tech regulation hub; data centre cluster.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 28, fxReservesMonthsImports: 6, primaryBalanceGdpPct: -0.5, notes: 'Financial centre; AAA-rated; lowest debt in EU relative to GDP.' },
+    foodWater: { foodImportDependencePct: 70, waterStressIndex: 1, arableLandHaPerCapita: 0.18, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 88, unVotingAlignmentBlocB: 20, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OECD', 'CoE', 'Benelux'] },
+    softPower: { reachScore: 42, globalLanguageHost: true, notes: 'EU Court of Justice seat; ECB partial; multilingual banking hub.' },
+  },
+
+  'madagascar': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 52, internetPenetrationPct: 20, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 55, fxReservesMonthsImports: 2.5, primaryBalanceGdpPct: -4.5 },
+    foodWater: { foodImportDependencePct: 20, waterStressIndex: 2, arableLandHaPerCapita: 0.20, cerealExporter: false, notes: 'Climate shocks; south experiencing famine conditions.' },
+    diplomatic: { unVotingAlignmentBlocA: 30, unVotingAlignmentBlocB: 62, defensePacts: ['AU'], igoMemberships: ['AU', 'SADC', 'IOC', 'NAM', 'OIF'] },
+    criticalMinerals: [
+      { mineral: 'graphite', role: 'producer', globalSharePct: 4 },
+      { mineral: 'nickel', role: 'producer', globalSharePct: 1 },
+      { mineral: 'cobalt', role: 'producer', globalSharePct: 0.5 },
+    ],
+    softPower: { reachScore: 12, globalLanguageHost: true, notes: 'Biodiversity diplomacy; Francophone ties.' },
+  },
+
+  'malaysia': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 42, internetPenetrationPct: 90, dataLocalization: false, notes: 'CyberSecurity Malaysia; political content censorship; MH17/MH370 cloud.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 68, fxReservesMonthsImports: 5.5, primaryBalanceGdpPct: -4.5, notes: '1MDB scandal legacy; Ringgit under pressure.' },
+    foodWater: { foodImportDependencePct: 25, waterStressIndex: 1, arableLandHaPerCapita: 0.08, cerealExporter: false, notes: 'Palm oil dominant exporter; rice importer.' },
+    diplomatic: { unVotingAlignmentBlocA: 32, unVotingAlignmentBlocB: 65, defensePacts: ['ASEAN', 'Five Power'], igoMemberships: ['ASEAN', 'RCEP', 'OIC', 'Commonwealth', 'NAM', 'D-8'] },
+    criticalMinerals: [
+      { mineral: 'rareEarths', role: 'processor', globalSharePct: 15 },
+    ],
+    softPower: { reachScore: 45, inboundStudentsThousands: 120, globalLanguageHost: false, notes: 'RE processing hub; Islamic moderation model; Kuala Lumpur financial centre.' },
+  },
+
+  'mali': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 38, internetPenetrationPct: 18, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 48, fxReservesMonthsImports: 2, primaryBalanceGdpPct: -5.0, notes: 'Junta rule; donor suspension; Wagner present.' },
+    foodWater: { foodImportDependencePct: 25, waterStressIndex: 4, arableLandHaPerCapita: 0.35, cerealExporter: false, notes: 'Sahel drought; displacement; food crisis.' },
+    diplomatic: { unVotingAlignmentBlocA: 15, unVotingAlignmentBlocB: 78, defensePacts: ['AES'], igoMemberships: ['AU', 'AES', 'OIC', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'manganese', role: 'producer', globalSharePct: 0.5 },
+    ],
+    softPower: { reachScore: 8, globalLanguageHost: true, notes: 'Junta-led; internationally isolated; gold mining leverage.' },
+  },
+
+  'moldova': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 65, internetPenetrationPct: 78, dataLocalization: false, notes: 'Russia disinformation target; EU cyber assistance; Transnistria grey zone.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 42, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -4.0, notes: 'Remittance-dependent; energy price shock 2022.' },
+    foodWater: { foodImportDependencePct: -5, waterStressIndex: 2, arableLandHaPerCapita: 0.48, cerealExporter: true, notes: 'Agricultural surplus; wine exporter.' },
+    diplomatic: { unVotingAlignmentBlocA: 65, unVotingAlignmentBlocB: 38, defensePacts: [], igoMemberships: ['CIS', 'CoE', 'OSCE'], pendingAccession: ['EU'] },
+    softPower: { reachScore: 15, globalLanguageHost: false, notes: 'EU candidate 2022; wine diplomacy; Transnistria conflict.' },
+  },
+
+  'mongolia': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 60, internetPenetrationPct: 72, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 88, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -4.0, notes: 'Mining-commodity dependent; China trade concentration.' },
+    foodWater: { foodImportDependencePct: 20, waterStressIndex: 3, arableLandHaPerCapita: 0.42, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 38, unVotingAlignmentBlocB: 62, defensePacts: [], igoMemberships: ['SCO', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'copper', role: 'producer', globalSharePct: 2 },
+    ],
+    softPower: { reachScore: 18, globalLanguageHost: false, notes: 'Third-neighbour diplomacy; buffer state between Russia and China.' },
+  },
+
+  'montenegro': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 68, internetPenetrationPct: 80, dataLocalization: false, notes: '2022 Russian cyberattacks on government; NATO membership expedited response.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 70, fxReservesMonthsImports: 3, primaryBalanceGdpPct: -2.5, notes: 'Euroised; Chinese Bar-Boljare highway debt.' },
+    foodWater: { foodImportDependencePct: 42, waterStressIndex: 1, arableLandHaPerCapita: 0.08, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 80, unVotingAlignmentBlocB: 28, defensePacts: ['NATO'], igoMemberships: ['NATO', 'OSCE', 'CoE'], pendingAccession: ['EU'] },
+    softPower: { reachScore: 18, globalLanguageHost: false, notes: 'Tourism (Adriatic); EU accession progress.' },
+  },
+
+  'mozambique': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 45, internetPenetrationPct: 22, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 112, fxReservesMonthsImports: 3, primaryBalanceGdpPct: -5.0, notes: 'Tuna bond default legacy; LNG revenue not yet flowing; Cabo Delgado insurgency.' },
+    foodWater: { foodImportDependencePct: 28, waterStressIndex: 2, arableLandHaPerCapita: 0.32, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 30, unVotingAlignmentBlocB: 65, defensePacts: ['AU'], igoMemberships: ['AU', 'SADC', 'Commonwealth', 'CPLP', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'graphite', role: 'producer', globalSharePct: 6 },
+      { mineral: 'titanium', role: 'producer', globalSharePct: 3 },
+    ],
+    softPower: { reachScore: 12, globalLanguageHost: false, notes: 'LNG potential; SADC peacekeeping contributor.' },
+  },
+
+  'myanmar': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 15, internetPenetrationPct: 46, dataLocalization: true, notes: 'Military junta controls internet; social media shutdowns; civil-war context.' },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 55, fxReservesMonthsImports: 2, primaryBalanceGdpPct: -7.0, notes: 'Post-coup collapse; kyat depreciation; sanctions.' },
+    foodWater: { foodImportDependencePct: -10, waterStressIndex: 2, arableLandHaPerCapita: 0.22, cerealExporter: false, notes: 'Was rice exporter; conflict disrupting agriculture.' },
+    diplomatic: { unVotingAlignmentBlocA: 18, unVotingAlignmentBlocB: 78, defensePacts: [], igoMemberships: ['ASEAN', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'rareEarths', role: 'producer', globalSharePct: 10 },
+      { mineral: 'tungsten', role: 'producer', globalSharePct: 5 },
+      { mineral: 'nickel', role: 'producer', globalSharePct: 1 },
+    ],
+    softPower: { reachScore: 8, globalLanguageHost: false, notes: 'Junta-led; limited international engagement; Rohingya crisis overhang; jade/gem leverage.' },
+  },
+
+  'nepal': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 52, internetPenetrationPct: 56, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 42, fxReservesMonthsImports: 7, primaryBalanceGdpPct: -4.0, notes: 'Remittance-dependent; India-linked economy.' },
+    foodWater: { foodImportDependencePct: 12, waterStressIndex: 2, arableLandHaPerCapita: 0.08, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 35, unVotingAlignmentBlocB: 62, defensePacts: [], igoMemberships: ['SAARC', 'NAM', 'OIF'] },
+    softPower: { reachScore: 20, globalLanguageHost: false, notes: 'Gurkha military diplomacy; Everest/tourism brand; buffer between India and China.' },
+  },
+
+  'new-zealand': {
+    cyber: { offensiveTier: 'high', defensiveTier: 'high', internetFreedomScore: 88, internetPenetrationPct: 93, dataLocalization: false, notes: 'GCSB; Five Eyes full member; AUKUS Pillar II associate; Christchurch Call.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 55, fxReservesMonthsImports: 5, primaryBalanceGdpPct: -2.0 },
+    foodWater: { foodImportDependencePct: -60, waterStressIndex: 1, arableLandHaPerCapita: 0.50, cerealExporter: true, notes: 'Major dairy, meat, wool exporter; net food exporter.' },
+    diplomatic: { unVotingAlignmentBlocA: 88, unVotingAlignmentBlocB: 20, defensePacts: ['ANZUS', 'Five Eyes'], igoMemberships: ['OECD', 'APEC', 'Commonwealth', 'CPTPP', 'Pacific Islands Forum'] },
+    softPower: { reachScore: 52, inboundStudentsThousands: 50, globalLanguageHost: true, notes: 'Soft-power brand; Maori cultural diplomacy; Pacific Islands Forum leadership.' },
+  },
+
+  'niger': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 35, internetPenetrationPct: 15, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 52, fxReservesMonthsImports: 1.5, primaryBalanceGdpPct: -6.0, notes: 'Junta 2023; French uranium cut-off; ECOWAS sanctions lifted.' },
+    foodWater: { foodImportDependencePct: 22, waterStressIndex: 4, arableLandHaPerCapita: 0.55, cerealExporter: false, notes: 'Sahel food crisis; chronic undernutrition.' },
+    diplomatic: { unVotingAlignmentBlocA: 15, unVotingAlignmentBlocB: 75, defensePacts: ['AES'], igoMemberships: ['AU', 'AES', 'OIC', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'uranium', role: 'producer', globalSharePct: 5 },
+    ],
+    softPower: { reachScore: 6, globalLanguageHost: false, notes: 'Uranium leverage; junta-led; internationally isolated.' },
+  },
+
+  'north-macedonia': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 62, internetPenetrationPct: 80, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 58, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -3.0 },
+    foodWater: { foodImportDependencePct: 28, waterStressIndex: 2, arableLandHaPerCapita: 0.20, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 80, unVotingAlignmentBlocB: 28, defensePacts: ['NATO'], igoMemberships: ['NATO', 'OSCE', 'CoE'], pendingAccession: ['EU'] },
+    softPower: { reachScore: 15, globalLanguageHost: false, notes: 'Prespa Agreement legacy; EU/NATO accession.' },
+  },
+
+  'oman': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 32, internetPenetrationPct: 92, dataLocalization: false, notes: 'OCERT; balanced digital policy; Gulf mediation role.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 38, fxReservesMonthsImports: 8, primaryBalanceGdpPct: 1.5, notes: 'OIA SWF; oil revenue; fiscal reform under Vision 2040.' },
+    foodWater: { foodImportDependencePct: 82, waterStressIndex: 5, arableLandHaPerCapita: 0.02, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 48, unVotingAlignmentBlocB: 55, defensePacts: ['GCC'], igoMemberships: ['GCC', 'AL', 'OIC', 'NAM'] },
+    softPower: { reachScore: 32, globalLanguageHost: false, notes: 'Mediation diplomacy (Iran, Yemen); neutral Gulf state; DARSAH Institute.' },
+  },
+
+  'panama': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 65, internetPenetrationPct: 68, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 62, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -4.5, notes: 'Dollarised; Canal revenue; Panama Papers legacy; fiscal strain.' },
+    foodWater: { foodImportDependencePct: 35, waterStressIndex: 1, arableLandHaPerCapita: 0.08, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 68, unVotingAlignmentBlocB: 35, defensePacts: [], igoMemberships: ['OAS', 'CELAC', 'SICA'] },
+    softPower: { reachScore: 30, globalLanguageHost: false, notes: 'Canal strategic chokepoint; financial centre; logistics hub.' },
+  },
+
+  'papua-new-guinea': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 55, internetPenetrationPct: 28, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 52, fxReservesMonthsImports: 3, primaryBalanceGdpPct: -3.5, notes: 'LNG revenue; resource curse; high debt service.' },
+    foodWater: { foodImportDependencePct: -15, waterStressIndex: 1, arableLandHaPerCapita: 0.10, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 62, unVotingAlignmentBlocB: 40, defensePacts: [], igoMemberships: ['APEC', 'Pacific Islands Forum', 'Commonwealth', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'copper', role: 'producer', globalSharePct: 0.5 },
+      { mineral: 'nickel', role: 'producer', globalSharePct: 0.5 },
+      { mineral: 'cobalt', role: 'producer', globalSharePct: 0.3 },
+    ],
+    softPower: { reachScore: 15, globalLanguageHost: false, notes: 'Pacific Islands geopolitics; LNG leverage; APEC membership.' },
+  },
+
+  'paraguay': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 65, internetPenetrationPct: 72, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 42, fxReservesMonthsImports: 6, primaryBalanceGdpPct: -1.5, notes: 'Hydropower revenue; soy agri-dependent; fiscal orthodoxy.' },
+    foodWater: { foodImportDependencePct: -30, waterStressIndex: 1, arableLandHaPerCapita: 0.58, cerealExporter: true, notes: 'Major soy exporter; Itaipu/Yacyretá hydropower.' },
+    diplomatic: { unVotingAlignmentBlocA: 65, unVotingAlignmentBlocB: 35, defensePacts: [], igoMemberships: ['Mercosur', 'OAS', 'CELAC', 'UNASUR'] },
+    softPower: { reachScore: 18, globalLanguageHost: false, notes: 'Hydropower diplomacy; soy export leverage; Taiwan recognition.' },
+  },
+
+  'peru': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 65, internetPenetrationPct: 72, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 35, fxReservesMonthsImports: 16, primaryBalanceGdpPct: -2.5, notes: 'Large FX reserves; BCR sterilisation; political risk cloud.' },
+    foodWater: { foodImportDependencePct: -5, waterStressIndex: 3, arableLandHaPerCapita: 0.13, cerealExporter: false, notes: 'Fish meal/copper exporter; Atacama/Andes water stress.' },
+    diplomatic: { unVotingAlignmentBlocA: 60, unVotingAlignmentBlocB: 42, defensePacts: [], igoMemberships: ['OAS', 'CELAC', 'APEC', 'CAN', 'CPTPP'] },
+    criticalMinerals: [
+      { mineral: 'copper', role: 'producer', globalSharePct: 10 },
+    ],
+    softPower: { reachScore: 32, globalLanguageHost: false, notes: 'APEC/CPTPP member; Machu Picchu tourism; copper leverage.' },
+  },
+
+  'portugal': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'high', internetFreedomScore: 83, internetPenetrationPct: 88, dataLocalization: false, notes: 'CNCS national cyber strategy; EU/NATO member; Atlantic hub.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 112, fxReservesMonthsImports: 4, primaryBalanceGdpPct: 1.2, notes: 'Post-Troika fiscal recovery; primary surplus maintained.' },
+    foodWater: { foodImportDependencePct: 15, waterStressIndex: 3, arableLandHaPerCapita: 0.18, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 85, unVotingAlignmentBlocB: 22, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OECD', 'CoE', 'CPLP'] },
+    softPower: { reachScore: 52, inboundStudentsThousands: 50, globalLanguageHost: true, notes: 'CPLP/Lusophone soft power; Atlantic posture; Lisbon tech hub.' },
+  },
+
+  'romania': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 70, internetPenetrationPct: 84, dataLocalization: false, notes: 'DNSC; NATO/EU member; significant NATO military build-up.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 50, fxReservesMonthsImports: 5, primaryBalanceGdpPct: -5.5, notes: 'Highest deficit in EU; fiscal consolidation under IMF pressure.' },
+    foodWater: { foodImportDependencePct: -10, waterStressIndex: 2, arableLandHaPerCapita: 0.40, cerealExporter: true, notes: 'Black Sea grain exporter; EU agriculture hub.' },
+    diplomatic: { unVotingAlignmentBlocA: 85, unVotingAlignmentBlocB: 22, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OSCE', 'CoE'] },
+    criticalMinerals: [
+      { mineral: 'uranium', role: 'producer', globalSharePct: 0.5 },
+    ],
+    softPower: { reachScore: 30, inboundStudentsThousands: 18, globalLanguageHost: false, notes: 'Black Sea NATO anchor; Latin heritage cultural diplomacy.' },
+  },
+
+  'rwanda': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 38, internetPenetrationPct: 62, dataLocalization: false, notes: 'RISA digital ambitions; Pegasus use against dissidents documented.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 72, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -6.5, notes: 'Kagame development model; high aid-funded investment.' },
+    foodWater: { foodImportDependencePct: 18, waterStressIndex: 2, arableLandHaPerCapita: 0.10, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 42, unVotingAlignmentBlocB: 55, defensePacts: ['AU'], igoMemberships: ['AU', 'EAC', 'Commonwealth', 'COMESA', 'OIF'] },
+    criticalMinerals: [
+      { mineral: 'tungsten', role: 'producer', globalSharePct: 1 },
+    ],
+    softPower: { reachScore: 28, globalLanguageHost: false, notes: 'Kigali development model; peacekeeping; tech hub ambitions.' },
+  },
+
+  'senegal': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 52, internetPenetrationPct: 62, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 82, fxReservesMonthsImports: 3.5, primaryBalanceGdpPct: -5.0, notes: 'Oil/gas production starting 2024; CFA franc; debt rising.' },
+    foodWater: { foodImportDependencePct: 35, waterStressIndex: 3, arableLandHaPerCapita: 0.22, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 38, unVotingAlignmentBlocB: 58, defensePacts: ['AU'], igoMemberships: ['AU', 'ECOWAS', 'OIC', 'OIF', 'NAM'] },
+    softPower: { reachScore: 30, globalLanguageHost: true, notes: 'West Africa democratic anchor; Dakar cultural capital; French-speaking.' },
+  },
+
+  'serbia': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 60, internetPenetrationPct: 84, dataLocalization: false, notes: 'Pegasus/Cellebrite use against journalists; Vučić balancing act.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 50, fxReservesMonthsImports: 5.5, primaryBalanceGdpPct: -2.0 },
+    foodWater: { foodImportDependencePct: -10, waterStressIndex: 2, arableLandHaPerCapita: 0.42, cerealExporter: true },
+    diplomatic: { unVotingAlignmentBlocA: 60, unVotingAlignmentBlocB: 50, defensePacts: [], igoMemberships: ['OSCE', 'CoE', 'CEFTA'], pendingAccession: ['EU'] },
+    criticalMinerals: [
+      { mineral: 'lithium', role: 'reserves', globalSharePct: 4 },
+      { mineral: 'copper', role: 'producer', globalSharePct: 0.3 },
+    ],
+    softPower: { reachScore: 28, globalLanguageHost: false, notes: 'Geopolitical pivot actor; Jadar lithium EU interest; Russia/China relations.' },
+  },
+
+  'slovakia': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 72, internetPenetrationPct: 84, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 60, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -4.5, notes: 'Fico government fiscal loosening; EU concerns.' },
+    foodWater: { foodImportDependencePct: 10, waterStressIndex: 2, arableLandHaPerCapita: 0.28, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 76, unVotingAlignmentBlocB: 35, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OSCE', 'OECD', 'CoE'] },
+    softPower: { reachScore: 25, globalLanguageHost: false, notes: 'Fico Russia-friendly drift; automotive industry hub.' },
+  },
+
+  'slovenia': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 76, internetPenetrationPct: 88, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 70, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -2.5 },
+    foodWater: { foodImportDependencePct: 15, waterStressIndex: 1, arableLandHaPerCapita: 0.12, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 84, unVotingAlignmentBlocB: 24, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OSCE', 'OECD', 'CoE'] },
+    softPower: { reachScore: 28, globalLanguageHost: false, notes: 'Brdo-Brijuni Process Western Balkans diplomacy; green tech.' },
+  },
+
+  'somalia': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 12, internetPenetrationPct: 20, dataLocalization: false, notes: 'Fragile state; mobile-money innovation despite collapse; Al-Shabaab comms.' },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 72, fxReservesMonthsImports: 0.5, primaryBalanceGdpPct: -10.0, notes: 'HIPC; aid-dependent; no functioning central bank historically.' },
+    foodWater: { foodImportDependencePct: 45, waterStressIndex: 4, arableLandHaPerCapita: 0.22, cerealExporter: false, notes: 'Chronic drought; famine risk; 2022 near-famine.' },
+    diplomatic: { unVotingAlignmentBlocA: 28, unVotingAlignmentBlocB: 58, defensePacts: [], igoMemberships: ['AL', 'AU', 'OIC', 'IGAD', 'NAM'] },
+    softPower: { reachScore: 6, globalLanguageHost: false, notes: 'Diaspora remittances critical; Berbera port competition.' },
+  },
+
+  'south-sudan': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 10, internetPenetrationPct: 10, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 60, fxReservesMonthsImports: 0.5, primaryBalanceGdpPct: -15.0, notes: 'Oil-dependent; civil war legacy; hyperinflation; currency collapse.' },
+    foodWater: { foodImportDependencePct: 55, waterStressIndex: 3, arableLandHaPerCapita: 0.30, cerealExporter: false, notes: 'World\'s most food-insecure country; conflict-driven.' },
+    diplomatic: { unVotingAlignmentBlocA: 25, unVotingAlignmentBlocB: 62, defensePacts: [], igoMemberships: ['AU', 'IGAD', 'EAC', 'NAM'] },
+    criticalMinerals: [],
+    softPower: { reachScore: 4, globalLanguageHost: false, notes: 'World\'s newest state; near-collapsed governance.' },
+  },
+
+  'sri-lanka': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 52, internetPenetrationPct: 58, dataLocalization: false, notes: 'Social media shutdowns; post-Rajapaksa reform environment.' },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 115, fxReservesMonthsImports: 2, primaryBalanceGdpPct: 1.5, notes: '2022 sovereign default; IMF programme; restructuring ongoing.' },
+    foodWater: { foodImportDependencePct: 20, waterStressIndex: 3, arableLandHaPerCapita: 0.06, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 35, unVotingAlignmentBlocB: 62, defensePacts: [], igoMemberships: ['SAARC', 'Commonwealth', 'NAM', 'BIMSTEC'] },
+    softPower: { reachScore: 22, globalLanguageHost: false, notes: 'Colombo port Indo-Pacific competition; tea diplomacy; cricket.' },
+  },
+
+  'sudan': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 14, internetPenetrationPct: 32, dataLocalization: false, notes: 'SAF/RSF civil war; internet disruptions used as weapon.' },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 195, fxReservesMonthsImports: 0.5, primaryBalanceGdpPct: -12.0, notes: 'Civil war since April 2023; economic collapse; hyperinflation.' },
+    foodWater: { foodImportDependencePct: 18, waterStressIndex: 4, arableLandHaPerCapita: 0.62, cerealExporter: false, notes: 'Large arable land but conflict prevents exploitation; famine.' },
+    diplomatic: { unVotingAlignmentBlocA: 22, unVotingAlignmentBlocB: 65, defensePacts: [], igoMemberships: ['AL', 'AU', 'OIC', 'IGAD', 'NAM'] },
+    criticalMinerals: [],
+    softPower: { reachScore: 6, globalLanguageHost: false, notes: 'Collapsed state; gold extraction via UAE channels; Red Sea port.' },
+  },
+
+  'sweden': {
+    cyber: { offensiveTier: 'high', defensiveTier: 'high', internetFreedomScore: 90, internetPenetrationPct: 97, dataLocalization: false, notes: 'NCSC-SE; NATO member 2024; SAPO; advanced defence industry.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 32, fxReservesMonthsImports: 6, primaryBalanceGdpPct: -0.5 },
+    foodWater: { foodImportDependencePct: 10, waterStressIndex: 1, arableLandHaPerCapita: 0.28, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 90, unVotingAlignmentBlocB: 18, defensePacts: ['NATO'], igoMemberships: ['EU', 'NATO', 'OECD', 'CoE', 'Nordic Council'] },
+    softPower: { reachScore: 65, inboundStudentsThousands: 35, globalLanguageHost: false, notes: 'IKEA/Spotify/Volvo brand; Nordic model; human rights diplomacy.' },
+  },
+
+  'syria': {
+    cyber: { offensiveTier: 'medium', defensiveTier: 'low', internetFreedomScore: 12, internetPenetrationPct: 38, dataLocalization: true, notes: 'Assad/post-Assad transition; SyRIA malware; Russian-backed surveillance.' },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 72, fxReservesMonthsImports: 0.5, primaryBalanceGdpPct: -20.0, notes: 'Decade of war destruction; Western sanctions; pound hyperinflation; HTS transition 2024.' },
+    foodWater: { foodImportDependencePct: 55, waterStressIndex: 4, arableLandHaPerCapita: 0.20, cerealExporter: false, notes: 'War destroyed agriculture; Euphrates water stress.' },
+    diplomatic: { unVotingAlignmentBlocA: 10, unVotingAlignmentBlocB: 72, defensePacts: [], igoMemberships: ['AL', 'OIC', 'NAM'] },
+    softPower: { reachScore: 6, globalLanguageHost: false, notes: 'HTS transition 2024-25; reconstruction leverage; refugee diplomacy.' },
+  },
+
+  'tajikistan': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 22, internetPenetrationPct: 40, dataLocalization: true },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 95, fxReservesMonthsImports: 3.5, primaryBalanceGdpPct: -2.5, notes: 'Remittance-dependent; China-heavy debt; Rogun dam project.' },
+    foodWater: { foodImportDependencePct: 30, waterStressIndex: 3, arableLandHaPerCapita: 0.10, cerealExporter: false, notes: 'Glacial water tower of Central Asia; upstream Amu Darya.' },
+    diplomatic: { unVotingAlignmentBlocA: 20, unVotingAlignmentBlocB: 80, defensePacts: ['CSTO'], igoMemberships: ['CSTO', 'EAEU', 'CIS', 'SCO', 'OIC'] },
+    criticalMinerals: [
+      { mineral: 'uranium', role: 'producer', globalSharePct: 0.3 },
+    ],
+    softPower: { reachScore: 8, globalLanguageHost: false },
+  },
+
+  'tanzania': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 40, internetPenetrationPct: 45, dataLocalization: false, notes: 'Online Content Regulations restrict expression; growing mobile internet.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 42, fxReservesMonthsImports: 4.5, primaryBalanceGdpPct: -3.5 },
+    foodWater: { foodImportDependencePct: 5, waterStressIndex: 3, arableLandHaPerCapita: 0.30, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 30, unVotingAlignmentBlocB: 65, defensePacts: ['AU'], igoMemberships: ['AU', 'EAC', 'SADC', 'Commonwealth', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'graphite', role: 'producer', globalSharePct: 3 },
+      { mineral: 'nickel', role: 'producer', globalSharePct: 0.5 },
+      { mineral: 'uranium', role: 'reserves' },
+    ],
+    softPower: { reachScore: 22, globalLanguageHost: false, notes: 'Serengeti/Kilimanjaro tourism; Dar es Salaam EAC hub.' },
+  },
+
+  'tunisia': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 42, internetPenetrationPct: 68, dataLocalization: false, notes: 'Post-Saied consolidation; ANSI cyber agency; Arab Spring legacy.' },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 88, fxReservesMonthsImports: 2.5, primaryBalanceGdpPct: -4.5, notes: 'IMF programme stalled; dinar depreciation; fiscal crisis.' },
+    foodWater: { foodImportDependencePct: 35, waterStressIndex: 4, arableLandHaPerCapita: 0.30, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 35, unVotingAlignmentBlocB: 58, defensePacts: [], igoMemberships: ['AL', 'AU', 'OIC', 'NAM', 'AMU'] },
+    criticalMinerals: [
+      { mineral: 'phosphate', role: 'producer', globalSharePct: 4 },
+    ],
+    softPower: { reachScore: 25, globalLanguageHost: false, notes: 'EU migration partnership leverage; Arab Spring origin; Jasmine Revolution brand.' },
+  },
+
+  'turkmenistan': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 5, internetPenetrationPct: 30, dataLocalization: true, notes: 'Most closed internet in Central Asia; extreme censorship.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 20, fxReservesMonthsImports: 10, primaryBalanceGdpPct: 3.0, notes: 'Gas-export rich; opaque state finances; manat officially pegged.' },
+    foodWater: { foodImportDependencePct: 20, waterStressIndex: 5, arableLandHaPerCapita: 0.35, cerealExporter: false, notes: 'Aral Sea catastrophe; Amu Darya depletion; cotton irrigation waste.' },
+    diplomatic: { unVotingAlignmentBlocA: 22, unVotingAlignmentBlocB: 72, defensePacts: [], igoMemberships: ['CIS', 'OIC', 'NAM'] },
+    criticalMinerals: [],
+    softPower: { reachScore: 6, globalLanguageHost: false, notes: 'Gas diplomacy; permanent neutrality; Berdimuhamedow cult of personality.' },
+  },
+
+  'uganda': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 35, internetPenetrationPct: 26, dataLocalization: false, notes: 'Social media tax; election internet shutdowns; Pegasus use documented.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 52, fxReservesMonthsImports: 4, primaryBalanceGdpPct: -4.0, notes: 'EACOP oil project financing; World Bank aid suspended over anti-gay law.' },
+    foodWater: { foodImportDependencePct: -5, waterStressIndex: 2, arableLandHaPerCapita: 0.22, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 28, unVotingAlignmentBlocB: 65, defensePacts: ['AU'], igoMemberships: ['AU', 'EAC', 'COMESA', 'Commonwealth', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'cobalt', role: 'producer', globalSharePct: 0.2 },
+      { mineral: 'copper', role: 'producer', globalSharePct: 0.1 },
+    ],
+    softPower: { reachScore: 18, globalLanguageHost: false, notes: 'AU peacekeeping contributor; oil pipeline leverage.' },
+  },
+
+  'uruguay': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 76, internetPenetrationPct: 88, dataLocalization: false, notes: 'CERTuy; strong data protection; stable democracy.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 62, fxReservesMonthsImports: 8, primaryBalanceGdpPct: -2.0 },
+    foodWater: { foodImportDependencePct: -40, waterStressIndex: 1, arableLandHaPerCapita: 0.50, cerealExporter: true, notes: 'Major beef, soy, rice exporter.' },
+    diplomatic: { unVotingAlignmentBlocA: 65, unVotingAlignmentBlocB: 38, defensePacts: [], igoMemberships: ['Mercosur', 'OAS', 'CELAC', 'CPTPP'] },
+    softPower: { reachScore: 35, globalLanguageHost: false, notes: 'LatAm democratic model; cannabis legalisation; progressive policy brand.' },
+  },
+
+  'uzbekistan': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'medium', internetFreedomScore: 28, internetPenetrationPct: 72, dataLocalization: true, notes: 'State censorship; reform under Mirziyoyev; UzCERT established.' },
+    fiscal: { sovereignRatingTier: 'speculative', externalDebtGdpPct: 42, fxReservesMonthsImports: 7, primaryBalanceGdpPct: -3.5, notes: 'Gold + gas revenues; reform trajectory; IMF positive.' },
+    foodWater: { foodImportDependencePct: 10, waterStressIndex: 5, arableLandHaPerCapita: 0.13, cerealExporter: false, notes: 'Aral Sea disaster; heavily irrigated cotton/wheat; acute water stress.' },
+    diplomatic: { unVotingAlignmentBlocA: 28, unVotingAlignmentBlocB: 72, defensePacts: [], igoMemberships: ['CIS', 'SCO', 'OIC', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'uranium', role: 'producer', globalSharePct: 6 },
+      { mineral: 'copper', role: 'producer', globalSharePct: 0.5 },
+    ],
+    softPower: { reachScore: 18, globalLanguageHost: false, notes: 'Silk Road heritage tourism; Mirziyoyev reform diplomacy; Samarkand SCO summit.' },
+  },
+
+  'yemen': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 14, internetPenetrationPct: 28, dataLocalization: false, notes: 'Houthi/Sana\'a internet control; UAE-backed south; conflict collapses infrastructure.' },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 78, fxReservesMonthsImports: 0.5, primaryBalanceGdpPct: -22.0, notes: 'Worst humanitarian crisis; dual-currency; no functioning central bank.' },
+    foodWater: { foodImportDependencePct: 90, waterStressIndex: 5, arableLandHaPerCapita: 0.05, cerealExporter: false, notes: 'World\'s most water-scarce country; near-total food import.' },
+    diplomatic: { unVotingAlignmentBlocA: 30, unVotingAlignmentBlocB: 55, defensePacts: [], igoMemberships: ['AL', 'OIC', 'NAM', 'GCC'] },
+    softPower: { reachScore: 4, globalLanguageHost: false, notes: 'Houthi Red Sea disruption as leverage; Bab-el-Mandeb chokepoint control.' },
+  },
+
+  'zambia': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 55, internetPenetrationPct: 38, dataLocalization: false },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 120, fxReservesMonthsImports: 2.5, primaryBalanceGdpPct: 0.5, notes: '2020 first African COVID default; IMF/G20 debt restructuring 2023.' },
+    foodWater: { foodImportDependencePct: 10, waterStressIndex: 2, arableLandHaPerCapita: 0.38, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 40, unVotingAlignmentBlocB: 55, defensePacts: ['AU'], igoMemberships: ['AU', 'SADC', 'COMESA', 'Commonwealth', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'copper', role: 'producer', globalSharePct: 4 },
+      { mineral: 'cobalt', role: 'producer', globalSharePct: 2 },
+    ],
+    softPower: { reachScore: 18, globalLanguageHost: false, notes: 'Copper-belt leverage; debt restructuring template case.' },
+  },
+
+  'zimbabwe': {
+    cyber: { offensiveTier: 'low', defensiveTier: 'low', internetFreedomScore: 28, internetPenetrationPct: 34, dataLocalization: false, notes: 'POTRAZ surveillance; ZANU-PF internet control; Interception of Communications Act.' },
+    fiscal: { sovereignRatingTier: 'distressed', externalDebtGdpPct: 98, fxReservesMonthsImports: 1.5, primaryBalanceGdpPct: -4.0, notes: 'ZiG currency 2024; legacy hyperinflation; SADC/COMESA arrears.' },
+    foodWater: { foodImportDependencePct: 30, waterStressIndex: 3, arableLandHaPerCapita: 0.28, cerealExporter: false },
+    diplomatic: { unVotingAlignmentBlocA: 15, unVotingAlignmentBlocB: 82, defensePacts: ['AU'], igoMemberships: ['AU', 'SADC', 'COMESA', 'NAM'] },
+    criticalMinerals: [
+      { mineral: 'lithium', role: 'producer', globalSharePct: 3 },
+      { mineral: 'platinumGroup', role: 'producer' },
+    ],
+    softPower: { reachScore: 10, globalLanguageHost: false, notes: 'Sanctions-isolated; lithium new leverage; Victoria Falls tourism.' },
+  },
 };
