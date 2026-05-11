@@ -410,10 +410,14 @@ export const simulateCountry = (
   const blocBClamped = Math.max(1, blocBRaw);
   const nonAlignedClamped = Math.max(1, nonAlignedRaw);
   const probTotal = blocAClamped + blocBClamped + nonAlignedClamped;
+  // Round the first two and compute the third as the remainder so the three values
+  // always sum to exactly 100, regardless of floating-point rounding.
+  const pBlocA = Math.round((blocAClamped / probTotal) * 100);
+  const pBlocB = Math.round((blocBClamped / probTotal) * 100);
   const probabilities: ProbabilitySet = {
-    blocA: Math.round((blocAClamped / probTotal) * 100),
-    blocB: Math.round((blocBClamped / probTotal) * 100),
-    nonAligned: Math.round((nonAlignedClamped / probTotal) * 100),
+    blocA: pBlocA,
+    blocB: pBlocB,
+    nonAligned: 100 - pBlocA - pBlocB,
   };
 
   const sorted = Object.values(probabilities).sort((a, b) => b - a);
@@ -520,8 +524,8 @@ export const simulateCountry = (
   return {
     profile,
     alignment,
-    confidence,
-    risk,
+    confidence: Math.round(confidence),
+    risk: Math.round(risk),
     probabilities,
     drivers,
     history: includeHistory

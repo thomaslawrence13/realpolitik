@@ -272,7 +272,7 @@ function IndexPanel({ countries }: { countries: SimulatedCountry[] }) {
         <section className="index-list-section">
           <h3 className="movers-section-title">Country rankings</h3>
           <div className="index-list">
-            {ranked.slice(0, 24).map((country, index) => {
+            {ranked.map((country, index) => {
               const trust = summarizeCountryTrust(country.profile);
               return (
                 <button

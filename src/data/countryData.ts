@@ -366,10 +366,13 @@ const deriveCountryDataQuality = (country: CountryRecord) => {
       Math.round(country.sourceCoverage - yearsStale * DATA_QUALITY_STALE_CONFIDENCE_PENALTY),
     ),
   );
+  // Normalize to [0, 1] so telemetry consumers (display, pipeline reconcile) see a
+  // consistent decimal confidence rather than a raw percentage integer.
+  const confidenceDecimal = confidence / 100;
   const indicators: IndicatorTelemetry[] = INDICATOR_KEYS.map((indicator) => ({
     sourceId: defaultSourceId,
     observedAt: country.lastUpdated,
-    confidence,
+    confidence: confidenceDecimal,
     stale,
     method: 'expert-curated',
     evidenceClass: stale ? 'fallback' : 'estimated',
@@ -405,8 +408,8 @@ const countries = enhancedCountries
 export const datasetVersion = '0.13.0';
 export const methodologyNotes = [
   ...dataset.methodologyNotes,
-  'v11 (data enhancement): adds cyber, fiscal, food/water, diplomatic, critical-mineral and soft-power dimensions for ~50 strategic actors.',
-  'v11 also backfills demographics, energy posture, top trade partners and geo centroids for the previously sparse country tier.',
+  'v11 (data enhancement): adds cyber, fiscal, food/water, diplomatic, critical-mineral and soft-power dimensions for G20 plus ~50 strategic mid-tier powers.',
+  'v11 also backfills demographics, energy posture, top trade partners and geo centroids for all parameterised states.',
   'v11 derives ~hundreds of additional relationship edges from top trade-partner shares, shared defense pacts and IGO memberships, and opposing-bloc anchors. Derived edges are tagged sourceId="v11-derived" and ranked below explicit ones in pipeline reconciliation.',
   'v12 (information quality): computes per-country information scores based on source coverage, dimensional completeness, and recency to spotlight stale or sparse records.',
   'v12 also emits per-country dataQuality telemetry (indicator confidence, staleness, and degraded reasons) to make remediation workflows explicit.',
