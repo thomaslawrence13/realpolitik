@@ -15,6 +15,7 @@ import type {
   SimulationWeightSet,
   Tier,
 } from '../types';
+import { getRiskTier } from '../simulation';
 import { BarRow, MetricCard, Tabs } from './ui';
 
 export type InspectorTab = 'overview' | 'profile' | 'relationships' | 'drivers' | 'sources';
@@ -85,11 +86,6 @@ function MetricTelemetryTag({
   return <span className={`metric-telemetry-tag metric-telemetry-tag-${tone}`}>{label}</span>;
 }
 
-const riskTier = (value: number): Tier => {
-  if (value >= 65) return 'high';
-  if (value >= 40) return 'medium';
-  return 'low';
-};
 
 /**
  * Returns a colored delta hint element when the delta is non-zero.
@@ -253,7 +249,7 @@ function OverviewPanel({
   return (
     <div className="panel-stack">
       <div className="overview-strip" aria-label="At a glance">
-        <div className={`overview-chip metric-${riskTier(selected.risk)}`}>
+        <div className={`overview-chip metric-${getRiskTier(selected.risk)}`}>
           <span>Risk</span>
           <strong>{selected.risk}%</strong>
         </div>
@@ -278,7 +274,7 @@ function OverviewPanel({
           label="Escalation risk"
           value={formatPercent(selected.risk)}
           hint={<DeltaHint delta={riskDelta} higherIsBetter={false} />}
-          tone={riskTier(selected.risk)}
+          tone={getRiskTier(selected.risk)}
           explanation={<RiskExplainer explanation={selected.explanation.risk} />}
         />
         <MetricCard
@@ -358,7 +354,7 @@ function OverviewPanel({
           <MetricCard
             label="Hostility"
             value={formatPercent(selected.relationshipSummary.hostility)}
-            tone={riskTier(selected.relationshipSummary.hostility)}
+            tone={getRiskTier(selected.relationshipSummary.hostility)}
             size="sm"
           />
           <MetricCard

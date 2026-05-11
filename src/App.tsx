@@ -84,11 +84,6 @@ const isInteractiveShortcutTarget = (target: EventTarget | null): target is HTML
   return target.isContentEditable;
 };
 
-const clampInput = (key: keyof ScenarioInputs, value: number): number => {
-  if (key === 'treatyShift') return Math.min(60, Math.max(-60, value));
-  return Math.min(100, Math.max(0, value));
-};
-
 /** Ordered list of all `ScenarioInputs` keys — single source of truth for iteration. */
 export const scenarioInputKeys: (keyof ScenarioInputs)[] = [
   'sanctionShock',
@@ -97,23 +92,6 @@ export const scenarioInputKeys: (keyof ScenarioInputs)[] = [
   'invasionPressure',
   'coupRisk',
 ];
-
-const computeEffectiveInputs = (
-  manual: ScenarioInputs,
-  activeIds: string[],
-): ScenarioInputs => {
-  const delta = scenarioInputKeys.reduce((acc, key) => {
-    const sum = activeIds.reduce((total, id) => {
-      const event = eventById.get(id);
-      return total + (event?.inputs[key] ?? 0);
-    }, 0);
-    return { ...acc, [key]: sum };
-  }, {} as ScenarioInputs);
-
-  return scenarioInputKeys.reduce((acc, key) => {
-    return { ...acc, [key]: clampInput(key, manual[key] + delta[key]) };
-  }, {} as ScenarioInputs);
-};
 
 const alignmentLabel: Record<Alignment, string> = {
   blocA: 'Bloc A',
@@ -225,10 +203,6 @@ export default function App() {
   const deferredActiveEventIds = useDeferredValue(activeEventIds);
 
   // Merge manual slider values with the accumulated deltas from active events.
-  const effectiveInputs = useMemo(
-    () => computeEffectiveInputs(deferredScenarioInputs, deferredActiveEventIds),
-    [deferredScenarioInputs, deferredActiveEventIds],
-  );
   const activeEvents = useMemo(
     () => deferredActiveEventIds.flatMap((id) => {
       const event = eventById.get(id);
