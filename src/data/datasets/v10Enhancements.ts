@@ -2,9 +2,9 @@
  * v10 supplemental country data layer.
  *
  * Demographics, energy posture, top bilateral trade partners, and geographic
- * centroids are merged additively onto v1 country records. Coverage is the
- * G20 plus 20+ additional strategic actors. Countries not present here keep
- * their v1 fields untouched and the new optional properties remain undefined.
+ * centroids are merged additively onto v1 country records. Coverage spans all
+ * 134 parameterised states. Countries not present here keep their v1 fields
+ * untouched and the new optional properties remain undefined.
  *
  * Population values are ~2024 estimates (UN DESA WPP). Energy values are
  * mid-2024 IEA / EIA snapshots. Trade-partner shares are UN Comtrade
