@@ -42,6 +42,7 @@ import {
   clearHash,
   decodeStateFromHash,
 } from './lib/urlState';
+import { clampTimelineIndex } from './lib/timeline';
 import { TopBar } from './components/TopBar';
 import { LeftRail } from './components/LeftRail';
 import { RightInspector } from './components/RightInspector';
@@ -118,7 +119,6 @@ const resolveEventIds = (eventIds: string[]) =>
   });
 
 const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 1080;
-const clampTimelineIndex = (index: number) => Math.max(0, Math.min(scenarioTimeline.length - 1, index));
 const isWelcomeDismissed = () => {
   if (typeof window === 'undefined') return false;
   try {
@@ -143,8 +143,9 @@ const fromHash = decodeStateFromHash();
 if (fromHash) clearHash();
 
 export default function App() {
+  const clampIndex = (index: number) => clampTimelineIndex(index, scenarioTimeline.length);
   const [timelineIndex, setTimelineIndex] = useState(
-    clampTimelineIndex(fromHash?.timelineIndex ?? persisted?.timelineIndex ?? 0),
+    clampIndex(fromHash?.timelineIndex ?? persisted?.timelineIndex ?? 0),
   );
   const [filters, setFilters] = useState<Filters>(persisted?.filters ?? defaultFilters);
   const [search, setSearch] = useState('');
@@ -571,7 +572,7 @@ export default function App() {
     setScenarioName(scenario.name);
     setScenarioInputs({ ...scenario.inputs });
     setWeightSetKey(scenario.weightSetKey);
-    setTimelineIndex(clampTimelineIndex(scenario.timelineIndex));
+    setTimelineIndex(clampIndex(scenario.timelineIndex));
     setActiveEventIds(scenario.activeEventIds ?? []);
   };
 
@@ -722,7 +723,7 @@ export default function App() {
   const shellStyle = { '--drawer-h': `${drawerHeight}px` } as CSSProperties;
   const handleTimelineChange = (index: number) => {
     setIsPlaying(false);
-    setTimelineIndex(clampTimelineIndex(index));
+    setTimelineIndex(clampIndex(index));
   };
 
   // Persist UI + scenarios to localStorage with a 300 ms debounce so rapid

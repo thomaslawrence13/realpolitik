@@ -18,6 +18,7 @@ import { Slider, SvgIcon, Tabs } from './ui';
 import { MoversPanel } from './MoversPanel';
 import { summarizeCountryTrust, TrustTag } from './provenance';
 import { getRiskTier } from '../simulation';
+import { clampTimelineIndex } from '../lib/timeline';
 import {
   indicatorQualityRules,
   indicatorSourcePriority,
@@ -1062,7 +1063,7 @@ function HistoryCard({
             <strong>{scenario.name}</strong>
           </button>
         )}
-        <span>{timeline[Math.max(0, Math.min(timeline.length - 1, scenario.timelineIndex))]}</span>
+        <span>{timeline[clampTimelineIndex(scenario.timelineIndex, timeline.length)]}</span>
       </header>
       <div className="history-card-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <p>{weightSet?.label ?? 'Custom weighting'}</p>

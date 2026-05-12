@@ -697,7 +697,7 @@ function StatsPanel({
   useEffect(() => {
     setHistoricalMetricId(availableHistorical[0]?.metricId ?? '');
     setComparisonCountryMapName('');
-  }, [availableHistorical, selected.profile.id]);
+  }, [profile.historicalSeries, selected.profile.id]);
 
   const selectedHistoricalSeries = useMemo(
     () => availableHistorical.find((series) => series.metricId === historicalMetricId) ?? null,
@@ -751,6 +751,17 @@ function StatsPanel({
     staleIndicatorCount > 0 ||
     lowCoverage ||
     fallbackIndicators > 0;
+  const selectedHistoricalLatestPoint = selectedHistoricalSeries
+    ? selectedHistoricalSeries.points[selectedHistoricalSeries.points.length - 1] ?? null
+    : null;
+  const selectedHistoricalBaseline = useMemo(() => {
+    if (!selectedHistoricalSeries || selectedHistoricalSeries.points.length <= 1) return null;
+    const baselinePoints = selectedHistoricalSeries.points.slice(0, -1);
+    return baselinePoints.reduce((sum, point) => sum + point.value, 0) / baselinePoints.length;
+  }, [selectedHistoricalSeries]);
+  const selectedHistoricalDelta = selectedHistoricalLatestPoint && selectedHistoricalBaseline != null
+    ? selectedHistoricalLatestPoint.value - selectedHistoricalBaseline
+    : null;
 
   return (
     <div className="panel-stack">
@@ -822,15 +833,13 @@ function StatsPanel({
                   <article className="historical-summary-card">
                     <span>
                       Current (
-                      {selectedHistoricalSeries.points.length > 0
-                        ? selectedHistoricalSeries.points[selectedHistoricalSeries.points.length - 1]!.period
-                        : 'n/a'}
+                      {selectedHistoricalLatestPoint ? selectedHistoricalLatestPoint.period : 'n/a'}
                       )
                     </span>
                     <strong>
-                      {selectedHistoricalSeries.points.length > 0
+                      {selectedHistoricalLatestPoint
                         ? formatMetricValue(
-                            selectedHistoricalSeries.points[selectedHistoricalSeries.points.length - 1]!.value,
+                            selectedHistoricalLatestPoint.value,
                             selectedHistoricalSeries.metadata.unit,
                           )
                         : 'n/a'}
@@ -839,12 +848,9 @@ function StatsPanel({
                   <article className="historical-summary-card">
                     <span>Historical baseline</span>
                     <strong>
-                      {selectedHistoricalSeries.points.length > 1
+                      {selectedHistoricalBaseline != null
                         ? formatMetricValue(
-                            selectedHistoricalSeries.points
-                              .slice(0, -1)
-                              .reduce((sum, point) => sum + point.value, 0) /
-                              selectedHistoricalSeries.points.slice(0, -1).length,
+                            selectedHistoricalBaseline,
                             selectedHistoricalSeries.metadata.unit,
                           )
                         : 'n/a'}
@@ -853,16 +859,9 @@ function StatsPanel({
                   <article className="historical-summary-card">
                     <span>Delta vs baseline</span>
                     <strong>
-                      {(() => {
-                        if (selectedHistoricalSeries.points.length <= 1) return 'n/a';
-                        const current = selectedHistoricalSeries.points[selectedHistoricalSeries.points.length - 1]!.value;
-                        const baseline = selectedHistoricalSeries.points
-                          .slice(0, -1)
-                          .reduce((sum, point) => sum + point.value, 0) /
-                          selectedHistoricalSeries.points.slice(0, -1).length;
-                        const delta = current - baseline;
-                        return `${delta >= 0 ? '+' : ''}${formatMetricValue(delta, selectedHistoricalSeries.metadata.unit)}`;
-                      })()}
+                      {selectedHistoricalDelta == null
+                        ? 'n/a'
+                        : `${selectedHistoricalDelta >= 0 ? '+' : ''}${formatMetricValue(selectedHistoricalDelta, selectedHistoricalSeries.metadata.unit)}`}
                     </strong>
                   </article>
                 </div>
