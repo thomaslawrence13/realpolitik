@@ -295,7 +295,7 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
     return () => clearInterval(id);
   }, [isPlaying, scenarioTimeline.length]);
 
-  const handleTogglePlay = () => {
+  const handleTogglePlay = useCallback(() => {
     setIsPlaying((prev) => {
       if (!prev && timelineIndex >= scenarioTimeline.length - 1) {
         // Restart from the beginning when pressing play at the last year.
@@ -303,10 +303,10 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
       }
       return !prev;
     });
-  };
+  }, [timelineIndex, setTimelineIndex]);
 
   // Dragging the top edge of the bottom drawer resizes it.
-  const handleDrawerResizeStart = (startClientY: number) => {
+  const handleDrawerResizeStart = useCallback((startClientY: number) => {
     const startH = drawerHeight;
     const onMove = (event: MouseEvent) => {
       const delta = startClientY - event.clientY;
@@ -318,15 +318,15 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
     };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
-  };
+  }, [drawerHeight]);
 
-  const handleDrawerResizeStep = (delta: number) => {
+  const handleDrawerResizeStep = useCallback((delta: number) => {
     setDrawerHeight((h) => Math.max(MIN_DRAWER_HEIGHT, Math.min(maxDrawerHeight(), h + delta)));
-  };
+  }, []);
 
-  const handleDrawerResizeTo = (edge: 'min' | 'max') => {
+  const handleDrawerResizeTo = useCallback((edge: 'min' | 'max') => {
     setDrawerHeight(edge === 'min' ? MIN_DRAWER_HEIGHT : maxDrawerHeight());
-  };
+  }, []);
 
   // Keep a ref so the keydown handler always closes over the latest toggle function
   // without needing to be re-registered on every render.
@@ -497,39 +497,39 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
     };
   }, [sparklineActiveRisks, sparklineBaselineRisks, sparklineProfile, timelineIndex]);
 
-  const handleScenarioInputChange = <K extends keyof ScenarioInputs>(key: K, value: number) => {
+  const handleScenarioInputChange = useCallback(<K extends keyof ScenarioInputs>(key: K, value: number) => {
     setScenarioInputs((current) => ({ ...current, [key]: value }));
-  };
+  }, []);
 
-  const applyEvent = (id: string) => {
+  const applyEvent = useCallback((id: string) => {
     setActiveEventIds((current) => (current.includes(id) ? current : [...current, id]));
-  };
+  }, []);
 
-  const removeEvent = (id: string) => {
+  const removeEvent = useCallback((id: string) => {
     setActiveEventIds((current) => current.filter((activeId) => activeId !== id));
-  };
+  }, []);
 
-  const applyEvents = (ids: string[]) => {
+  const applyEvents = useCallback((ids: string[]) => {
     if (ids.length === 0) return;
     setActiveEventIds((current) => {
       const next = new Set(current);
       ids.forEach((id) => next.add(id));
       return [...next];
     });
-  };
+  }, []);
 
-  const clearAllEvents = () => {
+  const clearAllEvents = useCallback(() => {
     setActiveEventIds([]);
-  };
+  }, []);
 
-  const resetScenario = () => {
+  const resetScenario = useCallback(() => {
     setScenarioName('Baseline+');
     setScenarioInputs({ ...defaultScenarioInputs });
     setWeightSetKey('baseline');
     setActiveEventIds([]);
-  };
+  }, []);
 
-  const saveScenario = () => {
+  const saveScenario = useCallback(() => {
     const name = scenarioName.trim() || `Scenario ${savedScenarios.length + 1}`;
     setSavedScenarios((current) =>
       [
@@ -545,17 +545,17 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
         ...current,
       ].slice(0, 12),
     );
-  };
+  }, [activeEventIds, savedScenarios.length, scenarioInputs, scenarioName, timelineIndex, weightSetKey]);
 
-  const loadScenario = (scenario: SavedScenario) => {
+  const loadScenario = useCallback((scenario: SavedScenario) => {
     setScenarioName(scenario.name);
     setScenarioInputs({ ...scenario.inputs });
     setWeightSetKey(scenario.weightSetKey);
     setTimelineIndex(clampIndex(scenario.timelineIndex));
     setActiveEventIds(scenario.activeEventIds ?? []);
-  };
+  }, [setTimelineIndex]);
 
-  const deleteScenario = (id: string) => {
+  const deleteScenario = useCallback((id: string) => {
     setSavedScenarios((current) => {
       const target = current.find((scenario) => scenario.id === id);
       if (target) {
@@ -566,7 +566,7 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
       return current.filter((scenario) => scenario.id !== id);
     });
     setComparisonScenarioId((current) => (current === id ? null : current));
-  };
+  }, []);
 
   const restoreDeleted = useCallback(() => {
     setPendingDelete((current) => {
@@ -584,15 +584,15 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
     setPendingDelete(null);
   }, []);
 
-  const renameScenario = (id: string, nextName: string) => {
+  const renameScenario = useCallback((id: string, nextName: string) => {
     const trimmed = nextName.trim();
     if (!trimmed) return;
     setSavedScenarios((current) =>
       current.map((scenario) => (scenario.id === id ? { ...scenario, name: trimmed } : scenario)),
     );
-  };
+  }, []);
 
-  const exportScenarios = (id?: string) => {
+  const exportScenarios = useCallback((id?: string) => {
     const target = id
       ? savedScenarios.filter((scenario) => scenario.id === id)
       : savedScenarios;
@@ -601,14 +601,14 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
       ? `realpolitik-scenario-${target[0].name.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'scenario'}.json`
       : undefined;
     downloadScenariosFile(target, datasetVersion, filename);
-  };
+  }, [savedScenarios]);
 
-  const handleImportClick = () => {
+  const handleImportClick = useCallback(() => {
     setImportError(null);
     fileInputRef.current?.click();
-  };
+  }, []);
 
-  const handleImportChange = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleImportChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
@@ -627,13 +627,13 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
     } catch (error) {
       setImportError(error instanceof Error ? error.message : 'Could not read file');
     }
-  };
+  }, []);
 
-  const toggleComparison = (id: string) => {
+  const toggleComparison = useCallback((id: string) => {
     setComparisonScenarioId((current) => (current === id ? null : id));
-  };
+  }, []);
 
-  const clearComparison = () => setComparisonScenarioId(null);
+  const clearComparison = useCallback(() => setComparisonScenarioId(null), []);
 
   const closeWelcome = useCallback(() => {
     setWelcomeOpen(false);
@@ -684,9 +684,9 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
     [byName],
   );
 
-  const handleSelectFromInspector = (mapName: string) => {
+  const handleSelectFromInspector = useCallback((mapName: string) => {
     if (byName.has(mapName)) setSelectedCountry(mapName);
-  };
+  }, [byName, setSelectedCountry]);
 
   /** Selecting a country from the map also ensures the right panel is open and shows the overview. */
   const handleSelectFromMap = useCallback(
@@ -699,11 +699,35 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
   );
 
   const totalCountries = activeProfiles.length;
-  const shellStyle = { '--drawer-h': `${drawerHeight}px` } as CSSProperties;
-  const handleTimelineChange = (index: number) => {
+  const shellStyle = useMemo(() => ({ '--drawer-h': `${drawerHeight}px` } as CSSProperties), [drawerHeight]);
+  const handleTimelineChange = useCallback((index: number) => {
     setIsPlaying(false);
     setTimelineIndex(clampIndex(index));
-  };
+  }, [setTimelineIndex]);
+  const handleToggleLeft = useCallback(() => setLeftOpen((value) => !value), []);
+  const handleToggleRight = useCallback(() => setRightOpen((value) => !value), []);
+  const handleToggleDrawer = useCallback(() => setDrawerOpen((value) => !value), []);
+  const handleCloseDrawer = useCallback(() => setDrawerOpen(false), []);
+  const handleToggleHelp = useCallback(() => setHelpOpen((value) => !value), []);
+  const handleCloseHelp = useCallback(() => setHelpOpen(false), []);
+  const handleClearSearch = useCallback(() => setSearch(''), []);
+  const handleResetFilters = useCallback(() => setFilters(defaultFilters), [setFilters]);
+  const selectedActiveEventNames = useMemo(
+    () => selectedActiveEvents.map((event) => event.name),
+    [selectedActiveEvents],
+  );
+  const moversProps = useMemo(
+    () => ({
+      active: simulated,
+      baselineByName,
+      comparisonByName,
+      comparisonScenarioName: comparisonScenario?.name ?? null,
+      onSelectCountry: handleSelectCountryFromMovers,
+      alignmentColor,
+      alignmentLabel,
+    }),
+    [baselineByName, comparisonByName, comparisonScenario?.name, handleSelectCountryFromMovers, simulated],
+  );
 
   // Persist UI + scenarios to localStorage with a 300 ms debounce so rapid
   // slider drags or typing do not hammer the storage layer on every frame.
@@ -776,10 +800,10 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
         rightOpen={rightOpen}
         drawerOpen={drawerOpen}
         helpOpen={helpOpen}
-        onToggleLeft={() => setLeftOpen((value) => !value)}
-        onToggleRight={() => setRightOpen((value) => !value)}
-        onToggleDrawer={() => setDrawerOpen((value) => !value)}
-        onToggleHelp={() => setHelpOpen((value) => !value)}
+        onToggleLeft={handleToggleLeft}
+        onToggleRight={handleToggleRight}
+        onToggleDrawer={handleToggleDrawer}
+        onToggleHelp={handleToggleHelp}
         isPlaying={isPlaying}
         onTogglePlay={handleTogglePlay}
         activeEventCount={activeEventIds.length}
@@ -795,8 +819,8 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
         onSelect={setSelectedCountry}
         filters={filters}
         onFiltersChange={setFilters}
-        onClearSearch={() => setSearch('')}
-        onResetFilters={() => setFilters(defaultFilters)}
+        onClearSearch={handleClearSearch}
+        onResetFilters={handleResetFilters}
         alliances={allianceNetworks}
         alignmentColor={alignmentColor}
         alignmentLabel={alignmentLabel}
@@ -828,7 +852,7 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
         scenarioName={scenarioName}
         scenarioInputs={selectedScenarioInputs}
         activeWeightSet={activeWeightSet}
-        activeEventNames={selectedActiveEvents.map((event) => event.name)}
+        activeEventNames={selectedActiveEventNames}
         alignmentColor={alignmentColor}
         alignmentLabel={alignmentLabel}
         tab={inspectorTab}
@@ -845,7 +869,7 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
         open={drawerOpen}
         tab={drawerTab}
         onTabChange={setDrawerTab}
-        onClose={() => setDrawerOpen(false)}
+        onClose={handleCloseDrawer}
         scenarioName={scenarioName}
         onScenarioNameChange={setScenarioName}
         scenarioInputs={scenarioInputs}
@@ -885,15 +909,7 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
         onResizeStart={handleDrawerResizeStart}
         onResizeStep={handleDrawerResizeStep}
         onResizeTo={handleDrawerResizeTo}
-        movers={{
-          active: simulated,
-          baselineByName,
-          comparisonByName,
-          comparisonScenarioName: comparisonScenario?.name ?? null,
-          onSelectCountry: handleSelectCountryFromMovers,
-          alignmentColor,
-          alignmentLabel,
-        }}
+        movers={moversProps}
         indexCountries={railCountries}
       />
 
@@ -905,7 +921,7 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
         onChange={handleImportChange}
       />
 
-      <ShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <ShortcutsHelp open={helpOpen} onClose={handleCloseHelp} />
       <WelcomeGuide
         open={welcomeOpen}
         onClose={closeWelcome}
