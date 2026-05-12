@@ -1,12 +1,6 @@
 import { getRiskTier } from '../simulation';
 import type { Alignment, Filters, SimulatedCountry } from '../types';
 
-export type EventFeedItem = {
-  title: string;
-  detail: string;
-  tone: 'low' | 'medium' | 'high';
-};
-
 const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
 
 export const buildByNameIndex = (rows: SimulatedCountry[]) =>
@@ -61,7 +55,7 @@ export const buildEventFeed = ({
   scenarioTimeline: string[];
   timelineIndex: number;
   alignmentLabel: Record<Alignment, string>;
-}): EventFeedItem[] =>
+}): Array<{ title: string; detail: string; tone: 'low' | 'medium' | 'high' }> =>
   filtered
     .slice()
     .sort((a, b) => b.risk - a.risk)

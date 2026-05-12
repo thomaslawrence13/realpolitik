@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { atob, btoa } from 'node:buffer';
 import {
   buildShareableUrl,
   clearHash,
@@ -20,8 +21,8 @@ const createMockWindow = () => {
   };
   return {
     location,
-    btoa: (value: string) => Buffer.from(value, 'binary').toString('base64'),
-    atob: (value: string) => Buffer.from(value, 'base64').toString('binary'),
+    btoa: (value: string) => btoa(value),
+    atob: (value: string) => atob(value),
   } as unknown as Window;
 };
 

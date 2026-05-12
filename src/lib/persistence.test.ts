@@ -6,8 +6,19 @@ import type { PersistedState } from './persistence';
 const STORAGE_KEY = 'realpolitik:state';
 const originalWindow = globalThis.window;
 
-class MockStorage {
+class MockStorage implements Storage {
   private store = new Map<string, string>();
+  get length() {
+    return this.store.size;
+  }
+
+  clear() {
+    this.store.clear();
+  }
+
+  key(index: number) {
+    return [...this.store.keys()][index] ?? null;
+  }
 
   getItem(key: string) {
     return this.store.get(key) ?? null;
@@ -27,7 +38,7 @@ test.beforeEach(() => {
   Object.assign(globalThis, {
     window: {
       localStorage,
-    } as Partial<Window>,
+    } as unknown as Window,
   });
 });
 

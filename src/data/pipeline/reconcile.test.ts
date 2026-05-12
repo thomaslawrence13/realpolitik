@@ -30,6 +30,7 @@ test('reconciliation respects source priority before confidence', () => {
   ];
 
   const enriched = enrichCountryWithObservations(profile, observations);
+  assert.ok(enriched.dataQuality);
   assert.equal(enriched.indicators.tradeExposure, 'low');
   const telemetry = enriched.dataQuality.indicators.find((entry) => entry.indicator === 'tradeExposure');
   assert.equal(telemetry?.sourceId, 'world-bank-wdi');
@@ -51,6 +52,7 @@ test('stale or low-confidence observations are marked as fallback evidence', () 
   ];
 
   const enriched = enrichCountryWithObservations(profile, observations);
+  assert.ok(enriched.dataQuality);
   const telemetry = enriched.dataQuality.indicators.find((entry) => entry.indicator === 'tradeExposure');
 
   assert.equal(telemetry?.evidenceClass, 'fallback');

@@ -66,13 +66,13 @@ const validateCountries = () => {
 const validateRelationships = () => {
   const countries = new Set(geopoliticalDatasetV1.countries.map((country) => country.id));
   const pairKeys = new Set<string>();
+  const canonicalPairKey = (left: string, right: string) =>
+    left < right ? `${left}::${right}` : `${right}::${left}`;
   for (const edge of geopoliticalDatasetV1.relationships) {
     ensure(countries.has(edge.sourceCountryId), `relationship source "${edge.sourceCountryId}" not found in countries`);
     ensure(countries.has(edge.targetCountryId), `relationship target "${edge.targetCountryId}" not found in countries`);
     ensure(edge.sourceCountryId !== edge.targetCountryId, `relationship cannot self-reference "${edge.sourceCountryId}"`);
-    const key = edge.sourceCountryId < edge.targetCountryId
-      ? `${edge.sourceCountryId}::${edge.targetCountryId}`
-      : `${edge.targetCountryId}::${edge.sourceCountryId}`;
+    const key = canonicalPairKey(edge.sourceCountryId, edge.targetCountryId);
     if (pairKeys.has(key)) addError(`duplicate relationship pair "${key}"`);
     pairKeys.add(key);
   }
