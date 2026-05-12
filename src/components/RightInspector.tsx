@@ -59,6 +59,12 @@ const formatIndicatorLabel = (value: string) =>
   value.replace(/([A-Z])/g, ' $1').trim().replace(/^./, (v) => v.toUpperCase());
 const formatEvidenceClass = (value: 'observed' | 'estimated' | 'fallback' | 'derived') =>
   value.charAt(0).toUpperCase() + value.slice(1);
+/** Convert a camelCase mineral key (e.g. 'rareEarths') to a readable title ('Rare Earths'). */
+const formatMineralName = (value: string) =>
+  value.replace(/([A-Z])/g, ' $1').trim().replace(/^./, (v) => v.toUpperCase());
+/** Convert a kebab-case country ID (e.g. 'saudi-arabia') to title case ('Saudi Arabia'). */
+const formatCountryId = (id: string) =>
+  id.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 const relationshipTagBorderAlpha = '33';
 const relationshipTagBackgroundAlpha = '14';
 
@@ -558,12 +564,30 @@ function StatsPanel({
           Identity
         </h3>
         <ul className="kv-list">
-          <li><span>Region</span><strong>{formatTitle(profile.region)}</strong></li>
-          <li><span>Subregion</span><strong>{formatTitle(profile.subregion)}</strong></li>
-          <li><span>Alliance network</span><strong>{profile.allianceNetwork}</strong></li>
-          <li><span>Regime type</span><strong>{formatTitle(profile.regimeType)}</strong></li>
-          <li><span>Data coverage</span><strong>{profile.sourceCoverage}%</strong></li>
-          <li><span>Last updated</span><strong>{profile.lastUpdated}</strong></li>
+          <li>
+            <span>Region</span>
+            <strong>{formatTitle(profile.region)}</strong>
+          </li>
+          <li>
+            <span>Subregion</span>
+            <strong>{formatTitle(profile.subregion)}</strong>
+          </li>
+          <li>
+            <span>Alliance network</span>
+            <strong>{profile.allianceNetwork}</strong>
+          </li>
+          <li>
+            <span>Regime type</span>
+            <strong>{formatTitle(profile.regimeType)}</strong>
+          </li>
+          <li>
+            <span>Data coverage</span>
+            <strong>{profile.sourceCoverage}%</strong>
+          </li>
+          <li>
+            <span>Last updated</span>
+            <strong>{profile.lastUpdated}</strong>
+          </li>
         </ul>
       </div>
 
@@ -695,7 +719,7 @@ function StatsPanel({
           <ul className="kv-list">
             {minerals.map((entry) => (
               <li key={entry.mineral}>
-                <span>{formatTitle(entry.mineral.replace(/([A-Z])/g, ' $1'))}</span>
+                <span>{formatMineralName(entry.mineral)}</span>
                 <strong>
                   {formatTitle(entry.role)}
                   {entry.globalSharePct != null ? ` · ${entry.globalSharePct}% global share` : ''}
@@ -716,10 +740,11 @@ function StatsPanel({
           <ProfileStat
             label="Sovereign rating"
             value={formatTitle(fiscal.sovereignRatingTier)}
-            tone={
-              fiscal.sovereignRatingTier === 'investment' ? 'positive' :
-              fiscal.sovereignRatingTier === 'speculative' ? 'neutral' : 'negative'
-            }
+            tone={(() => {
+              if (fiscal.sovereignRatingTier === 'investment') return 'positive';
+              if (fiscal.sovereignRatingTier === 'speculative') return 'neutral';
+              return 'negative';
+            })()}
           />
           <ProfileStat
             label="External debt / GDP"
@@ -895,7 +920,7 @@ function StatsPanel({
           <ul className="kv-list">
             {profile.topTradePartners.map((partner) => (
               <li key={partner.countryId}>
-                <span>{partner.countryId.replace(/-/g, ' ').replace(/\b./g, (c) => c.toUpperCase())}</span>
+                <span>{formatCountryId(partner.countryId)}</span>
                 <strong>{partner.sharePct}% · {partner.flow}</strong>
               </li>
             ))}
