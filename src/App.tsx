@@ -408,7 +408,7 @@ export default function App() {
     });
   }, [baselineByName, baselineSimulated, selectedCountry, selectedProfile, timelineIndex]);
   if (!selected || !baselineSelected) {
-    return <div className="app-shell" aria-busy="true">Loading simulation…</div>;
+    return <div className="app-shell" role="status" aria-live="polite" aria-busy="true">Loading simulation…</div>;
   }
   const selectedRiskDelta = Math.round(selected.risk - baselineSelected.risk);
   const selectedConfidenceDelta = Math.round(selected.confidence - baselineSelected.confidence);
@@ -444,7 +444,7 @@ export default function App() {
   // just to display the selected country's delta in the inspector panels.
   const comparisonSelected = useMemo<SimulatedCountry | null>(() => {
     if (!comparisonScenario) return null;
-    const profile = selected.profile;
+    const profile = selectedProfile;
     if (!profile) return null;
     const comparisonEvents = resolveEventIds(comparisonScenario.activeEventIds ?? []);
     const compWeights = getSimulationWeightSet(comparisonScenario.weightSetKey);
@@ -453,7 +453,7 @@ export default function App() {
       activeEvents: comparisonEvents,
       weightSet: compWeights,
     });
-  }, [comparisonScenario, selected.profile]);
+  }, [comparisonScenario, selectedProfile]);
 
   // Full comparison map — only built when the movers tab is visible and a comparison
   // scenario is active. Simulating all 134 countries is deferred until actually needed.
@@ -478,8 +478,8 @@ export default function App() {
   // Inspector sparkline — baseline profile resolved from the already-built byName
   // map (O(1)) instead of a linear scan over activeProfiles.
   const sparklineProfile = useMemo(
-    () => selected.profile,
-    [selected.profile],
+    () => selectedProfile,
+    [selectedProfile],
   );
 
   const sparklineBaselineRisks = useMemo<number[]>(() => {
