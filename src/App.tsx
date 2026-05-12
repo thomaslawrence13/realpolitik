@@ -118,6 +118,7 @@ const resolveEventIds = (eventIds: string[]) =>
   });
 
 const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 1080;
+const clampTimelineIndex = (index: number) => Math.max(0, Math.min(scenarioTimeline.length - 1, index));
 const isWelcomeDismissed = () => {
   if (typeof window === 'undefined') return false;
   try {
@@ -143,7 +144,7 @@ if (fromHash) clearHash();
 
 export default function App() {
   const [timelineIndex, setTimelineIndex] = useState(
-    fromHash?.timelineIndex ?? persisted?.timelineIndex ?? 0,
+    clampTimelineIndex(fromHash?.timelineIndex ?? persisted?.timelineIndex ?? 0),
   );
   const [filters, setFilters] = useState<Filters>(persisted?.filters ?? defaultFilters);
   const [search, setSearch] = useState('');
@@ -570,7 +571,7 @@ export default function App() {
     setScenarioName(scenario.name);
     setScenarioInputs({ ...scenario.inputs });
     setWeightSetKey(scenario.weightSetKey);
-    setTimelineIndex(scenario.timelineIndex);
+    setTimelineIndex(clampTimelineIndex(scenario.timelineIndex));
     setActiveEventIds(scenario.activeEventIds ?? []);
   };
 
@@ -721,7 +722,7 @@ export default function App() {
   const shellStyle = { '--drawer-h': `${drawerHeight}px` } as CSSProperties;
   const handleTimelineChange = (index: number) => {
     setIsPlaying(false);
-    setTimelineIndex(index);
+    setTimelineIndex(clampTimelineIndex(index));
   };
 
   // Persist UI + scenarios to localStorage with a 300 ms debounce so rapid
@@ -856,6 +857,7 @@ export default function App() {
         comparisonScenarioName={comparisonScenario?.name ?? null}
         onClearComparison={clearComparison}
         sparkline={selectedSparkline}
+        allCountries={simulated}
       />
 
       <BottomDrawer

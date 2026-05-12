@@ -4339,6 +4339,114 @@ input[type='range']::-moz-range-thumb {
   gap: 0.15rem;
 }
 
+.historical-trends {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.historical-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.historical-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+
+.historical-controls select {
+  width: 100%;
+  background: var(--surface-2);
+  color: var(--text-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0.32rem 0.48rem;
+}
+
+.historical-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.historical-summary-card {
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0.45rem 0.55rem;
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.historical-summary-card span {
+  font-size: 0.66rem;
+  color: var(--text-3);
+}
+
+.historical-summary-card strong {
+  font-size: 0.78rem;
+  color: var(--text-1);
+}
+
+.historical-trend-chart {
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  padding: 0.35rem 0.5rem 0.5rem;
+}
+
+.historical-trend-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.historical-axis {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.historical-line {
+  fill: none;
+  stroke-width: 2;
+}
+
+.historical-axis-label {
+  fill: var(--text-4);
+  font-size: 9px;
+}
+
+.historical-legend {
+  margin-top: 0.2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.65rem;
+}
+
+.historical-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  color: var(--text-3);
+}
+
+.historical-legend-item i {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+}
+
+.historical-metadata {
+  margin-top: 0.1rem;
+}
+
 /* Tag groups (defense pacts, IGO memberships, etc.) */
 .profile-tag-group {
   display: flex;

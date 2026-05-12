@@ -1,6 +1,7 @@
 import { geopoliticalDatasetV1 } from './datasets/v1';
 import { v10Enhancements } from './datasets/v10Enhancements';
 import { v11Enhancements } from './datasets/v11Enhancements';
+import { historicalSeriesByCountryId } from './historicalSeries';
 import ingestManifest from './datasets/ingest_manifest.json';
 import type {
   CountryIndicators,
@@ -395,6 +396,7 @@ const deriveCountryDataQuality = (country: CountryRecord) => {
 const countries = enhancedCountries
   .map<CountryProfile>((country) => ({
     ...country,
+    historicalSeries: historicalSeriesByCountryId[country.id] ?? [],
     sources: resolveSources(country.sourceIds),
     relationships: buildRelationships(country.id),
     dataQuality: deriveCountryDataQuality(country),

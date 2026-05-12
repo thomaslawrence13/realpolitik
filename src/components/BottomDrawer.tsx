@@ -1056,7 +1056,7 @@ function HistoryCard({
             <strong>{scenario.name}</strong>
           </button>
         )}
-        <span>{timeline[scenario.timelineIndex]}</span>
+        <span>{timeline[Math.max(0, Math.min(timeline.length - 1, scenario.timelineIndex))]}</span>
       </header>
       <div className="history-card-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <p>{weightSet?.label ?? 'Custom weighting'}</p>

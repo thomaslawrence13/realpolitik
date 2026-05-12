@@ -86,8 +86,8 @@ export function TopBar({
             className="timeline-step"
             onClick={() => onTimelineChange(0)}
             disabled={timelineIndex === 0}
-            aria-label="Skip to first year"
-            title="Skip to start"
+            aria-label="Skip to first period"
+            title="Skip to earliest period"
           >
             <SvgIcon.SkipBack />
           </button>
@@ -96,7 +96,7 @@ export function TopBar({
             className="timeline-step"
             onClick={() => onTimelineChange(Math.max(0, timelineIndex - 1))}
             disabled={timelineIndex === 0}
-            aria-label="Previous year"
+            aria-label="Previous period"
           >
             <SvgIcon.Chevron dir="left" />
           </button>
@@ -110,7 +110,7 @@ export function TopBar({
               onChange={(event) => onTimelineChange(Number(event.target.value))}
               className="timeline-input"
               style={{ ['--track-pct' as string]: `${pct}%` }}
-              aria-label="Year"
+              aria-label="Historical period"
             />
           </div>
           <button
@@ -118,7 +118,7 @@ export function TopBar({
             className="timeline-step"
             onClick={() => onTimelineChange(Math.min(lastIndex, timelineIndex + 1))}
             disabled={timelineIndex === lastIndex}
-            aria-label="Next year"
+            aria-label="Next period"
           >
             <SvgIcon.Chevron dir="right" />
           </button>
@@ -127,8 +127,8 @@ export function TopBar({
             className="timeline-step"
             onClick={() => onTimelineChange(lastIndex)}
             disabled={timelineIndex === lastIndex}
-            aria-label="Skip to last year"
-            title="Skip to end"
+            aria-label="Skip to latest period"
+            title="Skip to latest period"
           >
             <SvgIcon.SkipForward />
           </button>
@@ -137,7 +137,7 @@ export function TopBar({
             className={`timeline-play ${isPlaying ? 'timeline-play-active' : ''}`}
             onClick={onTogglePlay}
             aria-label={isPlaying ? 'Pause timeline' : 'Play timeline'}
-            title={isPlaying ? 'Pause (auto-stepping years)' : 'Play (auto-step through years)'}
+            title={isPlaying ? 'Pause (auto-stepping periods)' : 'Play (auto-step through periods)'}
           >
             {isPlaying ? <SvgIcon.Pause /> : <SvgIcon.Play />}
           </button>
