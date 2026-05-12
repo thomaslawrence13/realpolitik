@@ -225,6 +225,7 @@ export function BottomDrawer({
 }
 
 type IndexMetric = 'coverage' | 'confidence' | 'risk';
+const indexCompareLimit = 4;
 
 function IndexPanel({
   countries,
@@ -233,7 +234,6 @@ function IndexPanel({
   countries: SimulatedCountry[];
   onSelectCountry: (mapName: string) => void;
 }) {
-  const maxComparedCountries = 4;
   const [metric, setMetric] = useState<IndexMetric>('coverage');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [search, setSearch] = useState('');
@@ -296,7 +296,7 @@ function IndexPanel({
     setSelectedIds((current) =>
       current.includes(countryId)
         ? current.filter((id) => id !== countryId)
-        : [...current.slice(-(maxComparedCountries - 1)), countryId],
+        : [...current.slice(-(indexCompareLimit - 1)), countryId],
     );
   };
 
@@ -340,7 +340,7 @@ function IndexPanel({
         </article>
         <article className="index-summary-card">
           <span>Compared</span>
-          <strong>{compared.length} / {maxComparedCountries}</strong>
+          <strong>{compared.length} / {indexCompareLimit}</strong>
         </article>
         <article className="index-summary-card">
           <span>Filters</span>
@@ -431,7 +431,7 @@ function IndexPanel({
                         <TrustTag summary={trust} />
                       </span>
                       <span className="index-sub">
-                        {country.profile.region} · {country.profile.regimeType} · risk {getRiskTier(country.risk)}
+                        {country.profile.region} · {country.profile.regimeType} · Risk {getRiskTier(country.risk)}
                       </span>
                       <span className="index-sub">{trust.detail}</span>
                     </span>
@@ -448,7 +448,7 @@ function IndexPanel({
         <section className="index-compare-section">
           <h3 className="movers-section-title">Compare countries</h3>
           {compared.length === 0 ? (
-            <p className="movers-empty">Select up to four countries from the ranking to compare trust, risk, confidence, and relationship density.</p>
+            <p className="movers-empty">Select up to {indexCompareLimit} countries from the ranking to compare trust, risk, confidence, and relationship density.</p>
           ) : (
             <>
               <div className="index-compare-grid">

@@ -58,8 +58,8 @@ const formatIndicatorLabel = (value: string) =>
   value.replace(/([A-Z])/g, ' $1').trim().replace(/^./, (v) => v.toUpperCase());
 const formatEvidenceClass = (value: 'observed' | 'estimated' | 'fallback' | 'derived') =>
   value.charAt(0).toUpperCase() + value.slice(1);
-const relationshipTagBorderOpacity = '33';
-const relationshipTagBackgroundOpacity = '14';
+const relationshipTagBorderAlpha = '33';
+const relationshipTagBackgroundAlpha = '14';
 const relationshipDimensionMeta: ReadonlyArray<{
   key: RelationshipDimensionKey;
   label: string;
@@ -901,8 +901,8 @@ function RelationshipsPanel({
                         className="relationship-dominant-tag"
                         style={{
                           color: dominantDimension.color,
-                          borderColor: `${dominantDimension.color}${relationshipTagBorderOpacity}`,
-                          background: `${dominantDimension.color}${relationshipTagBackgroundOpacity}`,
+                          borderColor: `${dominantDimension.color}${relationshipTagBorderAlpha}`,
+                          background: `${dominantDimension.color}${relationshipTagBackgroundAlpha}`,
                         }}
                       >
                         {dominantDimension.label}
