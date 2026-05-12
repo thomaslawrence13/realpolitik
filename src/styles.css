@@ -1819,6 +1819,117 @@ input[type='range']::-moz-range-thumb {
 }
 
 /* Relationship cards */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.relationship-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.relationship-summary-card {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.75rem 0.8rem;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.relationship-summary-card span {
+  font-size: 0.7rem;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.relationship-summary-card strong {
+  font-size: 0.92rem;
+  color: var(--text-1);
+}
+
+.relationship-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.7rem;
+}
+
+.relationship-search,
+.relationship-sort {
+  display: grid;
+  gap: 0.24rem;
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+
+.relationship-search {
+  flex: 1 1 220px;
+}
+
+.relationship-search input,
+.relationship-sort select {
+  min-height: 38px;
+  padding: 0.68rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-1);
+  color: var(--text-1);
+}
+
+.relationship-search input:focus,
+.relationship-sort select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(94, 163, 255, 0.14);
+}
+
+.relationship-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.relationship-filter-chip {
+  padding: 0.25rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.relationship-filter-chip:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+.relationship-filter-chip-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.relationship-visible-count {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+
 .relationship-list {
   display: flex;
   flex-direction: column;
@@ -1837,9 +1948,14 @@ input[type='range']::-moz-range-thumb {
 
 .relationship-card header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
+}
+
+.relationship-header-main {
+  display: grid;
+  gap: 0.35rem;
 }
 
 .relationship-name {
@@ -1856,6 +1972,30 @@ input[type='range']::-moz-range-thumb {
   text-decoration: underline;
   text-decoration-color: var(--accent-line);
   text-underline-offset: 2px;
+}
+
+.relationship-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.relationship-dominant-tag,
+.relationship-stale-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.relationship-stale-tag {
+  color: var(--risk-high);
+  border-color: rgba(248, 113, 113, 0.28);
+  background: rgba(248, 113, 113, 0.12);
 }
 
 .relationship-date {
@@ -1875,6 +2015,12 @@ input[type='range']::-moz-range-thumb {
   gap: 0.4rem;
   align-items: center;
   font-size: 0.72rem;
+  opacity: 0.72;
+  transition: opacity 0.15s ease;
+}
+
+.small-bar-emphasized {
+  opacity: 1;
 }
 
 .small-bar-label {
@@ -2792,6 +2938,11 @@ input[type='range']::-moz-range-thumb {
 
   .filter-row-label {
     margin-bottom: 0.1rem;
+  }
+
+  .relationship-visible-count {
+    width: 100%;
+    margin-left: 0;
   }
 }
 
@@ -3737,6 +3888,33 @@ input[type='range']::-moz-range-thumb {
   gap: 0.8rem;
 }
 
+.index-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.index-summary-card {
+  display: grid;
+  gap: 0.18rem;
+  padding: 0.75rem 0.85rem;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.index-summary-card span {
+  font-size: 0.7rem;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.index-summary-card strong {
+  font-size: 0.98rem;
+  color: var(--text-1);
+}
+
 .index-toolbar {
   display: flex;
   align-items: flex-start;
@@ -3752,8 +3930,37 @@ input[type='range']::-moz-range-thumb {
   color: var(--text-3);
 }
 
+.index-filter-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.25fr) repeat(4, minmax(120px, 0.7fr)) auto;
+  gap: 0.6rem;
+  align-items: end;
+}
+
+.index-search-field {
+  min-width: 0;
+}
+
+.index-toolbar-field input,
 .index-toolbar-field select {
   min-width: 140px;
+  min-height: 38px;
+  padding: 0.68rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-1);
+  color: var(--text-1);
+}
+
+.index-toolbar-field input:focus,
+.index-toolbar-field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(94, 163, 255, 0.14);
+}
+
+.index-reset-btn {
+  align-self: end;
 }
 
 .index-layout {
@@ -3816,8 +4023,78 @@ input[type='range']::-moz-range-thumb {
   gap: 0.5rem;
 }
 
+.index-compare-card {
+  gap: 0.4rem;
+}
+
+.index-compare-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.25rem;
+}
+
+.index-matrix-wrap {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.75rem;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.index-matrix-title {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-2);
+}
+
+.index-matrix-scroll {
+  overflow-x: auto;
+}
+
+.index-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.77rem;
+}
+
+.index-matrix th,
+.index-matrix td {
+  padding: 0.5rem 0.55rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.index-matrix thead th {
+  color: var(--text-2);
+  font-weight: 600;
+}
+
+.index-matrix tbody th {
+  color: var(--text-3);
+  font-weight: 500;
+}
+
+.index-matrix tbody td {
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.index-matrix tbody tr:last-child th,
+.index-matrix tbody tr:last-child td {
+  border-bottom: none;
+}
+
 @media (max-width: 980px) {
+  .index-summary-grid,
+  .index-filter-grid,
   .index-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .relationship-summary-grid {
     grid-template-columns: 1fr;
   }
 }
