@@ -289,6 +289,16 @@ a:hover {
   background: #4ade80;
 }
 
+.live-status-partial {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.live-status-partial::before {
+  background: #fbbf24;
+}
+
 .live-status-error {
   color: var(--text-3);
   background: transparent;

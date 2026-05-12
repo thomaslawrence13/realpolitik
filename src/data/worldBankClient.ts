@@ -276,6 +276,13 @@ export interface LiveData {
   ruleOfLaw: IndicatorValues;
   /** SL.UEM.TOTL.ZS — Unemployment, total (% of labour force) */
   unemployment: IndicatorValues;
+  /** Per-fetch diagnostics so the UI can distinguish partial from full failure. */
+  diagnostics: {
+    totalIndicators: number;
+    succeededIndicators: number;
+    failedIndicators: number;
+    failedCodes: WbIndicator[];
+  };
 }
 
 /**
@@ -286,18 +293,43 @@ export interface LiveData {
  * The caller receives whatever partial data is available.
  */
 export const fetchLiveData = async (signal?: AbortSignal): Promise<LiveData> => {
-  const safe = <T>(p: Promise<T>, fallback: T) => p.catch(() => fallback);
   const empty: IndicatorValues = {};
+  const requests: Array<[WbIndicator, Promise<IndicatorValues>]> = [
+    ['MS.MIL.XPND.GD.ZS', fetchIndicator('MS.MIL.XPND.GD.ZS', signal)],
+    ['TG.VAL.TOTL.GD.ZS', fetchIndicator('TG.VAL.TOTL.GD.ZS', signal)],
+    ['NY.GDP.MKTP.KD.ZG', fetchIndicator('NY.GDP.MKTP.KD.ZG', signal)],
+    ['FP.CPI.TOTL.ZG', fetchIndicator('FP.CPI.TOTL.ZG', signal)],
+    ['PV.EST', fetchIndicator('PV.EST', signal)],
+    ['RL.EST', fetchIndicator('RL.EST', signal)],
+    ['SL.UEM.TOTL.ZS', fetchIndicator('SL.UEM.TOTL.ZS', signal)],
+  ];
+  const settled = await Promise.allSettled(requests.map(([, promise]) => promise));
+  const valueByCode = new Map<WbIndicator, IndicatorValues>();
+  const failedCodes: WbIndicator[] = [];
 
-  const [militaryExpPct, tradePct, gdpGrowth, inflation, politicalStability, ruleOfLaw, unemployment] = await Promise.all([
-    safe(fetchIndicator('MS.MIL.XPND.GD.ZS', signal), empty),
-    safe(fetchIndicator('TG.VAL.TOTL.GD.ZS', signal), empty),
-    safe(fetchIndicator('NY.GDP.MKTP.KD.ZG', signal), empty),
-    safe(fetchIndicator('FP.CPI.TOTL.ZG', signal), empty),
-    safe(fetchIndicator('PV.EST', signal), empty),
-    safe(fetchIndicator('RL.EST', signal), empty),
-    safe(fetchIndicator('SL.UEM.TOTL.ZS', signal), empty),
-  ]);
+  settled.forEach((result, index) => {
+    const code = requests[index]![0];
+    if (result.status === 'fulfilled') {
+      valueByCode.set(code, result.value);
+      return;
+    }
+    failedCodes.push(code);
+    valueByCode.set(code, empty);
+  });
 
-  return { militaryExpPct, tradePct, gdpGrowth, inflation, politicalStability, ruleOfLaw, unemployment };
+  return {
+    militaryExpPct: valueByCode.get('MS.MIL.XPND.GD.ZS') ?? empty,
+    tradePct: valueByCode.get('TG.VAL.TOTL.GD.ZS') ?? empty,
+    gdpGrowth: valueByCode.get('NY.GDP.MKTP.KD.ZG') ?? empty,
+    inflation: valueByCode.get('FP.CPI.TOTL.ZG') ?? empty,
+    politicalStability: valueByCode.get('PV.EST') ?? empty,
+    ruleOfLaw: valueByCode.get('RL.EST') ?? empty,
+    unemployment: valueByCode.get('SL.UEM.TOTL.ZS') ?? empty,
+    diagnostics: {
+      totalIndicators: requests.length,
+      succeededIndicators: requests.length - failedCodes.length,
+      failedIndicators: failedCodes.length,
+      failedCodes,
+    },
+  };
 };

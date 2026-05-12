@@ -1,39 +1,11 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { countryProfiles } from '../src/data/countryData.js';
 import { simulateCountry, simulationWeightSets, defaultScenarioInputs } from '../src/simulation.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const DATA_DIR = path.resolve(__dirname, '../src/data/datasets');
+import { historicalBaselineFixture, writeHistoricalFixture } from './backtestFixture.js';
 
 async function main() {
   console.log('Starting historical backtest sequence...');
-  
-  // Scaffold historical baseline for a larger cross-section
-  const historicalBaseline = {
-    version: '2015-historical',
-    timestamp: '2015-01-01T00:00:00Z',
-    actualOutcomes: {
-      'united-states': { alignment: 'blocA', risk: 20 },
-      'china': { alignment: 'blocB', risk: 35 },
-      'russia': { alignment: 'blocB', risk: 65 },
-      'ukraine': { alignment: 'unstable', risk: 85 },
-      'united-kingdom': { alignment: 'blocA', risk: 15 },
-      'france': { alignment: 'blocA', risk: 20 },
-      'germany': { alignment: 'blocA', risk: 15 },
-      'japan': { alignment: 'blocA', risk: 25 },
-      'iran': { alignment: 'blocB', risk: 75 },
-      'north-korea': { alignment: 'blocB', risk: 85 },
-      'india': { alignment: 'nonAligned', risk: 40 },
-      'brazil': { alignment: 'nonAligned', risk: 30 },
-      'south-africa': { alignment: 'nonAligned', risk: 45 }
-    }
-  };
-
-  const outputPath = path.join(DATA_DIR, 'historical_2015_outcomes.json');
-  fs.writeFileSync(outputPath, JSON.stringify(historicalBaseline, null, 2));
+  const outputPath = writeHistoricalFixture();
+  const historicalBaseline = historicalBaselineFixture;
 
   console.log(`Saved historical ground-truth to ${outputPath}`);
   
@@ -65,7 +37,7 @@ async function main() {
       const simulated = simulateCountry(profile, 0, {
         includeHistory: false,
         scenarioInputs: defaultScenarioInputs,
-        weightSet
+        weightSet,
       });
       
       if (simulated.alignment === expected.alignment) correctAlignments++;

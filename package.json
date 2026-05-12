@@ -3,12 +3,15 @@
   "version": "0.1.0",
   "description": "Interactive geopolitical map simulation prototype",
   "scripts": {
-    "test": "npm run build",
+    "test": "npm run test:unit && npm run build",
+    "test:unit": "tsx --test \"src/**/*.test.ts\"",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "ingest": "tsx scripts/ingest.ts",
-    "backtest": "tsx scripts/backtest.ts"
+    "backtest": "tsx scripts/backtest.ts",
+    "backtest:fixture": "tsx scripts/generateBacktestFixture.ts",
+    "validate:dataset": "tsx scripts/validateDataset.ts"
   },
   "repository": {
     "type": "git",

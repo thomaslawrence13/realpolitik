@@ -7,7 +7,13 @@ type Props = {
   scenarioName: string;
   datasetVersion: string;
   countryCount: number;
-  liveDataStatus: 'loading' | 'live' | 'error';
+  liveDataStatus: 'loading' | 'live' | 'partial' | 'error';
+  liveDataDiagnostics: {
+    totalIndicators: number;
+    succeededIndicators: number;
+    failedIndicators: number;
+    failedCodes: string[];
+  } | null;
   onRetryLiveData: () => void;
   leftOpen: boolean;
   rightOpen: boolean;
@@ -30,6 +36,7 @@ export function TopBar({
   datasetVersion,
   countryCount,
   liveDataStatus,
+  liveDataDiagnostics,
   onRetryLiveData,
   leftOpen,
   rightOpen,
@@ -62,15 +69,22 @@ export function TopBar({
             <span className="brand-sep">·</span>
             <span
               className={`live-status live-status-${liveDataStatus}`}
-              title={{
-                loading: 'Fetching live World Bank indicators…',
-                live: 'Indicators enriched with live World Bank data',
-                error: 'Live data unavailable — using static dataset',
-              }[liveDataStatus]}
-            >
-              {liveDataStatus === 'live' ? 'live data' : liveDataStatus === 'error' ? 'static data' : 'updating…'}
-            </span>
-            {liveDataStatus === 'error' && (
+                title={{
+                  loading: 'Fetching live World Bank indicators…',
+                  live: 'All live World Bank indicators loaded successfully',
+                  partial: `Partially enriched: ${liveDataDiagnostics?.succeededIndicators ?? 0}/${liveDataDiagnostics?.totalIndicators ?? 0} indicators loaded`,
+                  error: 'Live data unavailable — using static dataset',
+                }[liveDataStatus]}
+              >
+                {liveDataStatus === 'live'
+                  ? 'live data'
+                  : liveDataStatus === 'partial'
+                    ? `${liveDataDiagnostics?.succeededIndicators ?? 0}/${liveDataDiagnostics?.totalIndicators ?? 0} live`
+                    : liveDataStatus === 'error'
+                      ? 'static data'
+                      : 'updating…'}
+              </span>
+            {(liveDataStatus === 'error' || liveDataStatus === 'partial') && (
               <button type="button" className="live-status-retry" onClick={onRetryLiveData}>
                 Retry
               </button>
