@@ -41,7 +41,7 @@ export const selectCountryOrFallback = (
   byName: Map<string, SimulatedCountry>,
   rows: SimulatedCountry[],
   mapName: string,
-) => byName.get(mapName) ?? rows[0];
+): SimulatedCountry | null => byName.get(mapName) ?? rows[0] ?? null;
 
 export const buildEventFeed = ({
   filtered,
