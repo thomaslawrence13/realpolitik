@@ -63,6 +63,33 @@ const overlayColor: Record<RelationshipDimension, string> = {
 };
 
 const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
+const MAP_UI_STATE_KEY = 'realpolitik:map-ui-state';
+
+type MapUiState = {
+  overlayMode: OverlayMode;
+  fillMode: MapFillMode;
+};
+
+const loadMapUiState = (): Partial<MapUiState> | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(MAP_UI_STATE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<MapUiState>;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const saveMapUiState = (state: MapUiState) => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(MAP_UI_STATE_KEY, JSON.stringify(state));
+  } catch {
+    // ignore
+  }
+};
 
 const fillModeGroups: ReadonlyArray<{ label: string; options: ReadonlyArray<{ value: MapFillMode; label: string; hint: string }> }> = [
   {
@@ -913,7 +940,7 @@ const MapLegendControls = memo(function MapLegendControls({
         <select
           className="filter-select map-overlay-select"
           value={fillMode}
-          onChange={(event) => onFillModeChange(event.target.value as MapFillMode)}
+          onChange={(e) => onFillModeChange(e.target.value as MapFillMode)}
           title="Select map fill mode"
         >
           {fillModeGroups.map((group) => (
@@ -972,10 +999,19 @@ export const MapCanvas = memo(function MapCanvas({
   alignmentColor,
   alignmentLabel,
 }: Props) {
-  const [overlayMode, setOverlayMode] = useState<OverlayMode>(initialOverlayMode ?? 'cooperation');
-  const [fillMode, setFillMode] = useState<MapFillMode>(initialFillMode ?? 'alignment');
+  const persistedMapUiState = useMemo(() => loadMapUiState(), []);
+  const [overlayMode, setOverlayMode] = useState<OverlayMode>(
+    persistedMapUiState?.overlayMode ?? initialOverlayMode ?? 'cooperation',
+  );
+  const [fillMode, setFillMode] = useState<MapFillMode>(
+    persistedMapUiState?.fillMode ?? initialFillMode ?? 'alignment',
+  );
   const handleOverlayModeChange = useCallback((mode: OverlayMode) => setOverlayMode(mode), []);
   const handleFillModeChange = useCallback((mode: MapFillMode) => setFillMode(mode), []);
+
+  useEffect(() => {
+    saveMapUiState({ overlayMode, fillMode });
+  }, [fillMode, overlayMode]);
 
   // Overlay connections derive entirely from byName + selection + overlay mode,
   // so MapCanvas owns the computation. App.tsx no longer needs lib/map at all,
