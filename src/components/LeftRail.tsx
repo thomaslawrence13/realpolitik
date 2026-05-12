@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent, MutableRefObject } from 'react';
 import type { Alignment, Filters, RegimeType, SimulatedCountry, Tier } from '../types';
 import { Segmented, SvgIcon } from './ui';
@@ -63,7 +63,7 @@ const RISK_GROUP_RANK = {
 const formatTitle = (value: string) =>
   value.length === 0 ? value : value.charAt(0).toUpperCase() + value.slice(1);
 
-export function LeftRail({
+export const LeftRail = memo(function LeftRail({
   open,
   search,
   onSearchChange,
@@ -418,4 +418,4 @@ export function LeftRail({
       </div>
     </aside>
   );
-}
+});

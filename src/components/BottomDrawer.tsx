@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type {
   Alignment,
@@ -97,7 +97,7 @@ type Props = {
   indexCountries: SimulatedCountry[];
 };
 
-export function BottomDrawer({
+export const BottomDrawer = memo(function BottomDrawer({
   open,
   tab,
   onTabChange,
@@ -254,7 +254,7 @@ export function BottomDrawer({
       </div>
     </section>
   );
-}
+});
 
 type IndexMetric = 'coverage' | 'confidence' | 'risk';
 const maxComparisonCountries = 4;

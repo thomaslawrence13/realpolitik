@@ -634,7 +634,7 @@ const getRelationshipMetric = (
 ) => relationship[mode];
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function MapCanvas({
+export const MapCanvas = memo(function MapCanvas({
   byName,
   baselineByName,
   visibleNames,
@@ -1574,4 +1574,4 @@ export function MapCanvas({
       </div>
     </section>
   );
-}
+});
