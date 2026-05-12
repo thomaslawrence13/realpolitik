@@ -1846,6 +1846,7 @@ function SourcesPanel({
   selected: SimulatedCountry;
   alignmentLabel: Record<Alignment, string>;
 }) {
+  const remediationDrivers = deriveQualityRemediationDrivers(selected.profile);
   return (
     <div className="panel-stack">
       <div className="section">

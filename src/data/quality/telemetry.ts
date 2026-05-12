@@ -209,4 +209,3 @@ export const buildInformationQualityTelemetry = (
     kpiStatus: toKpiStatus(baseTelemetry, options?.staticReferenceAverageScore),
   };
 };
-

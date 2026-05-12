@@ -43,4 +43,3 @@ export const INFORMATION_QUALITY_CONTRACT: InformationQualityContract = {
     maximumStaticRuntimeScoreDelta: 8,
   },
 };
-

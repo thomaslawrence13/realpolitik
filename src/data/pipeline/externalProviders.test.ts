@@ -28,4 +28,3 @@ test('ingested observations preserve per-country observedAt from raw ingest audi
   const tradeObservation = observations.find((row) => row.indicator === 'tradeExposure');
   assert.equal(tradeObservation?.observedAt, '2024-12-31');
 });
-

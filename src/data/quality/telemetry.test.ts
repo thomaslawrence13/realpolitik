@@ -38,4 +38,3 @@ test('deriveQualityRemediationDrivers prioritizes coverage and stale/fallback is
   assert.ok(drivers.some((driver) => driver.includes('Raise source coverage')));
   assert.ok(drivers.some((driver) => driver.includes('stale indicator')));
 });
-

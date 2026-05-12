@@ -83,4 +83,3 @@ if (regressionBudgetBreaches.length > 0) {
   regressionBudgetBreaches.forEach((breach) => console.error(`- ${breach}`));
   process.exit(1);
 }
-

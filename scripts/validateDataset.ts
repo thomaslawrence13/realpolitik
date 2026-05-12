@@ -200,6 +200,8 @@ const validateIngestArtifacts = () => {
       );
       if (/^\d{4}$/.test(indicator.newestObservation)) {
         const year = Number.parseInt(indicator.newestObservation, 10);
+        // Some provider feeds can roll over annual labels slightly ahead of
+        // calendar year-end publication, so allow a one-year future tolerance.
         ensureWarn(
           year <= currentYear + 1,
           `manifest newestObservation for "${indicator.snapshotKey}" appears in the future (${year})`,

@@ -48,7 +48,7 @@ const normalizeObservedAt = (date: string): string => {
 };
 
 const buildObservedAtIndex = (rawAudit?: RawWorldBankAuditPayload): Record<SnapshotIndicatorKey, Record<string, string>> => {
-  const empty = {
+  const empty: Record<SnapshotIndicatorKey, Record<string, string>> = {
     world_bank_military_expenditure_pct: {},
     world_bank_trade_pct: {},
     world_bank_gdp_growth: {},
@@ -56,7 +56,7 @@ const buildObservedAtIndex = (rawAudit?: RawWorldBankAuditPayload): Record<Snaps
     world_bank_political_stability: {},
     world_bank_rule_of_law: {},
     world_bank_unemployment: {},
-  } satisfies Record<SnapshotIndicatorKey, Record<string, string>>;
+  };
   if (!rawAudit?.indicators) return empty;
 
   for (const [code, points] of Object.entries(rawAudit.indicators)) {
@@ -153,15 +153,20 @@ export const buildIngestedObservations = (
     const inflation = snapshot.world_bank_inflation?.[geo];
     const unemployment = snapshot.world_bank_unemployment?.[geo];
     if (gdpGrowth != null || inflation != null || unemployment != null) {
+      // Cohesion uses three WB inputs; tag the observation with the most recent
+      // available source date across those inputs for accurate staleness checks.
+      const cohesionObservedDates = [
+        observationDateFor('world_bank_gdp_growth'),
+        observationDateFor('world_bank_inflation'),
+        observationDateFor('world_bank_unemployment'),
+      ];
       observations.push({
         providerId: 'wb-cohesion-ingest',
         sourceId: 'world-bank-wdi',
         countryId: profile.id,
         indicator: 'cohesion',
         value: toCohesionValue(profile.indicators.cohesion, gdpGrowth, inflation, unemployment),
-        observedAt: [observationDateFor('world_bank_gdp_growth'), observationDateFor('world_bank_inflation'), observationDateFor('world_bank_unemployment')]
-          .sort()
-          .at(-1) ?? fallbackObservedAt,
+        observedAt: cohesionObservedDates.sort().at(-1) ?? fallbackObservedAt,
         method: 'snapshot',
         confidence: 0.74,
       });

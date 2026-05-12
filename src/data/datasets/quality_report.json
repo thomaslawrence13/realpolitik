@@ -1,0 +1,220 @@
+{
+  "generatedAt": "2026-05-12T15:00:57.603Z",
+  "contract": {
+    "contractVersion": "iq-contract-v1.0.0",
+    "scoringVersion": "iq-score-v2.0.0",
+    "scoreWeights": {
+      "coverage": 0.3,
+      "completeness": 0.2,
+      "recency": 0.2,
+      "evidence": 0.15,
+      "confidence": 0.15
+    },
+    "staleThresholdDays": 730,
+    "lowCoverageThresholdPct": 70,
+    "warningCoverageThresholdPct": 80,
+    "minimumIndicatorConfidence": 0.55,
+    "outputs": [
+      {
+        "key": "dataQuality",
+        "origin": "runtime-live",
+        "description": "Per-country indicator-level quality telemetry used for staleness, confidence, and degraded reasons."
+      },
+      {
+        "key": "informationQualityTelemetry",
+        "origin": "runtime-live",
+        "description": "Aggregate quality scorecards and weakest/top cohorts produced from reconciled country profiles."
+      },
+      {
+        "key": "ingestTelemetry",
+        "origin": "static-at-build",
+        "description": "Ingestion coverage and newest-observation metadata emitted from ingest artifacts."
+      },
+      {
+        "key": "trustSummary",
+        "origin": "runtime-live",
+        "description": "UI trust label derived from country dataQuality, coverage, freshness, and evidence class."
+      }
+    ],
+    "kpiTargets": {
+      "minimumAverageInformationScore": 70,
+      "maximumLowQualityCountries": 28,
+      "maximumStaleCountries": 18,
+      "maximumStaticRuntimeScoreDelta": 8
+    }
+  },
+  "trendableAggregates": {
+    "averageInformationScore": 81.5,
+    "lowQualityCount": 0,
+    "staleCountryCount": 0,
+    "highQualityCount": 80,
+    "ingestAverageCoveragePct": 95.7,
+    "ingestMissingCountriesByWeakestIndicator": [
+      {
+        "snapshotKey": "world_bank_military_expenditure_pct",
+        "missingCountryCount": 15,
+        "newestObservation": "2024"
+      },
+      {
+        "snapshotKey": "world_bank_inflation",
+        "missingCountryCount": 11,
+        "newestObservation": "2024"
+      },
+      {
+        "snapshotKey": "world_bank_gdp_growth",
+        "missingCountryCount": 4,
+        "newestObservation": "2023"
+      },
+      {
+        "snapshotKey": "world_bank_trade_pct",
+        "missingCountryCount": 4,
+        "newestObservation": "2024"
+      }
+    ]
+  },
+  "baseline": {
+    "staticAverageInformationScore": 81.5,
+    "runtimeAverageInformationScore": 81.5,
+    "staticRuntimeScoreDelta": 0
+  },
+  "weakestCountries": [
+    {
+      "countryId": "somalia",
+      "displayName": "Somalia",
+      "informationScore": 67,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 10,
+      "remediationDrivers": [
+        "Improve confidence for 10 low-confidence indicators.",
+        "Raise source coverage from 38% toward 70%+ baseline.",
+        "source coverage below recommended threshold (70)"
+      ]
+    },
+    {
+      "countryId": "south-sudan",
+      "displayName": "South Sudan",
+      "informationScore": 68,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 10,
+      "remediationDrivers": [
+        "Improve confidence for 10 low-confidence indicators.",
+        "Raise source coverage from 38% toward 70%+ baseline.",
+        "source coverage below recommended threshold (70)"
+      ]
+    },
+    {
+      "countryId": "yemen",
+      "displayName": "Yemen",
+      "informationScore": 69,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 10,
+      "remediationDrivers": [
+        "Improve confidence for 10 low-confidence indicators.",
+        "Raise source coverage from 44% toward 70%+ baseline.",
+        "source coverage below recommended threshold (70)"
+      ]
+    },
+    {
+      "countryId": "north-korea",
+      "displayName": "North Korea",
+      "informationScore": 69,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 10,
+      "remediationDrivers": [
+        "Improve confidence for 10 low-confidence indicators.",
+        "Raise source coverage from 40% toward 70%+ baseline.",
+        "source coverage below recommended threshold (70)"
+      ]
+    },
+    {
+      "countryId": "niger",
+      "displayName": "Niger",
+      "informationScore": 69,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 10,
+      "remediationDrivers": [
+        "Improve confidence for 10 low-confidence indicators.",
+        "Raise source coverage from 40% toward 70%+ baseline.",
+        "source coverage below recommended threshold (70)"
+      ]
+    },
+    {
+      "countryId": "mali",
+      "displayName": "Mali",
+      "informationScore": 69,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 10,
+      "remediationDrivers": [
+        "Improve confidence for 10 low-confidence indicators.",
+        "Raise source coverage from 40% toward 70%+ baseline.",
+        "source coverage below recommended threshold (70)"
+      ]
+    },
+    {
+      "countryId": "turkmenistan",
+      "displayName": "Turkmenistan",
+      "informationScore": 70,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 10,
+      "remediationDrivers": [
+        "Improve confidence for 10 low-confidence indicators.",
+        "Raise source coverage from 42% toward 70%+ baseline.",
+        "source coverage below recommended threshold (70)"
+      ]
+    },
+    {
+      "countryId": "afghanistan",
+      "displayName": "Afghanistan",
+      "informationScore": 70,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 10,
+      "remediationDrivers": [
+        "Improve confidence for 10 low-confidence indicators.",
+        "Raise source coverage from 42% toward 70%+ baseline.",
+        "source coverage below recommended threshold (70)"
+      ]
+    },
+    {
+      "countryId": "syria",
+      "displayName": "Syria",
+      "informationScore": 72,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 10,
+      "remediationDrivers": [
+        "Improve confidence for 10 low-confidence indicators.",
+        "Raise source coverage from 50% toward 70%+ baseline.",
+        "source coverage below recommended threshold (70)"
+      ]
+    },
+    {
+      "countryId": "sudan",
+      "displayName": "Sudan",
+      "informationScore": 72,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 10,
+      "remediationDrivers": [
+        "Improve confidence for 10 low-confidence indicators.",
+        "Raise source coverage from 45% toward 70%+ baseline.",
+        "source coverage below recommended threshold (70)"
+      ]
+    }
+  ],
+  "kpiStatus": {
+    "averageInformationScoreWithinTarget": true,
+    "lowQualityCountWithinTarget": true,
+    "staleCountryCountWithinTarget": true,
+    "staticRuntimeScoreDeltaWithinTarget": true,
+    "staticRuntimeScoreDelta": 0
+  },
+  "regressionBudgetBreaches": []
+}
