@@ -59,12 +59,13 @@ const formatIndicatorLabel = (value: string) =>
   value.replace(/([A-Z])/g, ' $1').trim().replace(/^./, (v) => v.toUpperCase());
 const formatEvidenceClass = (value: 'observed' | 'estimated' | 'fallback' | 'derived') =>
   value.charAt(0).toUpperCase() + value.slice(1);
-/** Convert a camelCase mineral key (e.g. 'rareEarths') to a readable title ('Rare Earths'). */
-const formatMineralName = (value: string) =>
-  value.replace(/([A-Z])/g, ' $1').trim().replace(/^./, (v) => v.toUpperCase());
+/** Convert a camelCase mineral key (e.g. 'rareEarths') to a readable title ('Rare Earths'). Uses formatIndicatorLabel logic. */
+const formatMineralName = (value: string) => formatIndicatorLabel(value);
 /** Convert a kebab-case country ID (e.g. 'saudi-arabia') to title case ('Saudi Arabia'). */
 const formatCountryId = (id: string) =>
-  id.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  id.length === 0
+    ? id
+    : id.split('-').filter(Boolean).map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 const relationshipTagBorderAlpha = '33';
 const relationshipTagBackgroundAlpha = '14';
 
@@ -516,6 +517,12 @@ function InlineSourceTag({ sources, ids }: { sources: DatasetSource[]; ids: stri
   );
 }
 
+/**
+ * Statistics tab — shows all structured data fields for the selected country
+ * across multiple domains (economy, military, demographics, energy, minerals,
+ * fiscal, food/water, cyber, diplomatic, soft-power) with inline source
+ * attribution links and data quality notices.
+ */
 function StatsPanel({
   selected,
   comparisonSelected,
@@ -747,7 +754,7 @@ function StatsPanel({
             })()}
           />
           <ProfileStat
-            label="External debt / GDP"
+            label="External debt/GDP"
             value={`${fiscal.externalDebtGdpPct}%`}
             tone={fiscal.externalDebtGdpPct > 100 ? 'negative' : fiscal.externalDebtGdpPct > 60 ? 'neutral' : 'positive'}
           />
@@ -921,7 +928,7 @@ function StatsPanel({
             {profile.topTradePartners.map((partner) => (
               <li key={partner.countryId}>
                 <span>{formatCountryId(partner.countryId)}</span>
-                <strong>{partner.sharePct}% · {partner.flow}</strong>
+                <strong>{partner.sharePct}% · {formatTitle(partner.flow)}</strong>
               </li>
             ))}
           </ul>
