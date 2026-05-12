@@ -103,11 +103,7 @@ const clampScenarioInput = (key: keyof ScenarioInputs, value: number): number =>
 };
 
 const createZeroScenarioInputs = (): ScenarioInputs => {
-  const zeroed = {} as ScenarioInputs;
-  for (const key of scenarioInputKeys) {
-    zeroed[key] = 0;
-  }
-  return zeroed;
+  return { ...defaultScenarioInputs };
 };
 
 const eventAppliesToProfile = (profile: CountryProfile, event: EventTemplate): boolean => {
@@ -151,7 +147,7 @@ export const getScenarioInputsForProfile = (
     }
   }
 
-  const nextInputs = createZeroScenarioInputs();
+  const nextInputs = {} as ScenarioInputs;
 
   for (const key of scenarioInputKeys) {
     nextInputs[key] = clampScenarioInput(key, baseInputs[key] + delta[key]);
