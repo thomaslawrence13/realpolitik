@@ -77,7 +77,7 @@ const indicatorConfigs: IndicatorConfig[] = [
 const payload = historicalIndicatorSeries as WorldBankAuditPayload;
 const totalTrackedCountries = Object.keys(countryIso2).length;
 const isoToCountryId = new Map(Object.entries(iso2ToCountryId));
-const fallbackRetrievedDate = new Date().toISOString().slice(0, ISO_DATE_LENGTH);
+const fallbackRetrievedDate = '1970-01-01';
 const parsedRetrievedDate = new Date(payload.fetchedAt);
 const retrievedDate = Number.isNaN(parsedRetrievedDate.getTime())
   ? fallbackRetrievedDate

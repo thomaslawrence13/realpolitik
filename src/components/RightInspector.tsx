@@ -697,7 +697,7 @@ function StatsPanel({
   useEffect(() => {
     setHistoricalMetricId(availableHistorical[0]?.metricId ?? '');
     setComparisonCountryMapName('');
-  }, [profile.historicalSeries, selected.profile.id]);
+  }, [selected.profile.id]);
 
   const selectedHistoricalSeries = useMemo(
     () => availableHistorical.find((series) => series.metricId === historicalMetricId) ?? null,
