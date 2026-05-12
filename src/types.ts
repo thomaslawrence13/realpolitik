@@ -424,6 +424,9 @@ export interface SimulationWeightSet {
 
 export interface SimulationOptions {
   includeHistory?: boolean;
+  /** When true, builds the full ContributionLine explanation for the inspector.
+   *  Defaults to false — skip for map/movers/sparkline computations that don't show breakdowns. */
+  includeExplanation?: boolean;
   scenarioInputs?: ScenarioInputs;
   activeEvents?: EventTemplate[];
   weightSet?: SimulationWeightSet;
@@ -483,7 +486,8 @@ export interface SimulatedCountry {
   drivers: DriverScore[];
   history: ScenarioSnapshot[];
   relationshipSummary: RelationshipSummary;
-  explanation: SimulationExplanation;
+  /** Only populated when `includeExplanation: true` was passed to `simulateCountry`. */
+  explanation: SimulationExplanation | null;
 }
 
 export interface Filters {

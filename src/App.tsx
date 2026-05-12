@@ -376,6 +376,20 @@ export default function App() {
   const baselineSelected = baselineByName.get(selectedCountry) ?? baselineSimulated[0];
   const selectedRiskDelta = Math.round(selected.risk - baselineSelected.risk);
   const selectedConfidenceDelta = Math.round(selected.confidence - baselineSelected.confidence);
+
+  // Re-simulate the selected country with explanation enabled for the inspector panels.
+  // This is a single country (cheap) and the only call that actually needs ContributionLine arrays.
+  const selectedWithExplanation = useMemo(
+    () =>
+      simulateCountry(selected.profile, timelineIndex, {
+        scenarioInputs: deferredScenarioInputs,
+        activeEvents,
+        weightSet: activeWeightSet,
+        includeHistory: false,
+        includeExplanation: true,
+      }),
+    [activeEvents, activeWeightSet, deferredScenarioInputs, selected.profile, timelineIndex],
+  );
   const selectedActiveEvents = useMemo(
     () => getActiveEventsForProfile(selected.profile, activeEvents),
     [activeEvents, selected.profile],
@@ -391,7 +405,13 @@ export default function App() {
       .sort((a, b) => b.risk - a.risk)
       .slice(0, 5)
       .map((entry) => {
-        const topPressure = entry.profile.relationships[0];
+        // Find the highest-tension partner rather than using the first relationship.
+        const topPressure = entry.profile.relationships.reduce<
+          typeof entry.profile.relationships[number] | null
+        >(
+          (best, rel) => (!best || rel.tension > best.tension ? rel : best),
+          null,
+        );
         const baselineEntry = baselineByName.get(entry.profile.mapName);
         const riskDelta = baselineEntry ? Math.round(entry.risk - baselineEntry.risk) : 0;
         const tone = getRiskTier(entry.risk);
@@ -405,14 +425,31 @@ export default function App() {
       });
   }, [baselineByName, filtered, timelineIndex]);
 
-  // Optional comparison track — recomputes only the selected country (cheap).
+  // Optional comparison track.
   const comparisonScenario = useMemo(
     () => savedScenarios.find((scenario) => scenario.id === comparisonScenarioId) ?? null,
     [comparisonScenarioId, savedScenarios],
   );
 
+  // Cheap single-country comparison for the inspector — avoids simulating all 134 countries
+  // just to display the selected country's delta in the inspector panels.
+  const comparisonSelected = useMemo<SimulatedCountry | null>(() => {
+    if (!comparisonScenario) return null;
+    const profile = byName.get(selectedCountry)?.profile;
+    if (!profile) return null;
+    const comparisonEvents = resolveEventIds(comparisonScenario.activeEventIds ?? []);
+    const compWeights = getSimulationWeightSet(comparisonScenario.weightSetKey);
+    return simulateCountry(profile, comparisonScenario.timelineIndex, {
+      scenarioInputs: comparisonScenario.inputs,
+      activeEvents: comparisonEvents,
+      weightSet: compWeights,
+    });
+  }, [byName, comparisonScenario, selectedCountry]);
+
+  // Full comparison map — only built when the movers tab is visible and a comparison
+  // scenario is active. Simulating all 134 countries is deferred until actually needed.
   const comparisonSimulated = useMemo<SimulatedCountry[]>(() => {
-    if (!comparisonScenario) return [];
+    if (!comparisonScenario || drawerTab !== 'movers') return [];
     const comparisonEvents = resolveEventIds(comparisonScenario.activeEventIds ?? []);
     const compWeights = getSimulationWeightSet(comparisonScenario.weightSetKey);
     return activeProfiles.map((profile) =>
@@ -422,24 +459,18 @@ export default function App() {
         weightSet: compWeights,
       }),
     );
-  }, [activeProfiles, comparisonScenario]);
+  }, [activeProfiles, comparisonScenario, drawerTab]);
 
   const comparisonByName = useMemo(() => {
     if (comparisonSimulated.length === 0) return null;
     return new Map(comparisonSimulated.map((entry) => [entry.profile.mapName, entry]));
   }, [comparisonSimulated]);
 
-  const comparisonSelected = useMemo<SimulatedCountry | null>(() => {
-    if (!comparisonByName) return null;
-    return comparisonByName.get(selectedCountry) ?? null;
-  }, [comparisonByName, selectedCountry]);
-
-  // Inspector sparkline — split into two independent memos so the baseline track
-  // (which depends only on activeProfiles + selectedCountry) never reruns when
-  // only the active-scenario inputs or events change, and vice versa.
+  // Inspector sparkline — baseline profile resolved from the already-built byName
+  // map (O(1)) instead of a linear scan over activeProfiles.
   const sparklineProfile = useMemo(
-    () => activeProfiles.find((entry) => entry.mapName === selectedCountry) ?? null,
-    [activeProfiles, selectedCountry],
+    () => byName.get(selectedCountry)?.profile ?? null,
+    [byName, selectedCountry],
   );
 
   const sparklineBaselineRisks = useMemo<number[]>(() => {
@@ -789,7 +820,7 @@ export default function App() {
 
       <RightInspector
         open={rightOpen}
-        selected={selected}
+        selected={selectedWithExplanation}
         baselineSelected={baselineSelected}
         riskDelta={selectedRiskDelta}
         confidenceDelta={selectedConfidenceDelta}

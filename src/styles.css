@@ -2388,6 +2388,49 @@ input[type='range']::-moz-range-thumb {
   gap: 1rem;
 }
 
+.events-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.events-search input {
+  width: 100%;
+  padding: 0.52rem 2rem 0.52rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-1);
+  color: var(--text-1);
+  font-size: 0.82rem;
+  transition: border-color 0.15s;
+}
+
+.events-search input:focus {
+  outline: none;
+  border-color: var(--accent-line);
+  background: var(--surface-2);
+}
+
+.events-search-clear {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--r-pill);
+  color: var(--text-4);
+  transition: color 120ms var(--ease), background 120ms var(--ease);
+}
+
+.events-search-clear:hover {
+  color: var(--text-1);
+  background: var(--surface-2);
+}
+
 .events-filter-bar {
   display: flex;
   flex-wrap: wrap;
@@ -3920,6 +3963,13 @@ input[type='range']::-moz-range-thumb {
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.index-toolbar-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
