@@ -135,16 +135,33 @@ export const getScenarioInputsForProfile = (
   const matchingEvents = getActiveEventsForProfile(profile, activeEvents);
   if (matchingEvents.length === 0) return baseInputs;
 
-  const delta = scenarioInputKeys.reduce((acc, key) => {
-    const sum = matchingEvents.reduce((total, event) => {
-      return total + (event.inputs[key] ?? 0);
-    }, 0);
-    return { ...acc, [key]: sum };
-  }, {} as ScenarioInputs);
+  const delta: ScenarioInputs = {
+    sanctionShock: 0,
+    treatyShift: 0,
+    electionVolatility: 0,
+    invasionPressure: 0,
+    coupRisk: 0,
+  };
 
-  return scenarioInputKeys.reduce((acc, key) => {
-    return { ...acc, [key]: clampScenarioInput(key, baseInputs[key] + delta[key]) };
-  }, {} as ScenarioInputs);
+  for (const event of matchingEvents) {
+    for (const key of scenarioInputKeys) {
+      delta[key] += event.inputs[key] ?? 0;
+    }
+  }
+
+  const nextInputs: ScenarioInputs = {
+    sanctionShock: 0,
+    treatyShift: 0,
+    electionVolatility: 0,
+    invasionPressure: 0,
+    coupRisk: 0,
+  };
+
+  for (const key of scenarioInputKeys) {
+    nextInputs[key] = clampScenarioInput(key, baseInputs[key] + delta[key]);
+  }
+
+  return nextInputs;
 };
 
 export const simulationWeightSets: Record<WeightSetKey, SimulationWeightSet> = {

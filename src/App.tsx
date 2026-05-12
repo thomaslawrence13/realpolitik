@@ -108,6 +108,11 @@ const alignmentColor: Record<Alignment, string> = {
 };
 
 const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
+const resolveEventIds = (eventIds: string[]) =>
+  eventIds.flatMap((id) => {
+    const event = eventById.get(id);
+    return event ? [event] : [];
+  });
 
 const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 1080;
 const isWelcomeDismissed = () => {
@@ -203,13 +208,7 @@ export default function App() {
   const deferredActiveEventIds = useDeferredValue(activeEventIds);
 
   // Merge manual slider values with the accumulated deltas from active events.
-  const activeEvents = useMemo(
-    () => deferredActiveEventIds.flatMap((id) => {
-      const event = eventById.get(id);
-      return event ? [event] : [];
-    }),
-    [deferredActiveEventIds],
-  );
+  const activeEvents = useMemo(() => resolveEventIds(deferredActiveEventIds), [deferredActiveEventIds]);
 
   const [leftOpen, setLeftOpen] = useState<boolean>(() => !isMobile());
   const [rightOpen, setRightOpen] = useState<boolean>(() => !isMobile());
@@ -411,10 +410,7 @@ export default function App() {
 
   const comparisonSimulated = useMemo<SimulatedCountry[]>(() => {
     if (!comparisonScenario) return [];
-    const comparisonEvents = (comparisonScenario.activeEventIds ?? []).flatMap((id) => {
-      const event = eventById.get(id);
-      return event ? [event] : [];
-    });
+    const comparisonEvents = resolveEventIds(comparisonScenario.activeEventIds ?? []);
     const compWeights = getSimulationWeightSet(comparisonScenario.weightSetKey);
     return activeProfiles.map((profile) =>
       simulateCountry(profile, comparisonScenario.timelineIndex, {
