@@ -199,7 +199,9 @@ export default function App() {
       .catch(() => {
         if (!controller.signal.aborted) setLiveDataStatus('error');
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- countryProfiles is a stable module-level constant
+    // Keep callback stable for TopBar retry button wiring; it only references stable
+    // module constants (`countryProfiles`) and React state setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

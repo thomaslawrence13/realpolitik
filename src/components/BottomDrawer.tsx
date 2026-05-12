@@ -346,7 +346,9 @@ function IndexPanel({
         // FIFO eviction: JavaScript Sets maintain insertion order, so
         // `values().next().value` always returns the oldest (first inserted) entry.
         while (next.size >= maxComparisonCountries) {
-          next.delete(next.values().next().value as string);
+          const oldest = next.values().next().value;
+          if (oldest === undefined) break;
+          next.delete(oldest);
         }
         next.add(countryId);
       }
