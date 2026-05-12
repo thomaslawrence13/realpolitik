@@ -62,6 +62,8 @@ type Props = {
   activeEventIds: string[];
   onApplyEvent: (id: string) => void;
   onRemoveEvent: (id: string) => void;
+  onApplyEvents: (ids: string[]) => void;
+  onClearAllEvents: () => void;
   onResizeStart: (startClientY: number) => void;
   onResizeStep: (delta: number) => void;
   onResizeTo: (edge: 'min' | 'max') => void;
@@ -112,6 +114,8 @@ export function BottomDrawer({
   activeEventIds,
   onApplyEvent,
   onRemoveEvent,
+  onApplyEvents,
+  onClearAllEvents,
   onResizeStart,
   onResizeStep,
   onResizeTo,
@@ -178,6 +182,8 @@ export function BottomDrawer({
             activeEventIds={activeEventIds}
             onApply={onApplyEvent}
             onRemove={onRemoveEvent}
+            onApplyMany={onApplyEvents}
+            onClearAll={onClearAllEvents}
             scenarioFeed={eventFeed}
           />
         )}
@@ -227,6 +233,36 @@ export function BottomDrawer({
 type IndexMetric = 'coverage' | 'confidence' | 'risk';
 const maxComparisonCountries = 4;
 
+const CSV_COLUMNS = ['Country', 'Region', 'Regime', 'Coverage%', 'Confidence%', 'Risk%', 'Relationships', 'Trust'] as const;
+
+const exportIndexCsv = (rows: SimulatedCountry[]) => {
+  const escape = (value: string) => `"${value.replace(/"/g, '""')}"`;
+  const header = CSV_COLUMNS.join(',');
+  const body = rows.map((country) => {
+    const trust = summarizeCountryTrust(country.profile);
+    return [
+      escape(country.profile.displayName),
+      escape(country.profile.region),
+      escape(country.profile.regimeType),
+      String(country.profile.sourceCoverage),
+      String(country.confidence),
+      String(country.risk),
+      String(country.profile.relationships.length),
+      escape(trust.label),
+    ].join(',');
+  });
+  const csv = [header, ...body].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `realpolitik-index-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
 function IndexPanel({
   countries,
   onSelectCountry,
@@ -235,7 +271,8 @@ function IndexPanel({
   onSelectCountry: (mapName: string) => void;
 }) {
   const [metric, setMetric] = useState<IndexMetric>('coverage');
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  // Use a Set for O(1) selection checks; expose ordered array for rendering.
+  const [selectedIdSet, setSelectedIdSet] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
   const [regionFilter, setRegionFilter] = useState<'all' | string>('all');
   const [trustFilter, setTrustFilter] = useState<'all' | 'good' | 'warning' | 'bad'>('all');
@@ -278,26 +315,46 @@ function IndexPanel({
     return next;
   }, [filtered, metric]);
 
+  // Build Set of valid IDs from current ranked list.
+  const rankedIdSet = useMemo(() => new Set(ranked.map((c) => c.profile.id)), [ranked]);
+
   const compared = useMemo(
     () =>
-      selectedIds
+      [...selectedIdSet]
+        .filter((id) => rankedIdSet.has(id))
         .map((countryId) => ranked.find((country) => country.profile.id === countryId))
         .filter((country): country is SimulatedCountry => Boolean(country)),
-    [ranked, selectedIds],
+    [ranked, rankedIdSet, selectedIdSet],
   );
 
   const activeFilterCount = [regionFilter, trustFilter, riskFilter, regimeFilter].filter((value) => value !== 'all').length;
 
   useEffect(() => {
-    setSelectedIds((current) => current.filter((id) => ranked.some((country) => country.profile.id === id)));
-  }, [ranked]);
+    // Prune selection when the ranked list changes.
+    setSelectedIdSet((current) => {
+      const pruned = new Set([...current].filter((id) => rankedIdSet.has(id)));
+      return pruned.size === current.size ? current : pruned;
+    });
+  }, [rankedIdSet]);
 
   const toggleCountry = (countryId: string) => {
-    setSelectedIds((current) =>
-      current.includes(countryId)
-        ? current.filter((id) => id !== countryId)
-        : [...current.slice(-(maxComparisonCountries - 1)), countryId],
-    );
+    setSelectedIdSet((current) => {
+      const next = new Set(current);
+      if (next.has(countryId)) {
+        next.delete(countryId);
+      } else {
+        // FIFO eviction: JavaScript Sets maintain insertion order, so
+        // `values().next().value` always returns the oldest (first inserted) entry.
+        while (next.size >= maxComparisonCountries) {
+          const oldest = next.values().next().value;
+          // Defensive guard; should never occur because loop condition implies non-empty Set.
+          if (oldest === undefined) break;
+          next.delete(oldest);
+        }
+        next.add(countryId);
+      }
+      return next;
+    });
   };
 
   const resetFilters = () => {
@@ -323,14 +380,24 @@ function IndexPanel({
           <strong>Factual index</strong>
           <p className="movers-empty">Search, filter, and compare a small cohort before jumping into the inspector.</p>
         </div>
-        <label className="index-toolbar-field">
-          <span>Rank by</span>
-          <select value={metric} onChange={(event) => setMetric(event.target.value as IndexMetric)}>
-            <option value="coverage">Coverage</option>
-            <option value="confidence">Confidence</option>
-            <option value="risk">Risk</option>
-          </select>
-        </label>
+        <div className="index-toolbar-actions">
+          <label className="index-toolbar-field">
+            <span>Rank by</span>
+            <select value={metric} onChange={(event) => setMetric(event.target.value as IndexMetric)}>
+              <option value="coverage">Coverage</option>
+              <option value="confidence">Confidence</option>
+              <option value="risk">Risk</option>
+            </select>
+          </label>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => exportIndexCsv(ranked)}
+            title="Export visible countries as CSV"
+          >
+            Export CSV
+          </button>
+        </div>
       </div>
 
       <div className="index-summary-grid">
@@ -421,7 +488,7 @@ function IndexPanel({
                   <button
                     key={country.profile.id}
                     type="button"
-                    className={`index-row ${selectedIds.includes(country.profile.id) ? 'index-row-active' : ''}`}
+                    className={`index-row ${selectedIdSet.has(country.profile.id) ? 'index-row-active' : ''}`}
                     onClick={() => toggleCountry(country.profile.id)}
                   >
                     <span className="index-rank">#{index + 1}</span>
@@ -636,20 +703,36 @@ function ScenarioPanel({
   );
 }
 
+const INPUT_LABELS: Record<string, string> = {
+  sanctionShock: 'Sanctions',
+  treatyShift: 'Treaty',
+  electionVolatility: 'Election',
+  invasionPressure: 'Invasion',
+  coupRisk: 'Coup',
+};
+
 function EventsPanel({
   events,
   activeEventIds,
   onApply,
   onRemove,
+  onApplyMany,
+  onClearAll,
   scenarioFeed,
 }: {
   events: EventTemplate[];
   activeEventIds: string[];
   onApply: (id: string) => void;
   onRemove: (id: string) => void;
+  onApplyMany: (ids: string[]) => void;
+  onClearAll: () => void;
   scenarioFeed: EventFeedItem[];
 }) {
   const [categoryFilter, setCategoryFilter] = useState<'all' | EventCategory>('all');
+  const [search, setSearch] = useState('');
+
+  // O(1) active-event lookup for the potentially large event grid.
+  const activeSet = useMemo(() => new Set(activeEventIds), [activeEventIds]);
 
   const categories: Array<{ value: 'all' | EventCategory; label: string }> = [
     { value: 'all', label: 'All' },
@@ -659,19 +742,28 @@ function EventsPanel({
     { value: 'compound', label: 'Compound' },
   ];
 
-  const visible = categoryFilter === 'all' ? events : events.filter((e) => e.category === categoryFilter);
+  const visible = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return events.filter((event) => {
+      if (categoryFilter !== 'all' && event.category !== categoryFilter) return false;
+      if (query.length === 0) return true;
+      return (
+        event.name.toLowerCase().includes(query) ||
+        event.summary.toLowerCase().includes(query) ||
+        event.regionTags.some((tag) => tag.toLowerCase().includes(query))
+      );
+    });
+  }, [categoryFilter, events, search]);
 
   const formatDelta = (key: string, value: number) => {
     const signed = value > 0 ? `+${value}` : `${value}`;
-    const labels: Record<string, string> = {
-      sanctionShock: 'Sanctions',
-      treatyShift: 'Treaty',
-      electionVolatility: 'Election',
-      invasionPressure: 'Invasion',
-      coupRisk: 'Coup',
-    };
-    return `${labels[key] ?? key} ${signed}`;
+    return `${INPUT_LABELS[key] ?? key} ${signed}`;
   };
+
+  const visibleInactiveIds = useMemo(
+    () => visible.filter((event) => !activeSet.has(event.id)).map((event) => event.id),
+    [activeSet, visible],
+  );
 
   return (
     <div className="events-panel">
@@ -691,46 +783,87 @@ function EventsPanel({
         )}
       </div>
 
-      <div className="events-grid">
-        {visible.map((event) => {
-          const isActive = activeEventIds.includes(event.id);
-          const deltaItems = (Object.entries(event.inputs) as Array<[string, number]>).filter(
-            ([, v]) => v !== 0,
-          );
-          return (
-            <article key={event.id} className={`event-card ${isActive ? 'event-card-active' : ''}`}>
-              <header className="event-card-header">
-                <span className={`event-category-tag event-category-${event.category}`}>
-                  {event.category}
-                </span>
-                <button
-                  type="button"
-                  className={`btn ${isActive ? 'btn-ghost event-btn-remove' : 'btn-primary'} btn-sm`}
-                  onClick={() => (isActive ? onRemove(event.id) : onApply(event.id))}
-                >
-                  {isActive ? 'Remove' : 'Apply'}
-                </button>
-              </header>
-              <strong className="event-card-name">{event.name}</strong>
-              <p className="event-card-summary">{event.summary}</p>
-              <div className="event-deltas">
-                {deltaItems.map(([key, value]) => (
-                  <span key={key} className={`event-delta ${value > 0 ? 'event-delta-up' : 'event-delta-down'}`}>
-                    {formatDelta(key, value)}
+      <div className="events-bulk-actions">
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => onApplyMany(visibleInactiveIds)}
+          disabled={visibleInactiveIds.length === 0}
+          title="Apply all currently visible events that are not active"
+        >
+          Apply visible ({visibleInactiveIds.length})
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={onClearAll}
+          disabled={activeEventIds.length === 0}
+          title="Clear all currently active events"
+        >
+          Clear active ({activeEventIds.length})
+        </button>
+      </div>
+
+      <label className="events-search">
+        <span className="sr-only">Search events</span>
+        <input
+          type="search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search by name, region, or keyword…"
+          spellCheck={false}
+        />
+        {search.length > 0 && (
+          <button type="button" className="events-search-clear" onClick={() => setSearch('')} aria-label="Clear search">
+            <SvgIcon.X />
+          </button>
+        )}
+      </label>
+
+      {visible.length === 0 ? (
+        <p className="movers-empty">No events match — try adjusting your search or category filter.</p>
+      ) : (
+        <div className="events-grid">
+          {visible.map((event) => {
+            const isActive = activeSet.has(event.id);
+            const deltaItems = (Object.entries(event.inputs) as Array<[string, number]>).filter(
+              ([, v]) => v !== 0,
+            );
+            return (
+              <article key={event.id} className={`event-card ${isActive ? 'event-card-active' : ''}`}>
+                <header className="event-card-header">
+                  <span className={`event-category-tag event-category-${event.category}`}>
+                    {event.category}
                   </span>
-                ))}
-              </div>
-              {event.regionTags.length > 0 && (
-                <div className="event-regions">
-                  {event.regionTags.map((tag) => (
-                    <span key={tag} className="event-region-tag">{tag}</span>
+                  <button
+                    type="button"
+                    className={`btn ${isActive ? 'btn-ghost event-btn-remove' : 'btn-primary'} btn-sm`}
+                    onClick={() => (isActive ? onRemove(event.id) : onApply(event.id))}
+                  >
+                    {isActive ? 'Remove' : 'Apply'}
+                  </button>
+                </header>
+                <strong className="event-card-name">{event.name}</strong>
+                <p className="event-card-summary">{event.summary}</p>
+                <div className="event-deltas">
+                  {deltaItems.map(([key, value]) => (
+                    <span key={key} className={`event-delta ${value > 0 ? 'event-delta-up' : 'event-delta-down'}`}>
+                      {formatDelta(key, value)}
+                    </span>
                   ))}
                 </div>
-              )}
-            </article>
-          );
-        })}
-      </div>
+                {event.regionTags.length > 0 && (
+                  <div className="event-regions">
+                    {event.regionTags.map((tag) => (
+                      <span key={tag} className="event-region-tag">{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      )}
 
       {scenarioFeed.length > 0 && (
         <div className="events-impact-section">

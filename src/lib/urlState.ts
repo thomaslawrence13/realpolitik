@@ -33,10 +33,8 @@ const isShareableState = (value: unknown): value is ShareableState => {
 const toBase64 = (value: string): string => {
   if (typeof window === 'undefined') return '';
   const bytes = new TextEncoder().encode(value);
-  let binary = '';
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
+  // String.fromCharCode.apply is O(n) vs the O(n²) char-by-char concat.
+  const binary = String.fromCharCode(...bytes);
   return window.btoa(binary).replace(/=+$/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 };
 

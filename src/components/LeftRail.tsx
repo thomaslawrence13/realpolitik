@@ -3,6 +3,7 @@ import type { KeyboardEvent as ReactKeyboardEvent, MutableRefObject } from 'reac
 import type { Alignment, Filters, RegimeType, SimulatedCountry, Tier } from '../types';
 import { Segmented, SvgIcon } from './ui';
 import { summarizeCountryTrust, TrustTag } from './provenance';
+import { getRiskTier } from '../simulation';
 
 type Props = {
   open: boolean;
@@ -143,9 +144,16 @@ export function LeftRail({
   }, [alignmentLabel, groupMode, sorted]);
 
   const activeFilterCount = useMemo(() => {
-    return (Object.keys(filters) as Array<keyof Filters>).filter(
-      (key) => filters[key] !== 'all',
-    ).length;
+    // Count non-'all' filter values without allocating a keys array.
+    let count = 0;
+    if (filters.allianceNetwork !== 'all') count++;
+    if (filters.tradeExposure !== 'all') count++;
+    if (filters.militaryTreatyLevel !== 'all') count++;
+    if (filters.conflictPressure !== 'all') count++;
+    if (filters.sanctionsExposure !== 'all') count++;
+    if (filters.regimeType !== 'all') count++;
+    if (filters.riskLevel !== 'all') count++;
+    return count;
   }, [filters]);
 
   // Flat ordered list — used for keyboard navigation across groups.
@@ -416,8 +424,3 @@ export function LeftRail({
   );
 }
 
-function getRiskTier(value: number): Tier {
-  if (value >= 65) return 'high';
-  if (value >= 40) return 'medium';
-  return 'low';
-}

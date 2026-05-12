@@ -68,6 +68,9 @@ const defaultFilters: Filters = {
 const baselineWeightSet = getSimulationWeightSet('baseline');
 const weightSetOptions = Object.values(simulationWeightSets);
 const TIMELINE_AUTO_PLAY_INTERVAL_MS = 1200;
+// Milliseconds to wait before flushing UI state to localStorage after the last change.
+// 300 ms balances responsiveness (slider drag) with write frequency.
+const PERSIST_DEBOUNCE_MS = 300;
 const MIN_DRAWER_HEIGHT = 180;
 const MAX_DRAWER_HEIGHT_RATIO = 0.65;
 const WELCOME_DISMISSED_KEY = 'realpolitik:welcome-dismissed';
@@ -108,6 +111,11 @@ const alignmentColor: Record<Alignment, string> = {
 };
 
 const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
+const resolveEventIds = (eventIds: string[]) =>
+  eventIds.flatMap((id) => {
+    const event = eventById.get(id);
+    return event ? [event] : [];
+  });
 
 const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 1080;
 const isWelcomeDismissed = () => {
@@ -169,6 +177,7 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const shareResetRef = useRef<number | null>(null);
   const undoTimeoutRef = useRef<number | null>(null);
+  const persistDebounceRef = useRef<number | null>(null);
 
   // Live World Bank data enrichment — starts with static profiles and upgrades
   // in the background. Failures fall back silently to the static dataset.
@@ -183,13 +192,17 @@ export default function App() {
     setLiveDataStatus('loading');
     fetchLiveData(controller.signal)
       .then((live) => {
+        // countryProfiles is a stable module-level constant — no dep needed.
         setActiveProfiles(enrichProfiles(countryProfiles, live));
         setLiveDataStatus('live');
       })
       .catch(() => {
         if (!controller.signal.aborted) setLiveDataStatus('error');
       });
-  }, [countryProfiles]);
+    // Keep callback stable for TopBar retry button wiring; it only references stable
+    // module constants (`countryProfiles`) and React state setters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     loadLiveData();
@@ -203,13 +216,7 @@ export default function App() {
   const deferredActiveEventIds = useDeferredValue(activeEventIds);
 
   // Merge manual slider values with the accumulated deltas from active events.
-  const activeEvents = useMemo(
-    () => deferredActiveEventIds.flatMap((id) => {
-      const event = eventById.get(id);
-      return event ? [event] : [];
-    }),
-    [deferredActiveEventIds],
-  );
+  const activeEvents = useMemo(() => resolveEventIds(deferredActiveEventIds), [deferredActiveEventIds]);
 
   const [leftOpen, setLeftOpen] = useState<boolean>(() => !isMobile());
   const [rightOpen, setRightOpen] = useState<boolean>(() => !isMobile());
@@ -304,34 +311,36 @@ export default function App() {
 
   const activeWeightSet = useMemo(() => getSimulationWeightSet(deferredWeightSetKey), [deferredWeightSetKey]);
 
-  const baselineSimulated = useMemo(() => {
-    return activeProfiles.map((profile) =>
-      simulateCountry(profile, timelineIndex, {
-        scenarioInputs: defaultScenarioInputs,
-        weightSet: baselineWeightSet,
-      }),
-    );
-  }, [activeProfiles, timelineIndex]);
+  const { simulated, baselineSimulated, byName, baselineByName } = useMemo(() => {
+    const activeRows: SimulatedCountry[] = [];
+    const baselineRows: SimulatedCountry[] = [];
+    const activeByName = new Map<string, SimulatedCountry>();
+    const baselineMapByName = new Map<string, SimulatedCountry>();
 
-  const simulated = useMemo(() => {
-    return activeProfiles.map((profile) =>
-      simulateCountry(profile, timelineIndex, {
+    for (const profile of activeProfiles) {
+      const activeEntry = simulateCountry(profile, timelineIndex, {
         scenarioInputs: deferredScenarioInputs,
         activeEvents,
         weightSet: activeWeightSet,
-      }),
-    );
-  }, [activeEvents, activeProfiles, activeWeightSet, deferredScenarioInputs, timelineIndex]);
+        includeExplanation: profile.mapName === selectedCountry,
+      });
+      const baselineEntry = simulateCountry(profile, timelineIndex, {
+        scenarioInputs: defaultScenarioInputs,
+        weightSet: baselineWeightSet,
+      });
+      activeRows.push(activeEntry);
+      baselineRows.push(baselineEntry);
+      activeByName.set(profile.mapName, activeEntry);
+      baselineMapByName.set(profile.mapName, baselineEntry);
+    }
 
-  const baselineByName = useMemo(
-    () => new Map(baselineSimulated.map((entry) => [entry.profile.mapName, entry])),
-    [baselineSimulated],
-  );
-
-  const byName = useMemo(
-    () => new Map(simulated.map((entry) => [entry.profile.mapName, entry])),
-    [simulated],
-  );
+    return {
+      simulated: activeRows,
+      baselineSimulated: baselineRows,
+      byName: activeByName,
+      baselineByName: baselineMapByName,
+    };
+  }, [activeEvents, activeProfiles, activeWeightSet, deferredScenarioInputs, selectedCountry, timelineIndex]);
 
   const filtered = useMemo(() => {
     return simulated.filter((entry) => {
@@ -374,6 +383,7 @@ export default function App() {
   const baselineSelected = baselineByName.get(selectedCountry) ?? baselineSimulated[0];
   const selectedRiskDelta = Math.round(selected.risk - baselineSelected.risk);
   const selectedConfidenceDelta = Math.round(selected.confidence - baselineSelected.confidence);
+
   const selectedActiveEvents = useMemo(
     () => getActiveEventsForProfile(selected.profile, activeEvents),
     [activeEvents, selected.profile],
@@ -389,7 +399,13 @@ export default function App() {
       .sort((a, b) => b.risk - a.risk)
       .slice(0, 5)
       .map((entry) => {
-        const topPressure = entry.profile.relationships[0];
+        // Find the highest-tension partner rather than using the first relationship.
+        const topPressure = entry.profile.relationships.reduce<
+          typeof entry.profile.relationships[number] | null
+        >(
+          (best, rel) => (!best || rel.tension > best.tension ? rel : best),
+          null,
+        );
         const baselineEntry = baselineByName.get(entry.profile.mapName);
         const riskDelta = baselineEntry ? Math.round(entry.risk - baselineEntry.risk) : 0;
         const tone = getRiskTier(entry.risk);
@@ -403,18 +419,32 @@ export default function App() {
       });
   }, [baselineByName, filtered, timelineIndex]);
 
-  // Optional comparison track — recomputes only the selected country (cheap).
+  // Optional comparison track.
   const comparisonScenario = useMemo(
     () => savedScenarios.find((scenario) => scenario.id === comparisonScenarioId) ?? null,
     [comparisonScenarioId, savedScenarios],
   );
 
-  const comparisonSimulated = useMemo<SimulatedCountry[]>(() => {
-    if (!comparisonScenario) return [];
-    const comparisonEvents = (comparisonScenario.activeEventIds ?? []).flatMap((id) => {
-      const event = eventById.get(id);
-      return event ? [event] : [];
+  // Cheap single-country comparison for the inspector — avoids simulating all 134 countries
+  // just to display the selected country's delta in the inspector panels.
+  const comparisonSelected = useMemo<SimulatedCountry | null>(() => {
+    if (!comparisonScenario) return null;
+    const profile = byName.get(selectedCountry)?.profile;
+    if (!profile) return null;
+    const comparisonEvents = resolveEventIds(comparisonScenario.activeEventIds ?? []);
+    const compWeights = getSimulationWeightSet(comparisonScenario.weightSetKey);
+    return simulateCountry(profile, comparisonScenario.timelineIndex, {
+      scenarioInputs: comparisonScenario.inputs,
+      activeEvents: comparisonEvents,
+      weightSet: compWeights,
     });
+  }, [byName, comparisonScenario, selectedCountry]);
+
+  // Full comparison map — only built when the movers tab is visible and a comparison
+  // scenario is active. Simulating all 134 countries is deferred until actually needed.
+  const comparisonSimulated = useMemo<SimulatedCountry[]>(() => {
+    if (!comparisonScenario || drawerTab !== 'movers') return [];
+    const comparisonEvents = resolveEventIds(comparisonScenario.activeEventIds ?? []);
     const compWeights = getSimulationWeightSet(comparisonScenario.weightSetKey);
     return activeProfiles.map((profile) =>
       simulateCountry(profile, comparisonScenario.timelineIndex, {
@@ -423,26 +453,38 @@ export default function App() {
         weightSet: compWeights,
       }),
     );
-  }, [activeProfiles, comparisonScenario]);
+  }, [activeProfiles, comparisonScenario, drawerTab]);
 
   const comparisonByName = useMemo(() => {
     if (comparisonSimulated.length === 0) return null;
     return new Map(comparisonSimulated.map((entry) => [entry.profile.mapName, entry]));
   }, [comparisonSimulated]);
 
-  const comparisonSelected = useMemo<SimulatedCountry | null>(() => {
-    if (!comparisonByName) return null;
-    return comparisonByName.get(selectedCountry) ?? null;
-  }, [comparisonByName, selectedCountry]);
+  // Inspector sparkline — baseline profile resolved from the already-built byName
+  // map (O(1)) instead of a linear scan over activeProfiles.
+  const sparklineProfile = useMemo(
+    () => byName.get(selectedCountry)?.profile ?? null,
+    [byName, selectedCountry],
+  );
 
-  // Per-year risk for the selected country across the full timeline. Used by the
-  // inspector sparkline. Computed only when the year-list or scenario inputs change.
-  const selectedSparkline = useMemo<SparklineSeries | null>(() => {
-    const profile = activeProfiles.find((entry) => entry.mapName === selectedCountry);
-    if (!profile) return null;
-    const active = scenarioTimeline.map((_, index) =>
+  const sparklineBaselineRisks = useMemo<number[]>(() => {
+    if (!sparklineProfile) return [];
+    return scenarioTimeline.map((_, index) =>
       Math.round(
-        simulateCountry(profile, index, {
+        simulateCountry(sparklineProfile, index, {
+          scenarioInputs: defaultScenarioInputs,
+          weightSet: baselineWeightSet,
+          includeHistory: false,
+        }).risk,
+      ),
+    );
+  }, [sparklineProfile]);
+
+  const sparklineActiveRisks = useMemo<number[]>(() => {
+    if (!sparklineProfile) return [];
+    return scenarioTimeline.map((_, index) =>
+      Math.round(
+        simulateCountry(sparklineProfile, index, {
           scenarioInputs: deferredScenarioInputs,
           activeEvents,
           weightSet: activeWeightSet,
@@ -450,22 +492,17 @@ export default function App() {
         }).risk,
       ),
     );
-    const baseline = scenarioTimeline.map((_, index) =>
-      Math.round(
-        simulateCountry(profile, index, {
-          scenarioInputs: defaultScenarioInputs,
-          weightSet: baselineWeightSet,
-          includeHistory: false,
-        }).risk,
-      ),
-    );
+  }, [activeEvents, activeWeightSet, deferredScenarioInputs, sparklineProfile]);
+
+  const selectedSparkline = useMemo<SparklineSeries | null>(() => {
+    if (!sparklineProfile) return null;
     return {
       labels: scenarioTimeline.slice(),
-      active,
-      baseline,
+      active: sparklineActiveRisks,
+      baseline: sparklineBaselineRisks,
       currentIndex: timelineIndex,
     };
-  }, [activeEvents, activeProfiles, activeWeightSet, deferredScenarioInputs, selectedCountry, timelineIndex]);
+  }, [sparklineActiveRisks, sparklineBaselineRisks, sparklineProfile, timelineIndex]);
 
   const handleScenarioInputChange = <K extends keyof ScenarioInputs>(key: K, value: number) => {
     setScenarioInputs((current) => ({ ...current, [key]: value }));
@@ -477,6 +514,19 @@ export default function App() {
 
   const removeEvent = (id: string) => {
     setActiveEventIds((current) => current.filter((activeId) => activeId !== id));
+  };
+
+  const applyEvents = (ids: string[]) => {
+    if (ids.length === 0) return;
+    setActiveEventIds((current) => {
+      const next = new Set(current);
+      ids.forEach((id) => next.add(id));
+      return [...next];
+    });
+  };
+
+  const clearAllEvents = () => {
+    setActiveEventIds([]);
   };
 
   const resetScenario = () => {
@@ -662,10 +712,10 @@ export default function App() {
     setTimelineIndex(index);
   };
 
-  // Persist UI + scenarios to localStorage. Each change writes synchronously — the payload is
-  // small enough that we don't need throttling, and saves are guarded behind a try/catch.
+  // Persist UI + scenarios to localStorage with a 300 ms debounce so rapid
+  // slider drags or typing do not hammer the storage layer on every frame.
   useEffect(() => {
-    savePersistedState({
+    const snapshot = {
       selectedCountry,
       scenarioName,
       scenarioInputs,
@@ -681,7 +731,9 @@ export default function App() {
       drawerOpen,
       drawerHeight,
       comparisonScenarioId,
-    });
+    };
+    if (persistDebounceRef.current) window.clearTimeout(persistDebounceRef.current);
+    persistDebounceRef.current = window.setTimeout(() => savePersistedState(snapshot), PERSIST_DEBOUNCE_MS);
   }, [
     selectedCountry,
     scenarioName,
@@ -700,11 +752,12 @@ export default function App() {
     comparisonScenarioId,
   ]);
 
-  // Cleanup the share-status timer on unmount.
+  // Cleanup timers on unmount.
   useEffect(() => {
     return () => {
       if (shareResetRef.current) window.clearTimeout(shareResetRef.current);
       if (undoTimeoutRef.current) window.clearTimeout(undoTimeoutRef.current);
+      if (persistDebounceRef.current) window.clearTimeout(persistDebounceRef.current);
     };
   }, []);
 
@@ -828,6 +881,8 @@ export default function App() {
         activeEventIds={activeEventIds}
         onApplyEvent={applyEvent}
         onRemoveEvent={removeEvent}
+        onApplyEvents={applyEvents}
+        onClearAllEvents={clearAllEvents}
         onResizeStart={handleDrawerResizeStart}
         onResizeStep={handleDrawerResizeStep}
         onResizeTo={handleDrawerResizeTo}

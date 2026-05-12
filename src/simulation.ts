@@ -25,6 +25,14 @@ const tierValue: Record<Tier, number> = {
   high: 82,
 };
 
+// External-debt risk contribution constants.
+// Threshold: debt-to-GDP above which risk contribution begins.
+const DEBT_RISK_THRESHOLD_PCT = 100;
+// Maximum risk points added by external-debt vulnerability.
+const DEBT_RISK_MAX_CONTRIBUTION = 8;
+// Scaling: points of risk per percentage-point of debt above the threshold.
+const DEBT_RISK_MULTIPLIER = 0.05;
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
@@ -41,9 +49,19 @@ const classifyRisk = (risk: number): Tier => {
 };
 
 const resolveAlignment = (probabilities: ProbabilitySet, risk: number): Alignment => {
-  const entries = Object.entries(probabilities).sort((a, b) => b[1] - a[1]);
-  const [topLabel, topValue] = entries[0] as [keyof ProbabilitySet, number];
-  const secondValue = entries[1]?.[1] ?? 0;
+  // Avoid sort — only 3 fixed keys, so a linear scan is faster.
+  const { blocA, blocB, nonAligned } = probabilities;
+  let topLabel: keyof ProbabilitySet;
+  let topValue: number;
+  let secondValue: number;
+
+  if (blocA >= blocB && blocA >= nonAligned) {
+    topLabel = 'blocA'; topValue = blocA; secondValue = Math.max(blocB, nonAligned);
+  } else if (blocB >= blocA && blocB >= nonAligned) {
+    topLabel = 'blocB'; topValue = blocB; secondValue = Math.max(blocA, nonAligned);
+  } else {
+    topLabel = 'nonAligned'; topValue = nonAligned; secondValue = Math.max(blocA, blocB);
+  }
 
   if (risk >= 72 && topValue - secondValue < 15) {
     return 'unstable';
@@ -64,22 +82,25 @@ const summarizeRelationships = (profile: CountryProfile): RelationshipSummary =>
   if (profile.relationships.length === 0) {
     result = { cooperation: 40, hostility: 25, dependency: 35, deterrence: 30, tension: 28 };
   } else {
-    const totals = profile.relationships.reduce(
-      (summary, relationship) => ({
-        cooperation: summary.cooperation + relationship.cooperation,
-        hostility: summary.hostility + relationship.hostility,
-        dependency: summary.dependency + relationship.dependency,
-        deterrence: summary.deterrence + relationship.deterrence,
-        tension: summary.tension + relationship.tension,
-      }),
-      { cooperation: 0, hostility: 0, dependency: 0, deterrence: 0, tension: 0 },
-    );
+    let cooperation = 0;
+    let hostility = 0;
+    let dependency = 0;
+    let deterrence = 0;
+    let tension = 0;
+    for (const rel of profile.relationships) {
+      cooperation += rel.cooperation;
+      hostility += rel.hostility;
+      dependency += rel.dependency;
+      deterrence += rel.deterrence;
+      tension += rel.tension;
+    }
+    const n = profile.relationships.length;
     result = {
-      cooperation: Math.round(totals.cooperation / profile.relationships.length),
-      hostility: Math.round(totals.hostility / profile.relationships.length),
-      dependency: Math.round(totals.dependency / profile.relationships.length),
-      deterrence: Math.round(totals.deterrence / profile.relationships.length),
-      tension: Math.round(totals.tension / profile.relationships.length),
+      cooperation: Math.round(cooperation / n),
+      hostility: Math.round(hostility / n),
+      dependency: Math.round(dependency / n),
+      deterrence: Math.round(deterrence / n),
+      tension: Math.round(tension / n),
     };
   }
 
@@ -102,20 +123,29 @@ const clampScenarioInput = (key: keyof ScenarioInputs, value: number): number =>
   return Math.min(100, Math.max(0, value));
 };
 
+const createZeroScenarioInputs = (): ScenarioInputs => {
+  return { ...defaultScenarioInputs };
+};
+
+// Pre-compute sets for O(1) membership checks.
+const EASTERN_MED_SUBREGIONS = new Set(['western asia', 'northern africa', 'southern europe']);
+const EASTERN_MED_IDS = new Set([
+  'israel', 'lebanon', 'syria', 'jordan', 'cyprus', 'greece', 'turkey', 'egypt', 'libya',
+]);
+
 const eventAppliesToProfile = (profile: CountryProfile, event: EventTemplate): boolean => {
   if (event.regionTags.length === 0) return true;
 
   const region = normalizeRegionLabel(profile.region);
   const subregion = normalizeRegionLabel(profile.subregion);
-  const matchesEasternMediterranean =
-    ['western asia', 'northern africa', 'southern europe'].includes(subregion)
-    || ['israel', 'lebanon', 'syria', 'jordan', 'cyprus', 'greece', 'turkey', 'egypt', 'libya'].includes(profile.id);
 
   return event.regionTags.some((tag) => {
     const normalized = normalizeRegionLabel(tag);
     if (normalized === 'global') return true;
     if (normalized === region || normalized === subregion) return true;
-    if (normalized === 'eastern mediterranean') return matchesEasternMediterranean;
+    if (normalized === 'eastern mediterranean') {
+      return EASTERN_MED_SUBREGIONS.has(subregion) || EASTERN_MED_IDS.has(profile.id);
+    }
     return false;
   });
 };
@@ -135,16 +165,21 @@ export const getScenarioInputsForProfile = (
   const matchingEvents = getActiveEventsForProfile(profile, activeEvents);
   if (matchingEvents.length === 0) return baseInputs;
 
-  const delta = scenarioInputKeys.reduce((acc, key) => {
-    const sum = matchingEvents.reduce((total, event) => {
-      return total + (event.inputs[key] ?? 0);
-    }, 0);
-    return { ...acc, [key]: sum };
-  }, {} as ScenarioInputs);
+  const delta = createZeroScenarioInputs();
 
-  return scenarioInputKeys.reduce((acc, key) => {
-    return { ...acc, [key]: clampScenarioInput(key, baseInputs[key] + delta[key]) };
-  }, {} as ScenarioInputs);
+  for (const event of matchingEvents) {
+    for (const key of scenarioInputKeys) {
+      delta[key] += event.inputs[key] ?? 0;
+    }
+  }
+
+  const nextInputs = {} as ScenarioInputs;
+
+  for (const key of scenarioInputKeys) {
+    nextInputs[key] = clampScenarioInput(key, baseInputs[key] + delta[key]);
+  }
+
+  return nextInputs;
 };
 
 export const simulationWeightSets: Record<WeightSetKey, SimulationWeightSet> = {
@@ -187,6 +222,7 @@ export const getSimulationWeightSet = (key: WeightSetKey) => simulationWeightSet
 
 const resolveOptions = (options?: SimulationOptions) => ({
   includeHistory: options?.includeHistory ?? true,
+  includeExplanation: options?.includeExplanation ?? false,
   scenarioInputs: options?.scenarioInputs ?? defaultScenarioInputs,
   activeEvents: options?.activeEvents ?? [],
   weightSet: options?.weightSet ?? simulationWeightSets.baseline,
@@ -204,7 +240,12 @@ const buildHistory = (
   const pastOffsets = [-2, -1].filter((offset) => activeIndex + offset >= 0);
 
   const past = pastOffsets.map((offset) => {
-    const snapshot = simulateCountry(profile, activeIndex + offset, { ...options, includeHistory: false });
+    const snapshot = simulateCountry(profile, activeIndex + offset, {
+      scenarioInputs: options.scenarioInputs,
+      activeEvents: options.activeEvents,
+      weightSet: options.weightSet,
+      includeHistory: false,
+    });
     return {
       label: `${2026 + activeIndex + offset}`,
       alignment: snapshot.alignment,
@@ -222,7 +263,7 @@ export const simulateCountry = (
   timelineIndex: number,
   options?: SimulationOptions,
 ): SimulatedCountry => {
-  const { includeHistory, scenarioInputs, activeEvents, weightSet } = resolveOptions(options);
+  const { includeHistory, includeExplanation, scenarioInputs, activeEvents, weightSet } = resolveOptions(options);
   const effectiveScenarioInputs = getScenarioInputsForProfile(scenarioInputs, activeEvents, profile);
   const momentum = timelineIndex * 1.8;
 
@@ -283,8 +324,8 @@ export const simulateCountry = (
     : -6
     : 0;
   const fxCushionDelta = fiscal ? clamp((fiscal.fxReservesMonthsImports - 3) * 0.4, -4, 4) : 0;
-  const debtRiskBoost = fiscal && fiscal.externalDebtGdpPct > 100
-    ? Math.min(8, (fiscal.externalDebtGdpPct - 100) * 0.05)
+  const debtRiskBoost = fiscal && fiscal.externalDebtGdpPct > DEBT_RISK_THRESHOLD_PCT
+    ? Math.min(DEBT_RISK_MAX_CONTRIBUTION, (fiscal.externalDebtGdpPct - DEBT_RISK_THRESHOLD_PCT) * DEBT_RISK_MULTIPLIER)
     : 0;
   const fiscalCohesionDelta = fiscal ? fiscalRatingValue + fxCushionDelta : 0;
 
@@ -360,51 +401,44 @@ export const simulateCountry = (
   const regimeBlocBBonus = profile.regimeType === 'authoritarian' ? 10 : profile.regimeType === 'hybrid' ? 3 : -8;
   const strategicBalance = 100 - Math.abs(relationshipSummary.cooperation - relationshipSummary.hostility);
 
-  const blocAComponents: ContributionLine[] = [
-    { label: 'Military commitments', multiplier: 0.22, inputValue: military, contribution: military * 0.22 },
-    { label: 'Ideology fit', multiplier: 0.12, inputValue: ideology, contribution: ideology * 0.12 },
-    { label: 'Cooperation (relationships)', multiplier: 0.16, inputValue: relationshipSummary.cooperation, contribution: relationshipSummary.cooperation * 0.16 },
-    { label: 'Deterrence (relationships)', multiplier: 0.08, inputValue: relationshipSummary.deterrence, contribution: relationshipSummary.deterrence * 0.08 },
-    { label: 'Regime stability', multiplier: 0.06, inputValue: regimeStability, contribution: regimeStability * 0.06 },
-    { label: `Regime bonus (${profile.regimeType})`, contribution: regimeBlocABonus },
-    { label: 'Year momentum', multiplier: 0.3, inputValue: momentum, contribution: momentum * 0.3 },
-    { label: 'Hostility (relationships)', multiplier: -0.06, inputValue: relationshipSummary.hostility, contribution: -relationshipSummary.hostility * 0.06 },
-    { label: 'Sanctions exposure', multiplier: -0.04, inputValue: sanctions, contribution: -sanctions * 0.04 },
-    ...(diplomatic
-      ? [{ label: 'UN voting alignment (bloc A)', inputValue: diplomatic.unVotingAlignmentBlocA, contribution: diplomaticBlocABoost } satisfies ContributionLine]
-      : []),
-  ];
+  // Compute probability raw totals inline (no array allocation). Component arrays are only
+  // built when includeExplanation is true (inspector path), saving 3 array constructions
+  // on every one of the 400+ simulateCountry calls that the map/movers/sparkline trigger.
   const blocABase = 20;
-  const blocARaw = blocABase + sumContributions(blocAComponents);
+  const blocARaw = blocABase
+    + military * 0.22
+    + ideology * 0.12
+    + relationshipSummary.cooperation * 0.16
+    + relationshipSummary.deterrence * 0.08
+    + regimeStability * 0.06
+    + regimeBlocABonus
+    + momentum * 0.3
+    - relationshipSummary.hostility * 0.06
+    - sanctions * 0.04
+    + diplomaticBlocABoost;
 
-  const blocBComponents: ContributionLine[] = [
-    { label: 'Sanctions exposure', multiplier: 0.14, inputValue: sanctions, contribution: sanctions * 0.14 },
-    { label: 'Hostility (relationships)', multiplier: 0.16, inputValue: relationshipSummary.hostility, contribution: relationshipSummary.hostility * 0.16 },
-    { label: 'Conflict history', multiplier: 0.12, inputValue: conflictHistory, contribution: conflictHistory * 0.12 },
-    { label: 'Border disputes', multiplier: 0.1, inputValue: borderDisputes, contribution: borderDisputes * 0.1 },
-    { label: 'Dependency (relationships)', multiplier: 0.08, inputValue: relationshipSummary.dependency, contribution: relationshipSummary.dependency * 0.08 },
-    { label: `Regime bonus (${profile.regimeType})`, contribution: regimeBlocBBonus },
-    { label: 'Year momentum', multiplier: 0.08, inputValue: momentum, contribution: momentum * 0.08 },
-    { label: 'Regime stability', multiplier: -0.04, inputValue: regimeStability, contribution: -regimeStability * 0.04 },
-    ...(diplomatic
-      ? [{ label: 'UN voting alignment (bloc B)', inputValue: diplomatic.unVotingAlignmentBlocB, contribution: diplomaticBlocBBoost } satisfies ContributionLine]
-      : []),
-  ];
   const blocBBase = 18;
-  const blocBRaw = blocBBase + sumContributions(blocBComponents);
+  const blocBRaw = blocBBase
+    + sanctions * 0.14
+    + relationshipSummary.hostility * 0.16
+    + conflictHistory * 0.12
+    + borderDisputes * 0.1
+    + relationshipSummary.dependency * 0.08
+    + regimeBlocBBonus
+    + momentum * 0.08
+    - regimeStability * 0.04
+    + diplomaticBlocBBoost;
 
-  const nonAlignedComponents: ContributionLine[] = [
-    { label: 'Trade exposure', multiplier: 0.08, inputValue: tradeExposure, contribution: tradeExposure * 0.08 },
-    { label: 'Trade dependence', multiplier: 0.14, inputValue: tradeDependence, contribution: tradeDependence * 0.14 },
-    { label: 'Cohesion', multiplier: 0.08, inputValue: cohesion, contribution: cohesion * 0.08 },
-    { label: 'Strategic balance', multiplier: 0.08, inputValue: strategicBalance, contribution: strategicBalance * 0.08 },
-    { label: 'Regime stability', multiplier: 0.07, inputValue: regimeStability, contribution: regimeStability * 0.07 },
-    { label: 'Military commitments', multiplier: -0.05, inputValue: military, contribution: -military * 0.05 },
-    { label: 'Hostility (relationships)', multiplier: -0.04, inputValue: relationshipSummary.hostility, contribution: -relationshipSummary.hostility * 0.04 },
-    { label: 'Year momentum', multiplier: -0.1, inputValue: momentum, contribution: -momentum * 0.1 },
-  ];
   const nonAlignedBase = 18;
-  const nonAlignedRaw = nonAlignedBase + sumContributions(nonAlignedComponents);
+  const nonAlignedRaw = nonAlignedBase
+    + tradeExposure * 0.08
+    + tradeDependence * 0.14
+    + cohesion * 0.08
+    + strategicBalance * 0.08
+    + regimeStability * 0.07
+    - military * 0.05
+    - relationshipSummary.hostility * 0.04
+    - momentum * 0.1;
 
   const blocAClamped = Math.max(1, blocARaw);
   const blocBClamped = Math.max(1, blocBRaw);
@@ -414,43 +448,39 @@ export const simulateCountry = (
   // always sum to exactly 100, regardless of floating-point rounding.
   const pBlocA = Math.round((blocAClamped / probTotal) * 100);
   const pBlocB = Math.round((blocBClamped / probTotal) * 100);
-  const probabilities: ProbabilitySet = {
-    blocA: pBlocA,
-    blocB: pBlocB,
-    nonAligned: 100 - pBlocA - pBlocB,
-  };
-
-  const sorted = Object.values(probabilities).sort((a, b) => b - a);
-  const topProbability = sorted[0];
-  const secondProbability = sorted[1] ?? 0;
+  // Derive top-two probabilities directly from known variables — no sort needed.
+  const pNonAligned = 100 - pBlocA - pBlocB;
+  const probabilities: ProbabilitySet = { blocA: pBlocA, blocB: pBlocB, nonAligned: pNonAligned };
+  const topProbability = Math.max(pBlocA, pBlocB, pNonAligned);
+  // For exactly three normalized probabilities (which sum to 100), the
+  // second-largest value can be derived as: 100 - largest - smallest.
+  const secondProbability = pBlocA + pBlocB + pNonAligned - topProbability
+    - Math.min(pBlocA, pBlocB, pNonAligned);
   const margin = topProbability - secondProbability;
   const confidenceBase = 54;
-  const confidenceComponents: ContributionLine[] = [
-    { label: 'Election volatility (shock)', multiplier: -0.05, inputValue: electionShock, contribution: -electionShock * 0.05 },
-    { label: 'Coup risk (shock)', multiplier: -0.08, inputValue: coupShock, contribution: -coupShock * 0.08 },
-  ];
-  const confidenceTotal = margin + confidenceBase + sumContributions(confidenceComponents);
+  // Inline sums — component arrays only built when explanation is needed.
+  const confidenceTotal = margin + confidenceBase + (-electionShock * 0.05) + (-coupShock * 0.08);
   const confidence = clamp(confidenceTotal, 38, 96);
 
   const riskBase = profile.baselineRisk;
-  const riskComponents: ContributionLine[] = [
-    { label: 'Conflict pressure', multiplier: 0.18, inputValue: conflict, contribution: conflict * 0.18 },
-    { label: 'Hostility (relationships)', multiplier: 0.11, inputValue: relationshipSummary.hostility, contribution: relationshipSummary.hostility * 0.11 },
-    { label: 'Border disputes', multiplier: 0.09, inputValue: borderDisputes, contribution: borderDisputes * 0.09 },
-    { label: 'Conflict history', multiplier: 0.08, inputValue: conflictHistory, contribution: conflictHistory * 0.08 },
-    { label: 'Sanctions exposure', multiplier: 0.05, inputValue: sanctions, contribution: sanctions * 0.05 },
-    { label: 'Cohesion', multiplier: -0.08, inputValue: cohesion, contribution: -cohesion * 0.08 },
-    { label: 'Regime stability', multiplier: -0.05, inputValue: regimeStability, contribution: -regimeStability * 0.05 },
-    { label: 'Deterrence (relationships)', multiplier: -0.03, inputValue: relationshipSummary.deterrence, contribution: -relationshipSummary.deterrence * 0.03 },
-    { label: 'Year offset', multiplier: 1.1, inputValue: timelineIndex, contribution: timelineIndex * 1.1 },
-    ...(fiscal && debtRiskBoost > 0
-      ? [{ label: 'External-debt vulnerability', inputValue: fiscal.externalDebtGdpPct, contribution: debtRiskBoost } satisfies ContributionLine]
-      : []),
-    ...(foodWater && foodWater.waterStressIndex >= 4
-      ? [{ label: 'Water-stress vulnerability', inputValue: foodWater.waterStressIndex, contribution: (foodWater.waterStressIndex - 3) * 1.8 } satisfies ContributionLine]
-      : []),
-  ];
-  const riskTotal = riskBase + sumContributions(riskComponents);
+  const debtRiskContrib = fiscal && fiscal.externalDebtGdpPct > DEBT_RISK_THRESHOLD_PCT
+    ? Math.min(DEBT_RISK_MAX_CONTRIBUTION, (fiscal.externalDebtGdpPct - DEBT_RISK_THRESHOLD_PCT) * DEBT_RISK_MULTIPLIER)
+    : 0;
+  const waterStressContrib = foodWater && foodWater.waterStressIndex >= 4
+    ? (foodWater.waterStressIndex - 3) * 1.8
+    : 0;
+  const riskTotal = riskBase
+    + conflict * 0.18
+    + relationshipSummary.hostility * 0.11
+    + borderDisputes * 0.09
+    + conflictHistory * 0.08
+    + sanctions * 0.05
+    - cohesion * 0.08
+    - regimeStability * 0.05
+    - relationshipSummary.deterrence * 0.03
+    + timelineIndex * 1.1
+    + debtRiskContrib
+    + waterStressContrib;
   const risk = clamp(riskTotal, 8, 97);
 
   const drivers = [
@@ -478,48 +508,109 @@ export const simulateCountry = (
 
   const alignment = resolveAlignment(probabilities, risk);
 
-  const riskExplanation: RiskExplanation = {
-    base: round1(riskBase),
-    components: riskComponents.map((line) => ({ ...line, contribution: round1(line.contribution) })),
-    total: round1(riskTotal),
-    clamped: Math.round(risk),
-    weightSetLabel: weightSet.label,
-  };
-
-  const confidenceExplanation: ConfidenceExplanation = {
-    topProbability,
-    secondProbability,
-    margin: round1(margin),
-    base: confidenceBase,
-    components: confidenceComponents.map((line) => ({ ...line, contribution: round1(line.contribution) })),
-    total: round1(confidenceTotal),
-    clamped: Math.round(confidence),
-  };
-
-  const buildProbabilityExplanation = (
-    base: number,
-    components: ContributionLine[],
-    raw: number,
-    rawClamped: number,
-    normalized: number,
-  ): ProbabilityExplanation => ({
-    base,
-    components: components.map((line) => ({ ...line, contribution: round1(line.contribution) })),
-    raw: round1(raw),
-    rawClamped: round1(rawClamped),
-    rawTotal: round1(probTotal),
-    normalized,
-  });
-
-  const explanation: SimulationExplanation = {
-    risk: riskExplanation,
-    confidence: confidenceExplanation,
-    probabilities: {
-      blocA: buildProbabilityExplanation(blocABase, blocAComponents, blocARaw, blocAClamped, probabilities.blocA),
-      blocB: buildProbabilityExplanation(blocBBase, blocBComponents, blocBRaw, blocBClamped, probabilities.blocB),
-      nonAligned: buildProbabilityExplanation(nonAlignedBase, nonAlignedComponents, nonAlignedRaw, nonAlignedClamped, probabilities.nonAligned),
-    },
-  };
+  // Only build ContributionLine arrays when the caller actually needs them — these are
+  // used exclusively in the RightInspector for the single selected country. Skipping them
+  // for the 134-country map/movers/sparkline computations eliminates ~5+ array allocations
+  // per simulateCountry call, which runs 400+ times per scenario update.
+  const explanation: SimulationExplanation | null = includeExplanation
+    ? {
+        risk: {
+          base: round1(riskBase),
+          components: [
+            { label: 'Conflict pressure', multiplier: 0.18, inputValue: conflict, contribution: round1(conflict * 0.18) },
+            { label: 'Hostility (relationships)', multiplier: 0.11, inputValue: relationshipSummary.hostility, contribution: round1(relationshipSummary.hostility * 0.11) },
+            { label: 'Border disputes', multiplier: 0.09, inputValue: borderDisputes, contribution: round1(borderDisputes * 0.09) },
+            { label: 'Conflict history', multiplier: 0.08, inputValue: conflictHistory, contribution: round1(conflictHistory * 0.08) },
+            { label: 'Sanctions exposure', multiplier: 0.05, inputValue: sanctions, contribution: round1(sanctions * 0.05) },
+            { label: 'Cohesion', multiplier: -0.08, inputValue: cohesion, contribution: round1(-cohesion * 0.08) },
+            { label: 'Regime stability', multiplier: -0.05, inputValue: regimeStability, contribution: round1(-regimeStability * 0.05) },
+            { label: 'Deterrence (relationships)', multiplier: -0.03, inputValue: relationshipSummary.deterrence, contribution: round1(-relationshipSummary.deterrence * 0.03) },
+            { label: 'Year offset', multiplier: 1.1, inputValue: timelineIndex, contribution: round1(timelineIndex * 1.1) },
+            ...(debtRiskContrib > 0 && fiscal
+              ? [{ label: 'External-debt vulnerability', inputValue: fiscal.externalDebtGdpPct, contribution: round1(debtRiskContrib) } satisfies ContributionLine]
+              : []),
+            ...(waterStressContrib > 0 && foodWater
+              ? [{ label: 'Water-stress vulnerability', inputValue: foodWater.waterStressIndex, contribution: round1(waterStressContrib) } satisfies ContributionLine]
+              : []),
+          ],
+          total: round1(riskTotal),
+          clamped: Math.round(risk),
+          weightSetLabel: weightSet.label,
+        },
+        confidence: {
+          topProbability,
+          secondProbability,
+          margin: round1(margin),
+          base: confidenceBase,
+          components: [
+            { label: 'Election volatility (shock)', multiplier: -0.05, inputValue: electionShock, contribution: round1(-electionShock * 0.05) },
+            { label: 'Coup risk (shock)', multiplier: -0.08, inputValue: coupShock, contribution: round1(-coupShock * 0.08) },
+          ],
+          total: round1(confidenceTotal),
+          clamped: Math.round(confidence),
+        },
+        probabilities: {
+          blocA: {
+            base: blocABase,
+            components: [
+              { label: 'Military commitments', multiplier: 0.22, inputValue: military, contribution: round1(military * 0.22) },
+              { label: 'Ideology fit', multiplier: 0.12, inputValue: ideology, contribution: round1(ideology * 0.12) },
+              { label: 'Cooperation (relationships)', multiplier: 0.16, inputValue: relationshipSummary.cooperation, contribution: round1(relationshipSummary.cooperation * 0.16) },
+              { label: 'Deterrence (relationships)', multiplier: 0.08, inputValue: relationshipSummary.deterrence, contribution: round1(relationshipSummary.deterrence * 0.08) },
+              { label: 'Regime stability', multiplier: 0.06, inputValue: regimeStability, contribution: round1(regimeStability * 0.06) },
+              { label: `Regime bonus (${profile.regimeType})`, contribution: regimeBlocABonus },
+              { label: 'Year momentum', multiplier: 0.3, inputValue: momentum, contribution: round1(momentum * 0.3) },
+              { label: 'Hostility (relationships)', multiplier: -0.06, inputValue: relationshipSummary.hostility, contribution: round1(-relationshipSummary.hostility * 0.06) },
+              { label: 'Sanctions exposure', multiplier: -0.04, inputValue: sanctions, contribution: round1(-sanctions * 0.04) },
+              ...(diplomatic
+                ? [{ label: 'UN voting alignment (bloc A)', inputValue: diplomatic.unVotingAlignmentBlocA, contribution: round1(diplomaticBlocABoost) } satisfies ContributionLine]
+                : []),
+            ],
+            raw: round1(blocARaw),
+            rawClamped: round1(blocAClamped),
+            rawTotal: round1(probTotal),
+            normalized: probabilities.blocA,
+          },
+          blocB: {
+            base: blocBBase,
+            components: [
+              { label: 'Sanctions exposure', multiplier: 0.14, inputValue: sanctions, contribution: round1(sanctions * 0.14) },
+              { label: 'Hostility (relationships)', multiplier: 0.16, inputValue: relationshipSummary.hostility, contribution: round1(relationshipSummary.hostility * 0.16) },
+              { label: 'Conflict history', multiplier: 0.12, inputValue: conflictHistory, contribution: round1(conflictHistory * 0.12) },
+              { label: 'Border disputes', multiplier: 0.1, inputValue: borderDisputes, contribution: round1(borderDisputes * 0.1) },
+              { label: 'Dependency (relationships)', multiplier: 0.08, inputValue: relationshipSummary.dependency, contribution: round1(relationshipSummary.dependency * 0.08) },
+              { label: `Regime bonus (${profile.regimeType})`, contribution: regimeBlocBBonus },
+              { label: 'Year momentum', multiplier: 0.08, inputValue: momentum, contribution: round1(momentum * 0.08) },
+              { label: 'Regime stability', multiplier: -0.04, inputValue: regimeStability, contribution: round1(-regimeStability * 0.04) },
+              ...(diplomatic
+                ? [{ label: 'UN voting alignment (bloc B)', inputValue: diplomatic.unVotingAlignmentBlocB, contribution: round1(diplomaticBlocBBoost) } satisfies ContributionLine]
+                : []),
+            ],
+            raw: round1(blocBRaw),
+            rawClamped: round1(blocBClamped),
+            rawTotal: round1(probTotal),
+            normalized: probabilities.blocB,
+          },
+          nonAligned: {
+            base: nonAlignedBase,
+            components: [
+              { label: 'Trade exposure', multiplier: 0.08, inputValue: tradeExposure, contribution: round1(tradeExposure * 0.08) },
+              { label: 'Trade dependence', multiplier: 0.14, inputValue: tradeDependence, contribution: round1(tradeDependence * 0.14) },
+              { label: 'Cohesion', multiplier: 0.08, inputValue: cohesion, contribution: round1(cohesion * 0.08) },
+              { label: 'Strategic balance', multiplier: 0.08, inputValue: strategicBalance, contribution: round1(strategicBalance * 0.08) },
+              { label: 'Regime stability', multiplier: 0.07, inputValue: regimeStability, contribution: round1(regimeStability * 0.07) },
+              { label: 'Military commitments', multiplier: -0.05, inputValue: military, contribution: round1(-military * 0.05) },
+              { label: 'Hostility (relationships)', multiplier: -0.04, inputValue: relationshipSummary.hostility, contribution: round1(-relationshipSummary.hostility * 0.04) },
+              { label: 'Year momentum', multiplier: -0.1, inputValue: momentum, contribution: round1(-momentum * 0.1) },
+            ],
+            raw: round1(nonAlignedRaw),
+            rawClamped: round1(nonAlignedClamped),
+            rawTotal: round1(probTotal),
+            normalized: probabilities.nonAligned,
+          },
+        },
+      }
+    : null;
 
   return {
     profile,

@@ -73,7 +73,7 @@ const clampScore = (value: number) => Math.max(5, Math.min(95, Math.round(value)
 // Bloc-based cooperation/hostility templates.
 // `cooperative` blocs lift cooperation+deterrence between members.
 // `opposing` pairs lift hostility+deterrence across the divide.
-const cooperativeBlocs = [
+const cooperativeBlocs = new Set([
   'NATO',
   'AUKUS',
   'GCC',
@@ -92,7 +92,7 @@ const cooperativeBlocs = [
   'Quad',
   'FivePowerDefense',
   'Commonwealth',
-];
+]);
 
 const opposingBlocPairs: Array<[string, string]> = [
   ['NATO', 'CSTO'],
@@ -174,12 +174,8 @@ for (let i = 0; i < enhancedCountries.length; i++) {
   if (!aPacts && !aIgos) continue;
   for (let j = i + 1; j < enhancedCountries.length; j++) {
     const b = enhancedCountries[j];
-    const sharedPacts = sharesAny(aPacts, b.diplomatic?.defensePacts).filter((p) =>
-      cooperativeBlocs.includes(p),
-    );
-    const sharedIgos = sharesAny(aIgos, b.diplomatic?.igoMemberships).filter((i) =>
-      cooperativeBlocs.includes(i),
-    );
+    const sharedPacts = sharesAny(aPacts, b.diplomatic?.defensePacts).filter((p) => cooperativeBlocs.has(p));
+    const sharedIgos = sharesAny(aIgos, b.diplomatic?.igoMemberships).filter((i) => cooperativeBlocs.has(i));
     if (sharedPacts.length === 0 && sharedIgos.length === 0) continue;
     const signal = ensureCandidate(a.id, b.id);
     if (!signal) continue;
@@ -534,8 +530,6 @@ export const getCountryRelationships = (countryId: string) => {
   return getCountryById(countryId)?.relationships ?? [];
 };
 
-export const getCountryMap = () => {
-  return new Map(countries.map((country) => [country.mapName, country]));
-};
+export const getCountryMap = () => countryByMapName;
 
 export const getCountryRecords = (): CountryRecord[] => countries;

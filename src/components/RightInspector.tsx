@@ -60,6 +60,10 @@ const formatEvidenceClass = (value: 'observed' | 'estimated' | 'fallback' | 'der
   value.charAt(0).toUpperCase() + value.slice(1);
 const relationshipTagBorderAlpha = '33';
 const relationshipTagBackgroundAlpha = '14';
+
+// Stable ordered key list for probability bars — avoids Object.keys() on every render.
+const PROBABILITY_KEYS: ReadonlyArray<keyof SimulatedCountry['probabilities']> = ['blocA', 'blocB', 'nonAligned'];
+
 const relationshipDimensionMeta: ReadonlyArray<{
   key: RelationshipDimensionKey;
   label: string;
@@ -290,14 +294,14 @@ function OverviewPanel({
           label="Confidence"
           value={formatPercent(selected.confidence)}
           hint={<DeltaHint delta={confidenceDelta} higherIsBetter />}
-          explanation={<ConfidenceExplainer explanation={selected.explanation.confidence} />}
+          explanation={selected.explanation ? <ConfidenceExplainer explanation={selected.explanation.confidence} /> : undefined}
         />
         <MetricCard
           label="Escalation risk"
           value={formatPercent(selected.risk)}
           hint={<DeltaHint delta={riskDelta} higherIsBetter={false} />}
           tone={getRiskTier(selected.risk)}
-          explanation={<RiskExplainer explanation={selected.explanation.risk} />}
+          explanation={selected.explanation ? <RiskExplainer explanation={selected.explanation.risk} /> : undefined}
         />
         <MetricCard
           label="Source coverage"
@@ -342,7 +346,7 @@ function OverviewPanel({
       <div className="section">
         <h3 className="section-title">Alignment probabilities</h3>
         <div className="bar-stack">
-          {(Object.keys(selected.probabilities) as Array<keyof typeof selected.probabilities>).map((key) => {
+          {PROBABILITY_KEYS.map((key) => {
             const baselineValue = baselineSelected.probabilities[key];
             return (
               <BarRow
@@ -352,11 +356,13 @@ function OverviewPanel({
                 delta={selected.probabilities[key] - baselineValue}
                 color={alignmentColor[key as Alignment]}
                 explanation={
-                  <ProbabilityExplainer
-                    explanation={selected.explanation.probabilities[key]}
-                    label={alignmentLabel[key as Alignment]}
-                    color={alignmentColor[key as Alignment]}
-                  />
+                  selected.explanation
+                    ? <ProbabilityExplainer
+                        explanation={selected.explanation.probabilities[key]}
+                        label={alignmentLabel[key as Alignment]}
+                        color={alignmentColor[key as Alignment]}
+                      />
+                    : undefined
                 }
               />
             );
