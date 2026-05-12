@@ -58,6 +58,8 @@ const formatIndicatorLabel = (value: string) =>
   value.replace(/([A-Z])/g, ' $1').trim().replace(/^./, (v) => v.toUpperCase());
 const formatEvidenceClass = (value: 'observed' | 'estimated' | 'fallback' | 'derived') =>
   value.charAt(0).toUpperCase() + value.slice(1);
+const relationshipTagBorderOpacity = '33';
+const relationshipTagBackgroundOpacity = '14';
 const relationshipDimensionMeta: ReadonlyArray<{
   key: RelationshipDimensionKey;
   label: string;
@@ -741,43 +743,64 @@ function RelationshipsPanel({
   const [sortMode, setSortMode] = useState<'tensionDesc' | 'updatedDesc' | 'nameAsc'>('tensionDesc');
   const [focus, setFocus] = useState<'all' | 'stale' | RelationshipDimensionKey>('all');
 
-  const staleCount = useMemo(
-    () => selected.profile.relationships.filter((relationship) => isRelationshipStale(relationship)).length,
+  const relationshipEntries = useMemo(
+    () =>
+      selected.profile.relationships.map((relationship) => ({
+        relationship,
+        dominantDimension: getDominantRelationshipDimension(relationship),
+        stale: isRelationshipStale(relationship),
+        updatedAtMs: Date.parse(relationship.dataQuality?.computedLastUpdated ?? relationship.lastUpdated),
+      })),
     [selected.profile.relationships],
+  );
+
+  const staleCount = useMemo(
+    () => relationshipEntries.filter((entry) => entry.stale).length,
+    [relationshipEntries],
   );
   const strongestRelationship = useMemo(
     () =>
-      selected.profile.relationships.reduce((strongest, relationship) =>
-        relationship.tension > strongest.tension ? relationship : strongest,
+      relationshipEntries.reduce<(typeof relationshipEntries)[number] | null>(
+        (strongest, entry) =>
+          !strongest || entry.relationship.tension > strongest.relationship.tension ? entry : strongest,
+        null,
       ),
-    [selected.profile.relationships],
+    [relationshipEntries],
   );
 
   const visibleRelationships = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return selected.profile.relationships
-      .filter((relationship) => {
+    const compareEntries = (
+      left: (typeof relationshipEntries)[number],
+      right: (typeof relationshipEntries)[number],
+    ) => {
+      if (sortMode === 'updatedDesc') {
+        return right.updatedAtMs - left.updatedAtMs;
+      }
+      if (sortMode === 'nameAsc') {
+        return left.relationship.displayName.localeCompare(right.relationship.displayName);
+      }
+      const tensionDelta = right.relationship.tension - left.relationship.tension;
+      if (tensionDelta !== 0) return tensionDelta;
+      const hostilityDelta = right.relationship.hostility - left.relationship.hostility;
+      if (hostilityDelta !== 0) return hostilityDelta;
+      return left.relationship.displayName.localeCompare(right.relationship.displayName);
+    };
+
+    return relationshipEntries
+      .filter(({ relationship, dominantDimension, stale }) => {
         const matchesQuery =
           query.length === 0 ||
           relationship.displayName.toLowerCase().includes(query) ||
           relationship.notes.toLowerCase().includes(query);
         if (!matchesQuery) return false;
         if (focus === 'all') return true;
-        if (focus === 'stale') return isRelationshipStale(relationship);
-        return getDominantRelationshipDimension(relationship).key === focus;
+        if (focus === 'stale') return stale;
+        return dominantDimension.key === focus;
       })
       .slice()
-      .sort((left, right) => {
-        if (sortMode === 'updatedDesc') {
-          return Date.parse(right.dataQuality?.computedLastUpdated ?? right.lastUpdated)
-            - Date.parse(left.dataQuality?.computedLastUpdated ?? left.lastUpdated);
-        }
-        if (sortMode === 'nameAsc') {
-          return left.displayName.localeCompare(right.displayName);
-        }
-        return right.tension - left.tension || right.hostility - left.hostility || left.displayName.localeCompare(right.displayName);
-      });
-  }, [focus, search, selected.profile.relationships, sortMode]);
+      .sort(compareEntries);
+  }, [focus, relationshipEntries, search, sortMode]);
 
   useEffect(() => {
     setSearch('');
@@ -802,7 +825,7 @@ function RelationshipsPanel({
         </div>
         <div className="relationship-summary-card">
           <span>Highest tension</span>
-          <strong>{strongestRelationship.displayName}</strong>
+          <strong>{strongestRelationship?.relationship.displayName ?? '—'}</strong>
         </div>
       </div>
 
@@ -861,39 +884,37 @@ function RelationshipsPanel({
         <EmptyState title="No matching relationships" body="Try clearing the search or switching the active relationship filter." />
       ) : (
         <div className="relationship-list">
-          {visibleRelationships.map((relationship) => {
-            const dominantDimension = getDominantRelationshipDimension(relationship);
-            const stale = isRelationshipStale(relationship);
+          {visibleRelationships.map(({ relationship, dominantDimension, stale }) => {
             return (
-        <article key={relationship.countryId} className="relationship-card">
-          <header>
-              <div className="relationship-header-main">
-                <button
-                  type="button"
-                  className="relationship-name"
-                  onClick={() => onSelectRelated(relationship.mapName)}
-                >
-                  {relationship.displayName}
-                </button>
-                <div className="relationship-tags">
-                  <span
-                    className="relationship-dominant-tag"
-                    style={{
-                      color: dominantDimension.color,
-                      borderColor: `${dominantDimension.color}33`,
-                      background: `${dominantDimension.color}14`,
-                    }}
-                  >
-                    {dominantDimension.label}
+              <article key={relationship.countryId} className="relationship-card">
+                <header>
+                  <div className="relationship-header-main">
+                    <button
+                      type="button"
+                      className="relationship-name"
+                      onClick={() => onSelectRelated(relationship.mapName)}
+                    >
+                      {relationship.displayName}
+                    </button>
+                    <div className="relationship-tags">
+                      <span
+                        className="relationship-dominant-tag"
+                        style={{
+                          color: dominantDimension.color,
+                          borderColor: `${dominantDimension.color}${relationshipTagBorderOpacity}`,
+                          background: `${dominantDimension.color}${relationshipTagBackgroundOpacity}`,
+                        }}
+                      >
+                        {dominantDimension.label}
+                      </span>
+                      {stale && <span className="relationship-stale-tag">Stale</span>}
+                    </div>
+                  </div>
+                  <span className="relationship-date">
+                    {relationship.dataQuality?.computedLastUpdated ?? relationship.lastUpdated}
                   </span>
-                  {stale && <span className="relationship-stale-tag">Stale</span>}
-                </div>
-              </div>
-              <span className="relationship-date">
-                {relationship.dataQuality?.computedLastUpdated ?? relationship.lastUpdated}
-              </span>
-          </header>
-          <div className="relationship-bars">
+                </header>
+                <div className="relationship-bars">
                 {relationshipDimensionMeta.map((dimension) => (
                   <SmallBar
                     key={dimension.key}
@@ -903,22 +924,22 @@ function RelationshipsPanel({
                     emphasized={focus === dimension.key || dominantDimension.key === dimension.key}
                   />
                 ))}
-          </div>
-          <p className="relationship-notes">{relationship.notes}</p>
-          {relationship.dataQuality && relationship.dataQuality.dimensions.length > 0 && (
-            <ul className="kv-list kv-list-sm">
-              {relationship.dataQuality.dimensions.map((dim) => (
-                <li key={dim.dimension}>
-                  <span className="rel-dim-label">{formatTitle(dim.dimension)} · {dim.sourceId} · {dim.method}</span>
-                  <strong>
-                    {dim.observedAt} · {Math.round(dim.confidence * 100)}%
-                    {dim.stale ? ' · stale' : ''}
-                  </strong>
-                </li>
-              ))}
-            </ul>
-          )}
-        </article>
+                </div>
+                <p className="relationship-notes">{relationship.notes}</p>
+                {relationship.dataQuality && relationship.dataQuality.dimensions.length > 0 && (
+                  <ul className="kv-list kv-list-sm">
+                    {relationship.dataQuality.dimensions.map((dim) => (
+                      <li key={dim.dimension}>
+                        <span className="rel-dim-label">{formatTitle(dim.dimension)} · {dim.sourceId} · {dim.method}</span>
+                        <strong>
+                          {dim.observedAt} · {Math.round(dim.confidence * 100)}%
+                          {dim.stale ? ' · stale' : ''}
+                        </strong>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </article>
             );
           })}
         </div>
