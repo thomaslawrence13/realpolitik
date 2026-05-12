@@ -347,6 +347,7 @@ function IndexPanel({
         // `values().next().value` always returns the oldest (first inserted) entry.
         while (next.size >= maxComparisonCountries) {
           const oldest = next.values().next().value;
+          // Defensive guard; should never occur because loop condition implies non-empty Set.
           if (oldest === undefined) break;
           next.delete(oldest);
         }
