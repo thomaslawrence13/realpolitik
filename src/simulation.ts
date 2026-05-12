@@ -452,6 +452,7 @@ export const simulateCountry = (
   const pNonAligned = 100 - pBlocA - pBlocB;
   const probabilities: ProbabilitySet = { blocA: pBlocA, blocB: pBlocB, nonAligned: pNonAligned };
   const topProbability = Math.max(pBlocA, pBlocB, pNonAligned);
+  // For three values, second-largest = sum - largest - smallest.
   const secondProbability = pBlocA + pBlocB + pNonAligned - topProbability
     - Math.min(pBlocA, pBlocB, pNonAligned);
   const margin = topProbability - secondProbability;

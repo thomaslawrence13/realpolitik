@@ -199,7 +199,7 @@ export default function App() {
       .catch(() => {
         if (!controller.signal.aborted) setLiveDataStatus('error');
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- countryProfiles is a stable module-level constant
   }, []);
 
   useEffect(() => {
@@ -320,6 +320,7 @@ export default function App() {
         scenarioInputs: deferredScenarioInputs,
         activeEvents,
         weightSet: activeWeightSet,
+        includeExplanation: profile.mapName === selectedCountry,
       });
       const baselineEntry = simulateCountry(profile, timelineIndex, {
         scenarioInputs: defaultScenarioInputs,
@@ -337,7 +338,7 @@ export default function App() {
       byName: activeByName,
       baselineByName: baselineMapByName,
     };
-  }, [activeEvents, activeProfiles, activeWeightSet, deferredScenarioInputs, timelineIndex]);
+  }, [activeEvents, activeProfiles, activeWeightSet, deferredScenarioInputs, selectedCountry, timelineIndex]);
 
   const filtered = useMemo(() => {
     return simulated.filter((entry) => {
@@ -381,19 +382,6 @@ export default function App() {
   const selectedRiskDelta = Math.round(selected.risk - baselineSelected.risk);
   const selectedConfidenceDelta = Math.round(selected.confidence - baselineSelected.confidence);
 
-  // Re-simulate the selected country with explanation enabled for the inspector panels.
-  // This is a single country (cheap) and the only call that actually needs ContributionLine arrays.
-  const selectedWithExplanation = useMemo(
-    () =>
-      simulateCountry(selected.profile, timelineIndex, {
-        scenarioInputs: deferredScenarioInputs,
-        activeEvents,
-        weightSet: activeWeightSet,
-        includeHistory: false,
-        includeExplanation: true,
-      }),
-    [activeEvents, activeWeightSet, deferredScenarioInputs, selected.profile, timelineIndex],
-  );
   const selectedActiveEvents = useMemo(
     () => getActiveEventsForProfile(selected.profile, activeEvents),
     [activeEvents, selected.profile],
@@ -837,7 +825,7 @@ export default function App() {
 
       <RightInspector
         open={rightOpen}
-        selected={selectedWithExplanation}
+        selected={selected}
         baselineSelected={baselineSelected}
         riskDelta={selectedRiskDelta}
         confidenceDelta={selectedConfidenceDelta}
