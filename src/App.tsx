@@ -309,34 +309,35 @@ export default function App() {
 
   const activeWeightSet = useMemo(() => getSimulationWeightSet(deferredWeightSetKey), [deferredWeightSetKey]);
 
-  const baselineSimulated = useMemo(() => {
-    return activeProfiles.map((profile) =>
-      simulateCountry(profile, timelineIndex, {
-        scenarioInputs: defaultScenarioInputs,
-        weightSet: baselineWeightSet,
-      }),
-    );
-  }, [activeProfiles, timelineIndex]);
+  const { simulated, baselineSimulated, byName, baselineByName } = useMemo(() => {
+    const activeRows: SimulatedCountry[] = [];
+    const baselineRows: SimulatedCountry[] = [];
+    const activeByName = new Map<string, SimulatedCountry>();
+    const baselineMapByName = new Map<string, SimulatedCountry>();
 
-  const simulated = useMemo(() => {
-    return activeProfiles.map((profile) =>
-      simulateCountry(profile, timelineIndex, {
+    for (const profile of activeProfiles) {
+      const activeEntry = simulateCountry(profile, timelineIndex, {
         scenarioInputs: deferredScenarioInputs,
         activeEvents,
         weightSet: activeWeightSet,
-      }),
-    );
+      });
+      const baselineEntry = simulateCountry(profile, timelineIndex, {
+        scenarioInputs: defaultScenarioInputs,
+        weightSet: baselineWeightSet,
+      });
+      activeRows.push(activeEntry);
+      baselineRows.push(baselineEntry);
+      activeByName.set(profile.mapName, activeEntry);
+      baselineMapByName.set(profile.mapName, baselineEntry);
+    }
+
+    return {
+      simulated: activeRows,
+      baselineSimulated: baselineRows,
+      byName: activeByName,
+      baselineByName: baselineMapByName,
+    };
   }, [activeEvents, activeProfiles, activeWeightSet, deferredScenarioInputs, timelineIndex]);
-
-  const baselineByName = useMemo(
-    () => new Map(baselineSimulated.map((entry) => [entry.profile.mapName, entry])),
-    [baselineSimulated],
-  );
-
-  const byName = useMemo(
-    () => new Map(simulated.map((entry) => [entry.profile.mapName, entry])),
-    [simulated],
-  );
 
   const filtered = useMemo(() => {
     return simulated.filter((entry) => {
@@ -523,6 +524,19 @@ export default function App() {
 
   const removeEvent = (id: string) => {
     setActiveEventIds((current) => current.filter((activeId) => activeId !== id));
+  };
+
+  const applyEvents = (ids: string[]) => {
+    if (ids.length === 0) return;
+    setActiveEventIds((current) => {
+      const next = new Set(current);
+      ids.forEach((id) => next.add(id));
+      return [...next];
+    });
+  };
+
+  const clearAllEvents = () => {
+    setActiveEventIds([]);
   };
 
   const resetScenario = () => {
@@ -877,6 +891,8 @@ export default function App() {
         activeEventIds={activeEventIds}
         onApplyEvent={applyEvent}
         onRemoveEvent={removeEvent}
+        onApplyEvents={applyEvents}
+        onClearAllEvents={clearAllEvents}
         onResizeStart={handleDrawerResizeStart}
         onResizeStep={handleDrawerResizeStep}
         onResizeTo={handleDrawerResizeTo}

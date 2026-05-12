@@ -62,6 +62,8 @@ type Props = {
   activeEventIds: string[];
   onApplyEvent: (id: string) => void;
   onRemoveEvent: (id: string) => void;
+  onApplyEvents: (ids: string[]) => void;
+  onClearAllEvents: () => void;
   onResizeStart: (startClientY: number) => void;
   onResizeStep: (delta: number) => void;
   onResizeTo: (edge: 'min' | 'max') => void;
@@ -112,6 +114,8 @@ export function BottomDrawer({
   activeEventIds,
   onApplyEvent,
   onRemoveEvent,
+  onApplyEvents,
+  onClearAllEvents,
   onResizeStart,
   onResizeStep,
   onResizeTo,
@@ -178,6 +182,8 @@ export function BottomDrawer({
             activeEventIds={activeEventIds}
             onApply={onApplyEvent}
             onRemove={onRemoveEvent}
+            onApplyMany={onApplyEvents}
+            onClearAll={onClearAllEvents}
             scenarioFeed={eventFeed}
           />
         )}
@@ -707,12 +713,16 @@ function EventsPanel({
   activeEventIds,
   onApply,
   onRemove,
+  onApplyMany,
+  onClearAll,
   scenarioFeed,
 }: {
   events: EventTemplate[];
   activeEventIds: string[];
   onApply: (id: string) => void;
   onRemove: (id: string) => void;
+  onApplyMany: (ids: string[]) => void;
+  onClearAll: () => void;
   scenarioFeed: EventFeedItem[];
 }) {
   const [categoryFilter, setCategoryFilter] = useState<'all' | EventCategory>('all');
@@ -747,6 +757,11 @@ function EventsPanel({
     return `${INPUT_LABELS[key] ?? key} ${signed}`;
   };
 
+  const visibleInactiveIds = useMemo(
+    () => visible.filter((event) => !activeSet.has(event.id)).map((event) => event.id),
+    [activeSet, visible],
+  );
+
   return (
     <div className="events-panel">
       <div className="events-filter-bar">
@@ -763,6 +778,27 @@ function EventsPanel({
         {activeEventIds.length > 0 && (
           <span className="events-active-badge">{activeEventIds.length} active</span>
         )}
+      </div>
+
+      <div className="events-bulk-actions">
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => onApplyMany(visibleInactiveIds)}
+          disabled={visibleInactiveIds.length === 0}
+          title="Apply all currently visible events that are not active"
+        >
+          Apply visible ({visibleInactiveIds.length})
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={onClearAll}
+          disabled={activeEventIds.length === 0}
+          title="Clear all currently active events"
+        >
+          Clear active ({activeEventIds.length})
+        </button>
       </div>
 
       <label className="events-search">

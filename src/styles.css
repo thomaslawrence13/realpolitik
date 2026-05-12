@@ -2431,6 +2431,12 @@ input[type='range']::-moz-range-thumb {
   background: var(--surface-2);
 }
 
+.events-bulk-actions {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
 .events-filter-bar {
   display: flex;
   flex-wrap: wrap;
