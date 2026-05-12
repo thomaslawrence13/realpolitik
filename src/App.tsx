@@ -408,7 +408,7 @@ export default function App() {
     });
   }, [baselineByName, baselineSimulated, selectedCountry, selectedProfile, timelineIndex]);
   if (!selected || !baselineSelected) {
-    return <div className="app-shell" aria-busy>Loading simulation…</div>;
+    return <div className="app-shell" aria-busy="true">Loading simulation…</div>;
   }
   const selectedRiskDelta = Math.round(selected.risk - baselineSelected.risk);
   const selectedConfidenceDelta = Math.round(selected.confidence - baselineSelected.confidence);
