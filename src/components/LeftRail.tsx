@@ -225,7 +225,7 @@ export function LeftRail({
         <div className="rail-organize">
           <label className="rail-organize-field rail-organize-inline">
             <span aria-hidden>↕</span>
-            <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
+            <select aria-label="Sort countries" value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -235,7 +235,7 @@ export function LeftRail({
           </label>
           <label className="rail-organize-field rail-organize-inline">
             <span aria-hidden>⊞</span>
-            <select value={groupMode} onChange={(event) => setGroupMode(event.target.value as GroupMode)}>
+            <select aria-label="Group countries" value={groupMode} onChange={(event) => setGroupMode(event.target.value as GroupMode)}>
               {groupOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}

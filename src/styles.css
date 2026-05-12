@@ -6,7 +6,7 @@
   --surface-0: #0f0f11;
   --surface-1: #161618;
   --surface-2: #1e1e21;
-  --surface-3: #1e1e21;
+  --surface-3: #242428;
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.14);
 
@@ -32,7 +32,7 @@
   --r-sm: 6px;
   --r-md: 10px;
   --r-lg: 10px;
-  --r-xl: 10px;
+  --r-xl: 12px;
   --r-pill: 999px;
 
   --shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
@@ -815,9 +815,6 @@ input[type='range']::-moz-range-thumb {
   color: var(--risk-high);
   background: rgba(248, 113, 113, 0.08);
   border-color: rgba(248, 113, 113, 0.22);
-}
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .country-risk {
