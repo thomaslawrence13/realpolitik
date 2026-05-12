@@ -225,7 +225,7 @@ export function BottomDrawer({
 }
 
 type IndexMetric = 'coverage' | 'confidence' | 'risk';
-const indexCompareLimit = 4;
+const maxComparisonCountries = 4;
 
 function IndexPanel({
   countries,
@@ -296,7 +296,7 @@ function IndexPanel({
     setSelectedIds((current) =>
       current.includes(countryId)
         ? current.filter((id) => id !== countryId)
-        : [...current.slice(-(indexCompareLimit - 1)), countryId],
+        : [...current.slice(-(maxComparisonCountries - 1)), countryId],
     );
   };
 
@@ -340,7 +340,7 @@ function IndexPanel({
         </article>
         <article className="index-summary-card">
           <span>Compared</span>
-          <strong>{compared.length} / {indexCompareLimit}</strong>
+          <strong>{compared.length} / {maxComparisonCountries}</strong>
         </article>
         <article className="index-summary-card">
           <span>Filters</span>
@@ -448,7 +448,7 @@ function IndexPanel({
         <section className="index-compare-section">
           <h3 className="movers-section-title">Compare countries</h3>
           {compared.length === 0 ? (
-            <p className="movers-empty">Select up to {indexCompareLimit} countries from the ranking to compare trust, risk, confidence, and relationship density.</p>
+            <p className="movers-empty">Select up to {maxComparisonCountries} countries from the ranking to compare trust, risk, confidence, and relationship density.</p>
           ) : (
             <>
               <div className="index-compare-grid">

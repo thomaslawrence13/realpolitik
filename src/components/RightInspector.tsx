@@ -915,15 +915,15 @@ function RelationshipsPanel({
                   </span>
                 </header>
                 <div className="relationship-bars">
-                {relationshipDimensionMeta.map((dimension) => (
-                  <SmallBar
-                    key={dimension.key}
-                    label={dimension.shortLabel}
-                    value={relationship[dimension.key]}
-                    color={dimension.color}
-                    emphasized={focus === dimension.key || dominantDimension.key === dimension.key}
-                  />
-                ))}
+                  {relationshipDimensionMeta.map((dimension) => (
+                    <SmallBar
+                      key={dimension.key}
+                      label={dimension.shortLabel}
+                      value={relationship[dimension.key]}
+                      color={dimension.color}
+                      emphasized={focus === dimension.key || dominantDimension.key === dimension.key}
+                    />
+                  ))}
                 </div>
                 <p className="relationship-notes">{relationship.notes}</p>
                 {relationship.dataQuality && relationship.dataQuality.dimensions.length > 0 && (
