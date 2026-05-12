@@ -124,14 +124,21 @@ const RISK_MED = '#fbbf24';
 const RISK_HIGH = '#f87171';
 const NEUTRAL = '#1b2538';
 
+// Cache hex-string → [r,g,b] decomposition so lerpColor never re-parses the
+// same constant color string on every country-fill render call.
+const hexCache = new Map<string, [number, number, number]>();
+const parseHex = (hex: string): [number, number, number] => {
+  let cached = hexCache.get(hex);
+  if (!cached) {
+    cached = [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
+    hexCache.set(hex, cached);
+  }
+  return cached;
+};
+
 const lerpColor = (from: string, to: string, t: number): string => {
-  const parse = (hex: string) => [
-    parseInt(hex.slice(1, 3), 16),
-    parseInt(hex.slice(3, 5), 16),
-    parseInt(hex.slice(5, 7), 16),
-  ];
-  const [fr, fg, fb] = parse(from);
-  const [tr, tg, tb] = parse(to);
+  const [fr, fg, fb] = parseHex(from);
+  const [tr, tg, tb] = parseHex(to);
   const r = Math.round(fr + (tr - fr) * t);
   const g = Math.round(fg + (tg - fg) * t);
   const b = Math.round(fb + (tb - fb) * t);

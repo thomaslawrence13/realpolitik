@@ -530,8 +530,6 @@ export const getCountryRelationships = (countryId: string) => {
   return getCountryById(countryId)?.relationships ?? [];
 };
 
-export const getCountryMap = () => {
-  return new Map(countries.map((country) => [country.mapName, country]));
-};
+export const getCountryMap = () => countryByMapName;
 
 export const getCountryRecords = (): CountryRecord[] => countries;

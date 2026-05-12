@@ -41,9 +41,19 @@ const classifyRisk = (risk: number): Tier => {
 };
 
 const resolveAlignment = (probabilities: ProbabilitySet, risk: number): Alignment => {
-  const entries = Object.entries(probabilities).sort((a, b) => b[1] - a[1]);
-  const [topLabel, topValue] = entries[0] as [keyof ProbabilitySet, number];
-  const secondValue = entries[1]?.[1] ?? 0;
+  // Avoid sort — only 3 fixed keys, so a linear scan is faster.
+  const { blocA, blocB, nonAligned } = probabilities;
+  let topLabel: keyof ProbabilitySet;
+  let topValue: number;
+  let secondValue: number;
+
+  if (blocA >= blocB && blocA >= nonAligned) {
+    topLabel = 'blocA'; topValue = blocA; secondValue = Math.max(blocB, nonAligned);
+  } else if (blocB >= blocA && blocB >= nonAligned) {
+    topLabel = 'blocB'; topValue = blocB; secondValue = Math.max(blocA, nonAligned);
+  } else {
+    topLabel = 'nonAligned'; topValue = nonAligned; secondValue = Math.max(blocA, blocB);
+  }
 
   if (risk >= 72 && topValue - secondValue < 15) {
     return 'unstable';
@@ -64,22 +74,25 @@ const summarizeRelationships = (profile: CountryProfile): RelationshipSummary =>
   if (profile.relationships.length === 0) {
     result = { cooperation: 40, hostility: 25, dependency: 35, deterrence: 30, tension: 28 };
   } else {
-    const totals = profile.relationships.reduce(
-      (summary, relationship) => ({
-        cooperation: summary.cooperation + relationship.cooperation,
-        hostility: summary.hostility + relationship.hostility,
-        dependency: summary.dependency + relationship.dependency,
-        deterrence: summary.deterrence + relationship.deterrence,
-        tension: summary.tension + relationship.tension,
-      }),
-      { cooperation: 0, hostility: 0, dependency: 0, deterrence: 0, tension: 0 },
-    );
+    let cooperation = 0;
+    let hostility = 0;
+    let dependency = 0;
+    let deterrence = 0;
+    let tension = 0;
+    for (const rel of profile.relationships) {
+      cooperation += rel.cooperation;
+      hostility += rel.hostility;
+      dependency += rel.dependency;
+      deterrence += rel.deterrence;
+      tension += rel.tension;
+    }
+    const n = profile.relationships.length;
     result = {
-      cooperation: Math.round(totals.cooperation / profile.relationships.length),
-      hostility: Math.round(totals.hostility / profile.relationships.length),
-      dependency: Math.round(totals.dependency / profile.relationships.length),
-      deterrence: Math.round(totals.deterrence / profile.relationships.length),
-      tension: Math.round(totals.tension / profile.relationships.length),
+      cooperation: Math.round(cooperation / n),
+      hostility: Math.round(hostility / n),
+      dependency: Math.round(dependency / n),
+      deterrence: Math.round(deterrence / n),
+      tension: Math.round(tension / n),
     };
   }
 
@@ -106,20 +119,25 @@ const createZeroScenarioInputs = (): ScenarioInputs => {
   return { ...defaultScenarioInputs };
 };
 
+// Pre-compute sets for O(1) membership checks.
+const EASTERN_MED_SUBREGIONS = new Set(['western asia', 'northern africa', 'southern europe']);
+const EASTERN_MED_IDS = new Set([
+  'israel', 'lebanon', 'syria', 'jordan', 'cyprus', 'greece', 'turkey', 'egypt', 'libya',
+]);
+
 const eventAppliesToProfile = (profile: CountryProfile, event: EventTemplate): boolean => {
   if (event.regionTags.length === 0) return true;
 
   const region = normalizeRegionLabel(profile.region);
   const subregion = normalizeRegionLabel(profile.subregion);
-  const matchesEasternMediterranean =
-    ['western asia', 'northern africa', 'southern europe'].includes(subregion)
-    || ['israel', 'lebanon', 'syria', 'jordan', 'cyprus', 'greece', 'turkey', 'egypt', 'libya'].includes(profile.id);
 
   return event.regionTags.some((tag) => {
     const normalized = normalizeRegionLabel(tag);
     if (normalized === 'global') return true;
     if (normalized === region || normalized === subregion) return true;
-    if (normalized === 'eastern mediterranean') return matchesEasternMediterranean;
+    if (normalized === 'eastern mediterranean') {
+      return EASTERN_MED_SUBREGIONS.has(subregion) || EASTERN_MED_IDS.has(profile.id);
+    }
     return false;
   });
 };
@@ -423,15 +441,12 @@ export const simulateCountry = (
   // always sum to exactly 100, regardless of floating-point rounding.
   const pBlocA = Math.round((blocAClamped / probTotal) * 100);
   const pBlocB = Math.round((blocBClamped / probTotal) * 100);
-  const probabilities: ProbabilitySet = {
-    blocA: pBlocA,
-    blocB: pBlocB,
-    nonAligned: 100 - pBlocA - pBlocB,
-  };
-
-  const sorted = Object.values(probabilities).sort((a, b) => b - a);
-  const topProbability = sorted[0];
-  const secondProbability = sorted[1] ?? 0;
+  // Derive top-two probabilities directly from known variables — no sort needed.
+  const pNonAligned = 100 - pBlocA - pBlocB;
+  const probabilities: ProbabilitySet = { blocA: pBlocA, blocB: pBlocB, nonAligned: pNonAligned };
+  const topProbability = Math.max(pBlocA, pBlocB, pNonAligned);
+  const secondProbability = pBlocA + pBlocB + pNonAligned - topProbability
+    - Math.min(pBlocA, pBlocB, pNonAligned);
   const margin = topProbability - secondProbability;
   const confidenceBase = 54;
   const confidenceComponents: ContributionLine[] = [

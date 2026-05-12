@@ -174,6 +174,7 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const shareResetRef = useRef<number | null>(null);
   const undoTimeoutRef = useRef<number | null>(null);
+  const persistDebounceRef = useRef<number | null>(null);
 
   // Live World Bank data enrichment — starts with static profiles and upgrades
   // in the background. Failures fall back silently to the static dataset.
@@ -188,13 +189,15 @@ export default function App() {
     setLiveDataStatus('loading');
     fetchLiveData(controller.signal)
       .then((live) => {
+        // countryProfiles is a stable module-level constant — no dep needed.
         setActiveProfiles(enrichProfiles(countryProfiles, live));
         setLiveDataStatus('live');
       })
       .catch(() => {
         if (!controller.signal.aborted) setLiveDataStatus('error');
       });
-  }, [countryProfiles]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     loadLiveData();
@@ -431,14 +434,32 @@ export default function App() {
     return comparisonByName.get(selectedCountry) ?? null;
   }, [comparisonByName, selectedCountry]);
 
-  // Per-year risk for the selected country across the full timeline. Used by the
-  // inspector sparkline. Computed only when the year-list or scenario inputs change.
-  const selectedSparkline = useMemo<SparklineSeries | null>(() => {
-    const profile = activeProfiles.find((entry) => entry.mapName === selectedCountry);
-    if (!profile) return null;
-    const active = scenarioTimeline.map((_, index) =>
+  // Inspector sparkline — split into two independent memos so the baseline track
+  // (which depends only on activeProfiles + selectedCountry) never reruns when
+  // only the active-scenario inputs or events change, and vice versa.
+  const sparklineProfile = useMemo(
+    () => activeProfiles.find((entry) => entry.mapName === selectedCountry) ?? null,
+    [activeProfiles, selectedCountry],
+  );
+
+  const sparklineBaselineRisks = useMemo<number[]>(() => {
+    if (!sparklineProfile) return [];
+    return scenarioTimeline.map((_, index) =>
       Math.round(
-        simulateCountry(profile, index, {
+        simulateCountry(sparklineProfile, index, {
+          scenarioInputs: defaultScenarioInputs,
+          weightSet: baselineWeightSet,
+          includeHistory: false,
+        }).risk,
+      ),
+    );
+  }, [sparklineProfile]);
+
+  const sparklineActiveRisks = useMemo<number[]>(() => {
+    if (!sparklineProfile) return [];
+    return scenarioTimeline.map((_, index) =>
+      Math.round(
+        simulateCountry(sparklineProfile, index, {
           scenarioInputs: deferredScenarioInputs,
           activeEvents,
           weightSet: activeWeightSet,
@@ -446,22 +467,17 @@ export default function App() {
         }).risk,
       ),
     );
-    const baseline = scenarioTimeline.map((_, index) =>
-      Math.round(
-        simulateCountry(profile, index, {
-          scenarioInputs: defaultScenarioInputs,
-          weightSet: baselineWeightSet,
-          includeHistory: false,
-        }).risk,
-      ),
-    );
+  }, [activeEvents, activeWeightSet, deferredScenarioInputs, sparklineProfile]);
+
+  const selectedSparkline = useMemo<SparklineSeries | null>(() => {
+    if (!sparklineProfile) return null;
     return {
       labels: scenarioTimeline.slice(),
-      active,
-      baseline,
+      active: sparklineActiveRisks,
+      baseline: sparklineBaselineRisks,
       currentIndex: timelineIndex,
     };
-  }, [activeEvents, activeProfiles, activeWeightSet, deferredScenarioInputs, selectedCountry, timelineIndex]);
+  }, [sparklineActiveRisks, sparklineBaselineRisks, sparklineProfile, timelineIndex]);
 
   const handleScenarioInputChange = <K extends keyof ScenarioInputs>(key: K, value: number) => {
     setScenarioInputs((current) => ({ ...current, [key]: value }));
@@ -658,10 +674,10 @@ export default function App() {
     setTimelineIndex(index);
   };
 
-  // Persist UI + scenarios to localStorage. Each change writes synchronously — the payload is
-  // small enough that we don't need throttling, and saves are guarded behind a try/catch.
+  // Persist UI + scenarios to localStorage with a 300 ms debounce so rapid
+  // slider drags or typing do not hammer the storage layer on every frame.
   useEffect(() => {
-    savePersistedState({
+    const snapshot = {
       selectedCountry,
       scenarioName,
       scenarioInputs,
@@ -677,7 +693,9 @@ export default function App() {
       drawerOpen,
       drawerHeight,
       comparisonScenarioId,
-    });
+    };
+    if (persistDebounceRef.current) window.clearTimeout(persistDebounceRef.current);
+    persistDebounceRef.current = window.setTimeout(() => savePersistedState(snapshot), 300);
   }, [
     selectedCountry,
     scenarioName,
@@ -696,11 +714,12 @@ export default function App() {
     comparisonScenarioId,
   ]);
 
-  // Cleanup the share-status timer on unmount.
+  // Cleanup timers on unmount.
   useEffect(() => {
     return () => {
       if (shareResetRef.current) window.clearTimeout(shareResetRef.current);
       if (undoTimeoutRef.current) window.clearTimeout(undoTimeoutRef.current);
+      if (persistDebounceRef.current) window.clearTimeout(persistDebounceRef.current);
     };
   }, []);
 
