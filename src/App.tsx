@@ -251,7 +251,7 @@ export default function App() {
     const raw = persisted?.inspectorTab as string | undefined;
     if (raw === 'profile') return 'stats';
     if (raw === 'drivers') return 'analysis';
-    const valid: InspectorTab[] = ['stats', 'overview', 'relationships', 'analysis', 'sources'];
+    const valid: InspectorTab[] = ['stats', 'overview', 'relationships', 'analysis'];
     return valid.includes(raw as InspectorTab) ? (raw as InspectorTab) : 'stats';
   });
 

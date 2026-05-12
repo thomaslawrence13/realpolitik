@@ -80,7 +80,7 @@ export function LeftRail({
   alignmentLabel,
   searchInputRef,
 }: Props) {
-  const [filtersExpanded, setFiltersExpanded] = useState(true);
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>('coverageDesc');
   const [groupMode, setGroupMode] = useState<GroupMode>('region');
   const selectedItemRef = useRef<HTMLButtonElement | null>(null);
@@ -194,15 +194,6 @@ export function LeftRail({
   return (
     <aside className="rail" aria-label="Country browser" aria-hidden={!open} {...(!open && { inert: true })}>
       <div className="rail-controls">
-        <div className="rail-header">
-          <div>
-            <h2 className="rail-title">Countries</h2>
-            <p className="rail-meta">
-              {countries.length} of {totalCount} shown
-            </p>
-          </div>
-        </div>
-
         <div className="rail-search">
           <span className="rail-search-icon" aria-hidden>
             <SvgIcon.Search />
@@ -226,12 +217,15 @@ export function LeftRail({
               <SvgIcon.X />
             </button>
           )}
+          <span className="rail-search-count" aria-live="polite">
+            {countries.length} / {totalCount}
+          </span>
         </div>
 
         <div className="rail-organize">
-          <label className="rail-organize-field">
-            <span>Sort</span>
-            <select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
+          <label className="rail-organize-field rail-organize-inline">
+            <span aria-hidden>↕</span>
+            <select aria-label="Sort countries" value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -239,9 +233,9 @@ export function LeftRail({
               ))}
             </select>
           </label>
-          <label className="rail-organize-field">
-            <span>Group</span>
-            <select value={groupMode} onChange={(event) => setGroupMode(event.target.value as GroupMode)}>
+          <label className="rail-organize-field rail-organize-inline">
+            <span aria-hidden>⊞</span>
+            <select aria-label="Group countries" value={groupMode} onChange={(event) => setGroupMode(event.target.value as GroupMode)}>
               {groupOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -257,9 +251,8 @@ export function LeftRail({
             className="rail-filters-toggle"
             onClick={() => setFiltersExpanded((value) => !value)}
           >
-            <span>Filters</span>
+            <span>Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</span>
             <span className="rail-filters-count">
-              {activeFilterCount > 0 && <em>{activeFilterCount}</em>}
               <SvgIcon.Chevron dir={filtersExpanded ? 'up' : 'down'} />
             </span>
           </button>
@@ -403,11 +396,6 @@ export function LeftRail({
                     className={`country-item ${isSelected ? 'country-item-active' : ''}`}
                     onClick={() => onSelect(country.profile.mapName)}
                   >
-                    <span
-                      className="country-dot"
-                      style={{ background: alignmentColor[country.alignment] }}
-                      aria-hidden
-                    />
                     <span className="country-text">
                         <span className="country-name-row">
                           <strong className="country-name">{country.profile.displayName}</strong>
@@ -431,4 +419,3 @@ export function LeftRail({
     </aside>
   );
 }
-

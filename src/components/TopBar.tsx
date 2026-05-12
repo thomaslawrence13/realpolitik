@@ -60,36 +60,29 @@ export function TopBar({
           <SvgIcon.PanelLeft />
         </IconButton>
         <div className="brand">
-          <span className="brand-mark" aria-hidden />
-          <strong className="brand-name">Realpolitik</strong>
-          <span className="brand-meta">
-            <span className="brand-pill">{datasetVersion}</span>
-            <span className="brand-sep">·</span>
-            <span>{countryCount} parameterized</span>
-            <span className="brand-sep">·</span>
-            <span
-              className={`live-status live-status-${liveDataStatus}`}
-                title={{
-                  loading: 'Fetching live World Bank indicators…',
-                  live: 'All live World Bank indicators loaded successfully',
-                  partial: `Partially enriched: ${liveDataDiagnostics?.succeededIndicators ?? 0}/${liveDataDiagnostics?.totalIndicators ?? 0} indicators loaded`,
-                  error: 'Live data unavailable — using static dataset',
-                }[liveDataStatus]}
-              >
-                {liveDataStatus === 'live'
-                  ? 'live data'
-                  : liveDataStatus === 'partial'
-                    ? `${liveDataDiagnostics?.succeededIndicators ?? 0}/${liveDataDiagnostics?.totalIndicators ?? 0} live`
-                    : liveDataStatus === 'error'
-                      ? 'static data'
-                      : 'updating…'}
-              </span>
-            {(liveDataStatus === 'error' || liveDataStatus === 'partial') && (
-              <button type="button" className="live-status-retry" onClick={onRetryLiveData}>
-                Retry
-              </button>
-            )}
-          </span>
+          <strong
+            className="brand-name"
+            title={`${datasetVersion} · ${countryCount} parameterized · ${
+              liveDataStatus === 'live'
+                ? 'Live data ready'
+                : liveDataStatus === 'partial'
+                  ? `${liveDataDiagnostics?.succeededIndicators ?? 0}/${liveDataDiagnostics?.totalIndicators ?? 0} live indicators`
+                  : liveDataStatus === 'error'
+                    ? 'Live data unavailable (using static dataset)'
+                    : 'Fetching live data…'
+            }`}
+          >
+            Realpolitik
+          </strong>
+          <button
+            type="button"
+            className={`live-status-dot live-status-${liveDataStatus}`}
+            title={liveDataStatus === 'error' || liveDataStatus === 'partial' ? 'Retry live data fetch' : 'Live data status'}
+            onClick={() => {
+              if (liveDataStatus === 'error' || liveDataStatus === 'partial') onRetryLiveData();
+            }}
+            aria-label="Live data status"
+          />
         </div>
       </div>
 
@@ -164,14 +157,11 @@ export function TopBar({
           className={`scenario-chip ${drawerOpen ? 'scenario-chip-active' : ''}`}
           onClick={onToggleDrawer}
         >
-          <span className="scenario-chip-label">Analysis</span>
-          <em className="scenario-chip-name">{scenarioName}</em>
-          {activeEventCount > 0 && (
-            <em className="scenario-event-badge" title={`${activeEventCount} event${activeEventCount !== 1 ? 's' : ''} applied`}>
-              {activeEventCount}
-            </em>
-          )}
-          <span className="scenario-chip-indicator" aria-hidden />
+          <em className="scenario-chip-name">
+            Analysis · {scenarioName}
+            {activeEventCount > 0 ? ` · ${activeEventCount}` : ''}
+          </em>
+          <SvgIcon.Chevron dir="down" />
         </button>
         <IconButton label="Toggle analysis drawer (\)" active={drawerOpen} onClick={onToggleDrawer}>
           <SvgIcon.PanelBottom />
