@@ -22,6 +22,7 @@ import { getRiskTier } from '../simulation';
 import { INFORMATION_QUALITY_CONTRACT } from '../data/quality/contract';
 import { deriveQualityRemediationDrivers } from '../data/quality/telemetry';
 import { BarRow, MetricCard, Tabs } from './ui';
+import { useMapStore } from '../store/useMapStore';
 
 export type InspectorTab = 'stats' | 'overview' | 'relationships' | 'analysis';
 
@@ -169,8 +170,31 @@ export function RightInspector({
   sparkline,
   allCountries,
 }: Props) {
+  const hoveredCountry = useMapStore((state) => state.hoveredCountry);
   const alignmentChanged = selected.alignment !== baselineSelected.alignment;
   const bodyRef = useRef<HTMLDivElement | null>(null);
+  const hoveredPeer = useMemo(
+    () => (hoveredCountry ? allCountries.find((country) => country.profile.mapName === hoveredCountry) ?? null : null),
+    [allCountries, hoveredCountry],
+  );
+  const bilateralRelationship = useMemo(() => {
+    if (!hoveredPeer || hoveredPeer.profile.mapName === selected.profile.mapName) return null;
+    const direct = selected.profile.relationships.find((rel) => rel.mapName === hoveredPeer.profile.mapName);
+    const reverse = hoveredPeer.profile.relationships.find((rel) => rel.mapName === selected.profile.mapName);
+    const hostility = direct?.hostility ?? reverse?.hostility ?? null;
+    const dependency = direct?.dependency ?? reverse?.dependency ?? null;
+    const alignmentFriction = selected.alignment === hoveredPeer.alignment
+      ? 10
+      : selected.alignment === 'nonAligned' || hoveredPeer.alignment === 'nonAligned'
+        ? 45
+        : 75;
+    return {
+      displayName: hoveredPeer.profile.displayName,
+      hostility,
+      dependency,
+      alignmentFriction,
+    };
+  }, [hoveredPeer, selected.alignment, selected.profile.mapName, selected.profile.relationships]);
 
   // Scroll the panel body back to the top whenever the selected country changes.
   useEffect(() => {
@@ -219,6 +243,23 @@ export function RightInspector({
       />
 
       <div className="inspector-body" ref={bodyRef}>
+        {bilateralRelationship && (
+          <section className="overview-panel-card">
+            <header>
+              <h3>Bilateral Comparison</h3>
+              <span>{selected.profile.displayName} ↔ {bilateralRelationship.displayName}</span>
+            </header>
+            <div className="overview-grid">
+              <MetricCard label="Dependency" value={bilateralRelationship.dependency == null ? 'N/A' : formatPercent(bilateralRelationship.dependency)} />
+              <MetricCard label="Hostility" value={bilateralRelationship.hostility == null ? 'N/A' : formatPercent(bilateralRelationship.hostility)} />
+              <MetricCard
+                label="Alignment Friction"
+                value={formatPercent(bilateralRelationship.alignmentFriction)}
+                tone={getRiskTier(bilateralRelationship.alignmentFriction)}
+              />
+            </div>
+          </section>
+        )}
         {tab === 'stats' && (
           <StatsPanel
             selected={selected}
