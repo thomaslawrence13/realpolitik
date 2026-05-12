@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type {
   Alignment,
@@ -149,7 +149,7 @@ const DeltaHint = ({ delta, higherIsBetter }: { delta: number; higherIsBetter: b
   );
 };
 
-export function RightInspector({
+export const RightInspector = memo(function RightInspector({
   open,
   selected,
   baselineSelected,
@@ -303,7 +303,7 @@ export function RightInspector({
       </div>
     </aside>
   );
-}
+});
 
 function OverviewPanel({
   selected,

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { IconButton, SvgIcon } from './ui';
 
 type Props = {
@@ -28,7 +29,7 @@ type Props = {
   activeEventCount: number;
 };
 
-export function TopBar({
+export const TopBar = memo(function TopBar({
   timelineIndex,
   timeline,
   onTimelineChange,
@@ -175,4 +176,4 @@ export function TopBar({
       </div>
     </header>
   );
-}
+});

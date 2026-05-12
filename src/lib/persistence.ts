@@ -23,8 +23,8 @@ export interface PersistedState {
   savedScenarios: SavedScenario[];
   filters: Filters;
   timelineIndex: number;
-  overlayMode: OverlayMode;
-  mapFillMode: MapFillMode;
+  overlayMode?: OverlayMode;
+  mapFillMode?: MapFillMode;
   inspectorTab: InspectorTab;
   drawerTab: DrawerTab;
   drawerOpen: boolean;
