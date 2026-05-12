@@ -5,6 +5,7 @@ import type {
   ConfidenceExplanation,
   ContributionLine,
   CountryIndicators,
+  DatasetSource,
   IndicatorTelemetry,
   EconomicStats,
   MilitaryStats,
@@ -19,7 +20,7 @@ import type {
 import { getRiskTier } from '../simulation';
 import { BarRow, MetricCard, Tabs } from './ui';
 
-export type InspectorTab = 'overview' | 'profile' | 'relationships' | 'drivers' | 'sources';
+export type InspectorTab = 'stats' | 'overview' | 'relationships' | 'analysis' | 'sources';
 
 type Props = {
   open: boolean;
@@ -58,6 +59,13 @@ const formatIndicatorLabel = (value: string) =>
   value.replace(/([A-Z])/g, ' $1').trim().replace(/^./, (v) => v.toUpperCase());
 const formatEvidenceClass = (value: 'observed' | 'estimated' | 'fallback' | 'derived') =>
   value.charAt(0).toUpperCase() + value.slice(1);
+/** Convert a camelCase mineral key (e.g. 'rareEarths') to a readable title ('Rare Earths'). Uses formatIndicatorLabel logic. */
+const formatMineralName = (value: string) => formatIndicatorLabel(value);
+/** Convert a kebab-case country ID (e.g. 'saudi-arabia') to title case ('Saudi Arabia'). */
+const formatCountryId = (id: string) =>
+  id.length === 0
+    ? id
+    : id.split('-').filter(Boolean).map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 const relationshipTagBorderAlpha = '33';
 const relationshipTagBackgroundAlpha = '14';
 
@@ -188,15 +196,23 @@ export function RightInspector({
         onChange={onTabChange}
         size="sm"
         options={[
+          { value: 'stats', label: 'Statistics' },
           { value: 'overview', label: 'Overview' },
-          { value: 'profile', label: 'Profile' },
           { value: 'relationships', label: 'Relationships', count: selected.profile.relationships.length },
-          { value: 'drivers', label: 'Drivers' },
+          { value: 'analysis', label: 'Analysis' },
           { value: 'sources', label: 'Sources', count: selected.profile.sources.length },
         ]}
       />
 
       <div className="inspector-body" ref={bodyRef}>
+        {tab === 'stats' && (
+          <StatsPanel
+            selected={selected}
+            comparisonSelected={comparisonSelected}
+            comparisonScenarioName={comparisonScenarioName}
+          />
+        )}
+
         {tab === 'overview' && (
           <OverviewPanel
             selected={selected}
@@ -213,20 +229,12 @@ export function RightInspector({
           />
         )}
 
-        {tab === 'profile' && (
-          <ProfilePanel 
-            selected={selected} 
-            comparisonSelected={comparisonSelected}
-            comparisonScenarioName={comparisonScenarioName}
-          />
-        )}
-
         {tab === 'relationships' && (
           <RelationshipsPanel selected={selected} onSelectRelated={onSelectRelated} />
         )}
 
-        {tab === 'drivers' && (
-          <DriversPanel
+        {tab === 'analysis' && (
+          <AnalysisPanel
             selected={selected}
             scenarioName={scenarioName}
             scenarioInputs={scenarioInputs}
@@ -297,7 +305,7 @@ function OverviewPanel({
           explanation={selected.explanation ? <ConfidenceExplainer explanation={selected.explanation.confidence} /> : undefined}
         />
         <MetricCard
-          label="Escalation risk"
+          label="Conflict pressure index"
           value={formatPercent(selected.risk)}
           hint={<DeltaHint delta={riskDelta} higherIsBetter={false} />}
           tone={getRiskTier(selected.risk)}
@@ -323,7 +331,7 @@ function OverviewPanel({
 
       {sparkline && sparkline.active.length > 1 && (
         <div className="section">
-          <h3 className="section-title">Risk trajectory</h3>
+          <h3 className="section-title">Modeled risk trajectory</h3>
           <RiskSparkline series={sparkline} />
         </div>
       )}
@@ -344,7 +352,7 @@ function OverviewPanel({
       )}
 
       <div className="section">
-        <h3 className="section-title">Alignment probabilities</h3>
+        <h3 className="section-title">Modeled alignment</h3>
         <div className="bar-stack">
           {PROBABILITY_KEYS.map((key) => {
             const baselineValue = baselineSelected.probabilities[key];
@@ -412,7 +420,7 @@ function OverviewPanel({
   );
 }
 
-// ─── Profile tab — complete country data snapshot ────────────────────────────
+// ─── Statistics tab — complete country data snapshot with provenance ──────────
 
 function IndicatorBadge({ value }: { value: string }) {
   const tier = value as 'low' | 'medium' | 'high';
@@ -429,16 +437,19 @@ function ProfileStatGrid({
   title,
   icon,
   children,
+  sourceTag,
 }: {
   title: string;
   icon: string;
   children: ReactNode;
+  sourceTag?: ReactNode;
 }) {
   return (
     <div className="profile-section">
       <h3 className="profile-section-title">
         <span className="profile-section-icon" aria-hidden={true}>{icon}</span>
         {title}
+        {sourceTag && <span className="profile-section-source">{sourceTag}</span>}
       </h3>
       <div className="profile-stat-grid">{children}</div>
     </div>
@@ -482,11 +493,41 @@ function ProfileStat({
   );
 }
 
-function ProfilePanel({ 
-  selected, 
-  comparisonSelected, 
-  comparisonScenarioName 
-}: { 
+/** Inline source attribution tag used throughout the Statistics tab. */
+function InlineSourceTag({ sources, ids }: { sources: DatasetSource[]; ids: string[] }) {
+  const matched = sources.filter((s) => ids.includes(s.id));
+  if (matched.length === 0) return null;
+  return (
+    <span className="inline-source-tag">
+      {matched.map((s, i) => (
+        <span key={s.id}>
+          {i > 0 && ' · '}
+          <a
+            href={s.url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-source-link"
+            title={`${s.title} — ${s.publisher} (accessed ${s.accessedOn})`}
+          >
+            {s.publisher}
+          </a>
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/**
+ * Statistics tab — shows all structured data fields for the selected country
+ * across multiple domains (economy, military, demographics, energy, minerals,
+ * fiscal, food/water, cyber, diplomatic, soft-power) with inline source
+ * attribution links and data quality notices.
+ */
+function StatsPanel({
+  selected,
+  comparisonSelected,
+  comparisonScenarioName,
+}: {
   selected: SimulatedCountry;
   comparisonSelected: SimulatedCountry | null;
   comparisonScenarioName: string | null;
@@ -494,13 +535,35 @@ function ProfilePanel({
   const { profile } = selected;
   const econ = profile.economicStats;
   const mil = profile.militaryStats;
+  const dem = profile.demographics;
+  const energy = profile.energy;
+  const cyber = profile.cyber;
+  const fiscal = profile.fiscal;
+  const fw = profile.foodWater;
+  const dip = profile.diplomatic;
+  const minerals = profile.criticalMinerals;
+  const soft = profile.softPower;
   const ind = profile.indicators;
+  const srcs = profile.sources;
+
   const tradeTelemetry = getIndicatorTelemetry(selected, 'tradeExposure');
   const militaryTelemetry = getIndicatorTelemetry(selected, 'militaryTreatyLevel');
   const cohesionTelemetry = getIndicatorTelemetry(selected, 'cohesion');
 
   return (
     <div className="panel-stack">
+      {/* ── Data quality banner ── */}
+      {profile.dataQuality && profile.dataQuality.degradedReasons.length > 0 && (
+        <div className="callout callout-warning stats-quality-notice">
+          <strong>Data quality notice</strong>
+          <ul className="stats-quality-list">
+            {profile.dataQuality.degradedReasons.slice(0, 3).map((reason) => (
+              <li key={reason}>{reason}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* ── Identity ── */}
       <div className="profile-section">
         <h3 className="profile-section-title">
@@ -525,6 +588,10 @@ function ProfilePanel({
             <strong>{formatTitle(profile.regimeType)}</strong>
           </li>
           <li>
+            <span>Data coverage</span>
+            <strong>{profile.sourceCoverage}%</strong>
+          </li>
+          <li>
             <span>Last updated</span>
             <strong>{profile.lastUpdated}</strong>
           </li>
@@ -533,17 +600,13 @@ function ProfilePanel({
 
       {/* ── Economic statistics ── */}
       {econ && (
-        <ProfileStatGrid title="Economy" icon="📈">
-          <ProfileStat
-            label="GDP"
-            value={`$${econ.gdpBillionUsd.toLocaleString()}B`}
-            sub="nominal USD"
-          />
-          <ProfileStat
-            label="GDP per capita"
-            value={`$${econ.gdpPerCapitaUsd.toLocaleString()}`}
-            sub="nominal USD"
-          />
+        <ProfileStatGrid
+          title="Economy"
+          icon="📈"
+          sourceTag={<InlineSourceTag sources={srcs} ids={['imf-weo', 'world-bank-wdi']} />}
+        >
+          <ProfileStat label="GDP" value={`$${econ.gdpBillionUsd.toLocaleString()}B`} sub="nominal USD" />
+          <ProfileStat label="GDP per capita" value={`$${econ.gdpPerCapitaUsd.toLocaleString()}`} sub="nominal USD" />
           <ProfileStat
             label="GDP growth"
             value={`${econ.gdpGrowthPct > 0 ? '+' : ''}${econ.gdpGrowthPct}%`}
@@ -567,7 +630,11 @@ function ProfilePanel({
 
       {/* ── Military statistics ── */}
       {mil && (
-        <ProfileStatGrid title="Military" icon="🛡">
+        <ProfileStatGrid
+          title="Military"
+          icon="🛡"
+          sourceTag={<InlineSourceTag sources={srcs} ids={['sipri-milex', 'iiss-military-balance']} />}
+        >
           <ProfileStat
             label="Defence spending"
             value={`$${mil.militaryExpBillionUsd.toLocaleString()}B`}
@@ -590,6 +657,282 @@ function ProfilePanel({
             tone={mil.nuclearArmed ? 'negative' : 'neutral'}
           />
         </ProfileStatGrid>
+      )}
+
+      {/* ── Demographics ── */}
+      {dem && (
+        <ProfileStatGrid
+          title="Demographics"
+          icon="👥"
+          sourceTag={<InlineSourceTag sources={srcs} ids={['un-desa-population', 'world-factbook']} />}
+        >
+          <ProfileStat label="Population" value={`${dem.populationMillions.toLocaleString()}M`} sub="total" />
+          <ProfileStat label="Median age" value={`${dem.medianAge} yrs`} />
+          <ProfileStat label="Urbanization" value={`${dem.urbanizationPct}%`} sub="urban share" />
+          <ProfileStat label="Youth share (15–29)" value={`${dem.youthSharePct}%`} />
+          {dem.netMigrationPer1000 !== undefined && (
+            <ProfileStat
+              label="Net migration"
+              value={`${dem.netMigrationPer1000 > 0 ? '+' : ''}${dem.netMigrationPer1000}`}
+              sub="per 1 000"
+              tone={dem.netMigrationPer1000 > 0 ? 'positive' : 'negative'}
+            />
+          )}
+        </ProfileStatGrid>
+      )}
+
+      {/* ── Energy & resources ── */}
+      {energy && (
+        <ProfileStatGrid
+          title="Energy & resources"
+          icon="⚡"
+          sourceTag={<InlineSourceTag sources={srcs} ids={['iea-weo', 'us-eia']} />}
+        >
+          <ProfileStat
+            label="Net oil exports"
+            value={`${energy.netOilExportMbd > 0 ? '+' : ''}${energy.netOilExportMbd} mb/d`}
+            tone={energy.netOilExportMbd > 0 ? 'positive' : energy.netOilExportMbd < 0 ? 'negative' : 'neutral'}
+          />
+          <ProfileStat
+            label="Net gas exports"
+            value={`${energy.netGasExportBcm > 0 ? '+' : ''}${energy.netGasExportBcm} bcm/yr`}
+            tone={energy.netGasExportBcm > 0 ? 'positive' : energy.netGasExportBcm < 0 ? 'negative' : 'neutral'}
+          />
+          <ProfileStat
+            label="Energy import dependence"
+            value={`${energy.energyImportDependencePct}%`}
+            tone={energy.energyImportDependencePct > 60 ? 'negative' : 'neutral'}
+          />
+          <ProfileStat
+            label="Critical mineral exporter"
+            value={energy.criticalMineralExporter ? 'Yes' : 'No'}
+          />
+          {energy.notes && (
+            <div className="profile-stat-note">{energy.notes}</div>
+          )}
+        </ProfileStatGrid>
+      )}
+
+      {/* ── Critical minerals ── */}
+      {minerals && minerals.length > 0 && (
+        <div className="profile-section">
+          <h3 className="profile-section-title">
+            <span className="profile-section-icon" aria-hidden={true}>🪨</span>
+            Critical minerals
+            <span className="profile-section-source">
+              <InlineSourceTag sources={srcs} ids={['usgs-minerals']} />
+            </span>
+          </h3>
+          <ul className="kv-list">
+            {minerals.map((entry) => (
+              <li key={entry.mineral}>
+                <span>{formatMineralName(entry.mineral)}</span>
+                <strong>
+                  {formatTitle(entry.role)}
+                  {entry.globalSharePct != null ? ` · ${entry.globalSharePct}% global share` : ''}
+                </strong>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* ── Fiscal profile ── */}
+      {fiscal && (
+        <ProfileStatGrid
+          title="Fiscal & sovereign credit"
+          icon="🏦"
+          sourceTag={<InlineSourceTag sources={srcs} ids={['imf-weo', 'world-bank-wdi']} />}
+        >
+          <ProfileStat
+            label="Sovereign rating"
+            value={formatTitle(fiscal.sovereignRatingTier)}
+            tone={(() => {
+              if (fiscal.sovereignRatingTier === 'investment') return 'positive';
+              if (fiscal.sovereignRatingTier === 'speculative') return 'neutral';
+              return 'negative';
+            })()}
+          />
+          <ProfileStat
+            label="External debt/GDP"
+            value={`${fiscal.externalDebtGdpPct}%`}
+            tone={fiscal.externalDebtGdpPct > 100 ? 'negative' : fiscal.externalDebtGdpPct > 60 ? 'neutral' : 'positive'}
+          />
+          <ProfileStat
+            label="FX reserves"
+            value={`${fiscal.fxReservesMonthsImports} mo`}
+            sub="months import cover"
+            tone={fiscal.fxReservesMonthsImports < 3 ? 'negative' : 'positive'}
+          />
+          {fiscal.primaryBalanceGdpPct !== undefined && (
+            <ProfileStat
+              label="Primary balance / GDP"
+              value={`${fiscal.primaryBalanceGdpPct > 0 ? '+' : ''}${fiscal.primaryBalanceGdpPct}%`}
+              tone={fiscal.primaryBalanceGdpPct >= 0 ? 'positive' : 'negative'}
+            />
+          )}
+          {fiscal.notes && <div className="profile-stat-note">{fiscal.notes}</div>}
+        </ProfileStatGrid>
+      )}
+
+      {/* ── Food & water security ── */}
+      {fw && (
+        <ProfileStatGrid
+          title="Food & water security"
+          icon="🌾"
+          sourceTag={<InlineSourceTag sources={srcs} ids={['world-bank-wdi']} />}
+        >
+          <ProfileStat
+            label="Food import dependence"
+            value={`${fw.foodImportDependencePct > 0 ? '+' : ''}${fw.foodImportDependencePct}%`}
+            tone={fw.foodImportDependencePct > 40 ? 'negative' : fw.foodImportDependencePct < 0 ? 'positive' : 'neutral'}
+            sub="net imports / consumption"
+          />
+          <ProfileStat
+            label="Water stress"
+            value={`${fw.waterStressIndex} / 5`}
+            tone={fw.waterStressIndex >= 4 ? 'negative' : fw.waterStressIndex <= 2 ? 'positive' : 'neutral'}
+            sub="WRI Aqueduct (5 = extreme)"
+          />
+          <ProfileStat
+            label="Arable land"
+            value={`${fw.arableLandHaPerCapita} ha/capita`}
+          />
+          <ProfileStat
+            label="Cereal exporter"
+            value={fw.cerealExporter ? 'Yes' : 'No'}
+            tone={fw.cerealExporter ? 'positive' : 'neutral'}
+          />
+          {fw.notes && <div className="profile-stat-note">{fw.notes}</div>}
+        </ProfileStatGrid>
+      )}
+
+      {/* ── Cyber & digital ── */}
+      {cyber && (
+        <ProfileStatGrid
+          title="Cyber & digital"
+          icon="💻"
+          sourceTag={<InlineSourceTag sources={srcs} ids={['freedom-house', 'csis-sanctions']} />}
+        >
+          <ProfileStat
+            label="Offensive capability"
+            value={formatTitle(cyber.offensiveTier)}
+            tone={cyber.offensiveTier === 'high' ? 'negative' : cyber.offensiveTier === 'low' ? 'positive' : 'neutral'}
+          />
+          <ProfileStat label="Defensive resilience" value={formatTitle(cyber.defensiveTier)} />
+          <ProfileStat
+            label="Internet freedom"
+            value={`${cyber.internetFreedomScore} / 100`}
+            tone={cyber.internetFreedomScore >= 70 ? 'positive' : cyber.internetFreedomScore <= 40 ? 'negative' : 'neutral'}
+            sub="Freedom House proxy"
+          />
+          <ProfileStat
+            label="Internet penetration"
+            value={`${cyber.internetPenetrationPct}%`}
+          />
+          <ProfileStat
+            label="Data localization"
+            value={cyber.dataLocalization ? 'Yes' : 'No'}
+            tone={cyber.dataLocalization ? 'negative' : 'neutral'}
+          />
+          {cyber.notes && <div className="profile-stat-note">{cyber.notes}</div>}
+        </ProfileStatGrid>
+      )}
+
+      {/* ── Diplomatic profile ── */}
+      {dip && (
+        <div className="profile-section">
+          <h3 className="profile-section-title">
+            <span className="profile-section-icon" aria-hidden={true}>🤝</span>
+            Diplomatic profile
+            <span className="profile-section-source">
+              <InlineSourceTag sources={srcs} ids={['un-comtrade', 'imf-direction-of-trade']} />
+            </span>
+          </h3>
+          <ul className="kv-list">
+            <li>
+              <span>UN voting — Western bloc</span>
+              <strong>{dip.unVotingAlignmentBlocA}%</strong>
+            </li>
+            <li>
+              <span>UN voting — Eastern bloc</span>
+              <strong>{dip.unVotingAlignmentBlocB}%</strong>
+            </li>
+          </ul>
+          {dip.defensePacts.length > 0 && (
+            <div className="profile-tag-group">
+              <span className="profile-tag-label">Defense pacts</span>
+              <div className="profile-tags">
+                {dip.defensePacts.map((pact) => (
+                  <span key={pact} className="profile-tag">{pact}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {dip.igoMemberships.length > 0 && (
+            <div className="profile-tag-group">
+              <span className="profile-tag-label">IGO memberships</span>
+              <div className="profile-tags">
+                {dip.igoMemberships.map((igo) => (
+                  <span key={igo} className="profile-tag">{igo}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {dip.pendingAccession && dip.pendingAccession.length > 0 && (
+            <div className="profile-tag-group">
+              <span className="profile-tag-label">Pending accession</span>
+              <div className="profile-tags">
+                {dip.pendingAccession.map((pa) => (
+                  <span key={pa} className="profile-tag profile-tag-pending">{pa}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Soft power ── */}
+      {soft && (
+        <ProfileStatGrid title="Soft power" icon="🌍">
+          <ProfileStat
+            label="Reach score"
+            value={`${soft.reachScore} / 100`}
+            sub="composite"
+          />
+          {soft.inboundStudentsThousands !== undefined && (
+            <ProfileStat
+              label="Inbound students"
+              value={`${soft.inboundStudentsThousands.toLocaleString()}k`}
+            />
+          )}
+          <ProfileStat
+            label="Global language host"
+            value={soft.globalLanguageHost ? 'Yes' : 'No'}
+          />
+          {soft.notes && <div className="profile-stat-note">{soft.notes}</div>}
+        </ProfileStatGrid>
+      )}
+
+      {/* ── Top trade partners ── */}
+      {profile.topTradePartners && profile.topTradePartners.length > 0 && (
+        <div className="profile-section">
+          <h3 className="profile-section-title">
+            <span className="profile-section-icon" aria-hidden={true}>🔄</span>
+            Top trade partners
+            <span className="profile-section-source">
+              <InlineSourceTag sources={srcs} ids={['un-comtrade', 'imf-direction-of-trade', 'wto-profile']} />
+            </span>
+          </h3>
+          <ul className="kv-list">
+            {profile.topTradePartners.map((partner) => (
+              <li key={partner.countryId}>
+                <span>{formatCountryId(partner.countryId)}</span>
+                <strong>{partner.sharePct}% · {formatTitle(partner.flow)}</strong>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {/* ── Geopolitical indicators ── */}
@@ -622,35 +965,22 @@ function ProfilePanel({
         </div>
       </div>
 
-      {/* ── Model outputs (quick reference) ── */}
+      {/* ── Sources ── */}
       <div className="profile-section">
         <h3 className="profile-section-title">
-          <span className="profile-section-icon" aria-hidden={true}>📊</span>
-          Model outputs
-          {comparisonScenarioName && <span className="profile-section-sub"> (vs {comparisonScenarioName})</span>}
+          <span className="profile-section-icon" aria-hidden={true}>📚</span>
+          Data sources for this country
         </h3>
-        <div className="profile-stat-grid">
-          <ProfileStat
-            label="Escalation risk"
-            value={`${selected.risk}%`}
-            comparisonValue={comparisonSelected ? `${comparisonSelected.risk}%` : undefined}
-            tone={selected.risk >= 65 ? 'negative' : selected.risk >= 40 ? 'neutral' : 'positive'}
-          />
-          <ProfileStat
-            label="Confidence"
-            value={`${selected.confidence}%`}
-            comparisonValue={comparisonSelected ? `${comparisonSelected.confidence}%` : undefined}
-          />
-          <ProfileStat
-            label="Source coverage"
-            value={`${profile.sourceCoverage}%`}
-            telemetry={<MetricTelemetryTag fallbackLabel="Profile coverage" />}
-          />
-          <ProfileStat
-            label="Relationships"
-            value={String(profile.relationships.length)}
-            sub="parameterised edges"
-          />
+        <div className="source-list">
+          {srcs.map((source) => (
+            <article key={source.id} className="source-card">
+              <strong>{source.title}</strong>
+              <span className="source-meta">{source.publisher} · accessed {source.accessedOn}</span>
+              <a href={source.url} target="_blank" rel="noreferrer" className="source-link">
+                Open source →
+              </a>
+            </article>
+          ))}
         </div>
       </div>
     </div>
@@ -680,7 +1010,7 @@ function ComparisonSection({
         <div>
           <h3 className="section-title">Comparison · {comparisonScenarioName}</h3>
           <p className="comparison-sub">
-            How this country fares in the pinned saved scenario versus the active scenario.
+            How this country fares in the pinned saved analysis versus the active analysis.
           </p>
         </div>
         <button type="button" className="btn btn-ghost btn-sm" onClick={onClearComparison}>
@@ -704,7 +1034,7 @@ function ComparisonSection({
           </span>
         </div>
         <div className="comparison-row">
-          <span className="comparison-row-label">Risk</span>
+          <span className="comparison-row-label">Pressure</span>
           <strong className="comparison-row-value">
             {comparisonSelected.risk}%
             <em className={`comparison-gap ${riskGap > 0 ? 'comparison-gap-up' : riskGap < 0 ? 'comparison-gap-down' : ''}`}>
@@ -976,7 +1306,7 @@ function SmallBar({
   );
 }
 
-function DriversPanel({
+function AnalysisPanel({
   selected,
   scenarioName,
   scenarioInputs,
@@ -995,8 +1325,13 @@ function DriversPanel({
 }) {
   return (
     <div className="panel-stack">
+      <div className="callout callout-warning analysis-model-notice">
+        <strong>Model-derived outputs</strong>
+        <p>Values below are computed by the analysis model from indicator inputs — not direct observations from authoritative sources. See the Statistics tab for raw sourced data.</p>
+      </div>
+
       <div className="section">
-        <h3 className="section-title">Key drivers</h3>
+        <h3 className="section-title">Computed risk drivers</h3>
         <ul className="kv-list">
           {selected.drivers.map((driver) => {
             const compDriver = comparisonSelected?.drivers.find(d => d.label === driver.label);
@@ -1018,7 +1353,7 @@ function DriversPanel({
       </div>
 
       <div className="section">
-        <h3 className="section-title">Country indicators</h3>
+        <h3 className="section-title">Country indicators (model inputs)</h3>
         <ul className="kv-list">
           <li>
             <span>Region</span>
@@ -1067,7 +1402,7 @@ function DriversPanel({
       )}
 
       <div className="section">
-        <h3 className="section-title">Active scenario</h3>
+        <h3 className="section-title">Active analysis parameters</h3>
         <ul className="kv-list">
           <li>
             <span>Label</span>
@@ -1127,7 +1462,7 @@ function SourcesPanel({
   return (
     <div className="panel-stack">
       <div className="section">
-        <h3 className="section-title">Recent trajectory</h3>
+        <h3 className="section-title">Historical trajectory (modeled)</h3>
         <ul className="kv-list">
           {selected.history.map((entry) => (
             <li key={entry.label}>
@@ -1141,7 +1476,7 @@ function SourcesPanel({
       </div>
 
       <div className="section">
-        <h3 className="section-title">Assumptions</h3>
+        <h3 className="section-title">Analytical assumptions</h3>
         <ul className="bullet-list">
           {selected.profile.assumptions.map((assumption) => (
             <li key={assumption}>{assumption}</li>
@@ -1367,7 +1702,7 @@ function RiskExplainer({ explanation }: { explanation: RiskExplanation }) {
 
   return (
     <ExplainerCard
-      title="How escalation risk is computed"
+      title="How conflict pressure index is computed"
       description="Country baseline plus weighted indicator contributions. Indicator levels (low/med/high) map to numeric scores 18/50/82 before weighting. Scenario shocks compound onto specific indicators."
       weightSetLabel={explanation.weightSetLabel}
       rows={[baseRow, ...toRows(explanation.components)]}
@@ -1376,7 +1711,7 @@ function RiskExplainer({ explanation }: { explanation: RiskExplanation }) {
       finalLabel="Clamped to [8, 97]"
       finalValue={explanation.clamped}
       finalUnit="%"
-      footer={<>Numbers are illustrative — the active dataset is a versioned snapshot, not a live feed.</>}
+      footer={<>These are model-derived scores computed from indicator inputs, not direct forecasts or historical observations.</>}
     />
   );
 }

@@ -221,8 +221,20 @@ export default function App() {
   const [leftOpen, setLeftOpen] = useState<boolean>(() => !isMobile());
   const [rightOpen, setRightOpen] = useState<boolean>(() => !isMobile());
   const [drawerOpen, setDrawerOpen] = useState<boolean>(persisted?.drawerOpen ?? false);
-  const [drawerTab, setDrawerTab] = useState<DrawerTab>(persisted?.drawerTab ?? 'scenario');
-  const [inspectorTab, setInspectorTab] = useState<InspectorTab>(persisted?.inspectorTab ?? 'overview');
+  const [drawerTab, setDrawerTab] = useState<DrawerTab>(() => {
+    const raw = persisted?.drawerTab as string | undefined;
+    if (raw === 'scenario') return 'analysis';
+    if (raw === 'feed') return 'events';
+    const valid: DrawerTab[] = ['index', 'movers', 'methodology', 'analysis', 'events', 'history'];
+    return valid.includes(raw as DrawerTab) ? (raw as DrawerTab) : 'index';
+  });
+  const [inspectorTab, setInspectorTab] = useState<InspectorTab>(() => {
+    const raw = persisted?.inspectorTab as string | undefined;
+    if (raw === 'profile') return 'stats';
+    if (raw === 'drivers') return 'analysis';
+    const valid: InspectorTab[] = ['stats', 'overview', 'relationships', 'analysis', 'sources'];
+    return valid.includes(raw as InspectorTab) ? (raw as InspectorTab) : 'stats';
+  });
 
   // Resizable bottom drawer — height is applied as a CSS custom property on the shell.
   const [drawerHeight, setDrawerHeight] = useState(persisted?.drawerHeight ?? 320);
@@ -656,7 +668,7 @@ export default function App() {
 
   const handleWelcomeOpenScenario = useCallback(() => {
     setDrawerOpen(true);
-    setDrawerTab('scenario');
+    setDrawerTab('analysis');
     closeWelcome();
   }, [closeWelcome]);
 
@@ -700,7 +712,7 @@ export default function App() {
     (mapName: string) => {
       setSelectedCountry(mapName);
       setRightOpen(true);
-      setInspectorTab('overview');
+      setInspectorTab('stats');
     },
     [],
   );
