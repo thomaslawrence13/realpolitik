@@ -102,13 +102,13 @@ const clampScenarioInput = (key: keyof ScenarioInputs, value: number): number =>
   return Math.min(100, Math.max(0, value));
 };
 
-const createZeroScenarioInputs = (): ScenarioInputs => ({
-  sanctionShock: 0,
-  treatyShift: 0,
-  electionVolatility: 0,
-  invasionPressure: 0,
-  coupRisk: 0,
-});
+const createZeroScenarioInputs = (): ScenarioInputs => {
+  const zeroed = {} as ScenarioInputs;
+  for (const key of scenarioInputKeys) {
+    zeroed[key] = 0;
+  }
+  return zeroed;
+};
 
 const eventAppliesToProfile = (profile: CountryProfile, event: EventTemplate): boolean => {
   if (event.regionTags.length === 0) return true;
