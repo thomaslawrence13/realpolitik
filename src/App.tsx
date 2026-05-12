@@ -11,7 +11,6 @@ import {
 } from './data/countryData';
 import {
   defaultScenarioInputs,
-  getRiskTier,
   getActiveEventsForProfile,
   getScenarioInputsForProfile,
   getSimulationWeightSet,
@@ -43,6 +42,13 @@ import {
   decodeStateFromHash,
 } from './lib/urlState';
 import { clampTimelineIndex } from './lib/timeline';
+import {
+  buildEventFeed,
+  buildVisibleNames,
+  filterCountries,
+  searchCountries,
+  selectCountryOrFallback,
+} from './state/selectors';
 import { TopBar } from './components/TopBar';
 import { LeftRail } from './components/LeftRail';
 import { RightInspector } from './components/RightInspector';
@@ -111,7 +117,6 @@ const alignmentColor: Record<Alignment, string> = {
   unstable: '#c77dff',
 };
 
-const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
 const resolveEventIds = (eventIds: string[]) =>
   eventIds.flatMap((id) => {
     const event = eventById.get(id);
@@ -184,7 +189,13 @@ export default function App() {
   // Live World Bank data enrichment — starts with static profiles and upgrades
   // in the background. Failures fall back silently to the static dataset.
   const [activeProfiles, setActiveProfiles] = useState(countryProfiles);
-  const [liveDataStatus, setLiveDataStatus] = useState<'loading' | 'live' | 'error'>('loading');
+  const [liveDataStatus, setLiveDataStatus] = useState<'loading' | 'live' | 'partial' | 'error'>('loading');
+  const [liveDataDiagnostics, setLiveDataDiagnostics] = useState<{
+    totalIndicators: number;
+    succeededIndicators: number;
+    failedIndicators: number;
+    failedCodes: string[];
+  } | null>(null);
   const liveFetchRef = useRef<AbortController | null>(null);
 
   const loadLiveData = useCallback(() => {
@@ -192,11 +203,15 @@ export default function App() {
     const controller = new AbortController();
     liveFetchRef.current = controller;
     setLiveDataStatus('loading');
+    setLiveDataDiagnostics(null);
     fetchLiveData(controller.signal)
       .then((live) => {
         // countryProfiles is a stable module-level constant — no dep needed.
         setActiveProfiles(enrichProfiles(countryProfiles, live));
-        setLiveDataStatus('live');
+        setLiveDataDiagnostics(live.diagnostics);
+        if (live.diagnostics.failedIndicators === 0) setLiveDataStatus('live');
+        else if (live.diagnostics.succeededIndicators === 0) setLiveDataStatus('error');
+        else setLiveDataStatus('partial');
       })
       .catch(() => {
         if (!controller.signal.aborted) setLiveDataStatus('error');
@@ -356,45 +371,14 @@ export default function App() {
     };
   }, [activeEvents, activeProfiles, activeWeightSet, deferredScenarioInputs, selectedCountry, timelineIndex]);
 
-  const filtered = useMemo(() => {
-    return simulated.filter((entry) => {
-      const riskTier = getRiskTier(entry.risk);
-      return (
-        (filters.allianceNetwork === 'all' || entry.profile.allianceNetwork === filters.allianceNetwork) &&
-        (filters.tradeExposure === 'all' || entry.profile.indicators.tradeExposure === filters.tradeExposure) &&
-        (filters.militaryTreatyLevel === 'all' ||
-          entry.profile.indicators.militaryTreatyLevel === filters.militaryTreatyLevel) &&
-        (filters.conflictPressure === 'all' ||
-          entry.profile.indicators.conflictPressure === filters.conflictPressure) &&
-        (filters.sanctionsExposure === 'all' ||
-          entry.profile.indicators.sanctionsExposure === filters.sanctionsExposure) &&
-        (filters.regimeType === 'all' || entry.profile.regimeType === filters.regimeType) &&
-        (filters.riskLevel === 'all' || riskTier === filters.riskLevel)
-      );
-    });
-  }, [filters, simulated]);
+  const filtered = useMemo(() => filterCountries(simulated, filters), [filters, simulated]);
 
-  const visibleNames = useMemo(
-    () => new Set(filtered.map((entry) => entry.profile.mapName)),
-    [filtered],
-  );
+  const visibleNames = useMemo(() => buildVisibleNames(filtered), [filtered]);
 
-  const railCountries = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return filtered;
-    return filtered.filter((entry) => {
-      const profile = entry.profile;
-      return (
-        profile.displayName.toLowerCase().includes(query) ||
-        profile.region.toLowerCase().includes(query) ||
-        profile.subregion.toLowerCase().includes(query) ||
-        profile.mapName.toLowerCase().includes(query)
-      );
-    });
-  }, [filtered, search]);
+  const railCountries = useMemo(() => searchCountries(filtered, search), [filtered, search]);
 
-  const selected = byName.get(selectedCountry) ?? simulated[0];
-  const baselineSelected = baselineByName.get(selectedCountry) ?? baselineSimulated[0];
+  const selected = selectCountryOrFallback(byName, simulated, selectedCountry);
+  const baselineSelected = selectCountryOrFallback(baselineByName, baselineSimulated, selectedCountry);
   const selectedRiskDelta = Math.round(selected.risk - baselineSelected.risk);
   const selectedConfidenceDelta = Math.round(selected.confidence - baselineSelected.confidence);
 
@@ -407,31 +391,17 @@ export default function App() {
     [activeEvents, deferredScenarioInputs, selected.profile],
   );
 
-  const eventFeed = useMemo<EventFeedItem[]>(() => {
-    return filtered
-      .slice()
-      .sort((a, b) => b.risk - a.risk)
-      .slice(0, 5)
-      .map((entry) => {
-        // Find the highest-tension partner rather than using the first relationship.
-        const topPressure = entry.profile.relationships.reduce<
-          typeof entry.profile.relationships[number] | null
-        >(
-          (best, rel) => (!best || rel.tension > best.tension ? rel : best),
-          null,
-        );
-        const baselineEntry = baselineByName.get(entry.profile.mapName);
-        const riskDelta = baselineEntry ? Math.round(entry.risk - baselineEntry.risk) : 0;
-        const tone = getRiskTier(entry.risk);
-        return {
-          title: `${scenarioTimeline[timelineIndex]} · ${entry.profile.displayName}`,
-          detail: `${alignmentLabel[entry.alignment]} at ${entry.confidence}% confidence and ${entry.risk}% modeled escalation risk (${formatSignedPercent(
-            riskDelta,
-          )} vs baseline)${topPressure ? `. Top pressure: ${topPressure.displayName}.` : '.'}`,
-          tone,
-        };
-      });
-  }, [baselineByName, filtered, timelineIndex]);
+  const eventFeed = useMemo<EventFeedItem[]>(
+    () =>
+      buildEventFeed({
+        filtered,
+        baselineByName,
+        scenarioTimeline,
+        timelineIndex,
+        alignmentLabel,
+      }),
+    [alignmentLabel, baselineByName, filtered, timelineIndex],
+  );
 
   // Optional comparison track.
   const comparisonScenario = useMemo(
@@ -791,6 +761,7 @@ export default function App() {
         datasetVersion={datasetVersion}
         countryCount={totalCountries}
         liveDataStatus={liveDataStatus}
+        liveDataDiagnostics={liveDataDiagnostics}
         onRetryLiveData={loadLiveData}
         leftOpen={leftOpen}
         rightOpen={rightOpen}

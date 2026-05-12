@@ -38,6 +38,14 @@ npm run dev
 npm run build
 ```
 
+## Validation
+
+```bash
+npm test
+```
+
+`npm test` now runs unit tests and then the production build.
+
 ## Data-backed prototype milestone
 
 This phase freezes the Phase 1 UI contract while moving the internals to a more durable product structure:
@@ -125,6 +133,18 @@ To measure the simulation engine's accuracy against known historical alignments 
 
 ```bash
 npm run backtest
+```
+
+To regenerate only the deterministic historical fixture used by backtesting:
+
+```bash
+npm run backtest:fixture
+```
+
+To run dataset integrity checks (timeline, country/source references, relationship graph):
+
+```bash
+npm run validate:dataset
 ```
 
 ### Scenario State
