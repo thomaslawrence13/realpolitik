@@ -18,6 +18,7 @@ import {
 import { getRiskTier } from '../simulation';
 import { IconButton, SvgIcon } from './ui';
 import { summarizeCountryTrust, TrustTag } from './provenance';
+import { useMapStore } from '../store/useMapStore';
 
 // Factors used to normalize WheelEvent.deltaY across different deltaMode values
 const WHEEL_LINE_PX = 17;  // approximate pixels per "line" scroll unit
@@ -478,6 +479,7 @@ type CountryLayersProps = {
   fillMode: MapFillMode;
   alignmentColor: Record<Alignment, string>;
   setHoveredName: (name: string | null) => void;
+  setHoveredCountry: (name: string | null) => void;
   hoveredNameRef: MutableRefObject<string | null>;
   hoveredIsParamRef: MutableRefObject<boolean>;
 };
@@ -494,6 +496,7 @@ const CountryLayers = memo(function CountryLayers({
   fillMode,
   alignmentColor,
   setHoveredName,
+  setHoveredCountry,
   hoveredNameRef,
   hoveredIsParamRef,
 }: CountryLayersProps) {
@@ -533,11 +536,13 @@ const CountryLayers = memo(function CountryLayers({
               hoveredNameRef.current = name;
               hoveredIsParamRef.current = isParameterized;
               setHoveredName(name);
+              setHoveredCountry(name);
             }}
             onPointerLeave={() => {
               hoveredNameRef.current = null;
               hoveredIsParamRef.current = false;
               setHoveredName(null);
+              setHoveredCountry(null);
             }}
           />
         );
@@ -571,6 +576,57 @@ type Props = {
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
 };
+
+type RelationshipArcTarget = {
+  mapName: string;
+  score?: number;
+};
+
+/**
+ * Placeholder relationship renderer for the HTML5 canvas overlay.
+ * Draws simple quadratic arcs from the source country centroid to each target.
+ * This is intentionally minimal and will be replaced with richer bilateral styling later.
+ */
+function drawRelationshipArcs(
+  ctx: CanvasRenderingContext2D,
+  sourceCountry: string,
+  targetCountries: RelationshipArcTarget[],
+  style?: { stroke?: string; width?: number; minOpacity?: number; maxOpacity?: number },
+) {
+  const source = countryCentroids.get(sourceCountry);
+  if (!source || targetCountries.length === 0) return;
+  const [sx, sy] = source;
+  ctx.save();
+  ctx.lineCap = 'round';
+  targetCountries.forEach((target) => {
+    const centroid = countryCentroids.get(target.mapName);
+    if (!centroid) return;
+    const [tx, ty] = centroid;
+    const mx = (sx + tx) / 2;
+    const my = (sy + ty) / 2;
+    const dx = tx - sx;
+    const dy = ty - sy;
+    const distance = Math.hypot(dx, dy);
+    const lift = Math.min(120, distance * 0.25);
+    const nx = distance === 0 ? 0 : -dy / distance;
+    const ny = distance === 0 ? -1 : dx / distance;
+    const cx = mx + nx * lift;
+    const cy = my + ny * lift;
+    const minOpacity = style?.minOpacity ?? 0.25;
+    const maxOpacity = style?.maxOpacity ?? 0.85;
+    const opacity = target.score != null ? Math.max(minOpacity, Math.min(maxOpacity, target.score / 100)) : 0.45;
+
+    ctx.beginPath();
+    ctx.strokeStyle = style?.stroke
+      ? style.stroke.replace('__OPACITY__', `${opacity}`)
+      : `rgba(148, 163, 184, ${opacity})`;
+    ctx.lineWidth = style?.width ?? 1.5;
+    ctx.moveTo(sx, sy);
+    ctx.quadraticCurveTo(cx, cy, tx, ty);
+    ctx.stroke();
+  });
+  ctx.restore();
+}
 
 const getRelationshipMetric = (
   mode: RelationshipDimension,
@@ -632,6 +688,8 @@ export function MapCanvas({
   const centroidEntries = useMemo(() => Array.from(countryCentroids.entries()), []);
   // ── Internal hover state (kept here so App.tsx never re-renders on hover) ─────
   const [hoveredName, setHoveredName] = useState<string | null>(null);
+  const hoveredCountry = useMapStore((state) => state.hoveredCountry);
+  const setHoveredCountry = useMapStore((state) => state.setHoveredCountry);
   // Refs so pointer handlers always see the latest value without stale closures
   const hoveredNameRef = useRef<string | null>(null);
   const hoveredIsParamRef = useRef<boolean>(false);
@@ -649,6 +707,7 @@ export function MapCanvas({
   // ── Element refs ──────────────────────────────────────────────────────────────
   const svgRef = useRef<SVGSVGElement | null>(null);
   const frameRef = useRef<HTMLDivElement | null>(null);
+  const relationshipCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // ── Drag tracking (refs to avoid stale closures) ──────────────────────────────
   const dragPrevRef = useRef<{ x: number; y: number } | null>(null);
@@ -794,9 +853,75 @@ export function MapCanvas({
   // we divide sizes by zoom to keep them visually constant regardless of zoom level.
   const invZoom = 1 / zoom;
 
+  // Keep a transparent canvas perfectly aligned with the SVG viewport and current transform.
+  useEffect(() => {
+    const frame = frameRef.current;
+    const canvas = relationshipCanvasRef.current;
+    if (!frame || !canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const width = frame.clientWidth;
+    const height = frame.clientHeight;
+    canvas.width = Math.max(1, Math.floor(width * dpr));
+    canvas.height = Math.max(1, Math.floor(height * dpr));
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.scale(dpr, dpr);
+
+    // Mirror SVG viewBox -> rendered CSS px transform, then apply map pan/zoom.
+    const scaleX = width / MAP_WIDTH;
+    const scaleY = height / MAP_HEIGHT;
+    ctx.scale(scaleX, scaleY);
+    ctx.translate(offset.x, offset.y);
+    ctx.scale(zoom, zoom);
+    drawRelationshipArcs(ctx, selectedName, overlayConnections);
+    if (hoveredCountry && hoveredCountry !== selectedName) {
+      drawRelationshipArcs(
+        ctx,
+        selectedName,
+        [{ mapName: hoveredCountry, score: 100 }],
+        { stroke: 'rgba(248, 250, 252, __OPACITY__)', width: 3, minOpacity: 0.8, maxOpacity: 1 },
+      );
+    }
+  }, [hoveredCountry, offset.x, offset.y, overlayConnections, selectedName, zoom]);
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => {
+      const canvas = relationshipCanvasRef.current;
+      if (!canvas) return;
+      // Trigger by nudging style-dependent render path via RAF callback.
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const dpr = window.devicePixelRatio || 1;
+      const width = frame.clientWidth;
+      const height = frame.clientHeight;
+      canvas.width = Math.max(1, Math.floor(width * dpr));
+      canvas.height = Math.max(1, Math.floor(height * dpr));
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+    });
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section className="map" aria-label="World map">
       <div className="map-frame" ref={frameRef}>
+        <canvas
+          ref={relationshipCanvasRef}
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 2,
+          }}
+        />
         <svg
           ref={svgRef}
           viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
@@ -811,6 +936,7 @@ export function MapCanvas({
             hoveredNameRef.current = null;
             hoveredIsParamRef.current = false;
             setHoveredName(null);
+              setHoveredCountry(null);
             hoverPosRef.current = null;
           }}
         >
@@ -848,6 +974,7 @@ export function MapCanvas({
               fillMode={fillMode}
               alignmentColor={alignmentColor}
               setHoveredName={setHoveredName}
+              setHoveredCountry={setHoveredCountry}
               hoveredNameRef={hoveredNameRef}
               hoveredIsParamRef={hoveredIsParamRef}
             />

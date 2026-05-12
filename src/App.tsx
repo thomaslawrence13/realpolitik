@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
+import { useMapStore } from './store/useMapStore';
 import type { ChangeEvent, CSSProperties } from 'react';
 import {
   allianceNetworks,
@@ -152,15 +153,24 @@ if (fromHash) clearHash();
 
 export default function App() {
   const clampIndex = (index: number) => clampTimelineIndex(index, scenarioTimeline.length);
-  const [timelineIndex, setTimelineIndex] = useState(
-    clampIndex(fromHash?.timelineIndex ?? persisted?.timelineIndex ?? 0),
-  );
-  const [filters, setFilters] = useState<Filters>(persisted?.filters ?? defaultFilters);
   const [search, setSearch] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState<string>(
-    fromHash?.selectedCountry ?? persisted?.selectedCountry ?? 'United States of America',
-  );
-  const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMode ?? 'cooperation');
+  const selectedCountry = useMapStore((state) => state.selectedCountry);
+  const setSelectedCountry = useMapStore((state) => state.setSelectedCountry);
+  const timelineIndex = useMapStore((state) => state.currentYear);
+  const setTimelineIndex = useMapStore((state) => state.setCurrentYear);
+  const filters = useMapStore((state) => state.activeFilters);
+  const setFilters = useMapStore((state) => state.setActiveFilters);
+  
+  useEffect(() => {
+    useMapStore.setState({
+      currentYear: clampIndex(fromHash?.timelineIndex ?? persisted?.timelineIndex ?? 0),
+      activeFilters: persisted?.filters ?? defaultFilters,
+      selectedCountry: fromHash?.selectedCountry ?? persisted?.selectedCountry ?? 'United States of America',
+    });
+  // one-time hydration from persisted/hash state
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMode ?? 'cooperation');
   const [mapFillMode, setMapFillMode] = useState<MapFillMode>(persisted?.mapFillMode ?? 'alignment');
   const [scenarioName, setScenarioName] = useState(
     fromHash?.scenarioName ?? persisted?.scenarioName ?? 'Baseline+',
@@ -275,13 +285,12 @@ export default function App() {
     if (!isPlaying) return;
     const lastIndex = scenarioTimeline.length - 1;
     const id = setInterval(() => {
-      setTimelineIndex((current) => {
-        if (current >= lastIndex) {
-          setIsPlaying(false);
-          return current;
-        }
-        return current + 1;
-      });
+      const current = useMapStore.getState().currentYear;
+      if (current >= lastIndex) {
+        setIsPlaying(false);
+        return;
+      }
+      setTimelineIndex(current + 1);
     }, TIMELINE_AUTO_PLAY_INTERVAL_MS);
     return () => clearInterval(id);
   }, [isPlaying, scenarioTimeline.length]);
@@ -351,37 +360,25 @@ export default function App() {
   }, []);
 
   const activeWeightSet = useMemo(() => getSimulationWeightSet(deferredWeightSetKey), [deferredWeightSetKey]);
+  const simulationSnapshot = useMapStore((state) => state.simulationSnapshot);
+  const setSimulationPayload = useMapStore((state) => state.setSimulationPayload);
 
-  const { simulated, baselineSimulated, byName, baselineByName } = useMemo(() => {
-    const activeRows: SimulatedCountry[] = [];
-    const baselineRows: SimulatedCountry[] = [];
-    const activeByName = new Map<string, SimulatedCountry>();
-    const baselineMapByName = new Map<string, SimulatedCountry>();
+  useEffect(() => {
+    setSimulationPayload({
+      profiles: activeProfiles,
+      scenarioInputs: deferredScenarioInputs,
+      activeEvents,
+      weightSetKey: deferredWeightSetKey,
+    });
+  }, [activeEvents, activeProfiles, deferredScenarioInputs, deferredWeightSetKey, setSimulationPayload]);
 
-    for (const profile of activeProfiles) {
-      const activeEntry = simulateCountry(profile, timelineIndex, {
-        scenarioInputs: deferredScenarioInputs,
-        activeEvents,
-        weightSet: activeWeightSet,
-        includeExplanation: profile.mapName === selectedCountry,
-      });
-      const baselineEntry = simulateCountry(profile, timelineIndex, {
-        scenarioInputs: defaultScenarioInputs,
-        weightSet: baselineWeightSet,
-      });
-      activeRows.push(activeEntry);
-      baselineRows.push(baselineEntry);
-      activeByName.set(profile.mapName, activeEntry);
-      baselineMapByName.set(profile.mapName, baselineEntry);
-    }
-
-    return {
-      simulated: activeRows,
-      baselineSimulated: baselineRows,
-      byName: activeByName,
-      baselineByName: baselineMapByName,
-    };
-  }, [activeEvents, activeProfiles, activeWeightSet, deferredScenarioInputs, selectedCountry, timelineIndex]);
+  const simulated = simulationSnapshot?.simulated ?? [];
+  const baselineSimulated = simulationSnapshot?.baselineSimulated ?? [];
+  const byName = useMemo(() => new Map(simulated.map((entry) => [entry.profile.mapName, entry])), [simulated]);
+  const baselineByName = useMemo(
+    () => new Map(baselineSimulated.map((entry) => [entry.profile.mapName, entry])),
+    [baselineSimulated],
+  );
 
   const filtered = useMemo(() => filterCountries(simulated, filters), [filters, simulated]);
 
