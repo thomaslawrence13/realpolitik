@@ -1,4 +1,4 @@
-import rawWorldBankAudit from './datasets/raw/world_bank_latest.json';
+import historicalIndicatorSeries from './datasets/historical_indicator_series.json';
 import { countryIso2, iso2ToCountryId } from './worldBankClient';
 import type {
   HistoricalMetricId,
@@ -8,7 +8,7 @@ import type {
 } from '../types';
 
 type WorldBankPoint = {
-  country: { id: string };
+  country: string;
   date: string;
   value: number | null;
 };
@@ -73,7 +73,7 @@ const indicatorConfigs: IndicatorConfig[] = [
   },
 ];
 
-const payload = rawWorldBankAudit as WorldBankAuditPayload;
+const payload = historicalIndicatorSeries as WorldBankAuditPayload;
 const totalTrackedCountries = Object.keys(countryIso2).length;
 const isoToCountryId = new Map(Object.entries(iso2ToCountryId));
 
@@ -90,7 +90,7 @@ const buildMetadata = (
   let newestYear = 0;
   for (const point of points) {
     if (point.value == null) continue;
-    const countryId = isoToCountryId.get(point.country.id.toUpperCase());
+    const countryId = isoToCountryId.get(point.country.toUpperCase());
     if (!countryId) continue;
     countryWithData.add(countryId);
     const year = parseYear(point.date);
@@ -131,7 +131,7 @@ export const historicalSeriesByCountryId: Record<string, HistoricalMetricSeries[
 
     for (const point of rawPoints) {
       if (point.value == null) continue;
-      const countryId = isoToCountryId.get(point.country.id.toUpperCase());
+      const countryId = isoToCountryId.get(point.country.toUpperCase());
       if (!countryId) continue;
       const year = parseYear(point.date);
       if (Number.isNaN(year)) continue;
