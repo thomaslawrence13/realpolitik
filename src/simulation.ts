@@ -102,6 +102,14 @@ const clampScenarioInput = (key: keyof ScenarioInputs, value: number): number =>
   return Math.min(100, Math.max(0, value));
 };
 
+const createZeroScenarioInputs = (): ScenarioInputs => ({
+  sanctionShock: 0,
+  treatyShift: 0,
+  electionVolatility: 0,
+  invasionPressure: 0,
+  coupRisk: 0,
+});
+
 const eventAppliesToProfile = (profile: CountryProfile, event: EventTemplate): boolean => {
   if (event.regionTags.length === 0) return true;
 
@@ -135,13 +143,7 @@ export const getScenarioInputsForProfile = (
   const matchingEvents = getActiveEventsForProfile(profile, activeEvents);
   if (matchingEvents.length === 0) return baseInputs;
 
-  const delta: ScenarioInputs = {
-    sanctionShock: 0,
-    treatyShift: 0,
-    electionVolatility: 0,
-    invasionPressure: 0,
-    coupRisk: 0,
-  };
+  const delta = createZeroScenarioInputs();
 
   for (const event of matchingEvents) {
     for (const key of scenarioInputKeys) {
@@ -149,13 +151,7 @@ export const getScenarioInputsForProfile = (
     }
   }
 
-  const nextInputs: ScenarioInputs = {
-    sanctionShock: 0,
-    treatyShift: 0,
-    electionVolatility: 0,
-    invasionPressure: 0,
-    coupRisk: 0,
-  };
+  const nextInputs = createZeroScenarioInputs();
 
   for (const key of scenarioInputKeys) {
     nextInputs[key] = clampScenarioInput(key, baseInputs[key] + delta[key]);
