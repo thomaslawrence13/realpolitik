@@ -696,10 +696,10 @@ function StatsPanel({
   );
 
   const comparisonCountry = useMemo(
-    () =>
-      allCountries.find((country) =>
-        comparisonCountryMapName.length > 0 && country.profile.mapName === comparisonCountryMapName,
-      ) ?? null,
+    () => {
+      if (comparisonCountryMapName.length === 0) return null;
+      return allCountries.find((country) => country.profile.mapName === comparisonCountryMapName) ?? null;
+    },
     [allCountries, comparisonCountryMapName],
   );
 
