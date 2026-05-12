@@ -1094,6 +1094,15 @@ export function MapCanvas({
                   {hovered.profile.diplomatic.defensePacts.length}
                 </span>
               )}
+              <span>
+                <em>Quality</em>
+                {(() => {
+                  const indicators = hovered.profile.dataQuality?.indicators ?? [];
+                  const fallbackCount = indicators.filter((indicator) => indicator.evidenceClass === 'fallback').length;
+                  const staleCount = indicators.filter((indicator) => indicator.stale).length;
+                  return `${hovered.profile.sourceCoverage}% cov · ${fallbackCount} fallback · ${staleCount} stale`;
+                })()}
+              </span>
             </div>
           </div>
         )}

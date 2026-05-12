@@ -359,6 +359,9 @@ export const simulateCountry = (
   // Defense-pact density: many active pacts → modest deterrence and military boost.
   const defensePactDensity = diplomatic ? Math.min(5, diplomatic.defensePacts.length) : 0;
   const defensePactDeterrenceBoost = defensePactDensity * 1.2;
+  const pendingAccessionCount = diplomatic?.pendingAccession?.length ?? 0;
+  const accessionDeterrenceBoost = Math.min(3, pendingAccessionCount * 0.8);
+  const accessionBlocABoost = diplomatic?.pendingAccession?.includes('NATO') ? 2.5 : 0;
 
   const tradeExposure = clamp(tierValue[profile.indicators.tradeExposure] + tradeOpennessDelta * 0.5, 0, 100);
   const military = clamp(
@@ -394,7 +397,7 @@ export const simulateCountry = (
     dependency: Math.round(clamp(baseRelationships.dependency + sanctionsShock * 0.18 + economicShock * 0.2, 0, 100)),
     deterrence: Math.round(clamp(
       baseRelationships.deterrence + invasionShock * 0.28 + treatyShock * 0.14
-      + nuclearDeterrenceBoost + cyberDeterrenceBoost + defensePactDeterrenceBoost,
+      + nuclearDeterrenceBoost + cyberDeterrenceBoost + defensePactDeterrenceBoost + accessionDeterrenceBoost,
       0,
       100,
     )),
@@ -420,7 +423,8 @@ export const simulateCountry = (
     + momentum * 0.3
     - relationshipSummary.hostility * 0.06
     - sanctions * 0.04
-    + diplomaticBlocABoost;
+    + diplomaticBlocABoost
+    + accessionBlocABoost;
 
   const blocBBase = 18;
   const blocBRaw = blocBBase

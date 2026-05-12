@@ -79,6 +79,7 @@ const HISTORICAL_CHART_WIDTH = 520;
 const HISTORICAL_CHART_HEIGHT = 180;
 const HISTORICAL_CHART_PAD_X = 34;
 const HISTORICAL_CHART_PAD_Y = 18;
+const V14_RELEASE_CONFIDENCE_FLOOR = 0.35;
 
 // Stable ordered key list for probability bars — avoids Object.keys() on every render.
 const PROBABILITY_KEYS: ReadonlyArray<keyof SimulatedCountry['probabilities']> = ['blocA', 'blocB', 'nonAligned'];
@@ -745,6 +746,12 @@ function StatsPanel({
     return summary;
   }, [profile.dataQuality]);
   const staleIndicatorCount = profile.dataQuality?.indicators.filter((entry) => entry.stale).length ?? 0;
+  const lowestIndicatorConfidence = profile.dataQuality?.indicators.reduce(
+    (lowest, indicator) => Math.min(lowest, indicator.confidence),
+    1,
+  ) ?? null;
+  const releaseConfidenceFloorMet =
+    lowestIndicatorConfidence == null || lowestIndicatorConfidence >= V14_RELEASE_CONFIDENCE_FLOOR;
   const lowCoverage = profile.sourceCoverage < INFORMATION_QUALITY_CONTRACT.lowCoverageThresholdPct;
   const fallbackIndicators = evidenceSummary.fallback;
   const remediationDrivers = deriveQualityRemediationDrivers(profile);
@@ -785,6 +792,11 @@ function StatsPanel({
               </li>
             )}
             {fallbackIndicators > 0 && <li>{fallbackIndicators} indicators are currently using fallback evidence.</li>}
+            {lowestIndicatorConfidence != null && (
+              <li>
+                v14 confidence floor ({Math.round(V14_RELEASE_CONFIDENCE_FLOOR * 100)}%) status: {releaseConfidenceFloorMet ? 'met' : 'below floor'} (min {Math.round(lowestIndicatorConfidence * 100)}%).
+              </li>
+            )}
             {remediationDrivers.slice(0, 2).map((driver) => (
               <li key={`driver-${driver}`}>{driver}</li>
             ))}

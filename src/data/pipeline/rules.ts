@@ -15,16 +15,16 @@ export const modelIndicatorKeys: IndicatorKey[] = [
 ];
 
 export const indicatorQualityRules: Record<IndicatorKey, IndicatorQualityRule> = {
-  tradeExposure: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.55, includeInCoverage: true },
-  militaryTreatyLevel: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.55, includeInCoverage: true },
-  conflictPressure: { cadence: 'weekly', staleAfterDays: 21, minimumConfidence: 0.55, includeInCoverage: true },
-  sanctionsExposure: { cadence: 'weekly', staleAfterDays: 21, minimumConfidence: 0.55, includeInCoverage: true },
+  tradeExposure: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.56, includeInCoverage: true },
+  militaryTreatyLevel: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.56, includeInCoverage: true },
+  conflictPressure: { cadence: 'weekly', staleAfterDays: 21, minimumConfidence: 0.56, includeInCoverage: true },
+  sanctionsExposure: { cadence: 'weekly', staleAfterDays: 21, minimumConfidence: 0.56, includeInCoverage: true },
   ideology: { cadence: 'annual', staleAfterDays: 730, minimumConfidence: 0.4, includeInCoverage: false },
   borderDisputes: { cadence: 'quarterly', staleAfterDays: 180, minimumConfidence: 0.45, includeInCoverage: false },
-  regimeStability: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.55, includeInCoverage: true },
-  conflictHistory: { cadence: 'monthly', staleAfterDays: 60, minimumConfidence: 0.55, includeInCoverage: true },
-  tradeDependence: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.55, includeInCoverage: true },
-  cohesion: { cadence: 'monthly', staleAfterDays: 60, minimumConfidence: 0.5, includeInCoverage: true },
+  regimeStability: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.56, includeInCoverage: true },
+  conflictHistory: { cadence: 'monthly', staleAfterDays: 60, minimumConfidence: 0.56, includeInCoverage: true },
+  tradeDependence: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.56, includeInCoverage: true },
+  cohesion: { cadence: 'monthly', staleAfterDays: 60, minimumConfidence: 0.52, includeInCoverage: true },
 };
 
 export const indicatorSourcePriority: Record<IndicatorKey, string[]> = {
@@ -48,10 +48,10 @@ export const relationshipDimensions: RelationshipDimensionKey[] = [
 ];
 
 export const relationshipDimensionQualityRules: Record<RelationshipDimensionKey, IndicatorQualityRule> = {
-  cooperation: { cadence: 'quarterly', staleAfterDays: 180, minimumConfidence: 0.5, includeInCoverage: true },
-  hostility: { cadence: 'quarterly', staleAfterDays: 180, minimumConfidence: 0.5, includeInCoverage: true },
-  dependency: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.5, includeInCoverage: true },
-  deterrence: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.5, includeInCoverage: true },
+  cooperation: { cadence: 'quarterly', staleAfterDays: 180, minimumConfidence: 0.52, includeInCoverage: true },
+  hostility: { cadence: 'quarterly', staleAfterDays: 180, minimumConfidence: 0.52, includeInCoverage: true },
+  dependency: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.52, includeInCoverage: true },
+  deterrence: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.52, includeInCoverage: true },
 };
 
 export const relationshipDimensionSourcePriority: Record<RelationshipDimensionKey, string[]> = {

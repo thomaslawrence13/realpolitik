@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-12T15:00:57.603Z",
+  "generatedAt": "2026-05-12T16:11:47.632Z",
   "contract": {
     "contractVersion": "iq-contract-v1.0.0",
     "scoringVersion": "iq-score-v2.0.0",
@@ -215,6 +215,36 @@
     "staleCountryCountWithinTarget": true,
     "staticRuntimeScoreDeltaWithinTarget": true,
     "staticRuntimeScoreDelta": 0
+  },
+  "enhancementRelease": {
+    "releaseTag": "v14",
+    "scope": "coverage-refresh",
+    "datasetVersion": "0.14.0",
+    "criteria": {
+      "minimumV10CoveragePct": 95,
+      "minimumV11CoveragePct": 95,
+      "minimumAverageInformationScore": 65,
+      "minimumIndicatorConfidenceFloor": 0.35,
+      "maximumStaleCountries": 30,
+      "minimumAverageRelationshipsPerCountry": 2,
+      "maximumIsolatedCountries": 0
+    },
+    "status": {
+      "v10CoveragePct": 100,
+      "v11CoveragePct": 100,
+      "averageInformationScore": 81.5,
+      "staleCountryCount": 0,
+      "indicatorConfidenceFloorBreaches": 0,
+      "averageRelationshipsPerCountry": 61.5,
+      "isolatedCountries": 0,
+      "meetsV10Coverage": true,
+      "meetsV11Coverage": true,
+      "meetsAverageInformationScore": true,
+      "meetsStaleCountryBudget": true,
+      "meetsIndicatorConfidenceFloor": true,
+      "meetsRelationshipCompleteness": true
+    },
+    "releaseAccepted": true
   },
   "regressionBudgetBreaches": []
 }

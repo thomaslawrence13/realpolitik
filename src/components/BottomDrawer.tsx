@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type {
   Alignment,
+  EnhancementReleaseTelemetry,
   EventCategory,
   EventTemplate,
   IngestTelemetry,
@@ -67,6 +68,7 @@ type Props = {
   baselineInformationQuality: InformationQualityTelemetry;
   informationQualityContract: InformationQualityContract;
   ingestTelemetry: IngestTelemetry;
+  enhancementReleaseTelemetry: EnhancementReleaseTelemetry;
   liveDataDiagnostics: {
     totalIndicators: number;
     succeededIndicators: number;
@@ -127,6 +129,7 @@ export function BottomDrawer({
   baselineInformationQuality,
   informationQualityContract,
   ingestTelemetry,
+  enhancementReleaseTelemetry,
   liveDataDiagnostics,
   scenarioTimeline,
   events,
@@ -244,6 +247,7 @@ export function BottomDrawer({
             baselineInformationQuality={baselineInformationQuality}
             informationQualityContract={informationQualityContract}
             ingestTelemetry={ingestTelemetry}
+            enhancementReleaseTelemetry={enhancementReleaseTelemetry}
             liveDataDiagnostics={liveDataDiagnostics}
           />
         )}
@@ -1138,6 +1142,7 @@ function MethodologyPanel({
   baselineInformationQuality,
   informationQualityContract,
   ingestTelemetry,
+  enhancementReleaseTelemetry,
   liveDataDiagnostics,
 }: {
   notes: string[];
@@ -1145,6 +1150,7 @@ function MethodologyPanel({
   baselineInformationQuality: InformationQualityTelemetry;
   informationQualityContract: InformationQualityContract;
   ingestTelemetry: IngestTelemetry;
+  enhancementReleaseTelemetry: EnhancementReleaseTelemetry;
   liveDataDiagnostics: {
     totalIndicators: number;
     succeededIndicators: number;
@@ -1222,6 +1228,21 @@ function MethodologyPanel({
             Live ingest impact: {liveDataDiagnostics.failedIndicators}/{liveDataDiagnostics.totalIndicators} live indicators failed ({liveDataDiagnostics.failedCodes.join(', ')}).
           </p>
         )}
+      </section>
+      <section className="scenario-meta-card">
+        <strong>{enhancementReleaseTelemetry.releaseTag.toUpperCase()} release acceptance gate</strong>
+        <p className="methodology-telemetry-line">
+          Scope: {enhancementReleaseTelemetry.scope} · Dataset {enhancementReleaseTelemetry.datasetVersion} · Accepted {enhancementReleaseTelemetry.releaseAccepted ? '✓' : '✕'}
+        </p>
+        <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+          Coverage v10 {enhancementReleaseTelemetry.status.v10CoveragePct}% ({enhancementReleaseTelemetry.status.meetsV10Coverage ? '✓' : '✕'}) · v11 {enhancementReleaseTelemetry.status.v11CoveragePct}% ({enhancementReleaseTelemetry.status.meetsV11Coverage ? '✓' : '✕'})
+        </p>
+        <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+          Info score {enhancementReleaseTelemetry.status.averageInformationScore} ({enhancementReleaseTelemetry.status.meetsAverageInformationScore ? '✓' : '✕'}) · stale {enhancementReleaseTelemetry.status.staleCountryCount} ({enhancementReleaseTelemetry.status.meetsStaleCountryBudget ? '✓' : '✕'})
+        </p>
+        <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+          Confidence floor breaches {enhancementReleaseTelemetry.status.indicatorConfidenceFloorBreaches} ({enhancementReleaseTelemetry.status.meetsIndicatorConfidenceFloor ? '✓' : '✕'}) · avg relationships {enhancementReleaseTelemetry.status.averageRelationshipsPerCountry} ({enhancementReleaseTelemetry.status.meetsRelationshipCompleteness ? '✓' : '✕'})
+        </p>
       </section>
       <section className="scenario-meta-card">
         <strong>Evidence-class legend</strong>

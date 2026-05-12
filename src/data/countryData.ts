@@ -7,6 +7,7 @@ import type {
   CountryIndicators,
   IngestIndicatorTelemetry,
   IngestTelemetry,
+  EnhancementReleaseTelemetry,
   CountryProfile,
   CountryRelationship,
   CountryRecord,
@@ -173,20 +174,30 @@ for (let i = 0; i < enhancedCountries.length; i++) {
   const a = enhancedCountries[i];
   const aPacts = a.diplomatic?.defensePacts;
   const aIgos = a.diplomatic?.igoMemberships;
-  if (!aPacts && !aIgos) continue;
+  const aPending = a.diplomatic?.pendingAccession;
+  if (!aPacts && !aIgos && !aPending) continue;
   for (let j = i + 1; j < enhancedCountries.length; j++) {
     const b = enhancedCountries[j];
     const sharedPacts = sharesAny(aPacts, b.diplomatic?.defensePacts).filter((p) => cooperativeBlocs.has(p));
     const sharedIgos = sharesAny(aIgos, b.diplomatic?.igoMemberships).filter((i) => cooperativeBlocs.has(i));
-    if (sharedPacts.length === 0 && sharedIgos.length === 0) continue;
+    const bPending = b.diplomatic?.pendingAccession;
+    const accessionAlignments: string[] = [];
+    if (aPending?.includes('NATO') && b.diplomatic?.defensePacts.includes('NATO')) accessionAlignments.push(`${a.displayName}→NATO`);
+    if (bPending?.includes('NATO') && aPacts?.includes('NATO')) accessionAlignments.push(`${b.displayName}→NATO`);
+    if (aPending?.includes('EU') && b.diplomatic?.igoMemberships.includes('EU')) accessionAlignments.push(`${a.displayName}→EU`);
+    if (bPending?.includes('EU') && aIgos?.includes('EU')) accessionAlignments.push(`${b.displayName}→EU`);
+    if (sharedPacts.length === 0 && sharedIgos.length === 0 && accessionAlignments.length === 0) continue;
     const signal = ensureCandidate(a.id, b.id);
     if (!signal) continue;
     const coopBoost = sharedPacts.length * 18 + sharedIgos.length * 6;
     const deterrenceBoost = sharedPacts.length * 14;
-    signal.cooperation = Math.min(85, Math.max(signal.cooperation, 30 + coopBoost));
-    signal.deterrence = Math.min(80, Math.max(signal.deterrence, 25 + deterrenceBoost));
+    const accessionCoopBoost = accessionAlignments.length * 8;
+    const accessionDeterrenceBoost = accessionAlignments.length * 5;
+    signal.cooperation = Math.min(85, Math.max(signal.cooperation, 30 + coopBoost + accessionCoopBoost));
+    signal.deterrence = Math.min(80, Math.max(signal.deterrence, 25 + deterrenceBoost + accessionDeterrenceBoost));
     if (sharedPacts.length > 0) signal.notes.push(`Shared defense pacts: ${sharedPacts.join(', ')}`);
     if (sharedIgos.length > 0) signal.notes.push(`Shared IGO memberships: ${sharedIgos.join(', ')}`);
+    if (accessionAlignments.length > 0) signal.notes.push(`Pending accession convergence: ${accessionAlignments.join(', ')}`);
   }
 }
 
@@ -404,7 +415,7 @@ const countries = enhancedCountries
   }))
   .sort((left, right) => left.displayName.localeCompare(right.displayName));
 
-export const datasetVersion = '0.13.0';
+export const datasetVersion = '0.14.0';
 export const methodologyNotes = [
   ...dataset.methodologyNotes,
   'v11 (data enhancement): adds cyber, fiscal, food/water, diplomatic, critical-mineral and soft-power dimensions for G20 plus ~50 strategic mid-tier powers.',
@@ -413,6 +424,7 @@ export const methodologyNotes = [
   'v12 (information quality): computes per-country information scores based on source coverage, dimensional completeness, and recency to spotlight stale or sparse records.',
   'v12 also emits per-country dataQuality telemetry (indicator confidence, staleness, and degraded reasons) to make remediation workflows explicit.',
   'v13 (coverage expansion): adds cyber, fiscal, food/water, diplomatic, critical-mineral and soft-power dimensions for 88 additional countries, bringing strategic-dimension coverage to all 134 parameterised states.',
+  'v14 (coverage refresh): refreshes selected v10/v11 country enrichments with 2025–2026 snapshots, tightens reconciliation confidence floors, and introduces explicit release acceptance criteria for coverage, recency, confidence, and relationship completeness.',
 ];
 export const scenarioTimeline = dataset.scenarioTimeline;
 export const countryProfiles = countries;
@@ -459,6 +471,62 @@ export const ingestTelemetry: IngestTelemetry = {
     .slice()
     .sort((left, right) => left.coverageCount - right.coverageCount || left.label.localeCompare(right.label))
     .slice(0, 4),
+};
+
+const V14_ACCEPTANCE_CRITERIA = {
+  minimumV10CoveragePct: 95,
+  minimumV11CoveragePct: 95,
+  minimumAverageInformationScore: 65,
+  minimumIndicatorConfidenceFloor: 0.35,
+  maximumStaleCountries: 30,
+  minimumAverageRelationshipsPerCountry: 2,
+  maximumIsolatedCountries: 0,
+} as const;
+
+const allIndicatorConfidenceValues = countries.flatMap((country) =>
+  country.dataQuality?.indicators.map((indicator) => indicator.confidence) ?? [],
+);
+const indicatorConfidenceFloorBreaches = allIndicatorConfidenceValues.filter(
+  (confidence) => confidence < V14_ACCEPTANCE_CRITERIA.minimumIndicatorConfidenceFloor,
+).length;
+const averageRelationshipsPerCountry = Math.round((allEdges.length * 2 * 10) / countries.length) / 10;
+const isolatedCountries = countries.filter((country) => country.relationships.length === 0).length;
+const v10CoveragePct = Math.round((datasetTelemetry.v10Coverage / countries.length) * 1000) / 10;
+const v11CoveragePct = Math.round((datasetTelemetry.v11Coverage / countries.length) * 1000) / 10;
+
+const enhancementReleaseStatus: EnhancementReleaseTelemetry['status'] = {
+  v10CoveragePct,
+  v11CoveragePct,
+  averageInformationScore: informationQualityTelemetry.averageInformationScore,
+  staleCountryCount: informationQualityTelemetry.staleCountryCount,
+  indicatorConfidenceFloorBreaches,
+  averageRelationshipsPerCountry,
+  isolatedCountries,
+  meetsV10Coverage: v10CoveragePct >= V14_ACCEPTANCE_CRITERIA.minimumV10CoveragePct,
+  meetsV11Coverage: v11CoveragePct >= V14_ACCEPTANCE_CRITERIA.minimumV11CoveragePct,
+  meetsAverageInformationScore:
+    informationQualityTelemetry.averageInformationScore >= V14_ACCEPTANCE_CRITERIA.minimumAverageInformationScore,
+  meetsStaleCountryBudget:
+    informationQualityTelemetry.staleCountryCount <= V14_ACCEPTANCE_CRITERIA.maximumStaleCountries,
+  meetsIndicatorConfidenceFloor: indicatorConfidenceFloorBreaches === 0,
+  meetsRelationshipCompleteness:
+    averageRelationshipsPerCountry >= V14_ACCEPTANCE_CRITERIA.minimumAverageRelationshipsPerCountry &&
+    isolatedCountries <= V14_ACCEPTANCE_CRITERIA.maximumIsolatedCountries,
+};
+
+export const enhancementReleaseTelemetry: EnhancementReleaseTelemetry = {
+  releaseTag: 'v14',
+  scope: 'coverage-refresh',
+  datasetVersion,
+  criteria: { ...V14_ACCEPTANCE_CRITERIA },
+  status: enhancementReleaseStatus,
+  releaseAccepted:
+    enhancementReleaseStatus.meetsV10Coverage &&
+    enhancementReleaseStatus.meetsV11Coverage &&
+    enhancementReleaseStatus.meetsAverageInformationScore &&
+    enhancementReleaseStatus.meetsStaleCountryBudget &&
+    enhancementReleaseStatus.meetsIndicatorConfidenceFloor &&
+    enhancementReleaseStatus.meetsRelationshipCompleteness,
 };
 
 // O(1) lookup maps for country access
