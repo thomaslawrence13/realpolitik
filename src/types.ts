@@ -470,6 +470,41 @@ export interface IngestTelemetry {
   weakestIndicators: IngestIndicatorTelemetry[];
 }
 
+export interface EnhancementAcceptanceCriteria {
+  minimumV10CoveragePct: number;
+  minimumV11CoveragePct: number;
+  minimumAverageInformationScore: number;
+  minimumIndicatorConfidenceFloor: number;
+  maximumStaleCountries: number;
+  minimumAverageRelationshipsPerCountry: number;
+  maximumIsolatedCountries: number;
+}
+
+export interface EnhancementAcceptanceStatus {
+  v10CoveragePct: number;
+  v11CoveragePct: number;
+  averageInformationScore: number;
+  staleCountryCount: number;
+  indicatorConfidenceFloorBreaches: number;
+  averageRelationshipsPerCountry: number;
+  isolatedCountries: number;
+  meetsV10Coverage: boolean;
+  meetsV11Coverage: boolean;
+  meetsAverageInformationScore: boolean;
+  meetsStaleCountryBudget: boolean;
+  meetsIndicatorConfidenceFloor: boolean;
+  meetsRelationshipCompleteness: boolean;
+}
+
+export interface EnhancementReleaseTelemetry {
+  releaseTag: string;
+  scope: 'coverage-refresh' | 'schema-expansion';
+  datasetVersion: string;
+  criteria: EnhancementAcceptanceCriteria;
+  status: EnhancementAcceptanceStatus;
+  releaseAccepted: boolean;
+}
+
 export interface ProbabilitySet {
   blocA: number;
   blocB: number;

@@ -44,7 +44,7 @@ export interface CountryV11Enhancement {
 export const v11Enhancements: Record<string, CountryV11Enhancement> = {
   'united-states': {
     cyber: { offensiveTier: 'high', defensiveTier: 'high', internetFreedomScore: 76, internetPenetrationPct: 92, dataLocalization: false, notes: 'Cyber Command + NSA capability stack; private-sector incident base.' },
-    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 95, fxReservesMonthsImports: 0.6, primaryBalanceGdpPct: -3.0, notes: 'Reserve-currency issuer; deficit-financed at ultra-low spreads.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 97, fxReservesMonthsImports: 0.7, primaryBalanceGdpPct: -3.2, notes: 'Reserve-currency issuer; deficit-financed at ultra-low spreads.' },
     foodWater: { foodImportDependencePct: -25, waterStressIndex: 3, arableLandHaPerCapita: 0.47, cerealExporter: true, notes: 'Major grain/soy exporter; Colorado/Ogallala basin stress.' },
     diplomatic: { unVotingAlignmentBlocA: 100, unVotingAlignmentBlocB: 18, defensePacts: ['NATO', 'AUKUS', 'ANZUS', 'JapanMDT', 'ROKMDT', 'PhilippinesMDT', 'RioTreaty'], igoMemberships: ['G7', 'G20', 'OECD', 'UNSC-P5', 'IMF', 'WTO', 'WorldBank', 'NATO'] },
     criticalMinerals: [
@@ -53,7 +53,7 @@ export const v11Enhancements: Record<string, CountryV11Enhancement> = {
       { mineral: 'copper', role: 'producer', globalSharePct: 5 },
       { mineral: 'uranium', role: 'consumer', globalSharePct: 25 },
     ],
-    softPower: { reachScore: 92, inboundStudentsThousands: 1000, globalLanguageHost: true, notes: 'Hollywood + tech ecosystem + reserve currency.' },
+    softPower: { reachScore: 93, inboundStudentsThousands: 1015, globalLanguageHost: true, notes: 'Hollywood + tech ecosystem + reserve currency.' },
   },
   'china': {
     cyber: { offensiveTier: 'high', defensiveTier: 'high', internetFreedomScore: 9, internetPenetrationPct: 76, dataLocalization: true, notes: 'PLA SSF + MSS programs; Great Firewall; sovereign internet posture.' },
@@ -126,13 +126,13 @@ export const v11Enhancements: Record<string, CountryV11Enhancement> = {
   },
   'india': {
     cyber: { offensiveTier: 'medium', defensiveTier: 'medium', internetFreedomScore: 50, internetPenetrationPct: 52, dataLocalization: true, notes: 'CERT-In; rising indigenous capability; data-localization Bill 2023.' },
-    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 19, fxReservesMonthsImports: 11, primaryBalanceGdpPct: -3.5, notes: 'BBB- (lowest IG); large reserves; structural fiscal deficit.' },
+    fiscal: { sovereignRatingTier: 'investment', externalDebtGdpPct: 18, fxReservesMonthsImports: 11.5, primaryBalanceGdpPct: -3.3, notes: 'BBB- (lowest IG); large reserves; structural fiscal deficit.' },
     foodWater: { foodImportDependencePct: 8, waterStressIndex: 4, arableLandHaPerCapita: 0.11, cerealExporter: true, notes: 'Top rice exporter; Punjab/Haryana groundwater crisis.' },
-    diplomatic: { unVotingAlignmentBlocA: 35, unVotingAlignmentBlocB: 55, defensePacts: ['IndiaRussiaSP'], igoMemberships: ['G20', 'BRICS', 'SCO', 'Quad', 'Commonwealth', 'IORA'] },
+    diplomatic: { unVotingAlignmentBlocA: 36, unVotingAlignmentBlocB: 54, defensePacts: ['IndiaRussiaSP'], igoMemberships: ['G20', 'BRICS', 'SCO', 'Quad', 'Commonwealth', 'IORA'] },
     criticalMinerals: [
       { mineral: 'rareEarths', role: 'reserves', globalSharePct: 6 },
     ],
-    softPower: { reachScore: 67, inboundStudentsThousands: 65, globalLanguageHost: true, notes: 'Bollywood reach; Hindi/English language anchor; diaspora.' },
+    softPower: { reachScore: 69, inboundStudentsThousands: 75, globalLanguageHost: true, notes: 'Bollywood reach; Hindi/English language anchor; diaspora.' },
   },
   'south-korea': {
     cyber: { offensiveTier: 'high', defensiveTier: 'high', internetFreedomScore: 67, internetPenetrationPct: 97, dataLocalization: false, notes: 'KISA + Cyber Command; high-bandwidth target environment.' },

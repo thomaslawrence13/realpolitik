@@ -1,4 +1,11 @@
 import { geopoliticalDatasetV1 } from '../src/data/datasets/v1.js';
+import {
+  countryProfiles,
+  datasetTelemetry,
+  datasetVersion,
+  enhancementReleaseTelemetry,
+  informationQualityTelemetry,
+} from '../src/data/countryData.js';
 import ingestManifest from '../src/data/datasets/ingest_manifest.json';
 import ingestedSnapshot from '../src/data/datasets/ingested_snapshot.json';
 import rawWorldBankLatest from '../src/data/datasets/raw/world_bank_latest.json';
@@ -28,6 +35,9 @@ const STALE_COUNTRY_YEAR_CEILING = 6;
 const LOW_COVERAGE_WARN_THRESHOLD = 55;
 const LOW_COVERAGE_ERROR_THRESHOLD = 35;
 const LOW_COVERAGE_ERROR_BUDGET = 8;
+const MIN_INDICATOR_CONFIDENCE_FLOOR = 0.35;
+const MIN_AVG_RELATIONSHIPS_PER_COUNTRY = 2;
+const MAX_ISOLATED_COUNTRIES = 0;
 
 const validateTimeline = () => {
   const timeline = geopoliticalDatasetV1.scenarioTimeline;
@@ -226,12 +236,58 @@ const validateIngestArtifacts = () => {
   }
 };
 
+const validateEnhancementRelease = () => {
+  ensure(datasetVersion === '0.14.0', `datasetVersion must be 0.14.0 for this release (found ${datasetVersion})`);
+
+  const v10CoveragePct = Math.round((datasetTelemetry.v10Coverage / countryProfiles.length) * 1000) / 10;
+  const v11CoveragePct = Math.round((datasetTelemetry.v11Coverage / countryProfiles.length) * 1000) / 10;
+  const avgRelationships = Math.round((datasetTelemetry.totalRelationships * 2 * 10) / countryProfiles.length) / 10;
+  const isolatedCountries = countryProfiles.filter((country) => country.relationships.length === 0).length;
+  const confidenceFloorBreaches = countryProfiles.flatMap((country) => country.dataQuality?.indicators ?? []).filter(
+    (indicator) => indicator.confidence < MIN_INDICATOR_CONFIDENCE_FLOOR,
+  ).length;
+
+  ensure(
+    v10CoveragePct >= enhancementReleaseTelemetry.criteria.minimumV10CoveragePct,
+    `v10 coverage below release criteria (${v10CoveragePct}% < ${enhancementReleaseTelemetry.criteria.minimumV10CoveragePct}%)`,
+  );
+  ensure(
+    v11CoveragePct >= enhancementReleaseTelemetry.criteria.minimumV11CoveragePct,
+    `v11 coverage below release criteria (${v11CoveragePct}% < ${enhancementReleaseTelemetry.criteria.minimumV11CoveragePct}%)`,
+  );
+  ensure(
+    avgRelationships >= MIN_AVG_RELATIONSHIPS_PER_COUNTRY,
+    `average relationships per country below floor (${avgRelationships} < ${MIN_AVG_RELATIONSHIPS_PER_COUNTRY})`,
+  );
+  ensure(
+    isolatedCountries <= MAX_ISOLATED_COUNTRIES,
+    `isolated countries exceed budget (${isolatedCountries} > ${MAX_ISOLATED_COUNTRIES})`,
+  );
+  ensure(
+    confidenceFloorBreaches === 0,
+    `indicator confidence floor breaches found (${confidenceFloorBreaches} below ${MIN_INDICATOR_CONFIDENCE_FLOOR})`,
+  );
+  ensureWarn(
+    informationQualityTelemetry.averageInformationScore >= enhancementReleaseTelemetry.criteria.minimumAverageInformationScore,
+    `average information score below release target (${informationQualityTelemetry.averageInformationScore} < ${enhancementReleaseTelemetry.criteria.minimumAverageInformationScore})`,
+  );
+  ensureWarn(
+    informationQualityTelemetry.staleCountryCount <= enhancementReleaseTelemetry.criteria.maximumStaleCountries,
+    `stale country count above release budget (${informationQualityTelemetry.staleCountryCount} > ${enhancementReleaseTelemetry.criteria.maximumStaleCountries})`,
+  );
+  ensureWarn(
+    enhancementReleaseTelemetry.releaseAccepted,
+    `release acceptance telemetry indicates unresolved criteria for ${enhancementReleaseTelemetry.releaseTag}`,
+  );
+};
+
 const main = () => {
   validateTimeline();
   validateSources();
   validateCountries();
   validateRelationships();
   validateIngestArtifacts();
+  validateEnhancementRelease();
 
   if (errors.length > 0) {
     console.error('Dataset validation failed:');
@@ -245,7 +301,7 @@ const main = () => {
   }
 
   console.log(
-    `Dataset validation passed (${geopoliticalDatasetV1.countries.length} countries, ${geopoliticalDatasetV1.relationships.length} relationships, ${geopoliticalDatasetV1.scenarioTimeline.length} periods).`,
+    `Dataset validation passed (${geopoliticalDatasetV1.countries.length} countries, ${geopoliticalDatasetV1.relationships.length} relationships, ${geopoliticalDatasetV1.scenarioTimeline.length} periods, release ${enhancementReleaseTelemetry.releaseTag}).`,
   );
 };
 

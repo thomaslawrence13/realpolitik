@@ -22,7 +22,7 @@ export interface CountryEnhancement {
 
 export const v10Enhancements: Record<string, CountryEnhancement> = {
   'united-states': {
-    demographics: { populationMillions: 335, medianAge: 38.9, urbanizationPct: 83, youthSharePct: 19, netMigrationPer1000: 3.0 },
+    demographics: { populationMillions: 336, medianAge: 39.1, urbanizationPct: 83, youthSharePct: 19, netMigrationPer1000: 3.1 },
     energy: { netOilExportMbd: 1.6, netGasExportBcm: 95, energyImportDependencePct: -10, criticalMineralExporter: false, notes: 'Net LNG exporter; reliant on imports of rare earths and processed lithium.' },
     topTradePartners: [
       { countryId: 'china', sharePct: 13.5, flow: 'imports' },
@@ -106,14 +106,14 @@ export const v10Enhancements: Record<string, CountryEnhancement> = {
     geo: { lat: 36.2, lng: 138.3 },
   },
   'india': {
-    demographics: { populationMillions: 1430, medianAge: 28.4, urbanizationPct: 36, youthSharePct: 26, netMigrationPer1000: -0.3 },
+    demographics: { populationMillions: 1438, medianAge: 28.8, urbanizationPct: 37, youthSharePct: 26, netMigrationPer1000: -0.2 },
     energy: { netOilExportMbd: -4.8, netGasExportBcm: -32, energyImportDependencePct: 41, criticalMineralExporter: false, notes: 'Highly oil-import-dependent; expanding refining and renewables capacity.' },
     topTradePartners: [
       { countryId: 'united-states', sharePct: 11.7, flow: 'exports' },
       { countryId: 'china', sharePct: 11.0, flow: 'imports' },
       { countryId: 'uae', sharePct: 7.2, flow: 'balanced' },
       { countryId: 'saudi-arabia', sharePct: 5.7, flow: 'imports' },
-      { countryId: 'russia', sharePct: 4.1, flow: 'imports' },
+      { countryId: 'russia', sharePct: 5.0, flow: 'imports' },
     ],
     geo: { lat: 22.3, lng: 78.6 },
   },

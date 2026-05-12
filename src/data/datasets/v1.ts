@@ -1,7 +1,7 @@
 import type { DatasetBundle } from '../../types';
 
 export const geopoliticalDatasetV1: DatasetBundle = {
-  version: '2026.05-data-prototype-v13',
+  version: '2026.05-data-prototype-v14',
   scenarioTimeline: ['2022', '2023', '2024'],
   methodologyNotes: [
     'This build uses a versioned dataset boundary so the UI can move off hardcoded country state and onto replaceable data snapshots.',
@@ -17,6 +17,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
     'v8 revamps country data with explicit economic and military statistics for all 134 parameterised states: nominal GDP (billions USD), GDP growth rate, GDP per capita, consumer inflation, trade-to-GDP ratio, defence spending (billions USD and % of GDP), active military personnel, and nuclear-armed status. Values are ~2024 estimates sourced from IMF WEO, SIPRI Military Expenditure Database, and IISS Military Balance.',
     'v9 expands and refines the data source registry: five new authoritative sources are added (ACLED for real-time conflict event data, Transparency International CPI for governance and corruption, ICG CrisisWatch for geopolitical crisis monitoring, UN Comtrade for premier bilateral trade statistics, and CIA World Factbook for broad military and demographic coverage). Live World Bank enrichment now covers all 134 parameterised states (up from 31) via an expanded ISO-alpha-2 lookup. Two additional World Bank live indicators are ingested: Rule of Law (RL.EST) for higher-confidence regime-stability enrichment, and Unemployment (SL.UEM.TOTL.ZS) as a third driver of domestic-cohesion adjustment. Source priority lists in the reconciliation pipeline are updated to weight the new sources appropriately.',
     'v10 is a major data enhancement release. Five new authoritative sources are added (UN DESA Population Division, IEA World Energy Outlook, US EIA, USGS Mineral Commodity Summaries, IMF World Economic Outlook). Country records are extended with optional structured fields for demographics (population, median age, urbanization, youth share, net migration), energy posture (net oil/gas balance, energy import dependence, critical-mineral exporter flag), top bilateral trade partners with directional flow shares, and geographic centroids. Coverage is supplied via a new supplemental data layer for the G20 plus 20+ additional strategic actors and merged into country profiles at load time. The simulation now wires numeric GDP growth, inflation, military burden, and trade-to-GDP ratios into cohesion, deterrence, and trade-dependence drivers when data is available, falling back to tier-based values when not. The pipeline gains two new providers: a trade-partner-derived bilateral-dependency observer (UN Comtrade-attributed, high confidence) that strengthens the directional dependency signal in the relationship graph, and an energy-sanctions cross-check that elevates sanctions exposure for energy-import-dependent states. Twenty-five additional bilateral relationship edges are added to fill gaps in the major-economy and rivalry coverage, taking the relationship graph from 146 to 171 edges. Four new event templates leverage the new data dimensions (food-security shock, debt-and-currency cascade, energy-supply weaponization, and climate-displacement crisis), and four new map fill modes (population, median age, energy exports, demographic pressure) surface the additions on the world map.',
+    'v14 applies a coverage-refresh pass (no schema expansion): selected v10/v11 country profiles are updated to newer snapshots, release-level acceptance criteria are introduced (coverage, recency, confidence floors, relationship completeness), and methodology/telemetry now report pass-fail status for this gate.',
   ],
   sources: [
     {
@@ -151,6 +152,13 @@ export const geopoliticalDatasetV1: DatasetBundle = {
       publisher: 'International Monetary Fund',
       url: 'https://www.imf.org/en/Publications/WEO',
       accessedOn: '2026-05-10',
+    },
+    {
+      id: 'brand-finance-soft-power',
+      title: 'Global Soft Power Index',
+      publisher: 'Brand Finance',
+      url: 'https://brandfinance.com/insights/global-soft-power-index',
+      accessedOn: '2026-05-12',
     },
   ],
   countries: [

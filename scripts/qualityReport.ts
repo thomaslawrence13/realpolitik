@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   countryProfiles,
+  enhancementReleaseTelemetry,
   informationQualityContract,
   informationQualityTelemetry as staticTelemetry,
   ingestTelemetry,
@@ -41,6 +42,11 @@ if (!runtimeTelemetry.kpiStatus.staticRuntimeScoreDeltaWithinTarget) {
     `static/runtime score delta ${runtimeTelemetry.kpiStatus.staticRuntimeScoreDelta} exceeds target ${runtimeTelemetry.kpiTargets.maximumStaticRuntimeScoreDelta}`,
   );
 }
+if (!enhancementReleaseTelemetry.releaseAccepted) {
+  regressionBudgetBreaches.push(
+    `${enhancementReleaseTelemetry.releaseTag} acceptance criteria not met for ${enhancementReleaseTelemetry.scope}`,
+  );
+}
 
 const qualityReport = {
   generatedAt: new Date().toISOString(),
@@ -72,6 +78,7 @@ const qualityReport = {
     remediationDrivers: country.remediationDrivers,
   })),
   kpiStatus: runtimeTelemetry.kpiStatus,
+  enhancementRelease: enhancementReleaseTelemetry,
   regressionBudgetBreaches,
 };
 

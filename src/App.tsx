@@ -4,6 +4,7 @@ import {
   allianceNetworks,
   countryProfiles,
   datasetVersion,
+  enhancementReleaseTelemetry,
   ingestTelemetry,
   informationQualityContract,
   informationQualityTelemetry,
@@ -875,6 +876,7 @@ export default function App() {
         baselineInformationQuality={informationQualityTelemetry}
         informationQualityContract={informationQualityContract}
         ingestTelemetry={ingestTelemetry}
+        enhancementReleaseTelemetry={enhancementReleaseTelemetry}
         liveDataDiagnostics={liveDataDiagnostics}
         scenarioTimeline={scenarioTimeline}
         events={eventLibrary}

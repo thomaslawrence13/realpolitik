@@ -154,7 +154,7 @@ async function main() {
     const results = await Promise.all(indicators.map(async (indicator) => [indicator, await fetchWbIndicator(indicator)] as const));
 
     const dataset: IngestSnapshot = {
-      version: '1.2.0-ingested',
+      version: '1.3.0-ingested',
       timestamp: fetchedAt,
       countryCountRequested: Object.keys(countryIso2).length,
       world_bank_military_expenditure_pct: {},
@@ -167,7 +167,7 @@ async function main() {
     };
 
     const manifest: IngestManifest = {
-      version: '1.0.0',
+      version: '1.1.0',
       generatedAt: fetchedAt,
       provider: 'world-bank-open-data',
       requestedCountryCount: Object.keys(countryIso2).length,
