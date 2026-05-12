@@ -375,6 +375,10 @@ export default function App() {
     () => new Map(baselineSimulated.map((entry) => [entry.profile.mapName, entry])),
     [baselineSimulated],
   );
+  const selectedProfile = useMemo(
+    () => activeProfiles.find((profile) => profile.mapName === selectedCountry) ?? activeProfiles[0] ?? null,
+    [activeProfiles, selectedCountry],
+  );
 
   const filtered = useMemo(() => filterCountries(simulated, filters), [filters, simulated]);
 
@@ -382,8 +386,30 @@ export default function App() {
 
   const railCountries = useMemo(() => searchCountries(filtered, search), [filtered, search]);
 
-  const selected = selectCountryOrFallback(byName, simulated, selectedCountry);
-  const baselineSelected = selectCountryOrFallback(baselineByName, baselineSimulated, selectedCountry);
+  const selected = useMemo<SimulatedCountry | null>(() => {
+    const snapshotSelected = selectCountryOrFallback(byName, simulated, selectedCountry);
+    if (snapshotSelected) return snapshotSelected;
+    if (!selectedProfile) return null;
+    return simulateCountry(selectedProfile, timelineIndex, {
+      scenarioInputs: deferredScenarioInputs,
+      activeEvents,
+      weightSet: activeWeightSet,
+      includeExplanation: true,
+    });
+  }, [activeEvents, activeWeightSet, byName, deferredScenarioInputs, selectedCountry, selectedProfile, simulated, timelineIndex]);
+  const baselineSelected = useMemo<SimulatedCountry | null>(() => {
+    const snapshotSelected = selectCountryOrFallback(baselineByName, baselineSimulated, selectedCountry);
+    if (snapshotSelected) return snapshotSelected;
+    if (!selectedProfile) return null;
+    return simulateCountry(selectedProfile, timelineIndex, {
+      scenarioInputs: defaultScenarioInputs,
+      weightSet: baselineWeightSet,
+      includeExplanation: false,
+    });
+  }, [baselineByName, baselineSimulated, selectedCountry, selectedProfile, timelineIndex]);
+  if (!selected || !baselineSelected) {
+    return <div className="app-shell" role="status" aria-live="polite" aria-busy="true" aria-label="Loading simulation data">Loading simulation...</div>;
+  }
   const selectedRiskDelta = Math.round(selected.risk - baselineSelected.risk);
   const selectedConfidenceDelta = Math.round(selected.confidence - baselineSelected.confidence);
 
@@ -418,7 +444,7 @@ export default function App() {
   // just to display the selected country's delta in the inspector panels.
   const comparisonSelected = useMemo<SimulatedCountry | null>(() => {
     if (!comparisonScenario) return null;
-    const profile = byName.get(selectedCountry)?.profile;
+    const profile = selectedProfile;
     if (!profile) return null;
     const comparisonEvents = resolveEventIds(comparisonScenario.activeEventIds ?? []);
     const compWeights = getSimulationWeightSet(comparisonScenario.weightSetKey);
@@ -427,7 +453,7 @@ export default function App() {
       activeEvents: comparisonEvents,
       weightSet: compWeights,
     });
-  }, [byName, comparisonScenario, selectedCountry]);
+  }, [comparisonScenario, selectedProfile]);
 
   // Full comparison map — only built when the movers tab is visible and a comparison
   // scenario is active. Simulating all 134 countries is deferred until actually needed.
@@ -452,8 +478,8 @@ export default function App() {
   // Inspector sparkline — baseline profile resolved from the already-built byName
   // map (O(1)) instead of a linear scan over activeProfiles.
   const sparklineProfile = useMemo(
-    () => byName.get(selectedCountry)?.profile ?? null,
-    [byName, selectedCountry],
+    () => selectedProfile,
+    [selectedProfile],
   );
 
   const sparklineBaselineRisks = useMemo<number[]>(() => {
