@@ -23,8 +23,6 @@ import {
 import type {
   Alignment,
   Filters,
-  MapFillMode,
-  OverlayMode,
   SavedScenario,
   ScenarioInputs,
   SimulatedCountry,
@@ -170,8 +168,6 @@ export default function App() {
   // one-time hydration from persisted/hash state
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMode ?? 'cooperation');
-  const [mapFillMode, setMapFillMode] = useState<MapFillMode>(persisted?.mapFillMode ?? 'alignment');
   const [scenarioName, setScenarioName] = useState(
     fromHash?.scenarioName ?? persisted?.scenarioName ?? 'Baseline+',
   );
@@ -741,8 +737,6 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
       savedScenarios,
       filters,
       timelineIndex,
-      overlayMode,
-      mapFillMode,
       inspectorTab,
       drawerTab,
       drawerOpen,
@@ -760,8 +754,6 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
     savedScenarios,
     filters,
     timelineIndex,
-    overlayMode,
-    mapFillMode,
     inspectorTab,
     drawerTab,
     drawerOpen,
@@ -834,10 +826,8 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
           visibleNames={visibleNames}
           selectedName={selectedCountry}
           onSelect={handleSelectFromMap}
-          overlayMode={overlayMode}
-          onOverlayModeChange={setOverlayMode}
-          fillMode={mapFillMode}
-          onFillModeChange={setMapFillMode}
+          initialOverlayMode={persisted?.overlayMode}
+          initialFillMode={persisted?.mapFillMode}
           alignmentColor={alignmentColor}
           alignmentLabel={alignmentLabel}
         />
