@@ -68,6 +68,9 @@ const defaultFilters: Filters = {
 const baselineWeightSet = getSimulationWeightSet('baseline');
 const weightSetOptions = Object.values(simulationWeightSets);
 const TIMELINE_AUTO_PLAY_INTERVAL_MS = 1200;
+// Milliseconds to wait before flushing UI state to localStorage after the last change.
+// 300 ms balances responsiveness (slider drag) with write frequency.
+const PERSIST_DEBOUNCE_MS = 300;
 const MIN_DRAWER_HEIGHT = 180;
 const MAX_DRAWER_HEIGHT_RATIO = 0.65;
 const WELCOME_DISMISSED_KEY = 'realpolitik:welcome-dismissed';
@@ -726,7 +729,7 @@ export default function App() {
       comparisonScenarioId,
     };
     if (persistDebounceRef.current) window.clearTimeout(persistDebounceRef.current);
-    persistDebounceRef.current = window.setTimeout(() => savePersistedState(snapshot), 300);
+    persistDebounceRef.current = window.setTimeout(() => savePersistedState(snapshot), PERSIST_DEBOUNCE_MS);
   }, [
     selectedCountry,
     scenarioName,

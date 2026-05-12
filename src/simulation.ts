@@ -25,6 +25,14 @@ const tierValue: Record<Tier, number> = {
   high: 82,
 };
 
+// External-debt risk contribution constants.
+// Threshold: debt-to-GDP above which risk contribution begins.
+const DEBT_RISK_THRESHOLD_PCT = 100;
+// Maximum risk points added by external-debt vulnerability.
+const DEBT_RISK_MAX_CONTRIBUTION = 8;
+// Scaling: points of risk per percentage-point of debt above the threshold.
+const DEBT_RISK_MULTIPLIER = 0.05;
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
@@ -316,8 +324,8 @@ export const simulateCountry = (
     : -6
     : 0;
   const fxCushionDelta = fiscal ? clamp((fiscal.fxReservesMonthsImports - 3) * 0.4, -4, 4) : 0;
-  const debtRiskBoost = fiscal && fiscal.externalDebtGdpPct > 100
-    ? Math.min(8, (fiscal.externalDebtGdpPct - 100) * 0.05)
+  const debtRiskBoost = fiscal && fiscal.externalDebtGdpPct > DEBT_RISK_THRESHOLD_PCT
+    ? Math.min(DEBT_RISK_MAX_CONTRIBUTION, (fiscal.externalDebtGdpPct - DEBT_RISK_THRESHOLD_PCT) * DEBT_RISK_MULTIPLIER)
     : 0;
   const fiscalCohesionDelta = fiscal ? fiscalRatingValue + fxCushionDelta : 0;
 
@@ -453,8 +461,8 @@ export const simulateCountry = (
   const confidence = clamp(confidenceTotal, 38, 96);
 
   const riskBase = profile.baselineRisk;
-  const debtRiskContrib = fiscal && fiscal.externalDebtGdpPct > 100
-    ? Math.min(8, (fiscal.externalDebtGdpPct - 100) * 0.05)
+  const debtRiskContrib = fiscal && fiscal.externalDebtGdpPct > DEBT_RISK_THRESHOLD_PCT
+    ? Math.min(DEBT_RISK_MAX_CONTRIBUTION, (fiscal.externalDebtGdpPct - DEBT_RISK_THRESHOLD_PCT) * DEBT_RISK_MULTIPLIER)
     : 0;
   const waterStressContrib = foodWater && foodWater.waterStressIndex >= 4
     ? (foodWater.waterStressIndex - 3) * 1.8

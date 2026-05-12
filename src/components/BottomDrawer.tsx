@@ -337,7 +337,8 @@ function IndexPanel({
       if (next.has(countryId)) {
         next.delete(countryId);
       } else {
-        // Keep at most maxComparisonCountries — evict the oldest (first inserted).
+        // FIFO eviction: JavaScript Sets maintain insertion order, so
+        // `values().next().value` always returns the oldest (first inserted) entry.
         while (next.size >= maxComparisonCountries) {
           next.delete(next.values().next().value as string);
         }
