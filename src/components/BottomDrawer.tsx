@@ -164,9 +164,9 @@ export function BottomDrawer({
           value={tab}
           onChange={onTabChange}
           options={[
-            { value: 'index', label: 'Data index' },
+            { value: 'index', label: 'Index' },
             { value: 'movers', label: 'Movers' },
-            { value: 'methodology', label: 'Methodology & sources' },
+            { value: 'methodology', label: 'Methodology' },
             { value: 'analysis', label: 'Analysis' },
             { value: 'events', label: 'Events', count: activeEventIds.length > 0 ? activeEventIds.length : undefined },
             { value: 'history', label: 'History', count: savedScenarios.length },

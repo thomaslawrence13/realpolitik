@@ -23,7 +23,7 @@ import { INFORMATION_QUALITY_CONTRACT } from '../data/quality/contract';
 import { deriveQualityRemediationDrivers } from '../data/quality/telemetry';
 import { BarRow, MetricCard, Tabs } from './ui';
 
-export type InspectorTab = 'stats' | 'overview' | 'relationships' | 'analysis' | 'sources';
+export type InspectorTab = 'stats' | 'overview' | 'relationships' | 'analysis';
 
 type Props = {
   open: boolean;
@@ -181,7 +181,20 @@ export function RightInspector({
     <aside className="inspector" aria-label="Country inspector" aria-hidden={!open} {...(!open && { inert: true })}>
       <header className="inspector-header">
         <div className="inspector-title">
-          <h2>{selected.profile.displayName}</h2>
+          <h2>
+            {selected.profile.displayName}
+            <span
+              className="alignment-pill alignment-pill-inline"
+              style={{
+                color: alignmentColor[selected.alignment],
+                borderColor: `${alignmentColor[selected.alignment]}55`,
+                background: `${alignmentColor[selected.alignment]}14`,
+              }}
+            >
+              <i style={{ background: alignmentColor[selected.alignment] }} aria-hidden />
+              {alignmentLabel[selected.alignment]}
+            </span>
+          </h2>
           <p>
             <span>{formatTitle(selected.profile.region)}</span>
             <span className="inspector-sep">·</span>
@@ -190,17 +203,6 @@ export function RightInspector({
             <span>{formatTitle(selected.profile.regimeType)}</span>
           </p>
         </div>
-        <span
-          className="alignment-pill"
-          style={{
-            color: alignmentColor[selected.alignment],
-            borderColor: `${alignmentColor[selected.alignment]}55`,
-            background: `${alignmentColor[selected.alignment]}14`,
-          }}
-        >
-          <i style={{ background: alignmentColor[selected.alignment] }} aria-hidden />
-          {alignmentLabel[selected.alignment]}
-        </span>
       </header>
 
       <Tabs<InspectorTab>
@@ -208,11 +210,10 @@ export function RightInspector({
         onChange={onTabChange}
         size="sm"
         options={[
-          { value: 'stats', label: 'Statistics' },
+          { value: 'stats', label: 'Stats' },
           { value: 'overview', label: 'Overview' },
           { value: 'relationships', label: 'Relationships', count: selected.profile.relationships.length },
           { value: 'analysis', label: 'Analysis' },
-          { value: 'sources', label: 'Sources', count: selected.profile.sources.length },
         ]}
       />
 
@@ -257,8 +258,6 @@ export function RightInspector({
             comparisonScenarioName={comparisonScenarioName}
           />
         )}
-
-        {tab === 'sources' && <SourcesPanel selected={selected} alignmentLabel={alignmentLabel} />}
       </div>
     </aside>
   );
