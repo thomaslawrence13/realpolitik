@@ -70,6 +70,13 @@ const formatCountryId = (id: string) =>
     : id.split('-').filter(Boolean).map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 const relationshipTagBorderAlpha = '33';
 const relationshipTagBackgroundAlpha = '14';
+const LARGE_VALUE_THRESHOLD = 100;
+const LARGE_VALUE_DECIMALS = 1;
+const SMALL_VALUE_DECIMALS = 2;
+const HISTORICAL_CHART_WIDTH = 520;
+const HISTORICAL_CHART_HEIGHT = 180;
+const HISTORICAL_CHART_PAD_X = 34;
+const HISTORICAL_CHART_PAD_Y = 18;
 
 // Stable ordered key list for probability bars — avoids Object.keys() on every render.
 const PROBABILITY_KEYS: ReadonlyArray<keyof SimulatedCountry['probabilities']> = ['blocA', 'blocB', 'nonAligned'];
@@ -527,7 +534,9 @@ const parsePeriod = (period: string) => {
 };
 
 const formatMetricValue = (value: number, unit: string) => {
-  const rounded = Math.abs(value) >= 100 ? value.toFixed(1) : value.toFixed(2);
+  const rounded = Math.abs(value) >= LARGE_VALUE_THRESHOLD
+    ? value.toFixed(LARGE_VALUE_DECIMALS)
+    : value.toFixed(SMALL_VALUE_DECIMALS);
   return `${rounded.replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')} ${unit}`;
 };
 
@@ -581,10 +590,10 @@ function HistoricalTrendChart({
   lines: Array<{ label: string; color: string; points: HistoricalMetricSeries['points'] }>;
   unit: string;
 }) {
-  const width = 520;
-  const height = 180;
-  const padX = 34;
-  const padY = 18;
+  const width = HISTORICAL_CHART_WIDTH;
+  const height = HISTORICAL_CHART_HEIGHT;
+  const padX = HISTORICAL_CHART_PAD_X;
+  const padY = HISTORICAL_CHART_PAD_Y;
   const innerW = width - padX * 2;
   const innerH = height - padY * 2;
 
@@ -688,7 +697,7 @@ function StatsPanel({
   useEffect(() => {
     setHistoricalMetricId(availableHistorical[0]?.metricId ?? '');
     setComparisonCountryMapName('');
-  }, [selected.profile.id]);
+  }, [availableHistorical, selected.profile.id]);
 
   const selectedHistoricalSeries = useMemo(
     () => availableHistorical.find((series) => series.metricId === historicalMetricId) ?? null,

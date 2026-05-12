@@ -29,6 +29,7 @@ type IndicatorConfig = {
 
 const WORLD_BANK_SOURCE_URL = 'https://databank.worldbank.org/source/world-development-indicators';
 const WORLD_BANK_SOURCE_TITLE = 'World Development Indicators';
+const ISO_DATE_LENGTH = 10;
 
 const indicatorConfigs: IndicatorConfig[] = [
   {
@@ -116,7 +117,7 @@ const buildMetadata = (
     lastUpdated: newestYear > 0 ? String(newestYear) : 'unknown',
     coverage: `${coveragePct}% of tracked countries`,
     confidenceFlags,
-    retrievedAt: payload.fetchedAt.slice(0, 10),
+    retrievedAt: payload.fetchedAt.slice(0, ISO_DATE_LENGTH),
     frequency: 'annual',
   };
 };
