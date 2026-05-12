@@ -37,11 +37,12 @@ const regimeOptions: ReadonlyArray<{ value: 'all' | RegimeType; label: string }>
   { value: 'authoritarian', label: 'Auth' },
 ];
 
-type SortMode = 'riskDesc' | 'confidenceDesc' | 'nameAsc';
+type SortMode = 'riskDesc' | 'confidenceDesc' | 'coverageDesc' | 'nameAsc';
 type GroupMode = 'none' | 'region' | 'alignment' | 'risk';
 
 const sortOptions: ReadonlyArray<{ value: SortMode; label: string }> = [
-  { value: 'riskDesc', label: 'Risk' },
+  { value: 'coverageDesc', label: 'Coverage' },
+  { value: 'riskDesc', label: 'Pressure' },
   { value: 'confidenceDesc', label: 'Confidence' },
   { value: 'nameAsc', label: 'Name' },
 ];
@@ -80,12 +81,19 @@ export function LeftRail({
   searchInputRef,
 }: Props) {
   const [filtersExpanded, setFiltersExpanded] = useState(true);
-  const [sortMode, setSortMode] = useState<SortMode>('riskDesc');
+  const [sortMode, setSortMode] = useState<SortMode>('coverageDesc');
   const [groupMode, setGroupMode] = useState<GroupMode>('region');
   const selectedItemRef = useRef<HTMLButtonElement | null>(null);
 
   const sorted = useMemo(() => {
     const next = [...countries];
+    if (sortMode === 'coverageDesc') {
+      next.sort((a, b) => {
+        const delta = b.profile.sourceCoverage - a.profile.sourceCoverage;
+        return delta !== 0 ? delta : a.profile.displayName.localeCompare(b.profile.displayName);
+      });
+      return next;
+    }
     if (sortMode === 'riskDesc') {
       next.sort((a, b) => {
         const riskDelta = b.risk - a.risk;

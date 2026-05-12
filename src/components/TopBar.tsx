@@ -110,7 +110,7 @@ export function TopBar({
               onChange={(event) => onTimelineChange(Number(event.target.value))}
               className="timeline-input"
               style={{ ['--track-pct' as string]: `${pct}%` }}
-              aria-label="Scenario year"
+              aria-label="Year"
             />
           </div>
           <button
@@ -150,7 +150,7 @@ export function TopBar({
           className={`scenario-chip ${drawerOpen ? 'scenario-chip-active' : ''}`}
           onClick={onToggleDrawer}
         >
-          <span className="scenario-chip-label">Scenario</span>
+          <span className="scenario-chip-label">Analysis</span>
           <em className="scenario-chip-name">{scenarioName}</em>
           {activeEventCount > 0 && (
             <em className="scenario-event-badge" title={`${activeEventCount} event${activeEventCount !== 1 ? 's' : ''} applied`}>
@@ -159,7 +159,7 @@ export function TopBar({
           )}
           <span className="scenario-chip-indicator" aria-hidden />
         </button>
-        <IconButton label="Toggle scenario drawer (\)" active={drawerOpen} onClick={onToggleDrawer}>
+        <IconButton label="Toggle analysis drawer (\)" active={drawerOpen} onClick={onToggleDrawer}>
           <SvgIcon.PanelBottom />
         </IconButton>
         <IconButton label="Toggle inspector (])" active={rightOpen} onClick={onToggleRight}>

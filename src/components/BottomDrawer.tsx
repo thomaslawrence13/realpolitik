@@ -19,7 +19,7 @@ import { MoversPanel } from './MoversPanel';
 import { summarizeCountryTrust, TrustTag } from './provenance';
 import { getRiskTier } from '../simulation';
 
-export type DrawerTab = 'scenario' | 'feed' | 'movers' | 'index' | 'history' | 'methodology';
+export type DrawerTab = 'index' | 'movers' | 'methodology' | 'analysis' | 'events' | 'history';
 
 export type EventFeedItem = {
   title: string;
@@ -145,12 +145,12 @@ export function BottomDrawer({
           value={tab}
           onChange={onTabChange}
           options={[
-            { value: 'scenario', label: 'Scenario lab' },
-            { value: 'feed', label: 'Events', count: activeEventIds.length > 0 ? activeEventIds.length : undefined },
+            { value: 'index', label: 'Data index' },
             { value: 'movers', label: 'Movers' },
-            { value: 'index', label: 'Index' },
-            { value: 'history', label: 'History', count: savedScenarios.length },
             { value: 'methodology', label: 'Methodology' },
+            { value: 'analysis', label: 'Analysis' },
+            { value: 'events', label: 'Events', count: activeEventIds.length > 0 ? activeEventIds.length : undefined },
+            { value: 'history', label: 'History', count: savedScenarios.length },
           ]}
         />
         <button type="button" className="drawer-close" onClick={onClose} aria-label="Close drawer">
@@ -159,7 +159,7 @@ export function BottomDrawer({
       </header>
 
       <div className="drawer-body">
-        {tab === 'scenario' && (
+        {tab === 'analysis' && (
           <ScenarioPanel
             scenarioName={scenarioName}
             onScenarioNameChange={onScenarioNameChange}
@@ -176,7 +176,7 @@ export function BottomDrawer({
           />
         )}
 
-        {tab === 'feed' && (
+        {tab === 'events' && (
           <EventsPanel
             events={events}
             activeEventIds={activeEventIds}
@@ -616,9 +616,13 @@ function ScenarioPanel({
   };
   return (
     <div className="scenario-panel">
+      <div className="scenario-disclaimer">
+        <strong>Analysis tools</strong>
+        <p>Adjust shock parameters and weight sets to model hypothetical conditions. These are not forecasts — all outputs are model-derived from indicator inputs.</p>
+      </div>
       <div className="scenario-meta">
         <label className="field">
-          <span>Scenario label</span>
+          <span>Analysis label</span>
           <input
             value={scenarioName}
             onChange={(event) => onScenarioNameChange(event.target.value)}
@@ -657,7 +661,7 @@ function ScenarioPanel({
             {shareLabel[shareStatus]}
           </button>
           <button type="button" className="btn btn-primary" onClick={onSaveScenario}>
-            Save scenario
+            Save analysis
           </button>
         </div>
       </div>
@@ -867,7 +871,7 @@ function EventsPanel({
 
       {scenarioFeed.length > 0 && (
         <div className="events-impact-section">
-          <h3 className="events-impact-title">Scenario impact — top pressures</h3>
+          <h3 className="events-impact-title">Analysis impact — top pressures</h3>
           <div className="feed">
             {scenarioFeed.map((item) => (
               <article key={item.title} className={`feed-item feed-item-${item.tone}`}>
@@ -911,7 +915,7 @@ function HistoryPanel({
     <div className="history-wrap">
       <div className="history-toolbar">
         <div className="history-toolbar-meta">
-          <strong>Saved scenarios</strong>
+          <strong>Saved analyses</strong>
           <span>{scenarios.length} saved</span>
         </div>
         <div className="history-toolbar-actions">
@@ -939,7 +943,7 @@ function HistoryPanel({
 
       {scenarios.length === 0 ? (
         <div className="empty-state">
-          <strong>No saved scenarios yet</strong>
+          <strong>No saved analyses yet</strong>
           <p>Save the current assumptions, or import a JSON file to get started.</p>
         </div>
       ) : (

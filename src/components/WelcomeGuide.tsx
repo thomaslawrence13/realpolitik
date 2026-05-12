@@ -39,7 +39,7 @@ export function WelcomeGuide({
         <header className="modal-header welcome-header">
           <div>
             <h2>Welcome to Realpolitik</h2>
-            <p>Explore countries, run scenarios, and compare outcomes without setup friction.</p>
+            <p>Explore authoritative geopolitical statistics for 134 countries — sourced, dated, and transparent.</p>
           </div>
           <button
             ref={closeRef}
@@ -55,17 +55,17 @@ export function WelcomeGuide({
         <div className="modal-body">
           <section className="welcome-grid">
             <article className="welcome-tip">
-              <strong>Find countries faster</strong>
-              <p>Use search and filters in the left rail to narrow risk hotspots quickly.</p>
+              <strong>Browse country statistics</strong>
+              <p>Select any country to view detailed economic, military, demographic, energy, and diplomatic data with full source attribution.</p>
               <button type="button" className="btn btn-ghost btn-sm" onClick={onFocusSearch}>
                 Focus country search
               </button>
             </article>
             <article className="welcome-tip">
-              <strong>Stress-test assumptions</strong>
-              <p>Open the Scenario Lab to apply events, tune shocks, and save alternatives.</p>
+              <strong>Explore analysis tools</strong>
+              <p>Open the Analysis panel to apply hypothetical shocks, tune model weights, and compare modeled outcomes — clearly labeled as model-derived.</p>
               <button type="button" className="btn btn-ghost btn-sm" onClick={onOpenScenarioLab}>
-                Open Scenario Lab
+                Open analysis tools
               </button>
             </article>
             <article className="welcome-tip">

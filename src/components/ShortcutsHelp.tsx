@@ -12,7 +12,7 @@ const SHORTCUTS: ReadonlyArray<{ group: string; entries: Shortcut[] }> = [
     entries: [
       { keys: ['['], description: 'Toggle countries rail' },
       { keys: [']'], description: 'Toggle inspector' },
-      { keys: ['\\'], description: 'Toggle scenario drawer' },
+      { keys: ['\\'], description: 'Toggle analysis drawer' },
     ],
   },
   {
