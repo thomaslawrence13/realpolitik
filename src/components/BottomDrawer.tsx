@@ -18,6 +18,12 @@ import { Slider, SvgIcon, Tabs } from './ui';
 import { MoversPanel } from './MoversPanel';
 import { summarizeCountryTrust, TrustTag } from './provenance';
 import { getRiskTier } from '../simulation';
+import {
+  indicatorQualityRules,
+  indicatorSourcePriority,
+  relationshipDimensionQualityRules,
+  relationshipDimensionSourcePriority,
+} from '../data/pipeline/rules';
 
 export type DrawerTab = 'index' | 'movers' | 'methodology' | 'analysis' | 'events' | 'history';
 
@@ -147,7 +153,7 @@ export function BottomDrawer({
           options={[
             { value: 'index', label: 'Data index' },
             { value: 'movers', label: 'Movers' },
-            { value: 'methodology', label: 'Methodology' },
+            { value: 'methodology', label: 'Methodology & sources' },
             { value: 'analysis', label: 'Analysis' },
             { value: 'events', label: 'Events', count: activeEventIds.length > 0 ? activeEventIds.length : undefined },
             { value: 'history', label: 'History', count: savedScenarios.length },
@@ -1120,13 +1126,80 @@ function MethodologyPanel({
   ingestTelemetry: IngestTelemetry;
 }) {
   const priorityCountries = informationQuality.weakestInformationCountries.slice(0, 8);
+  const pipelineReconciliation = Object.entries(indicatorSourcePriority).map(([indicator, priority]) => ({
+    key: indicator,
+    label: indicator,
+    priority,
+  }));
+  const relationshipReconciliation = Object.entries(relationshipDimensionSourcePriority).map(([dimension, priority]) => ({
+    key: dimension,
+    label: dimension,
+    priority,
+  }));
+  const indicatorCadence = Object.entries(indicatorQualityRules).map(([indicator, rule]) => ({
+    key: indicator,
+    label: indicator,
+    cadence: rule.cadence,
+    staleAfterDays: rule.staleAfterDays,
+    minimumConfidence: rule.minimumConfidence,
+  }));
+  const relationshipCadence = Object.entries(relationshipDimensionQualityRules).map(([dimension, rule]) => ({
+    key: dimension,
+    label: dimension,
+    cadence: rule.cadence,
+    staleAfterDays: rule.staleAfterDays,
+    minimumConfidence: rule.minimumConfidence,
+  }));
+  const revisionEntries = notes
+    .map((note) => {
+      const match = note.match(/^(v\d+)\s*\(([^)]+)\):\s*(.+)$/i);
+      if (!match) return null;
+      return {
+        version: match[1]!.toUpperCase(),
+        scope: match[2]!,
+        detail: match[3]!,
+      };
+    })
+    .filter((entry): entry is { version: string; scope: string; detail: string } => Boolean(entry))
+    .reverse();
+  const methodologyFormulas = [
+    'Tier thresholds: low/medium/high are mapped through pipeline transforms before model scoring.',
+    'Cohesion transform = baseline + GDP growth uplift − inflation penalty − unemployment penalty (bounded to 0–100).',
+    'Risk/pressure and confidence are model-derived from indicator stack + relationship dimensions + period offset.',
+    'Historical trend baselines use period means of earlier observations, then compare current period versus that baseline.',
+  ];
+  const knownLimitations = [
+    'Observed coverage varies by indicator and country; low-coverage or stale metrics trigger fallback evidence classes.',
+    'Some relationship edges are derived rather than directly observed and are tagged lower confidence.',
+    'Simulation outputs are analytical model outputs and should not be interpreted as deterministic forecasts.',
+  ];
   return (
     <div className="methodology-panel">
+      <section className="scenario-meta-card">
+        <strong>Evidence-class legend</strong>
+        <p className="methodology-telemetry-line">
+          Every indicator is tagged as one of: observed, estimated, derived, or fallback.
+        </p>
+        <div className="methodology-priority-gaps methodology-evidence-gaps">
+          <span>Observed: direct external source signal</span>
+          <span>Estimated: curated snapshot with acceptable quality</span>
+          <span>Derived: computed from cross-source transforms</span>
+          <span>Fallback: stale or low-confidence replacement</span>
+        </div>
+      </section>
       <ul className="methodology-list">
         {notes.map((note) => (
           <li key={note}>{note}</li>
         ))}
       </ul>
+      <section className="scenario-meta-card">
+        <strong>Indicator formulas & transform rules</strong>
+        <ul className="methodology-mini-list">
+          {methodologyFormulas.map((entry) => (
+            <li key={entry}>{entry}</li>
+          ))}
+        </ul>
+      </section>
       <section className="scenario-meta-card">
         <strong>Information quality telemetry</strong>
         <p className="methodology-telemetry-line">
@@ -1165,6 +1238,32 @@ function MethodologyPanel({
         </div>
       </section>
       <section className="scenario-meta-card">
+        <strong>Source reconciliation priority rules</strong>
+        <p className="methodology-telemetry-line">
+          Conflicts are resolved by source rank, then confidence, then recency.
+        </p>
+        <div className="methodology-priority-grid">
+          {pipelineReconciliation.map((entry) => (
+            <article key={`indicator-priority-${entry.key}`} className="methodology-priority-card">
+              <header>
+                <strong>{entry.label}</strong>
+                <span className="methodology-priority-score">indicator</span>
+              </header>
+              <p>{entry.priority.join(' → ')}</p>
+            </article>
+          ))}
+          {relationshipReconciliation.map((entry) => (
+            <article key={`relationship-priority-${entry.key}`} className="methodology-priority-card">
+              <header>
+                <strong>{entry.label}</strong>
+                <span className="methodology-priority-score">relationship</span>
+              </header>
+              <p>{entry.priority.join(' → ')}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="scenario-meta-card">
         <strong>Ingest coverage telemetry</strong>
         <p className="methodology-telemetry-line">
           Generated {new Date(ingestTelemetry.generatedAt).toLocaleDateString()} · Average indicator coverage {ingestTelemetry.averageCoveragePct}%
@@ -1192,6 +1291,58 @@ function MethodologyPanel({
             </article>
           ))}
         </div>
+      </section>
+      <section className="scenario-meta-card">
+        <strong>Refresh cadence & quality floors</strong>
+        <p className="methodology-telemetry-line">
+          Quality notices appear when data age exceeds SLA or confidence falls below minimum thresholds.
+        </p>
+        <div className="methodology-priority-grid">
+          {indicatorCadence.map((entry) => (
+            <article key={`cadence-indicator-${entry.key}`} className="methodology-priority-card">
+              <header>
+                <strong>{entry.label}</strong>
+                <span className="methodology-priority-score">{entry.cadence}</span>
+              </header>
+              <p>Stale after {entry.staleAfterDays}d · Minimum confidence {Math.round(entry.minimumConfidence * 100)}%</p>
+            </article>
+          ))}
+          {relationshipCadence.map((entry) => (
+            <article key={`cadence-relationship-${entry.key}`} className="methodology-priority-card">
+              <header>
+                <strong>{entry.label}</strong>
+                <span className="methodology-priority-score">{entry.cadence}</span>
+              </header>
+              <p>Stale after {entry.staleAfterDays}d · Minimum confidence {Math.round(entry.minimumConfidence * 100)}%</p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="scenario-meta-card">
+        <strong>Known limitations</strong>
+        <ul className="methodology-mini-list">
+          {knownLimitations.map((entry) => (
+            <li key={entry}>{entry}</li>
+          ))}
+        </ul>
+      </section>
+      <section className="scenario-meta-card">
+        <strong>Data revision changelog</strong>
+        {revisionEntries.length === 0 ? (
+          <p className="methodology-telemetry-line">No structured revision entries found in methodology notes.</p>
+        ) : (
+          <div className="methodology-priority-grid">
+            {revisionEntries.map((entry) => (
+              <article key={`${entry.version}-${entry.scope}`} className="methodology-priority-card">
+                <header>
+                  <strong>{entry.version}</strong>
+                  <span className="methodology-priority-score">{entry.scope}</span>
+                </header>
+                <p>{entry.detail}</p>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

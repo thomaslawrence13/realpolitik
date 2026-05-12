@@ -730,15 +730,45 @@ function StatsPanel({
     if (!selectedHistoricalSeries) return null;
     return buildAverageHistoricalSeries(allCountries, selectedHistoricalSeries.metricId);
   }, [allCountries, selectedHistoricalSeries]);
+  const evidenceSummary = useMemo(() => {
+    const indicators = profile.dataQuality?.indicators ?? [];
+    const summary: Record<'observed' | 'estimated' | 'derived' | 'fallback', number> = {
+      observed: 0,
+      estimated: 0,
+      derived: 0,
+      fallback: 0,
+    };
+    indicators.forEach((indicator) => {
+      summary[indicator.evidenceClass] += 1;
+    });
+    return summary;
+  }, [profile.dataQuality]);
+  const staleIndicatorCount = profile.dataQuality?.indicators.filter((entry) => entry.stale).length ?? 0;
+  const lowCoverage = profile.sourceCoverage < 70;
+  const fallbackIndicators = evidenceSummary.fallback;
+  const showQualityBanner =
+    Boolean(profile.dataQuality && profile.dataQuality.degradedReasons.length > 0) ||
+    staleIndicatorCount > 0 ||
+    lowCoverage ||
+    fallbackIndicators > 0;
 
   return (
     <div className="panel-stack">
       {/* ── Data quality banner ── */}
-      {profile.dataQuality && profile.dataQuality.degradedReasons.length > 0 && (
+      {showQualityBanner && (
         <div className="callout callout-warning stats-quality-notice">
           <strong>Data quality notice</strong>
+          <div className="methodology-priority-gaps methodology-evidence-gaps">
+            <span>Observed {evidenceSummary.observed}</span>
+            <span>Estimated {evidenceSummary.estimated}</span>
+            <span>Derived {evidenceSummary.derived}</span>
+            <span>Fallback {evidenceSummary.fallback}</span>
+          </div>
           <ul className="stats-quality-list">
-            {profile.dataQuality.degradedReasons.slice(0, 3).map((reason) => (
+            {staleIndicatorCount > 0 && <li>{staleIndicatorCount} indicators are stale against SLA thresholds.</li>}
+            {lowCoverage && <li>Source coverage is {profile.sourceCoverage}% (below recommended 70%).</li>}
+            {fallbackIndicators > 0 && <li>{fallbackIndicators} indicators are currently using fallback evidence.</li>}
+            {(profile.dataQuality?.degradedReasons ?? []).slice(0, 3).map((reason) => (
               <li key={reason}>{reason}</li>
             ))}
           </ul>

@@ -2759,6 +2759,24 @@ input[type='range']::-moz-range-thumb {
   color: var(--text-4);
 }
 
+.methodology-evidence-gaps {
+  margin-top: 0.45rem;
+}
+
+.methodology-mini-list {
+  margin: 0.45rem 0 0;
+  padding-left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.methodology-mini-list li {
+  color: var(--text-3);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
 /* History scenario input chips */
 .history-summary-chips {
   display: flex;
