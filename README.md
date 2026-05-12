@@ -109,6 +109,21 @@ This release significantly expands the analytical surface of the model:
   explicit degraded reasons (missing enrichments, low coverage, stale updates).
 - **Dataset version bumped to `0.12.0`**.
 
+## Information quality contract baseline
+
+The quality system is now governed by a versioned contract (`iq-contract-v1.0.0`) with:
+
+- a single scoring version (`iq-score-v2.0.0`) and explicit score weights
+- a shared stale/coverage/confidence threshold definition used by pipeline + UI
+- output inventory documenting which telemetry is static-at-build vs runtime-live
+- KPI targets and regression-budget checks written to `src/data/datasets/quality_report.json`
+
+Generate the machine-readable quality report with:
+
+```bash
+npm run quality:report
+```
+
 ## Data Enhancement Pipeline
 
 The project includes an off-main-thread data ingestion and backtesting pipeline to continuously refine the simulation weights based on real-world reference points.

@@ -8,7 +8,6 @@ import type {
   IngestIndicatorTelemetry,
   IngestTelemetry,
   CountryProfile,
-  CountryInformationScore,
   CountryRelationship,
   CountryRecord,
   DatasetSource,
@@ -16,6 +15,8 @@ import type {
   InformationQualityTelemetry,
   RelationshipEdge,
 } from '../types';
+import { INFORMATION_QUALITY_CONTRACT } from './quality/contract';
+import { buildInformationQualityTelemetry } from './quality/telemetry';
 
 const dataset = geopoliticalDatasetV1;
 const sourceById = new Map(dataset.sources.map((source) => [source.id, source]));
@@ -428,71 +429,10 @@ export const datasetTelemetry = {
   v11Coverage: countries.filter((c) => Boolean(c.cyber)).length,
 };
 
-const assessCountryCompleteness = (country: CountryProfile) => {
-  const checks = [
-    Boolean(country.economicStats),
-    Boolean(country.militaryStats),
-    Boolean(country.demographics),
-    Boolean(country.energy),
-    Boolean(country.topTradePartners?.length),
-    Boolean(country.geo),
-    Boolean(country.cyber),
-    Boolean(country.fiscal),
-    Boolean(country.foodWater),
-    Boolean(country.diplomatic),
-    Boolean(country.criticalMinerals),
-    Boolean(country.softPower),
-  ];
-  return checks.filter(Boolean).length / checks.length;
-};
-
-const countryInformationScores: CountryInformationScore[] = countries
-  .map((country) => {
-    const yearsStale = Math.max(0, nowYear - getYear(country.lastUpdated));
-    const stalenessPenalty = Math.min(35, yearsStale * 8);
-    const completeness = assessCountryCompleteness(country);
-    const sourceCoverageScore = country.sourceCoverage * 0.45;
-    const completenessScore = completeness * 45;
-    const recencyScore = Math.max(0, 10 - stalenessPenalty);
-    const informationScore = Math.max(
-      0,
-      Math.min(100, Math.round(sourceCoverageScore + completenessScore + recencyScore)),
-    );
-    return {
-      countryId: country.id,
-      displayName: country.displayName,
-      informationScore,
-      yearsStale,
-      sourceCoverage: country.sourceCoverage,
-      completeness: Number(completeness.toFixed(2)),
-      stale: yearsStale > 2,
-      gaps: [
-        !country.demographics && 'demographics',
-        !country.energy && 'energy',
-        !country.topTradePartners?.length && 'tradePartners',
-        !country.cyber && 'cyber',
-        !country.fiscal && 'fiscal',
-        !country.foodWater && 'foodWater',
-        !country.diplomatic && 'diplomatic',
-        !country.softPower && 'softPower',
-      ].filter((gap): gap is string => Boolean(gap)),
-    };
-  })
-  .sort((a, b) => b.informationScore - a.informationScore);
-
 export const informationQualityTelemetry: InformationQualityTelemetry = {
-  assessedAt: new Date().toISOString(),
-  averageInformationScore:
-    Math.round(
-      (countryInformationScores.reduce((sum, c) => sum + c.informationScore, 0) / countries.length) *
-        10,
-    ) / 10,
-  staleCountryCount: countryInformationScores.filter((c) => c.stale).length,
-  highQualityCount: countryInformationScores.filter((c) => c.informationScore >= 80).length,
-  lowQualityCount: countryInformationScores.filter((c) => c.informationScore < 55).length,
-  topInformationCountries: countryInformationScores.slice(0, 15),
-  weakestInformationCountries: countryInformationScores.slice(-15).reverse(),
+  ...buildInformationQualityTelemetry(countries, { layer: 'static-at-build' }),
 };
+export const informationQualityContract = INFORMATION_QUALITY_CONTRACT;
 
 const ingestIndicators = ingestManifest.indicators as IngestIndicatorTelemetry[];
 

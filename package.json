@@ -11,7 +11,8 @@
     "ingest": "tsx scripts/ingest.ts",
     "backtest": "tsx scripts/backtest.ts",
     "backtest:fixture": "tsx scripts/generateBacktestFixture.ts",
-    "validate:dataset": "tsx scripts/validateDataset.ts"
+    "validate:dataset": "tsx scripts/validateDataset.ts && tsx scripts/qualityReport.ts",
+    "quality:report": "tsx scripts/qualityReport.ts"
   },
   "repository": {
     "type": "git",

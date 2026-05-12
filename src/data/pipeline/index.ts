@@ -19,6 +19,7 @@ import { enrichCountryWithObservations } from './reconcile';
 import { enrichRelationshipWithObservations } from './reconcileRelationships';
 import { buildIngestedObservations } from './externalProviders';
 import ingestedSnapshot from '../datasets/ingested_snapshot.json';
+import rawWorldBankLatest from '../datasets/raw/world_bank_latest.json';
 import type { RelationshipObservation } from './types';
 
 const groupByCountry = <T extends { countryId: string }>(rows: T[]) => {
@@ -63,7 +64,7 @@ export const enrichProfilesWithSourcePipeline = (
     ...buildGovernanceCrossCheckObservations(profiles),
     ...buildEnergySanctionsCrossCheckObservations(profiles),
     ...buildDemographicCohesionObservations(profiles),
-    ...buildIngestedObservations(profiles, ingestedSnapshot),
+    ...buildIngestedObservations(profiles, ingestedSnapshot, rawWorldBankLatest),
   ];
 
   const byCountry = groupByCountry(indicatorObservations);

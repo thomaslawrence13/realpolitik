@@ -19,6 +19,8 @@ import type {
   Tier,
 } from '../types';
 import { getRiskTier } from '../simulation';
+import { INFORMATION_QUALITY_CONTRACT } from '../data/quality/contract';
+import { deriveQualityRemediationDrivers } from '../data/quality/telemetry';
 import { BarRow, MetricCard, Tabs } from './ui';
 
 export type InspectorTab = 'stats' | 'overview' | 'relationships' | 'analysis' | 'sources';
@@ -744,8 +746,9 @@ function StatsPanel({
     return summary;
   }, [profile.dataQuality]);
   const staleIndicatorCount = profile.dataQuality?.indicators.filter((entry) => entry.stale).length ?? 0;
-  const lowCoverage = profile.sourceCoverage < 70;
+  const lowCoverage = profile.sourceCoverage < INFORMATION_QUALITY_CONTRACT.lowCoverageThresholdPct;
   const fallbackIndicators = evidenceSummary.fallback;
+  const remediationDrivers = deriveQualityRemediationDrivers(profile);
   const showQualityBanner =
     Boolean(profile.dataQuality && profile.dataQuality.degradedReasons.length > 0) ||
     staleIndicatorCount > 0 ||
@@ -777,8 +780,15 @@ function StatsPanel({
           </div>
           <ul className="stats-quality-list">
             {staleIndicatorCount > 0 && <li>{staleIndicatorCount} indicators are stale against SLA thresholds.</li>}
-            {lowCoverage && <li>Source coverage is {profile.sourceCoverage}% (below recommended 70%).</li>}
+            {lowCoverage && (
+              <li>
+                Source coverage is {profile.sourceCoverage}% (below recommended {INFORMATION_QUALITY_CONTRACT.lowCoverageThresholdPct}%).
+              </li>
+            )}
             {fallbackIndicators > 0 && <li>{fallbackIndicators} indicators are currently using fallback evidence.</li>}
+            {remediationDrivers.slice(0, 2).map((driver) => (
+              <li key={`driver-${driver}`}>{driver}</li>
+            ))}
             {(profile.dataQuality?.degradedReasons ?? []).slice(0, 3).map((reason) => (
               <li key={reason}>{reason}</li>
             ))}
@@ -1903,6 +1913,16 @@ function SourcesPanel({
               <ul className="bullet-list">
                 {selected.profile.dataQuality.degradedReasons.map((reason) => (
                   <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {remediationDrivers.length > 0 && (
+            <div className="section">
+              <h3 className="section-title">Priority remediation drivers</h3>
+              <ul className="bullet-list">
+                {remediationDrivers.map((driver) => (
+                  <li key={driver}>{driver}</li>
                 ))}
               </ul>
             </div>

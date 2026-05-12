@@ -1,4 +1,5 @@
 import type { CountryProfile, IndicatorTelemetry } from '../types';
+import { INFORMATION_QUALITY_CONTRACT } from '../data/quality/contract';
 
 export type TrustSummary = {
   tone: 'good' | 'warning' | 'bad';
@@ -6,8 +7,8 @@ export type TrustSummary = {
   detail: string;
 };
 
-const HIGH_COVERAGE = 80;
-const LOW_COVERAGE = 60;
+const HIGH_COVERAGE = INFORMATION_QUALITY_CONTRACT.warningCoverageThresholdPct;
+const LOW_COVERAGE = INFORMATION_QUALITY_CONTRACT.lowCoverageThresholdPct;
 
 const evidenceRank = {
   observed: 0,
