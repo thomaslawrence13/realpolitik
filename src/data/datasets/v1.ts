@@ -2,7 +2,7 @@ import type { DatasetBundle } from '../../types';
 
 export const geopoliticalDatasetV1: DatasetBundle = {
   version: '2026.05-data-prototype-v13',
-  scenarioTimeline: ['2026', '2027', '2028', '2029', '2030', '2031', '2032', '2033', '2034', '2035'],
+  scenarioTimeline: ['2022', '2023', '2024'],
   methodologyNotes: [
     'This build uses a versioned dataset boundary so the UI can move off hardcoded country state and onto replaceable data snapshots.',
     'Confidence is still model-derived, but each country now carries explicit source attribution, recency, and coverage metadata.',

@@ -42,6 +42,7 @@ import {
   clearHash,
   decodeStateFromHash,
 } from './lib/urlState';
+import { clampTimelineIndex } from './lib/timeline';
 import { TopBar } from './components/TopBar';
 import { LeftRail } from './components/LeftRail';
 import { RightInspector } from './components/RightInspector';
@@ -142,8 +143,9 @@ const fromHash = decodeStateFromHash();
 if (fromHash) clearHash();
 
 export default function App() {
+  const clampIndex = (index: number) => clampTimelineIndex(index, scenarioTimeline.length);
   const [timelineIndex, setTimelineIndex] = useState(
-    fromHash?.timelineIndex ?? persisted?.timelineIndex ?? 0,
+    clampIndex(fromHash?.timelineIndex ?? persisted?.timelineIndex ?? 0),
   );
   const [filters, setFilters] = useState<Filters>(persisted?.filters ?? defaultFilters);
   const [search, setSearch] = useState('');
@@ -570,7 +572,7 @@ export default function App() {
     setScenarioName(scenario.name);
     setScenarioInputs({ ...scenario.inputs });
     setWeightSetKey(scenario.weightSetKey);
-    setTimelineIndex(scenario.timelineIndex);
+    setTimelineIndex(clampIndex(scenario.timelineIndex));
     setActiveEventIds(scenario.activeEventIds ?? []);
   };
 
@@ -721,7 +723,7 @@ export default function App() {
   const shellStyle = { '--drawer-h': `${drawerHeight}px` } as CSSProperties;
   const handleTimelineChange = (index: number) => {
     setIsPlaying(false);
-    setTimelineIndex(index);
+    setTimelineIndex(clampIndex(index));
   };
 
   // Persist UI + scenarios to localStorage with a 300 ms debounce so rapid
@@ -856,6 +858,7 @@ export default function App() {
         comparisonScenarioName={comparisonScenario?.name ?? null}
         onClearComparison={clearComparison}
         sparkline={selectedSparkline}
+        allCountries={simulated}
       />
 
       <BottomDrawer

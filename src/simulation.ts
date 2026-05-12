@@ -32,6 +32,7 @@ const DEBT_RISK_THRESHOLD_PCT = 100;
 const DEBT_RISK_MAX_CONTRIBUTION = 8;
 // Scaling: points of risk per percentage-point of debt above the threshold.
 const DEBT_RISK_MULTIPLIER = 0.05;
+const TIMELINE_START_YEAR = 2022;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -247,14 +248,18 @@ const buildHistory = (
       includeHistory: false,
     });
     return {
-      label: `${2026 + activeIndex + offset}`,
+      label: `${TIMELINE_START_YEAR + activeIndex + offset}`,
       alignment: snapshot.alignment,
       confidence: snapshot.confidence,
     };
   });
 
   // Append current year using already-computed values — no extra simulation needed.
-  past.push({ label: `${2026 + activeIndex}`, alignment: currentAlignment, confidence: currentConfidence });
+  past.push({
+    label: `${TIMELINE_START_YEAR + activeIndex}`,
+    alignment: currentAlignment,
+    confidence: currentConfidence,
+  });
   return past;
 };
 

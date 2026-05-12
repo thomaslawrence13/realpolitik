@@ -8,6 +8,7 @@ import type {
   DatasetSource,
   IndicatorTelemetry,
   EconomicStats,
+  HistoricalMetricSeries,
   MilitaryStats,
   ProbabilityExplanation,
   RelationshipDimensionKey,
@@ -41,6 +42,7 @@ type Props = {
   comparisonScenarioName: string | null;
   onClearComparison: () => void;
   sparkline: SparklineSeries | null;
+  allCountries: SimulatedCountry[];
 };
 
 export interface SparklineSeries {
@@ -68,6 +70,13 @@ const formatCountryId = (id: string) =>
     : id.split('-').filter(Boolean).map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 const relationshipTagBorderAlpha = '33';
 const relationshipTagBackgroundAlpha = '14';
+const LARGE_VALUE_THRESHOLD = 100;
+const LARGE_VALUE_DECIMALS = 1;
+const SMALL_VALUE_DECIMALS = 2;
+const HISTORICAL_CHART_WIDTH = 520;
+const HISTORICAL_CHART_HEIGHT = 180;
+const HISTORICAL_CHART_PAD_X = 34;
+const HISTORICAL_CHART_PAD_Y = 18;
 
 // Stable ordered key list for probability bars — avoids Object.keys() on every render.
 const PROBABILITY_KEYS: ReadonlyArray<keyof SimulatedCountry['probabilities']> = ['blocA', 'blocB', 'nonAligned'];
@@ -155,6 +164,7 @@ export function RightInspector({
   comparisonScenarioName,
   onClearComparison,
   sparkline,
+  allCountries,
 }: Props) {
   const alignmentChanged = selected.alignment !== baselineSelected.alignment;
   const bodyRef = useRef<HTMLDivElement | null>(null);
@@ -210,6 +220,7 @@ export function RightInspector({
             selected={selected}
             comparisonSelected={comparisonSelected}
             comparisonScenarioName={comparisonScenarioName}
+            allCountries={allCountries}
           />
         )}
 
@@ -517,6 +528,134 @@ function InlineSourceTag({ sources, ids }: { sources: DatasetSource[]; ids: stri
   );
 }
 
+const parsePeriod = (period: string) => {
+  const year = Number.parseInt(period, 10);
+  return Number.isFinite(year) ? year : Number.NaN;
+};
+
+const formatMetricValue = (value: number, unit: string) => {
+  const rounded = Math.abs(value) >= LARGE_VALUE_THRESHOLD
+    ? value.toFixed(LARGE_VALUE_DECIMALS)
+    : value.toFixed(SMALL_VALUE_DECIMALS);
+  return `${rounded.replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')} ${unit}`;
+};
+
+const buildAverageHistoricalSeries = (
+  countries: SimulatedCountry[],
+  metricId: HistoricalMetricSeries['metricId'],
+  region?: string,
+): HistoricalMetricSeries | null => {
+  const buckets = new Map<string, { sum: number; count: number }>();
+  let template: HistoricalMetricSeries | null = null;
+
+  for (const country of countries) {
+    if (region && country.profile.region !== region) continue;
+    const series = country.profile.historicalSeries?.find((entry) => entry.metricId === metricId);
+    if (!series) continue;
+    if (!template) template = series;
+    for (const point of series.points) {
+      const bucket = buckets.get(point.period);
+      if (bucket) {
+        bucket.sum += point.value;
+        bucket.count += 1;
+      } else {
+        buckets.set(point.period, { sum: point.value, count: 1 });
+      }
+    }
+  }
+
+  if (!template || buckets.size === 0) return null;
+
+  const points = [...buckets.entries()]
+    .map(([period, bucket]) => ({
+      period,
+      value: bucket.sum / bucket.count,
+      retrievalDate: template.metadata.retrievedAt,
+      quality: 'estimated' as const,
+    }))
+    .sort((left, right) => parsePeriod(left.period) - parsePeriod(right.period));
+
+  return {
+    metricId: template.metricId,
+    label: template.label,
+    points,
+    metadata: template.metadata,
+  };
+};
+
+function HistoricalTrendChart({
+  lines,
+  unit,
+}: {
+  lines: Array<{ label: string; color: string; points: HistoricalMetricSeries['points'] }>;
+  unit: string;
+}) {
+  const width = HISTORICAL_CHART_WIDTH;
+  const height = HISTORICAL_CHART_HEIGHT;
+  const padX = HISTORICAL_CHART_PAD_X;
+  const padY = HISTORICAL_CHART_PAD_Y;
+  const innerW = width - padX * 2;
+  const innerH = height - padY * 2;
+
+  const periods = [...new Set(lines.flatMap((line) => line.points.map((point) => point.period)))]
+    .sort((left, right) => parsePeriod(left) - parsePeriod(right));
+  const values = lines.flatMap((line) => line.points.map((point) => point.value));
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = Math.max(0.0001, max - min);
+  const yMin = min - span * 0.08;
+  const yMax = max + span * 0.08;
+
+  const xFor = (period: string) => {
+    const index = periods.indexOf(period);
+    if (index === -1) return padX;
+    if (periods.length === 1) return padX + innerW / 2;
+    return padX + (index / (periods.length - 1)) * innerW;
+  };
+  const yFor = (value: number) => padY + ((yMax - value) / (yMax - yMin || 1)) * innerH;
+
+  const toPath = (points: HistoricalMetricSeries['points']) =>
+    points
+      .map((point, index) => `${index === 0 ? 'M' : 'L'} ${xFor(point.period)} ${yFor(point.value)}`)
+      .join(' ');
+
+  return (
+    <div className="historical-trend-chart">
+      <svg viewBox={`0 0 ${width} ${height}`} aria-label={`Historical trend (${unit})`} className="historical-trend-svg">
+        <line x1={padX} y1={padY} x2={padX} y2={height - padY} className="historical-axis" />
+        <line x1={padX} y1={height - padY} x2={width - padX} y2={height - padY} className="historical-axis" />
+        {lines.map((line) => (
+          <g key={line.label}>
+            <path d={toPath(line.points)} className="historical-line" style={{ stroke: line.color }} />
+            {line.points.map((point) => (
+              <circle
+                key={`${line.label}-${point.period}`}
+                cx={xFor(point.period)}
+                cy={yFor(point.value)}
+                r={2.6}
+                style={{ fill: line.color }}
+              />
+            ))}
+          </g>
+        ))}
+        {periods.map((period) => (
+          <text key={period} x={xFor(period)} y={height - 5} textAnchor="middle" className="historical-axis-label">
+            {period}
+          </text>
+        ))}
+      </svg>
+      <div className="historical-legend">
+        {lines.map((line) => (
+          <span key={line.label} className="historical-legend-item">
+            <i style={{ background: line.color }} aria-hidden />
+            {line.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /**
  * Statistics tab — shows all structured data fields for the selected country
  * across multiple domains (economy, military, demographics, energy, minerals,
@@ -527,10 +666,12 @@ function StatsPanel({
   selected,
   comparisonSelected,
   comparisonScenarioName,
+  allCountries,
 }: {
   selected: SimulatedCountry;
   comparisonSelected: SimulatedCountry | null;
   comparisonScenarioName: string | null;
+  allCountries: SimulatedCountry[];
 }) {
   const { profile } = selected;
   const econ = profile.economicStats;
@@ -549,20 +690,256 @@ function StatsPanel({
   const tradeTelemetry = getIndicatorTelemetry(selected, 'tradeExposure');
   const militaryTelemetry = getIndicatorTelemetry(selected, 'militaryTreatyLevel');
   const cohesionTelemetry = getIndicatorTelemetry(selected, 'cohesion');
+  const availableHistorical = profile.historicalSeries ?? [];
+  const [historicalMetricId, setHistoricalMetricId] = useState<string>('');
+  const [comparisonCountryMapName, setComparisonCountryMapName] = useState<string>('');
+
+  useEffect(() => {
+    setHistoricalMetricId(availableHistorical[0]?.metricId ?? '');
+    setComparisonCountryMapName('');
+  }, [selected.profile.id]);
+
+  const selectedHistoricalSeries = useMemo(
+    () => availableHistorical.find((series) => series.metricId === historicalMetricId) ?? null,
+    [availableHistorical, historicalMetricId],
+  );
+
+  const comparisonCountry = useMemo(
+    () => {
+      if (comparisonCountryMapName.length === 0) return null;
+      return allCountries.find((country) => country.profile.mapName === comparisonCountryMapName) ?? null;
+    },
+    [allCountries, comparisonCountryMapName],
+  );
+
+  const comparisonHistoricalSeries = useMemo(() => {
+    if (!comparisonCountry || !selectedHistoricalSeries) return null;
+    return (
+      comparisonCountry.profile.historicalSeries?.find(
+        (series) => series.metricId === selectedHistoricalSeries.metricId,
+      ) ?? null
+    );
+  }, [comparisonCountry, selectedHistoricalSeries]);
+
+  const regionAverageSeries = useMemo(() => {
+    if (!selectedHistoricalSeries) return null;
+    return buildAverageHistoricalSeries(allCountries, selectedHistoricalSeries.metricId, selected.profile.region);
+  }, [allCountries, selected.profile.region, selectedHistoricalSeries]);
+
+  const globalAverageSeries = useMemo(() => {
+    if (!selectedHistoricalSeries) return null;
+    return buildAverageHistoricalSeries(allCountries, selectedHistoricalSeries.metricId);
+  }, [allCountries, selectedHistoricalSeries]);
+  const evidenceSummary = useMemo(() => {
+    const indicators = profile.dataQuality?.indicators ?? [];
+    const summary: Record<'observed' | 'estimated' | 'derived' | 'fallback', number> = {
+      observed: 0,
+      estimated: 0,
+      derived: 0,
+      fallback: 0,
+    };
+    indicators.forEach((indicator) => {
+      summary[indicator.evidenceClass] += 1;
+    });
+    return summary;
+  }, [profile.dataQuality]);
+  const staleIndicatorCount = profile.dataQuality?.indicators.filter((entry) => entry.stale).length ?? 0;
+  const lowCoverage = profile.sourceCoverage < 70;
+  const fallbackIndicators = evidenceSummary.fallback;
+  const showQualityBanner =
+    Boolean(profile.dataQuality && profile.dataQuality.degradedReasons.length > 0) ||
+    staleIndicatorCount > 0 ||
+    lowCoverage ||
+    fallbackIndicators > 0;
+  const selectedHistoricalLatestPoint = selectedHistoricalSeries
+    ? selectedHistoricalSeries.points[selectedHistoricalSeries.points.length - 1] ?? null
+    : null;
+  const selectedHistoricalBaseline = useMemo(() => {
+    if (!selectedHistoricalSeries || selectedHistoricalSeries.points.length <= 1) return null;
+    const baselinePoints = selectedHistoricalSeries.points.slice(0, -1);
+    return baselinePoints.reduce((sum, point) => sum + point.value, 0) / baselinePoints.length;
+  }, [selectedHistoricalSeries]);
+  const selectedHistoricalDelta = selectedHistoricalLatestPoint && selectedHistoricalBaseline != null
+    ? selectedHistoricalLatestPoint.value - selectedHistoricalBaseline
+    : null;
 
   return (
     <div className="panel-stack">
       {/* ── Data quality banner ── */}
-      {profile.dataQuality && profile.dataQuality.degradedReasons.length > 0 && (
+      {showQualityBanner && (
         <div className="callout callout-warning stats-quality-notice">
           <strong>Data quality notice</strong>
+          <div className="methodology-priority-gaps methodology-evidence-gaps">
+            <span>Observed {evidenceSummary.observed}</span>
+            <span>Estimated {evidenceSummary.estimated}</span>
+            <span>Derived {evidenceSummary.derived}</span>
+            <span>Fallback {evidenceSummary.fallback}</span>
+          </div>
           <ul className="stats-quality-list">
-            {profile.dataQuality.degradedReasons.slice(0, 3).map((reason) => (
+            {staleIndicatorCount > 0 && <li>{staleIndicatorCount} indicators are stale against SLA thresholds.</li>}
+            {lowCoverage && <li>Source coverage is {profile.sourceCoverage}% (below recommended 70%).</li>}
+            {fallbackIndicators > 0 && <li>{fallbackIndicators} indicators are currently using fallback evidence.</li>}
+            {(profile.dataQuality?.degradedReasons ?? []).slice(0, 3).map((reason) => (
               <li key={reason}>{reason}</li>
             ))}
           </ul>
         </div>
       )}
+
+      <div className="profile-section">
+        <h3 className="profile-section-title">
+          <span className="profile-section-icon" aria-hidden={true}>📊</span>
+          Historical trend comparison
+        </h3>
+        {availableHistorical.length === 0 ? (
+          <p className="profile-stat-note">No historical indicator series available for this country yet.</p>
+        ) : (
+          <div className="historical-trends">
+            <div className="historical-controls">
+              <label>
+                <span>Indicator</span>
+                <select
+                  value={historicalMetricId}
+                  onChange={(event) => setHistoricalMetricId(event.target.value)}
+                >
+                  {availableHistorical.map((series) => (
+                    <option key={series.metricId} value={series.metricId}>
+                      {series.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Compare country</span>
+                <select
+                  value={comparisonCountryMapName}
+                  onChange={(event) => setComparisonCountryMapName(event.target.value)}
+                >
+                  <option value="">None</option>
+                  {allCountries
+                    .filter((country) => country.profile.id !== profile.id)
+                    .sort((left, right) => left.profile.displayName.localeCompare(right.profile.displayName))
+                    .map((country) => (
+                      <option key={country.profile.id} value={country.profile.mapName}>
+                        {country.profile.displayName}
+                      </option>
+                    ))}
+                </select>
+              </label>
+            </div>
+            {selectedHistoricalSeries && (
+              <>
+                <div className="historical-summary-grid">
+                  <article className="historical-summary-card">
+                    <span>
+                      Current (
+                      {selectedHistoricalLatestPoint ? selectedHistoricalLatestPoint.period : 'n/a'}
+                      )
+                    </span>
+                    <strong>
+                      {selectedHistoricalLatestPoint
+                        ? formatMetricValue(
+                            selectedHistoricalLatestPoint.value,
+                            selectedHistoricalSeries.metadata.unit,
+                          )
+                        : 'n/a'}
+                    </strong>
+                  </article>
+                  <article className="historical-summary-card">
+                    <span>Historical baseline</span>
+                    <strong>
+                      {selectedHistoricalBaseline != null
+                        ? formatMetricValue(
+                            selectedHistoricalBaseline,
+                            selectedHistoricalSeries.metadata.unit,
+                          )
+                        : 'n/a'}
+                    </strong>
+                  </article>
+                  <article className="historical-summary-card">
+                    <span>Delta vs baseline</span>
+                    <strong>
+                      {selectedHistoricalDelta == null
+                        ? 'n/a'
+                        : `${selectedHistoricalDelta >= 0 ? '+' : ''}${formatMetricValue(selectedHistoricalDelta, selectedHistoricalSeries.metadata.unit)}`}
+                    </strong>
+                  </article>
+                </div>
+                <HistoricalTrendChart
+                  unit={selectedHistoricalSeries.metadata.unit}
+                  lines={[
+                    {
+                      label: selected.profile.displayName,
+                      color: '#60a5fa',
+                      points: selectedHistoricalSeries.points,
+                    },
+                    ...(comparisonHistoricalSeries
+                      ? [{
+                          label: comparisonCountry?.profile.displayName ?? 'Comparison country',
+                          color: '#f97316',
+                          points: comparisonHistoricalSeries.points,
+                        }]
+                      : []),
+                    ...(regionAverageSeries
+                      ? [{
+                          label: `${formatTitle(selected.profile.region)} average`,
+                          color: '#a78bfa',
+                          points: regionAverageSeries.points,
+                        }]
+                      : []),
+                    ...(globalAverageSeries
+                      ? [{
+                          label: 'Global average',
+                          color: '#34d399',
+                          points: globalAverageSeries.points,
+                        }]
+                      : []),
+                  ]}
+                />
+                <ul className="kv-list historical-metadata">
+                  <li>
+                    <span>Source</span>
+                    <strong>
+                      <a
+                        href={selectedHistoricalSeries.metadata.sourceUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-source-link"
+                      >
+                        {selectedHistoricalSeries.metadata.sourceTitle}
+                      </a>
+                    </strong>
+                  </li>
+                  <li>
+                    <span>Definition</span>
+                    <strong>{selectedHistoricalSeries.metadata.definition}</strong>
+                  </li>
+                  <li>
+                    <span>Methodology</span>
+                    <strong>{selectedHistoricalSeries.metadata.methodology}</strong>
+                  </li>
+                  <li>
+                    <span>Last updated</span>
+                    <strong>{selectedHistoricalSeries.metadata.lastUpdated}</strong>
+                  </li>
+                  <li>
+                    <span>Coverage</span>
+                    <strong>{selectedHistoricalSeries.metadata.coverage}</strong>
+                  </li>
+                  <li>
+                    <span>Retrieved</span>
+                    <strong>{selectedHistoricalSeries.metadata.retrievedAt}</strong>
+                  </li>
+                  <li>
+                    <span>Quality</span>
+                    <strong>{selectedHistoricalSeries.metadata.confidenceFlags.join(' · ')}</strong>
+                  </li>
+                </ul>
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* ── Identity ── */}
       <div className="profile-section">

@@ -221,6 +221,41 @@ export interface SoftPowerProfile {
   notes?: string;
 }
 
+export type HistoricalMetricId =
+  | 'gdpGrowth'
+  | 'inflation'
+  | 'tradeOpenness'
+  | 'militaryBurden'
+  | 'unemployment';
+
+export interface HistoricalMetricPoint {
+  period: string;
+  value: number;
+  retrievalDate: string;
+  quality: 'observed' | 'estimated' | 'fallback';
+}
+
+export interface HistoricalMetricMetadata {
+  sourceId: string;
+  sourceTitle: string;
+  sourceUrl: string;
+  definition: string;
+  unit: string;
+  methodology: string;
+  lastUpdated: string;
+  coverage: string;
+  confidenceFlags: string[];
+  retrievedAt: string;
+  frequency: 'annual' | 'quarterly';
+}
+
+export interface HistoricalMetricSeries {
+  metricId: HistoricalMetricId;
+  label: string;
+  points: HistoricalMetricPoint[];
+  metadata: HistoricalMetricMetadata;
+}
+
 export interface CountryRecord {
   id: string;
   mapName: string;
@@ -259,6 +294,8 @@ export interface CountryRecord {
   criticalMinerals?: CriticalMineralEntry[];
   /** Soft-power and cultural reach proxy (v11). */
   softPower?: SoftPowerProfile;
+  /** Historical observed indicator series with provenance metadata. */
+  historicalSeries?: HistoricalMetricSeries[];
 }
 
 export interface RelationshipEdge {
