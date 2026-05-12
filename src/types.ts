@@ -379,14 +379,71 @@ export interface CountryInformationScore {
   displayName: string;
   informationScore: number;
   yearsStale: number;
+  staleIndicatorCount: number;
+  fallbackIndicatorCount: number;
+  lowConfidenceIndicatorCount: number;
   sourceCoverage: number;
   completeness: number;
   stale: boolean;
   gaps: string[];
+  remediationDrivers: string[];
+  averageIndicatorConfidence: number;
+  evidenceSummary: {
+    observed: number;
+    estimated: number;
+    derived: number;
+    fallback: number;
+  };
+}
+
+export interface InformationScoreWeights {
+  coverage: number;
+  completeness: number;
+  recency: number;
+  evidence: number;
+  confidence: number;
+}
+
+export interface InformationQualityKpiTargets {
+  minimumAverageInformationScore: number;
+  maximumLowQualityCountries: number;
+  maximumStaleCountries: number;
+  maximumStaticRuntimeScoreDelta: number;
+}
+
+export interface InformationQualityKpiStatus {
+  averageInformationScoreWithinTarget: boolean;
+  lowQualityCountWithinTarget: boolean;
+  staleCountryCountWithinTarget: boolean;
+  staticRuntimeScoreDeltaWithinTarget: boolean;
+  staticRuntimeScoreDelta: number | null;
+}
+
+export interface InformationQualityOutputInventoryItem {
+  key: 'dataQuality' | 'informationQualityTelemetry' | 'ingestTelemetry' | 'trustSummary';
+  origin: 'static-at-build' | 'runtime-live';
+  description: string;
+}
+
+export interface InformationQualityContract {
+  contractVersion: string;
+  scoringVersion: string;
+  scoreWeights: InformationScoreWeights;
+  staleThresholdDays: number;
+  lowCoverageThresholdPct: number;
+  warningCoverageThresholdPct: number;
+  minimumIndicatorConfidence: number;
+  outputs: InformationQualityOutputInventoryItem[];
+  kpiTargets: InformationQualityKpiTargets;
 }
 
 export interface InformationQualityTelemetry {
+  layer: 'static-at-build' | 'runtime-live';
   assessedAt: string;
+  scoringVersion: string;
+  scoreWeights: InformationScoreWeights;
+  kpiTargets: InformationQualityKpiTargets;
+  kpiStatus: InformationQualityKpiStatus;
   averageInformationScore: number;
   staleCountryCount: number;
   highQualityCount: number;

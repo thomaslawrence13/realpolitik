@@ -5,6 +5,7 @@ import type {
   EventCategory,
   EventTemplate,
   IngestTelemetry,
+  InformationQualityContract,
   InformationQualityTelemetry,
   RegimeType,
   SavedScenario,
@@ -63,7 +64,15 @@ type Props = {
   eventFeed: EventFeedItem[];
   methodologyNotes: string[];
   informationQuality: InformationQualityTelemetry;
+  baselineInformationQuality: InformationQualityTelemetry;
+  informationQualityContract: InformationQualityContract;
   ingestTelemetry: IngestTelemetry;
+  liveDataDiagnostics: {
+    totalIndicators: number;
+    succeededIndicators: number;
+    failedIndicators: number;
+    failedCodes: string[];
+  } | null;
   scenarioTimeline: string[];
   events: EventTemplate[];
   activeEventIds: string[];
@@ -115,7 +124,10 @@ export function BottomDrawer({
   eventFeed,
   methodologyNotes,
   informationQuality,
+  baselineInformationQuality,
+  informationQualityContract,
   ingestTelemetry,
+  liveDataDiagnostics,
   scenarioTimeline,
   events,
   activeEventIds,
@@ -229,7 +241,10 @@ export function BottomDrawer({
           <MethodologyPanel
             notes={methodologyNotes}
             informationQuality={informationQuality}
+            baselineInformationQuality={baselineInformationQuality}
+            informationQualityContract={informationQualityContract}
             ingestTelemetry={ingestTelemetry}
+            liveDataDiagnostics={liveDataDiagnostics}
           />
         )}
       </div>
@@ -1120,11 +1135,22 @@ function HistoryCard({
 function MethodologyPanel({
   notes,
   informationQuality,
+  baselineInformationQuality,
+  informationQualityContract,
   ingestTelemetry,
+  liveDataDiagnostics,
 }: {
   notes: string[];
   informationQuality: InformationQualityTelemetry;
+  baselineInformationQuality: InformationQualityTelemetry;
+  informationQualityContract: InformationQualityContract;
   ingestTelemetry: IngestTelemetry;
+  liveDataDiagnostics: {
+    totalIndicators: number;
+    succeededIndicators: number;
+    failedIndicators: number;
+    failedCodes: string[];
+  } | null;
 }) {
   const priorityCountries = informationQuality.weakestInformationCountries.slice(0, 8);
   const pipelineReconciliation = Object.entries(indicatorSourcePriority).map(([indicator, priority]) => ({
@@ -1174,8 +1200,29 @@ function MethodologyPanel({
     'Some relationship edges are derived rather than directly observed and are tagged lower confidence.',
     'Simulation outputs are analytical model outputs and should not be interpreted as deterministic forecasts.',
   ];
+  const staticRuntimeScoreDelta =
+    Math.round(
+      Math.abs(informationQuality.averageInformationScore - baselineInformationQuality.averageInformationScore) * 10,
+    ) / 10;
   return (
     <div className="methodology-panel">
+      <section className="scenario-meta-card">
+        <strong>Information-quality contract baseline</strong>
+        <p className="methodology-telemetry-line">
+          Contract {informationQualityContract.contractVersion} · Scoring {informationQualityContract.scoringVersion}
+        </p>
+        <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+          Runtime avg {informationQuality.averageInformationScore} · Static avg {baselineInformationQuality.averageInformationScore} · Δ {staticRuntimeScoreDelta}
+        </p>
+        <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+          KPI status: avg {informationQuality.kpiStatus.averageInformationScoreWithinTarget ? '✓' : '✕'} · low-quality {informationQuality.kpiStatus.lowQualityCountWithinTarget ? '✓' : '✕'} · stale {informationQuality.kpiStatus.staleCountryCountWithinTarget ? '✓' : '✕'} · layer consistency {informationQuality.kpiStatus.staticRuntimeScoreDeltaWithinTarget ? '✓' : '✕'}
+        </p>
+        {liveDataDiagnostics && liveDataDiagnostics.failedIndicators > 0 && (
+          <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+            Live ingest impact: {liveDataDiagnostics.failedIndicators}/{liveDataDiagnostics.totalIndicators} live indicators failed ({liveDataDiagnostics.failedCodes.join(', ')}).
+          </p>
+        )}
+      </section>
       <section className="scenario-meta-card">
         <strong>Evidence-class legend</strong>
         <p className="methodology-telemetry-line">
@@ -1204,10 +1251,13 @@ function MethodologyPanel({
       <section className="scenario-meta-card">
         <strong>Information quality telemetry</strong>
         <p className="methodology-telemetry-line">
-          Assessed {new Date(informationQuality.assessedAt).toLocaleDateString()} · Average score {informationQuality.averageInformationScore}
+          Runtime assessed {new Date(informationQuality.assessedAt).toLocaleDateString()} · Average score {informationQuality.averageInformationScore}
         </p>
         <p className="methodology-telemetry-line methodology-telemetry-line-tight">
           High quality: {informationQuality.highQualityCount} · Low quality: {informationQuality.lowQualityCount} · Stale records: {informationQuality.staleCountryCount}
+        </p>
+        <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+          Targets → Avg ≥ {informationQuality.kpiTargets.minimumAverageInformationScore} · Low-quality ≤ {informationQuality.kpiTargets.maximumLowQualityCountries} · Stale ≤ {informationQuality.kpiTargets.maximumStaleCountries}
         </p>
         <div className="methodology-priority-targets">
           <strong className="methodology-priority-label">Priority refresh targets:</strong>{' '}
@@ -1225,7 +1275,7 @@ function MethodologyPanel({
               </header>
               <p>
                 Coverage {country.sourceCoverage}% · Completeness {Math.round(country.completeness * 100)}%
-                {country.stale ? ` · ${country.yearsStale}y stale` : ''}
+                {country.stale ? ` · ${country.yearsStale}y stale` : ''} · Fallback {country.fallbackIndicatorCount} · Low confidence {country.lowConfidenceIndicatorCount}
               </p>
               {country.gaps.length > 0 && (
                 <div className="methodology-priority-gaps">
@@ -1234,6 +1284,25 @@ function MethodologyPanel({
                   ))}
                 </div>
               )}
+              {country.remediationDrivers.length > 0 && (
+                <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+                  {country.remediationDrivers[0]}
+                </p>
+              )}
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="scenario-meta-card">
+        <strong>Quality output inventory</strong>
+        <div className="methodology-priority-grid">
+          {informationQualityContract.outputs.map((entry) => (
+            <article key={`quality-output-${entry.key}`} className="methodology-priority-card">
+              <header>
+                <strong>{entry.key}</strong>
+                <span className="methodology-priority-score">{entry.origin}</span>
+              </header>
+              <p>{entry.description}</p>
             </article>
           ))}
         </div>

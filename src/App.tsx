@@ -5,6 +5,7 @@ import {
   countryProfiles,
   datasetVersion,
   ingestTelemetry,
+  informationQualityContract,
   informationQualityTelemetry,
   methodologyNotes,
   scenarioTimeline,
@@ -29,6 +30,7 @@ import type {
 } from './types';
 import { fetchLiveData } from './data/worldBankClient';
 import { enrichProfiles } from './data/liveEnrichment';
+import { buildInformationQualityTelemetry } from './data/quality/telemetry';
 import { eventLibrary, eventById } from './data/eventLibrary';
 import {
   downloadScenariosFile,
@@ -255,6 +257,15 @@ export default function App() {
 
   // Resizable bottom drawer — height is applied as a CSS custom property on the shell.
   const [drawerHeight, setDrawerHeight] = useState(persisted?.drawerHeight ?? 320);
+
+  const runtimeInformationQuality = useMemo(
+    () =>
+      buildInformationQualityTelemetry(activeProfiles, {
+        layer: 'runtime-live',
+        staticReferenceAverageScore: informationQualityTelemetry.averageInformationScore,
+      }),
+    [activeProfiles],
+  );
 
   // Timeline auto-play — steps through scenario years at a fixed interval.
   const [isPlaying, setIsPlaying] = useState(false);
@@ -860,8 +871,11 @@ export default function App() {
         onToggleComparison={toggleComparison}
         eventFeed={eventFeed}
         methodologyNotes={methodologyNotes}
-        informationQuality={informationQualityTelemetry}
+        informationQuality={runtimeInformationQuality}
+        baselineInformationQuality={informationQualityTelemetry}
+        informationQualityContract={informationQualityContract}
         ingestTelemetry={ingestTelemetry}
+        liveDataDiagnostics={liveDataDiagnostics}
         scenarioTimeline={scenarioTimeline}
         events={eventLibrary}
         activeEventIds={activeEventIds}
