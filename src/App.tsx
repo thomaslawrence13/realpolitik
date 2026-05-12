@@ -303,7 +303,7 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
       }
       return !prev;
     });
-  }, [timelineIndex, setTimelineIndex]);
+  }, [timelineIndex]);
 
   // Dragging the top edge of the bottom drawer resizes it.
   const handleDrawerResizeStart = useCallback((startClientY: number) => {
@@ -553,7 +553,7 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
     setWeightSetKey(scenario.weightSetKey);
     setTimelineIndex(clampIndex(scenario.timelineIndex));
     setActiveEventIds(scenario.activeEventIds ?? []);
-  }, [setTimelineIndex]);
+  }, []);
 
   const deleteScenario = useCallback((id: string) => {
     setSavedScenarios((current) => {
@@ -703,7 +703,7 @@ const [overlayMode, setOverlayMode] = useState<OverlayMode>(persisted?.overlayMo
   const handleTimelineChange = useCallback((index: number) => {
     setIsPlaying(false);
     setTimelineIndex(clampIndex(index));
-  }, [setTimelineIndex]);
+  }, []);
   const handleToggleLeft = useCallback(() => setLeftOpen((value) => !value), []);
   const handleToggleRight = useCallback(() => setRightOpen((value) => !value), []);
   const handleToggleDrawer = useCallback(() => setDrawerOpen((value) => !value), []);
