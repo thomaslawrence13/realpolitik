@@ -585,6 +585,8 @@ export type OverlayConnection = {
   y1: number;
   x2: number;
   y2: number;
+  boundaryX: number;
+  boundaryY: number;
 };
 
 type Props = {
@@ -602,6 +604,8 @@ type Props = {
 type RelationshipArcTarget = {
   mapName: string;
   score?: number;
+  boundaryX: number;
+  boundaryY: number;
 };
 
 /** Draw relationship arcs from a source country to multiple targets. */
@@ -621,9 +625,7 @@ function drawRelationshipArcs(
   ctx.lineJoin = 'round';
 
   targetCountries.forEach((target) => {
-    const centroid = countryCentroids.get(target.mapName);
-    if (!centroid) return;
-    const [tx, ty] = centroid;
+    const [tx, ty] = [target.boundaryX, target.boundaryY];
 
     // Quadratic curve control point: perpendicular to midpoint
     const mx = (sx + tx) / 2;
@@ -643,12 +645,12 @@ function drawRelationshipArcs(
     const opacity = target.score != null ? Math.max(minOpacity, Math.min(maxOpacity, target.score / 100)) : 0.45;
     const scoreMultiplier = target.score != null ? 1 + (target.score / 60) : 1;
 
-    // Draw the arc
+    // Draw the arc with thinner lines
     ctx.beginPath();
     ctx.strokeStyle = style?.stroke
       ? style.stroke.replace('__OPACITY__', `${opacity}`)
       : `rgba(148, 163, 184, ${opacity})`;
-    ctx.lineWidth = (style?.width ?? 1.5) * scoreMultiplier;
+    ctx.lineWidth = (style?.width ?? 0.8) * scoreMultiplier;
     if (style?.dashPattern) {
       ctx.setLineDash(style.dashPattern);
     }
@@ -662,7 +664,7 @@ function drawRelationshipArcs(
     ctx.fillStyle = style?.stroke
       ? style.stroke.replace('__OPACITY__', `${opacity}`)
       : `rgba(148, 163, 184, ${opacity})`;
-    ctx.arc(tx, ty, 3 * invZoom, 0, Math.PI * 2);
+    ctx.arc(tx, ty, 2 * invZoom, 0, Math.PI * 2);
     ctx.fill();
   });
 
@@ -1029,6 +1031,23 @@ export const MapCanvas = memo(function MapCanvas({
     saveMapUiState({ overlayMode, fillMode });
   }, [fillMode, overlayMode]);
 
+  // Compute boundary point: extend from target centroid in direction away from source
+  const computeBoundaryPoint = (
+    sourceX: number,
+    sourceY: number,
+    targetX: number,
+    targetY: number,
+    offset: number = 45,
+  ): [number, number] => {
+    const dx = targetX - sourceX;
+    const dy = targetY - sourceY;
+    const distance = Math.hypot(dx, dy);
+    if (distance === 0) return [targetX, targetY];
+    const nx = dx / distance;
+    const ny = dy / distance;
+    return [targetX + nx * offset, targetY + ny * offset];
+  };
+
   // Overlay connections derive entirely from byName + selection + overlay mode,
   // so MapCanvas owns the computation. App.tsx no longer needs lib/map at all,
   // which lets the world-atlas TopoJSON ride along with this component's chunk.
@@ -1043,6 +1062,12 @@ export const MapCanvas = memo(function MapCanvas({
       .map((relationship) => {
         const targetCentroid = countryCentroids.get(relationship.mapName);
         if (!targetCentroid || relationship.mapName === selectedName) return null;
+        const [boundaryX, boundaryY] = computeBoundaryPoint(
+          sourceX,
+          sourceY,
+          targetCentroid[0],
+          targetCentroid[1],
+        );
         return {
           countryId: relationship.countryId,
           mapName: relationship.mapName,
@@ -1052,6 +1077,8 @@ export const MapCanvas = memo(function MapCanvas({
           y1: sourceY,
           x2: targetCentroid[0],
           y2: targetCentroid[1],
+          boundaryX,
+          boundaryY,
         };
       })
       .filter((connection): connection is OverlayConnection => Boolean(connection))
@@ -1267,7 +1294,7 @@ export const MapCanvas = memo(function MapCanvas({
       const dashPattern = isDependency ? [6, 5] : undefined;
       drawRelationshipArcs(ctx, selectedName, overlayConnections, zoom, {
         stroke: modeColor,
-        width: 1.5,
+        width: 0.8,
         minOpacity: 0.4,
         maxOpacity: 0.85,
         dashPattern,
@@ -1276,13 +1303,23 @@ export const MapCanvas = memo(function MapCanvas({
 
     // Highlight arc to hovered country (always visible, overlay-agnostic)
     if (hoveredCountry && hoveredCountry !== selectedName) {
-      drawRelationshipArcs(
-        ctx,
-        selectedName,
-        [{ mapName: hoveredCountry, score: 100 }],
-        zoom,
-        { stroke: 'rgba(248, 250, 252, __OPACITY__)', width: 3, minOpacity: 0.8, maxOpacity: 1 },
-      );
+      const sourceCentroid = countryCentroids.get(selectedName);
+      const targetCentroid = countryCentroids.get(hoveredCountry);
+      if (sourceCentroid && targetCentroid) {
+        const [boundaryX, boundaryY] = computeBoundaryPoint(
+          sourceCentroid[0],
+          sourceCentroid[1],
+          targetCentroid[0],
+          targetCentroid[1],
+        );
+        drawRelationshipArcs(
+          ctx,
+          selectedName,
+          [{ mapName: hoveredCountry, score: 100, boundaryX, boundaryY }],
+          zoom,
+          { stroke: 'rgba(248, 250, 252, __OPACITY__)', width: 2.5, minOpacity: 0.8, maxOpacity: 1 },
+        );
+      }
     }
   }, [hoveredCountry, offset.x, offset.y, overlayConnections, selectedName, zoom]);
 
