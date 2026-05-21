@@ -18,21 +18,16 @@ import type {
   Tier,
   WeightSetKey,
 } from './types';
+import {
+  TIER_VALUES,
+  DEBT_RISK,
+  TIMELINE_START_YEAR,
+  RISK_THRESHOLDS,
+  CONFIDENCE_THRESHOLDS,
+  SCENARIO_INPUT_BOUNDS,
+} from './lib/constants';
 
-const tierValue: Record<Tier, number> = {
-  low: 18,
-  medium: 50,
-  high: 82,
-};
-
-// External-debt risk contribution constants.
-// Threshold: debt-to-GDP above which risk contribution begins.
-const DEBT_RISK_THRESHOLD_PCT = 100;
-// Maximum risk points added by external-debt vulnerability.
-const DEBT_RISK_MAX_CONTRIBUTION = 8;
-// Scaling: points of risk per percentage-point of debt above the threshold.
-const DEBT_RISK_MULTIPLIER = 0.05;
-const TIMELINE_START_YEAR = 2022;
+const tierValue: Record<Tier, number> = TIER_VALUES;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -43,12 +38,15 @@ const sumContributions = (lines: ContributionLine[]) =>
 
 const normalizeRegionLabel = (value: string) => value.trim().toLowerCase();
 
+/** Classify risk level into tiers based on thresholds. */
 const classifyRisk = (risk: number): Tier => {
-  if (risk >= 67) return 'high';
-  if (risk >= 34) return 'medium';
+  if (risk >= RISK_THRESHOLDS.high) return 'high';
+  if (risk >= RISK_THRESHOLDS.medium) return 'medium';
   return 'low';
 };
 
+/** Resolve alignment based on probability distribution. Returns 'unstable' when high-risk
+ * conditions create meaningful uncertainty between competing alignments. */
 const resolveAlignment = (probabilities: ProbabilitySet, risk: number): Alignment => {
   // Avoid sort — only 3 fixed keys, so a linear scan is faster.
   const { blocA, blocB, nonAligned } = probabilities;
@@ -64,7 +62,7 @@ const resolveAlignment = (probabilities: ProbabilitySet, risk: number): Alignmen
     topLabel = 'nonAligned'; topValue = nonAligned; secondValue = Math.max(blocA, blocB);
   }
 
-  if (risk >= 72 && topValue - secondValue < 15) {
+  if (risk >= CONFIDENCE_THRESHOLDS.unstableRiskFloor && topValue - secondValue < CONFIDENCE_THRESHOLDS.unstableProbabilityMargin) {
     return 'unstable';
   }
 
@@ -119,9 +117,15 @@ export const defaultScenarioInputs: ScenarioInputs = {
 
 const scenarioInputKeys = Object.keys(defaultScenarioInputs) as Array<keyof ScenarioInputs>;
 
+/** Clamp scenario input to valid bounds. Treaty shift has asymmetric bounds [-60, 60];
+ * other inputs are [0, 100]. */
 const clampScenarioInput = (key: keyof ScenarioInputs, value: number): number => {
-  if (key === 'treatyShift') return Math.min(60, Math.max(-60, value));
-  return Math.min(100, Math.max(0, value));
+  if (key === 'treatyShift') {
+    const { min, max } = SCENARIO_INPUT_BOUNDS.treaty;
+    return Math.min(max, Math.max(min, value));
+  }
+  const { min, max } = SCENARIO_INPUT_BOUNDS.default;
+  return Math.min(max, Math.max(min, value));
 };
 
 const createZeroScenarioInputs = (): ScenarioInputs => {
@@ -151,11 +155,13 @@ const eventAppliesToProfile = (profile: CountryProfile, event: EventTemplate): b
   });
 };
 
+/** Filter events that apply to a given country profile based on region tags. */
 export const getActiveEventsForProfile = (
   profile: CountryProfile,
   activeEvents: EventTemplate[],
 ): EventTemplate[] => activeEvents.filter((event) => eventAppliesToProfile(profile, event));
 
+/** Accumulate scenario inputs from matching events and clamp to valid bounds. */
 export const getScenarioInputsForProfile = (
   baseInputs: ScenarioInputs,
   activeEvents: EventTemplate[],
@@ -219,6 +225,7 @@ export const simulationWeightSets: Record<WeightSetKey, SimulationWeightSet> = {
   },
 };
 
+/** Retrieve a named weight set for sensitivity analysis or comparison. */
 export const getSimulationWeightSet = (key: WeightSetKey) => simulationWeightSets[key];
 
 const resolveOptions = (options?: SimulationOptions) => ({
@@ -263,6 +270,8 @@ const buildHistory = (
   return past;
 };
 
+/** Simulate a country's alignment, risk, and probabilities. Returns alignment classification,
+ * confidence score, risk level, and optionally detailed breakdowns of all contributing factors. */
 export const simulateCountry = (
   profile: CountryProfile,
   timelineIndex: number,
@@ -329,8 +338,8 @@ export const simulateCountry = (
     : -6
     : 0;
   const fxCushionDelta = fiscal ? clamp((fiscal.fxReservesMonthsImports - 3) * 0.4, -4, 4) : 0;
-  const debtRiskBoost = fiscal && fiscal.externalDebtGdpPct > DEBT_RISK_THRESHOLD_PCT
-    ? Math.min(DEBT_RISK_MAX_CONTRIBUTION, (fiscal.externalDebtGdpPct - DEBT_RISK_THRESHOLD_PCT) * DEBT_RISK_MULTIPLIER)
+  const debtRiskBoost = fiscal && fiscal.externalDebtGdpPct > DEBT_RISK.thresholdPct
+    ? Math.min(DEBT_RISK.maxContribution, (fiscal.externalDebtGdpPct - DEBT_RISK.thresholdPct) * DEBT_RISK.multiplier)
     : 0;
   const fiscalCohesionDelta = fiscal ? fiscalRatingValue + fxCushionDelta : 0;
 
@@ -472,8 +481,8 @@ export const simulateCountry = (
   const confidence = clamp(confidenceTotal, 38, 96);
 
   const riskBase = profile.baselineRisk;
-  const debtRiskContrib = fiscal && fiscal.externalDebtGdpPct > DEBT_RISK_THRESHOLD_PCT
-    ? Math.min(DEBT_RISK_MAX_CONTRIBUTION, (fiscal.externalDebtGdpPct - DEBT_RISK_THRESHOLD_PCT) * DEBT_RISK_MULTIPLIER)
+  const debtRiskContrib = fiscal && fiscal.externalDebtGdpPct > DEBT_RISK.thresholdPct
+    ? Math.min(DEBT_RISK.maxContribution, (fiscal.externalDebtGdpPct - DEBT_RISK.thresholdPct) * DEBT_RISK.multiplier)
     : 0;
   const waterStressContrib = foodWater && foodWater.waterStressIndex >= 4
     ? (foodWater.waterStressIndex - 3) * 1.8

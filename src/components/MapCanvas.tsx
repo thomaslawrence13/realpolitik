@@ -19,21 +19,19 @@ import { getRiskTier } from '../simulation';
 import { IconButton, SvgIcon } from './ui';
 import { summarizeCountryTrust, TrustTag } from './provenance';
 import { useMapStore } from '../store/useMapStore';
+import { MAP, STORAGE_KEYS } from '../lib/constants';
 
-// Factors used to normalize WheelEvent.deltaY across different deltaMode values
-const WHEEL_LINE_PX = 17;  // approximate pixels per "line" scroll unit
-const WHEEL_PAGE_PX = 500; // approximate pixels per "page" scroll unit
-const MIN_ZOOM = 0.85;
-const MAX_ZOOM = 8;
-const ZOOM_STEP = 0.3;
-// How much of the map (in SVG viewBox units) must remain on-screen when panning
-const PAN_MARGIN = 80;
-// Approximate pixel height of the main hover card (used to clamp card position near the bottom edge)
-const HOVER_CARD_HEIGHT = 115;
-// Country label rendering constants — used when zoom ≥ LABELS_ZOOM_THRESHOLD
-const LABELS_ZOOM_THRESHOLD = 2.5;
-const LABEL_BASE_FONT_SIZE = 4.5; // SVG units; divided by zoom to stay constant on screen
-const LABEL_STROKE_WIDTH = 0.8;   // SVG units; divided by zoom to stay constant on screen
+const WHEEL_LINE_PX = MAP.wheelLinePx;
+const WHEEL_PAGE_PX = MAP.wheelPagePx;
+const MIN_ZOOM = MAP.minZoom;
+const MAX_ZOOM = MAP.maxZoom;
+const ZOOM_STEP = MAP.zoomStep;
+const PAN_MARGIN = MAP.panMargin;
+const HOVER_CARD_HEIGHT = MAP.hoverCardHeight;
+const LABELS_ZOOM_THRESHOLD = MAP.labelsZoomThreshold;
+const LABEL_BASE_FONT_SIZE = MAP.labelBaseFontSize;
+const LABEL_STROKE_WIDTH = MAP.labelStrokeWidth;
+const MAP_UI_STATE_KEY = STORAGE_KEYS.mapUiState;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -63,7 +61,6 @@ const overlayColor: Record<RelationshipDimension, string> = {
 };
 
 const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
-const MAP_UI_STATE_KEY = 'realpolitik:map-ui-state';
 
 type MapUiState = {
   overlayMode: OverlayMode;
@@ -607,26 +604,28 @@ type RelationshipArcTarget = {
   score?: number;
 };
 
-/**
- * Placeholder relationship renderer for the HTML5 canvas overlay.
- * Draws simple quadratic arcs from the source country centroid to each target.
- * This is intentionally minimal and will be replaced with richer bilateral styling later.
- */
+/** Draw relationship arcs from a source country to multiple targets. */
 function drawRelationshipArcs(
   ctx: CanvasRenderingContext2D,
   sourceCountry: string,
   targetCountries: RelationshipArcTarget[],
-  style?: { stroke?: string; width?: number; minOpacity?: number; maxOpacity?: number },
+  zoom: number,
+  style?: { stroke?: string; width?: number; minOpacity?: number; maxOpacity?: number; dashPattern?: number[] },
 ) {
   const source = countryCentroids.get(sourceCountry);
   if (!source || targetCountries.length === 0) return;
   const [sx, sy] = source;
+  const invZoom = 1 / zoom;
   ctx.save();
   ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
   targetCountries.forEach((target) => {
     const centroid = countryCentroids.get(target.mapName);
     if (!centroid) return;
     const [tx, ty] = centroid;
+
+    // Quadratic curve control point: perpendicular to midpoint
     const mx = (sx + tx) / 2;
     const my = (sy + ty) / 2;
     const dx = tx - sx;
@@ -637,19 +636,36 @@ function drawRelationshipArcs(
     const ny = distance === 0 ? -1 : dx / distance;
     const cx = mx + nx * lift;
     const cy = my + ny * lift;
+
+    // Opacity/width based on score
     const minOpacity = style?.minOpacity ?? 0.25;
     const maxOpacity = style?.maxOpacity ?? 0.85;
     const opacity = target.score != null ? Math.max(minOpacity, Math.min(maxOpacity, target.score / 100)) : 0.45;
+    const scoreMultiplier = target.score != null ? 1 + (target.score / 60) : 1;
 
+    // Draw the arc
     ctx.beginPath();
     ctx.strokeStyle = style?.stroke
       ? style.stroke.replace('__OPACITY__', `${opacity}`)
       : `rgba(148, 163, 184, ${opacity})`;
-    ctx.lineWidth = style?.width ?? 1.5;
+    ctx.lineWidth = (style?.width ?? 1.5) * scoreMultiplier;
+    if (style?.dashPattern) {
+      ctx.setLineDash(style.dashPattern);
+    }
     ctx.moveTo(sx, sy);
     ctx.quadraticCurveTo(cx, cy, tx, ty);
     ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw endpoint circle (size constant visually regardless of zoom)
+    ctx.beginPath();
+    ctx.fillStyle = style?.stroke
+      ? style.stroke.replace('__OPACITY__', `${opacity}`)
+      : `rgba(148, 163, 184, ${opacity})`;
+    ctx.arc(tx, ty, 3 * invZoom, 0, Math.PI * 2);
+    ctx.fill();
   });
+
   ctx.restore();
 }
 
@@ -1026,7 +1042,7 @@ export const MapCanvas = memo(function MapCanvas({
     return profile.relationships
       .map((relationship) => {
         const targetCentroid = countryCentroids.get(relationship.mapName);
-        if (!targetCentroid) return null;
+        if (!targetCentroid || relationship.mapName === selectedName) return null;
         return {
           countryId: relationship.countryId,
           mapName: relationship.mapName,
@@ -1243,12 +1259,28 @@ export const MapCanvas = memo(function MapCanvas({
     ctx.scale(scaleX, scaleY);
     ctx.translate(offset.x, offset.y);
     ctx.scale(zoom, zoom);
-    drawRelationshipArcs(ctx, selectedName, overlayConnections);
+
+    // Draw overlay relationships with mode-specific styling
+    if (overlayMode !== 'none') {
+      const modeColor = overlayColor[overlayMode];
+      const isDependency = overlayMode === 'dependency';
+      const dashPattern = isDependency ? [6, 5] : undefined;
+      drawRelationshipArcs(ctx, selectedName, overlayConnections, zoom, {
+        stroke: modeColor,
+        width: 1.5,
+        minOpacity: 0.4,
+        maxOpacity: 0.85,
+        dashPattern,
+      });
+    }
+
+    // Highlight arc to hovered country (always visible, overlay-agnostic)
     if (hoveredCountry && hoveredCountry !== selectedName) {
       drawRelationshipArcs(
         ctx,
         selectedName,
         [{ mapName: hoveredCountry, score: 100 }],
+        zoom,
         { stroke: 'rgba(248, 250, 252, __OPACITY__)', width: 3, minOpacity: 0.8, maxOpacity: 1 },
       );
     }
@@ -1356,27 +1388,6 @@ export const MapCanvas = memo(function MapCanvas({
               />
             )}
 
-            {overlayMode !== 'none' &&
-              overlayConnections.map((connection) => (
-                <g key={`overlay-${connection.countryId}-${overlayMode}`} className="relationship-overlay">
-                  <line
-                    x1={connection.x1}
-                    y1={connection.y1}
-                    x2={connection.x2}
-                    y2={connection.y2}
-                    stroke={overlayColor[overlayMode]}
-                    strokeWidth={(1 + connection.score / 60) * invZoom}
-                    strokeOpacity={0.75}
-                    strokeDasharray={overlayMode === 'dependency' ? `${6 * invZoom} ${5 * invZoom}` : undefined}
-                  />
-                  <circle
-                    cx={connection.x2}
-                    cy={connection.y2}
-                    r={3 * invZoom}
-                    fill={overlayColor[overlayMode]}
-                  />
-                </g>
-              ))}
 
             {/* Country name labels — visible when zoomed in beyond LABELS_ZOOM_THRESHOLD */}
             {zoom >= LABELS_ZOOM_THRESHOLD && centroidEntries.map(([name, [cx, cy]]) => {

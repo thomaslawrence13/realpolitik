@@ -8,8 +8,9 @@ import type {
 } from '../types';
 import type { DrawerTab } from '../components/BottomDrawer';
 import type { InspectorTab } from '../components/RightInspector';
+import { STORAGE_KEYS } from './constants';
 
-const STORAGE_KEY = 'realpolitik:state';
+const STORAGE_KEY = STORAGE_KEYS.persistedState;
 const STORAGE_VERSION = 1;
 const EXPORT_VERSION = 1;
 

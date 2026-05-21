@@ -8,6 +8,8 @@
  * not hammered on every page load.
  */
 
+import { logger } from '../lib/logger';
+
 const WB_API = 'https://api.worldbank.org/v2';
 
 /** ISO alpha-2 country codes for all tracked countries. */
@@ -235,30 +237,41 @@ export const fetchIndicator = async (
 ): Promise<IndicatorValues> => {
   const cacheKey = `${CACHE_PREFIX}${indicator}`;
   const cached = readCache(cacheKey);
-  if (cached) return cached;
-
-  const isoCodes = Object.values(countryIso2).join(';');
-  // per_page=1000 accommodates 134 countries × 3 years = 402 rows with headroom.
-  const sourceParam = indicatorSourceId[indicator] ? `&source=${indicatorSourceId[indicator]}` : '';
-  const url = `${WB_API}/country/${isoCodes}/indicator/${indicatorRequestCode[indicator]}?format=json&mrv=3&per_page=1000${sourceParam}`;
-
-  const response = await fetch(url, { signal });
-  if (!response.ok) throw new Error(`World Bank API (${indicator}): HTTP ${response.status}`);
-
-  const json = (await response.json()) as [unknown, WbDataPoint[] | null];
-  const points = json[1] ?? [];
-
-  // Keep only the first (most recent) non-null value per country.
-  const result: IndicatorValues = {};
-  for (const point of points) {
-    const iso = point.country.id.toUpperCase();
-    if (point.value !== null && !(iso in result)) {
-      result[iso] = point.value;
-    }
+  if (cached) {
+    logger.debug(`World Bank cache hit for ${indicator}`);
+    return cached;
   }
 
-  writeCache(cacheKey, result);
-  return result;
+  try {
+    const isoCodes = Object.values(countryIso2).join(';');
+    // per_page=1000 accommodates 134 countries × 3 years = 402 rows with headroom.
+    const sourceParam = indicatorSourceId[indicator] ? `&source=${indicatorSourceId[indicator]}` : '';
+    const url = `${WB_API}/country/${isoCodes}/indicator/${indicatorRequestCode[indicator]}?format=json&mrv=3&per_page=1000${sourceParam}`;
+
+    const response = await fetch(url, { signal });
+    if (!response.ok) {
+      throw new Error(`World Bank API (${indicator}): HTTP ${response.status}`);
+    }
+
+    const json = (await response.json()) as [unknown, WbDataPoint[] | null];
+    const points = json[1] ?? [];
+
+    // Keep only the first (most recent) non-null value per country.
+    const result: IndicatorValues = {};
+    for (const point of points) {
+      const iso = point.country.id.toUpperCase();
+      if (point.value !== null && !(iso in result)) {
+        result[iso] = point.value;
+      }
+    }
+
+    writeCache(cacheKey, result);
+    logger.debug(`World Bank fetch succeeded for ${indicator}, cached ${Object.keys(result).length} values`);
+    return result;
+  } catch (error) {
+    logger.error(`World Bank fetch failed for ${indicator}`, error);
+    throw error;
+  }
 };
 
 export interface LiveData {
@@ -293,6 +306,7 @@ export interface LiveData {
  * The caller receives whatever partial data is available.
  */
 export const fetchLiveData = async (signal?: AbortSignal): Promise<LiveData> => {
+  logger.info('Starting World Bank data fetch');
   const empty: IndicatorValues = {};
   const requests: Array<[WbIndicator, Promise<IndicatorValues>]> = [
     ['MS.MIL.XPND.GD.ZS', fetchIndicator('MS.MIL.XPND.GD.ZS', signal)],
@@ -313,9 +327,27 @@ export const fetchLiveData = async (signal?: AbortSignal): Promise<LiveData> => 
       valueByCode.set(code, result.value);
       return;
     }
+    if (result.reason instanceof Error) {
+      logger.warn(`Failed to fetch indicator ${code}: ${result.reason.message}`);
+    }
     failedCodes.push(code);
     valueByCode.set(code, empty);
   });
+
+  const diagnostics = {
+    totalIndicators: requests.length,
+    succeededIndicators: requests.length - failedCodes.length,
+    failedIndicators: failedCodes.length,
+    failedCodes,
+  };
+
+  if (failedCodes.length === 0) {
+    logger.info('World Bank data fetch succeeded for all indicators');
+  } else if (failedCodes.length === requests.length) {
+    logger.warn('World Bank data fetch failed for all indicators', diagnostics);
+  } else {
+    logger.info(`World Bank data fetch partial success (${diagnostics.succeededIndicators}/${requests.length})`, diagnostics);
+  }
 
   return {
     militaryExpPct: valueByCode.get('MS.MIL.XPND.GD.ZS') ?? empty,
@@ -325,11 +357,6 @@ export const fetchLiveData = async (signal?: AbortSignal): Promise<LiveData> => 
     politicalStability: valueByCode.get('PV.EST') ?? empty,
     ruleOfLaw: valueByCode.get('RL.EST') ?? empty,
     unemployment: valueByCode.get('SL.UEM.TOTL.ZS') ?? empty,
-    diagnostics: {
-      totalIndicators: requests.length,
-      succeededIndicators: requests.length - failedCodes.length,
-      failedIndicators: failedCodes.length,
-      failedCodes,
-    },
+    diagnostics,
   };
 };

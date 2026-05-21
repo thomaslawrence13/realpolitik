@@ -2,7 +2,7 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent, MutableRefObject } from 'react';
 import type { Alignment, Filters, RegimeType, SimulatedCountry, Tier } from '../types';
 import { Segmented, SvgIcon } from './ui';
-import { summarizeCountryTrust, TrustTag } from './provenance';
+import { summarizeCountryTrust, TrustTag, aggregateGlobalDataWarnings } from './provenance';
 import { getRiskTier } from '../simulation';
 
 type Props = {
@@ -83,7 +83,54 @@ export const LeftRail = memo(function LeftRail({
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>('coverageDesc');
   const [groupMode, setGroupMode] = useState<GroupMode>('region');
+  const [dismissedWarnings, setDismissedWarnings] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('dismissed-global-warnings');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('expanded-country-groups');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
   const selectedItemRef = useRef<HTMLButtonElement | null>(null);
+
+  const globalWarnings = useMemo(() => {
+    const warnings = aggregateGlobalDataWarnings(countries);
+    return warnings.filter((w) => !dismissedWarnings.has(w.type));
+  }, [countries, dismissedWarnings]);
+
+  const dismissWarning = (type: string) => {
+    const next = new Set(dismissedWarnings);
+    next.add(type);
+    setDismissedWarnings(next);
+    try {
+      localStorage.setItem('dismissed-global-warnings', JSON.stringify(Array.from(next)));
+    } catch {
+      // ignore
+    }
+  };
+
+  const toggleGroup = (groupKey: string) => {
+    const next = new Set(expandedGroups);
+    if (next.has(groupKey)) {
+      next.delete(groupKey);
+    } else {
+      next.add(groupKey);
+    }
+    setExpandedGroups(next);
+    try {
+      localStorage.setItem('expanded-country-groups', JSON.stringify(Array.from(next)));
+    } catch {
+      // ignore
+    }
+  };
 
   const sorted = useMemo(() => {
     const next = [...countries];
@@ -348,6 +395,31 @@ export const LeftRail = memo(function LeftRail({
         </div>
       </div>
 
+      {globalWarnings.length > 0 && (
+        <div className="rail-global-warnings">
+          {globalWarnings.map((warning) => (
+            <div key={warning.type} className="global-warning-item">
+              <div className="global-warning-content">
+                <strong>{warning.message}</strong>
+                <span className="global-warning-examples">
+                  {warning.countryExamples.slice(0, 2).join(', ')}
+                  {warning.countryCount > 2 ? ` +${warning.countryCount - 2} more` : ''}
+                </span>
+              </div>
+              <button
+                type="button"
+                className="global-warning-dismiss"
+                onClick={() => dismissWarning(warning.type)}
+                aria-label="Dismiss this warning"
+                title="Dismiss"
+              >
+                <SvgIcon.X />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div
         className="rail-list"
         role="listbox"
@@ -375,45 +447,55 @@ export const LeftRail = memo(function LeftRail({
             )}
           </div>
         ) : (
-          grouped.map((group) => (
-            <section key={group.key} className="country-group">
-              {groupMode !== 'none' && (
-                <header className="country-group-header">
-                  <strong>{group.label}</strong>
-                  <span>{group.items.length}</span>
-                </header>
-              )}
-              {group.items.map((country) => {
-                const isSelected = country.profile.mapName === selectedName;
-                const trust = summarizeCountryTrust(country.profile);
-                return (
+          grouped.map((group) => {
+            const isExpanded = groupMode === 'none' || expandedGroups.has(group.key);
+            return (
+              <section key={group.key} className="country-group">
+                {groupMode !== 'none' && (
                   <button
-                    key={country.profile.id}
-                    ref={isSelected ? selectedItemRef : null}
                     type="button"
-                    role="option"
-                    aria-selected={isSelected}
-                    className={`country-item ${isSelected ? 'country-item-active' : ''}`}
-                    onClick={() => onSelect(country.profile.mapName)}
+                    className="country-group-header"
+                    onClick={() => toggleGroup(group.key)}
+                    aria-expanded={isExpanded}
                   >
-                    <span className="country-text">
-                        <span className="country-name-row">
-                          <strong className="country-name">{country.profile.displayName}</strong>
-                          <TrustTag summary={trust} />
-                        </span>
-                      <span className="country-sub">
-                        {formatTitle(country.profile.region)} · {alignmentLabel[country.alignment]}
-                      </span>
-                        <span className="country-trust-detail">{trust.detail}</span>
+                    <span className="country-group-title">
+                      <SvgIcon.Chevron dir={isExpanded ? 'down' : 'right'} />
+                      <strong>{group.label}</strong>
                     </span>
-                    <span className={`country-risk risk-${getRiskTier(country.risk)}`}>
-                      {country.risk}%
-                    </span>
+                    <span className="country-group-count">{group.items.length}</span>
                   </button>
-                );
-              })}
-            </section>
-          ))
+                )}
+                {isExpanded && group.items.map((country) => {
+                  const isSelected = country.profile.mapName === selectedName;
+                  const trust = summarizeCountryTrust(country.profile);
+                  return (
+                    <button
+                      key={country.profile.id}
+                      ref={isSelected ? selectedItemRef : null}
+                      type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      className={`country-item ${isSelected ? 'country-item-active' : ''}`}
+                      onClick={() => onSelect(country.profile.mapName)}
+                    >
+                      <span className="country-text">
+                          <span className="country-name-row">
+                            <strong className="country-name">{country.profile.displayName}</strong>
+                            {trust.tone !== 'good' && <TrustTag summary={trust} compact />}
+                          </span>
+                        <span className="country-sub">
+                          {formatTitle(country.profile.region)} · {alignmentLabel[country.alignment]}
+                        </span>
+                      </span>
+                      <span className={`country-risk risk-${getRiskTier(country.risk)}`}>
+                        {country.risk}%
+                      </span>
+                    </button>
+                  );
+                })}
+              </section>
+            );
+          })
         )}
       </div>
     </aside>
