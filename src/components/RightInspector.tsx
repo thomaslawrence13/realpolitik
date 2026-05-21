@@ -343,6 +343,10 @@ function OverviewPanel({
   onClearComparison: () => void;
   sparkline: SparklineSeries | null;
 }) {
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
+  const [alignmentExpanded, setAlignmentExpanded] = useState(false);
+  const [relationshipsExpanded, setRelationshipsExpanded] = useState(false);
+  const [trendExpanded, setTrendExpanded] = useState(false);
   const tradeTelemetry = getIndicatorTelemetry(selected, 'tradeExposure');
   const regimeTelemetry = getIndicatorTelemetry(selected, 'regimeStability');
   const cohesionTelemetry = getIndicatorTelemetry(selected, 'cohesion');
@@ -364,42 +368,47 @@ function OverviewPanel({
         </div>
       </div>
 
-      <div className="metric-grid">
-        <MetricCard
-          label="Confidence"
-          value={formatPercent(selected.confidence)}
-          hint={<DeltaHint delta={confidenceDelta} higherIsBetter />}
-          explanation={selected.explanation ? <ConfidenceExplainer explanation={selected.explanation.confidence} /> : undefined}
-        />
-        <MetricCard
-          label="Conflict pressure index"
-          value={formatPercent(selected.risk)}
-          hint={<DeltaHint delta={riskDelta} higherIsBetter={false} />}
-          tone={getRiskTier(selected.risk)}
-          explanation={selected.explanation ? <RiskExplainer explanation={selected.explanation.risk} /> : undefined}
-        />
-        <MetricCard
-          label="Source coverage"
-          value={formatPercent(selected.profile.sourceCoverage)}
-          hint={<MetricTelemetryTag fallbackLabel="Profile coverage" />}
-        />
-        <MetricCard
-          label="Last updated"
-          value={selected.profile.lastUpdated}
-          hint={
-            <MetricTelemetryTag
-              entry={regimeTelemetry ?? cohesionTelemetry ?? tradeTelemetry}
-              fallbackLabel="Best available profile timestamp"
-            />
-          }
-          size="sm"
-        />
-      </div>
+      <button
+        type="button"
+        className="disclosure-toggle"
+        onClick={() => setDetailsExpanded(!detailsExpanded)}
+        aria-expanded={detailsExpanded}
+      >
+        <SvgIcon.Chevron dir={detailsExpanded ? 'down' : 'right'} />
+        <span>Details</span>
+      </button>
 
-      {sparkline && sparkline.active.length > 1 && (
-        <div className="section">
-          <h3 className="section-title">Modeled risk trajectory</h3>
-          <RiskSparkline series={sparkline} />
+      {detailsExpanded && (
+        <div className="metric-grid">
+          <MetricCard
+            label="Confidence"
+            value={formatPercent(selected.confidence)}
+            hint={<DeltaHint delta={confidenceDelta} higherIsBetter />}
+            explanation={selected.explanation ? <ConfidenceExplainer explanation={selected.explanation.confidence} /> : undefined}
+          />
+          <MetricCard
+            label="Conflict pressure index"
+            value={formatPercent(selected.risk)}
+            hint={<DeltaHint delta={riskDelta} higherIsBetter={false} />}
+            tone={getRiskTier(selected.risk)}
+            explanation={selected.explanation ? <RiskExplainer explanation={selected.explanation.risk} /> : undefined}
+          />
+          <MetricCard
+            label="Source coverage"
+            value={formatPercent(selected.profile.sourceCoverage)}
+            hint={<MetricTelemetryTag fallbackLabel="Profile coverage" />}
+          />
+          <MetricCard
+            label="Last updated"
+            value={selected.profile.lastUpdated}
+            hint={
+              <MetricTelemetryTag
+                entry={regimeTelemetry ?? cohesionTelemetry ?? tradeTelemetry}
+                fallbackLabel="Best available profile timestamp"
+              />
+            }
+            size="sm"
+          />
         </div>
       )}
 
@@ -418,59 +427,98 @@ function OverviewPanel({
         </div>
       )}
 
-      <div className="section">
-        <h3 className="section-title">Modeled alignment</h3>
-        <div className="bar-stack">
-          {PROBABILITY_KEYS.map((key) => {
-            const baselineValue = baselineSelected.probabilities[key];
-            return (
-              <BarRow
-                key={key}
-                label={alignmentLabel[key as Alignment]}
-                value={selected.probabilities[key]}
-                delta={selected.probabilities[key] - baselineValue}
-                color={alignmentColor[key as Alignment]}
-                explanation={
-                  selected.explanation
-                    ? <ProbabilityExplainer
-                        explanation={selected.explanation.probabilities[key]}
-                        label={alignmentLabel[key as Alignment]}
-                        color={alignmentColor[key as Alignment]}
-                      />
-                    : undefined
-                }
-              />
-            );
-          })}
+      {sparkline && sparkline.active.length > 1 && (
+        <div className="section">
+          <button
+            type="button"
+            className="disclosure-toggle"
+            onClick={() => setTrendExpanded(!trendExpanded)}
+            aria-expanded={trendExpanded}
+          >
+            <SvgIcon.Chevron dir={trendExpanded ? 'down' : 'right'} />
+            <span>Risk trajectory</span>
+          </button>
+          {trendExpanded && (
+            <div style={{ marginTop: '0.5rem' }}>
+              <RiskSparkline series={sparkline} />
+            </div>
+          )}
         </div>
+      )}
+
+      <div className="section">
+        <button
+          type="button"
+          className="disclosure-toggle"
+          onClick={() => setAlignmentExpanded(!alignmentExpanded)}
+          aria-expanded={alignmentExpanded}
+        >
+          <SvgIcon.Chevron dir={alignmentExpanded ? 'down' : 'right'} />
+          <span>Alignment model</span>
+        </button>
+        {alignmentExpanded && (
+          <div className="bar-stack" style={{ marginTop: '0.5rem' }}>
+            {PROBABILITY_KEYS.map((key) => {
+              const baselineValue = baselineSelected.probabilities[key];
+              return (
+                <BarRow
+                  key={key}
+                  label={alignmentLabel[key as Alignment]}
+                  value={selected.probabilities[key]}
+                  delta={selected.probabilities[key] - baselineValue}
+                  color={alignmentColor[key as Alignment]}
+                  explanation={
+                    selected.explanation
+                      ? <ProbabilityExplainer
+                          explanation={selected.explanation.probabilities[key]}
+                          label={alignmentLabel[key as Alignment]}
+                          color={alignmentColor[key as Alignment]}
+                        />
+                      : undefined
+                  }
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="section">
-        <h3 className="section-title">Relationship posture</h3>
-        <div className="metric-grid metric-grid-tight">
-          <MetricCard
-            label="Cooperation"
-            value={formatPercent(selected.relationshipSummary.cooperation)}
-            tone="accent"
-            size="sm"
-          />
-          <MetricCard
-            label="Hostility"
-            value={formatPercent(selected.relationshipSummary.hostility)}
-            tone={getRiskTier(selected.relationshipSummary.hostility)}
-            size="sm"
-          />
-          <MetricCard
-            label="Dependency"
-            value={formatPercent(selected.relationshipSummary.dependency)}
-            size="sm"
-          />
-          <MetricCard
-            label="Deterrence"
-            value={formatPercent(selected.relationshipSummary.deterrence)}
-            size="sm"
-          />
-        </div>
+        <button
+          type="button"
+          className="disclosure-toggle"
+          onClick={() => setRelationshipsExpanded(!relationshipsExpanded)}
+          aria-expanded={relationshipsExpanded}
+        >
+          <SvgIcon.Chevron dir={relationshipsExpanded ? 'down' : 'right'} />
+          <span>Relationship dimensions</span>
+        </button>
+        {relationshipsExpanded && (
+          <div className="metric-grid metric-grid-tight" style={{ marginTop: '0.5rem' }}>
+            <MetricCard
+              label="Cooperation"
+              value={formatPercent(selected.relationshipSummary.cooperation)}
+              tone="accent"
+              size="sm"
+            />
+            <MetricCard
+              label="Hostility"
+              value={formatPercent(selected.relationshipSummary.hostility)}
+              tone={getRiskTier(selected.relationshipSummary.hostility)}
+              size="sm"
+            />
+            <MetricCard
+              label="Dependency"
+              value={formatPercent(selected.relationshipSummary.dependency)}
+              size="sm"
+            />
+            <MetricCard
+              label="Deterrence"
+              value={formatPercent(selected.relationshipSummary.deterrence)}
+              size="sm"
+            />
+          </div>
+        )}
       </div>
 
       {comparisonSelected && comparisonScenarioName && (

@@ -1558,6 +1558,30 @@ input[type='range']::-moz-range-thumb {
   gap: 0.45rem;
 }
 
+.disclosure-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.5rem;
+  margin: 0.25rem 0 0.35rem 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-2);
+  transition: background 120ms var(--ease);
+}
+
+.disclosure-toggle:hover {
+  background: var(--bg-soft);
+}
+
+.disclosure-toggle svg {
+  flex-shrink: 0;
+}
+
 .section-title {
   margin: 0;
   font-size: 0.72rem;
