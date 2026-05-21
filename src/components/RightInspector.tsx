@@ -21,7 +21,7 @@ import type {
 import { getRiskTier } from '../simulation';
 import { INFORMATION_QUALITY_CONTRACT } from '../data/quality/contract';
 import { deriveQualityRemediationDrivers } from '../data/quality/telemetry';
-import { BarRow, MetricCard, Tabs } from './ui';
+import { BarRow, MetricCard, Tabs, SvgIcon } from './ui';
 import { useMapStore } from '../store/useMapStore';
 import {
   formatPercent,
@@ -142,6 +142,22 @@ const DeltaHint = ({ delta, higherIsBetter }: { delta: number; higherIsBetter: b
   return (
     <span style={{ color: positive ? 'var(--risk-low)' : 'var(--risk-high)' }}>
       Δ {formatSignedPercent(delta)}
+    </span>
+  );
+};
+
+const BaselineComparison = ({ delta, formattedValue }: { delta: number; formattedValue: string }) => {
+  if (delta === 0) {
+    return <span>{formattedValue} (at baseline)</span>;
+  }
+  const isAbove = delta > 0;
+  const direction = isAbove ? 'above' : 'below';
+  const color = isAbove ? 'var(--risk-low)' : 'var(--risk-high)';
+  const chevronDir = isAbove ? 'up' : 'down';
+  return (
+    <span style={{ color, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+      <SvgIcon.Chevron dir={chevronDir} />
+      {formattedValue} {direction} baseline
     </span>
   );
 };
@@ -911,11 +927,20 @@ function StatsPanel({
                     </strong>
                   </article>
                   <article className="historical-summary-card">
-                    <span>Delta vs baseline</span>
+                    <span>Change from baseline</span>
                     <strong>
                       {selectedHistoricalDelta == null
                         ? 'n/a'
-                        : `${selectedHistoricalDelta >= 0 ? '+' : ''}${formatMetricValue(selectedHistoricalDelta, selectedHistoricalSeries.metadata.unit, LARGE_VALUE_THRESHOLD, LARGE_VALUE_DECIMALS, SMALL_VALUE_DECIMALS)}`}
+                        : <BaselineComparison
+                            delta={selectedHistoricalDelta}
+                            formattedValue={formatMetricValue(
+                              selectedHistoricalDelta,
+                              selectedHistoricalSeries.metadata.unit,
+                              LARGE_VALUE_THRESHOLD,
+                              LARGE_VALUE_DECIMALS,
+                              SMALL_VALUE_DECIMALS,
+                            )}
+                          />}
                     </strong>
                   </article>
                 </div>
