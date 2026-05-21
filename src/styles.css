@@ -828,29 +828,27 @@ input[type='range']::-moz-range-thumb {
   align-items: center;
   padding: 0.12rem 0.42rem;
   border-radius: var(--r-pill);
-  border: 1px solid transparent;
-  font-size: 0.62rem;
-  font-weight: 600;
+  border: none;
+  font-size: 0.58rem;
+  font-weight: 500;
   letter-spacing: 0.03em;
   white-space: nowrap;
+  opacity: 0.75;
 }
 
 .trust-tag-good {
   color: var(--risk-low);
-  background: rgba(52, 211, 153, 0.08);
-  border-color: rgba(52, 211, 153, 0.22);
+  background: rgba(52, 211, 153, 0.1);
 }
 
 .trust-tag-warning {
   color: var(--risk-med);
-  background: rgba(251, 191, 36, 0.08);
-  border-color: rgba(251, 191, 36, 0.22);
+  background: rgba(251, 191, 36, 0.1);
 }
 
 .trust-tag-bad {
   color: var(--risk-high);
-  background: rgba(248, 113, 113, 0.08);
-  border-color: rgba(248, 113, 113, 0.22);
+  background: rgba(248, 113, 113, 0.1);
 }
 
 .trust-dot {
@@ -1446,70 +1444,75 @@ input[type='range']::-moz-range-thumb {
 }
 
 .overview-strip {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
-  align-items: center;
+  gap: 0.6rem;
+  align-items: flex-start;
+  margin-bottom: 0.3rem;
 }
 
 .overview-chip {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.3rem;
-  padding: 0;
-  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.45rem 0.6rem;
+  background: var(--bg-soft);
   border: none;
-  border-radius: 0;
+  border-radius: var(--r-sm);
 }
 
 .overview-chip span {
-  font-size: 0.75rem;
-  letter-spacing: normal;
-  text-transform: none;
-  color: var(--text-3);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-4);
 }
 
 .overview-chip strong {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-2);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1;
 }
 
-.overview-chip + .overview-chip::before {
-  content: '·';
-  color: var(--text-4);
-  margin-right: 0.1rem;
+.overview-chip + .overview-chip {
+  margin-left: 0;
 }
 
 .metric-telemetry-tag {
   display: inline-flex;
   align-items: center;
   max-width: 100%;
-  font-size: 0.63rem;
+  font-size: 0.58rem;
   line-height: 1.2;
   color: var(--text-4);
+  opacity: 0.65;
 }
 
 .metric-telemetry-tag-warning {
   color: var(--risk-high);
+  opacity: 0.7;
 }
 
 .metric-telemetry-tag-derived {
   color: var(--risk-med);
+  opacity: 0.7;
 }
 
 .metric-telemetry-tag-observed {
   color: var(--risk-low);
+  opacity: 0.7;
 }
 
 /* Tonal variants for the overview strip chips */
-.overview-chip.metric-high   { border-color: rgba(248, 113, 113, 0.25); background: rgba(248, 113, 113, 0.07); }
+.overview-chip.metric-high   { background: rgba(248, 113, 113, 0.15); }
 .overview-chip.metric-high strong { color: var(--risk-high); }
-.overview-chip.metric-medium { border-color: rgba(251, 191, 36, 0.25); background: rgba(251, 191, 36, 0.07); }
+.overview-chip.metric-medium { background: rgba(251, 191, 36, 0.15); }
 .overview-chip.metric-medium strong { color: var(--risk-med); }
-.overview-chip.metric-low    { border-color: rgba(52, 211, 153, 0.2);  background: rgba(52, 211, 153, 0.06); }
+.overview-chip.metric-low    { background: rgba(52, 211, 153, 0.12); }
 .overview-chip.metric-low strong { color: var(--risk-low); }
-.overview-chip.metric-accent { border-color: var(--accent-line); background: var(--accent-soft); }
+.overview-chip.metric-accent { background: var(--accent-soft); }
 .overview-chip.metric-accent strong { color: var(--accent); }
 
 .metric-head {
@@ -1584,12 +1587,12 @@ input[type='range']::-moz-range-thumb {
 
 .section-title {
   margin: 0;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 500;
-  letter-spacing: normal;
-  text-transform: none;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   color: var(--text-3);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
 }
 
 .metric-grid {
@@ -1622,26 +1625,28 @@ input[type='range']::-moz-range-thumb {
 }
 
 .metric-label {
-  font-size: 0.64rem;
+  font-size: 0.62rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-3);
 }
 
 .metric-value {
-  font-size: 0.98rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: var(--text-1);
   letter-spacing: -0.01em;
+  line-height: 1.1;
 }
 
 .metric-sm .metric-value {
-  font-size: 0.87rem;
+  font-size: 0.95rem;
 }
 
 .metric-hint {
-  font-size: 0.66rem;
-  color: var(--text-3);
+  font-size: 0.58rem;
+  color: var(--text-4);
+  opacity: 0.6;
 }
 
 .metric-low .metric-value {
