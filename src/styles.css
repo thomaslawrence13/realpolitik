@@ -1010,10 +1010,6 @@ input[type='range']::-moz-range-thumb {
   cursor: pointer;
 }
 
-.relationship-overlay line {
-  pointer-events: none;
-}
-
 /* Floating controls on the map */
 .map-legend {
   position: absolute;
@@ -1072,67 +1068,101 @@ input[type='range']::-moz-range-thumb {
   color: var(--text-3);
 }
 
-.map-overlay-toggle {
+/* ── Unified map toolbar (Fill · Overlay · Zoom) ─────────────────────────── */
+.map-toolbar {
   position: absolute;
-  bottom: 4.2rem;
+  bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.6rem;
-  background: rgba(15, 15, 17, 0.85);
+  align-items: stretch;
+  background: rgba(15, 15, 17, 0.88);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
+  backdrop-filter: blur(10px);
   z-index: 2;
   max-width: calc(100% - 2rem);
-  backdrop-filter: blur(8px);
+  overflow: hidden;
 }
 
-.map-overlay-label {
-  font-size: 0.65rem;
+.map-toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.map-toolbar-divider {
+  width: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.map-toolbar-label {
+  font-size: 0.62rem;
   color: var(--text-3);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 600;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.map-overlay-row {
+.map-toolbar-select {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.3rem 1.8rem 0.3rem 0.6rem;
+  background-color: var(--surface-2);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  color: var(--text-2);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all 100ms var(--ease);
+}
+
+.map-toolbar-select:hover {
+  background-color: var(--surface-3);
+  color: var(--text-1);
+  border-color: rgba(100, 116, 139, 0.5);
+}
+
+.map-toolbar-select:focus {
+  outline: none;
+}
+
+.map-toolbar-btn-row {
   display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
 }
 
-.overlay-btn {
+.map-toolbar-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.65rem;
-  font-size: 0.72rem;
+  gap: 0.35rem;
+  padding: 0.28rem 0.6rem;
+  font-size: 0.71rem;
   font-weight: 500;
   color: var(--text-3);
   background: transparent;
-  border: 1px solid rgba(100, 116, 139, 0.3);
-  border-radius: var(--r-pill);
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
   transition: all 100ms var(--ease);
   white-space: nowrap;
   cursor: pointer;
 }
 
-.overlay-btn:hover {
+.map-toolbar-btn:hover {
   color: var(--text-1);
   background: var(--surface-2);
-  border-color: rgba(100, 116, 139, 0.5);
+  border-color: rgba(100, 116, 139, 0.3);
 }
 
-.overlay-btn-active {
+.map-toolbar-btn-active {
   color: var(--text-1);
   background: rgba(255, 255, 255, 0.08);
-  border-color: var(--overlay-accent, var(--accent-line));
-  box-shadow: 0 0 12px rgba(var(--overlay-accent-rgb, 100 116 139), 0.2);
+  border-color: var(--toolbar-accent, var(--accent-line));
+  box-shadow: 0 0 10px rgba(var(--toolbar-accent-rgb, 100 116 139), 0.15);
 }
 
 .overlay-dot {
@@ -1142,43 +1172,46 @@ input[type='range']::-moz-range-thumb {
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }
 
-.map-zoom {
-  position: absolute;
-  right: 1rem;
-  bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0;
+/* Zoom controls inside the toolbar */
+.map-toolbar-zoom {
+  gap: 0.2rem;
+}
+
+.map-toolbar-zoom .icon-btn {
+  width: 26px;
+  height: 26px;
   background: transparent;
-  border: none;
-  border-radius: 0;
-  z-index: 2;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  box-shadow: none;
 }
 
-.map-zoom .icon-btn {
-  width: 28px;
-  height: 28px;
-  background: var(--surface-0);
-  box-shadow: var(--shadow);
+.map-toolbar-zoom .icon-btn:hover {
+  background: var(--surface-2);
+  border-color: rgba(100, 116, 139, 0.3);
 }
 
-.map-zoom-readout {
-  padding: 0 0.5rem;
-  font-size: 0.74rem;
+.map-toolbar-readout {
+  padding: 0 0.45rem;
+  font-size: 0.72rem;
   color: var(--text-2);
   font-weight: 500;
   letter-spacing: 0.02em;
   border-radius: var(--r-sm);
-  height: 28px;
+  height: 26px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 44px;
+  min-width: 42px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all 100ms var(--ease);
 }
 
-.map-zoom-readout:hover {
+.map-toolbar-readout:hover {
   background: var(--surface-2);
+  border-color: rgba(100, 116, 139, 0.3);
   color: var(--text-1);
 }
 
@@ -3007,13 +3040,12 @@ input[type='range']::-moz-range-thumb {
     display: none;
   }
 
-  .map-overlay-toggle {
-    top: auto;
-    bottom: 3.75rem;
+  .map-toolbar {
     padding: 0.3rem 0.45rem;
+    gap: 0.45rem;
   }
 
-  .map-overlay-label {
+  .map-toolbar-label {
     display: none;
   }
 
@@ -3642,46 +3674,6 @@ input[type='range']::-moz-range-thumb {
   border-top: 1px solid var(--border);
 }
 
-/* ----------------------------------------------------------------------------
- * Map fill-mode toggle (sits below the existing overlay toggle on the map)
- * ------------------------------------------------------------------------- */
-.map-fill-toggle {
-  position: absolute;
-  left: 14px;
-  bottom: 64px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(15, 15, 17, 0.85);
-  padding: 0.5rem 0.6rem;
-  border-radius: var(--r-md);
-  border: 1px solid var(--border);
-  backdrop-filter: blur(8px);
-}
-
-.map-overlay-select {
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 0.35rem 1.8rem 0.35rem 0.7rem;
-  background-color: var(--surface-2);
-  border: 1px solid rgba(100, 116, 139, 0.3);
-  color: var(--text-2);
-  border-radius: var(--r-sm);
-  cursor: pointer;
-  transition: all 100ms var(--ease);
-}
-
-.map-overlay-select:hover {
-  background-color: var(--surface-3);
-  color: var(--text-1);
-  border-color: rgba(100, 116, 139, 0.5);
-}
-
-.map-overlay-select:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 8px rgba(var(--accent-rgb, 100 116 139), 0.2);
-}
 
 .map-fallback {
   display: flex;

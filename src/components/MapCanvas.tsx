@@ -35,6 +35,8 @@ const MAP_UI_STATE_KEY = STORAGE_KEYS.mapUiState;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+const easeInOut = (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
 /** Capitalise the first letter of a string (used in hover card labels). */
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -60,7 +62,26 @@ const overlayColor: Record<RelationshipDimension, string> = {
   deterrence: '#a78bfa',
 };
 
+// Per-mode arc visual parameters — keep character consistent without the call
+// site needing to know anything about the relationship dimension's semantics.
+const MODE_CORE_PX: Record<RelationshipDimension, number> = {
+  cooperation: 1.15,
+  hostility:   1.4,
+  dependency:  1.1,
+  deterrence:  1.2,
+};
+const MODE_DASH_PX: Partial<Record<RelationshipDimension, [number, number]>> = {
+  dependency: [10, 5],
+  deterrence: [3,  6],
+};
+const MODE_MIN_OPACITY: Partial<Record<RelationshipDimension, number>> = {
+  hostility: 0.42,
+};
+
 const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
+
+// Hover highlight arc colour (near-white), shared by the relationship overlay.
+const RELATIONSHIP_HOVER_RGB: [number, number, number] = [248, 250, 252];
 
 type MapUiState = {
   overlayMode: OverlayMode;
@@ -601,6 +622,21 @@ type Props = {
   alignmentLabel: Record<Alignment, string>;
 };
 
+/** Extend from target centroid in the source→target direction by `offset` world units. */
+const computeBoundaryPoint = (
+  sourceX: number,
+  sourceY: number,
+  targetX: number,
+  targetY: number,
+  offset = 30,
+): [number, number] => {
+  const dx = targetX - sourceX;
+  const dy = targetY - sourceY;
+  const distance = Math.hypot(dx, dy);
+  if (distance === 0) return [targetX, targetY];
+  return [targetX + (dx / distance) * offset, targetY + (dy / distance) * offset];
+};
+
 type RelationshipArcTarget = {
   mapName: string;
   score?: number;
@@ -608,65 +644,165 @@ type RelationshipArcTarget = {
   boundaryY: number;
 };
 
-/** Draw relationship arcs from a source country to multiple targets. */
+type RelationshipArcStyle = {
+  /** Base stroke colour as an [r, g, b] triple. */
+  rgb: [number, number, number];
+  /** Core line width in CSS pixels — stays visually constant regardless of zoom. */
+  corePx?: number;
+  minOpacity?: number;
+  maxOpacity?: number;
+  /** Dash [on, off] lengths in CSS pixels. Omit for a solid line. */
+  dashPx?: [number, number];
+  /** Arrowhead size in CSS pixels (tip-to-base length). 0 suppresses it. */
+  arrowheadPx?: number;
+  /** Suppress the soft halo beneath the core line. */
+  noGlow?: boolean;
+  /** Suppress the hub marker at the source centroid. */
+  noOriginNode?: boolean;
+};
+
+/**
+ * Draw relationship arcs from a source country to multiple targets.
+ *
+ * All visual sizes are expressed in CSS pixels and divided by `pixelScale`
+ * (world-units → CSS px = slice × zoom) so strokes and markers stay
+ * constant on screen at any map zoom level.
+ *
+ * Arcs alternate their perpendicular bend direction (even = left, odd = right)
+ * so a fan of connections spreads naturally rather than all bowing one way.
+ */
 function drawRelationshipArcs(
   ctx: CanvasRenderingContext2D,
   sourceCountry: string,
-  targetCountries: RelationshipArcTarget[],
-  zoom: number,
-  style?: { stroke?: string; width?: number; minOpacity?: number; maxOpacity?: number; dashPattern?: number[] },
+  targets: RelationshipArcTarget[],
+  pixelScale: number,
+  style: RelationshipArcStyle,
 ) {
   const source = countryCentroids.get(sourceCountry);
-  if (!source || targetCountries.length === 0) return;
+  if (!source || targets.length === 0) return;
   const [sx, sy] = source;
-  const invZoom = 1 / zoom;
+  const [r, g, b] = style.rgb;
+  const corePx      = style.corePx      ?? 1.15;
+  const minOpacity  = style.minOpacity  ?? 0.32;
+  const maxOpacity  = style.maxOpacity  ?? 0.85;
+  const arrowheadPx = style.arrowheadPx ?? 5;
+  // Convert a CSS-px measurement into world units.
+  const px   = (v: number) => v / pixelScale;
+  const rgba = (alpha: number) => `rgba(${r}, ${g}, ${b}, ${clamp(alpha, 0, 1)})`;
+
   ctx.save();
-  ctx.lineCap = 'round';
+  ctx.lineCap  = 'round';
   ctx.lineJoin = 'round';
 
-  targetCountries.forEach((target) => {
-    const [tx, ty] = [target.boundaryX, target.boundaryY];
-
-    // Quadratic curve control point: perpendicular to midpoint
-    const mx = (sx + tx) / 2;
-    const my = (sy + ty) / 2;
+  targets.forEach((target, arcIndex) => {
+    const tx = target.boundaryX;
+    const ty = target.boundaryY;
     const dx = tx - sx;
     const dy = ty - sy;
     const distance = Math.hypot(dx, dy);
-    const lift = Math.min(120, distance * 0.25);
-    const nx = distance === 0 ? 0 : -dy / distance;
-    const ny = distance === 0 ? -1 : dx / distance;
-    const cx = mx + nx * lift;
-    const cy = my + ny * lift;
 
-    // Opacity/width based on score
-    const minOpacity = style?.minOpacity ?? 0.25;
-    const maxOpacity = style?.maxOpacity ?? 0.85;
-    const opacity = target.score != null ? Math.max(minOpacity, Math.min(maxOpacity, target.score / 100)) : 0.45;
-    const scoreMultiplier = target.score != null ? 1 + (target.score / 60) : 1;
+    // Alternate bend direction so arcs fan out symmetrically from the source.
+    // sqrt-based magnitude gives good curvature even for short connections.
+    const liftSign = arcIndex % 2 === 0 ? 1 : -1;
+    const liftMag  = Math.min(100, Math.sqrt(distance) * 4);
+    const lift     = liftSign * liftMag;
+    const nx  = distance === 0 ? 0  : -dy / distance;
+    const ny  = distance === 0 ? -1 :  dx / distance;
+    const cpx = (sx + tx) / 2 + nx * lift;
+    const cpy = (sy + ty) / 2 + ny * lift;
 
-    // Draw the arc with thinner lines
-    ctx.beginPath();
-    ctx.strokeStyle = style?.stroke
-      ? style.stroke.replace('__OPACITY__', `${opacity}`)
-      : `rgba(148, 163, 184, ${opacity})`;
-    ctx.lineWidth = (style?.width ?? 0.8) * scoreMultiplier;
-    if (style?.dashPattern) {
-      ctx.setLineDash(style.dashPattern);
+    const strength = clamp((target.score ?? 60) / 100, 0, 1);
+    const opacity  = target.score != null
+      ? clamp(target.score / 100, minOpacity, maxOpacity)
+      : (minOpacity + maxOpacity) / 2;
+    const widthPx  = corePx * (0.8 + 0.6 * strength);
+
+    // Point and tangent on the quadratic bezier at parameter t.
+    const bezierAt = (t: number): [number, number] => {
+      const mt = 1 - t;
+      return [mt * mt * sx + 2 * mt * t * cpx + t * t * tx,
+              mt * mt * sy + 2 * mt * t * cpy + t * t * ty];
+    };
+    const bezierTangentAt = (t: number): [number, number] => {
+      const mt = 1 - t;
+      return [2 * mt * (cpx - sx) + 2 * t * (tx - cpx),
+              2 * mt * (cpy - sy) + 2 * t * (ty - cpy)];
+    };
+
+    // Soft halo — always solid so it shows clearly beneath a dashed core.
+    if (!style.noGlow) {
+      ctx.beginPath();
+      ctx.setLineDash([]);
+      ctx.lineWidth   = px(widthPx * 3);
+      ctx.strokeStyle = rgba(opacity * 0.2);
+      ctx.moveTo(sx, sy);
+      ctx.quadraticCurveTo(cpx, cpy, tx, ty);
+      ctx.stroke();
     }
+
+    // Core line: gradient bright at source, faint at target → implicit direction.
+    const gradient = ctx.createLinearGradient(sx, sy, tx, ty);
+    gradient.addColorStop(0, rgba(opacity));
+    gradient.addColorStop(1, rgba(opacity * 0.45));
+    ctx.beginPath();
+    ctx.lineWidth   = px(widthPx);
+    ctx.strokeStyle = gradient;
+    ctx.setLineDash(style.dashPx ? [px(style.dashPx[0]), px(style.dashPx[1])] : []);
     ctx.moveTo(sx, sy);
-    ctx.quadraticCurveTo(cx, cy, tx, ty);
+    ctx.quadraticCurveTo(cpx, cpy, tx, ty);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Draw endpoint circle (size constant visually regardless of zoom)
+    // Arrowhead near the target — placed at t≈0.86 so it sits just before
+    // the endpoint node, aligned to the actual bezier tangent direction.
+    if (arrowheadPx > 0) {
+      const [ax, ay]     = bezierAt(0.86);
+      const [tanX, tanY] = bezierTangentAt(0.86);
+      const tanLen       = Math.hypot(tanX, tanY);
+      if (tanLen > 0) {
+        const utx    = tanX / tanLen;
+        const uty    = tanY / tanLen;
+        const perpX  = -uty;
+        const perpY  =  utx;
+        const aLen   = px(arrowheadPx);
+        const aHalfW = px(arrowheadPx * 0.44);
+        ctx.beginPath();
+        ctx.fillStyle = rgba(opacity * 0.72);
+        ctx.moveTo(ax + utx * aLen * 0.55,  ay + uty * aLen * 0.55);          // tip
+        ctx.lineTo(ax - utx * aLen * 0.45 + perpX * aHalfW,
+                   ay - uty * aLen * 0.45 + perpY * aHalfW);                  // left wing
+        ctx.lineTo(ax - utx * aLen * 0.45 - perpX * aHalfW,
+                   ay - uty * aLen * 0.45 - perpY * aHalfW);                  // right wing
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    // Target node: filled dot + faint outer ring, sized subtly by score.
+    const nodeR = px(2 + 1.1 * strength);
     ctx.beginPath();
-    ctx.fillStyle = style?.stroke
-      ? style.stroke.replace('__OPACITY__', `${opacity}`)
-      : `rgba(148, 163, 184, ${opacity})`;
-    ctx.arc(tx, ty, 2 * invZoom, 0, Math.PI * 2);
+    ctx.fillStyle = rgba(clamp(opacity + 0.15, 0, 1));
+    ctx.arc(tx, ty, nodeR, 0, Math.PI * 2);
     ctx.fill();
+    ctx.beginPath();
+    ctx.lineWidth   = px(0.8);
+    ctx.strokeStyle = rgba(opacity * 0.5);
+    ctx.arc(tx, ty, nodeR + px(1.6), 0, Math.PI * 2);
+    ctx.stroke();
   });
+
+  // Hub marker at source centroid — drawn last so it sits atop arc starts.
+  if (!style.noOriginNode) {
+    ctx.beginPath();
+    ctx.fillStyle = rgba(maxOpacity);
+    ctx.arc(sx, sy, px(2.6), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.lineWidth   = px(1);
+    ctx.strokeStyle = rgba(maxOpacity * 0.4);
+    ctx.arc(sx, sy, px(5), 0, Math.PI * 2);
+    ctx.stroke();
+  }
 
   ctx.restore();
 }
@@ -678,24 +814,17 @@ const getRelationshipMetric = (
 
 type MapLegendControlsProps = {
   fillMode: MapFillMode;
-  overlayMode: OverlayMode;
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
-  onFillModeChange: (mode: MapFillMode) => void;
-  onOverlayModeChange: (mode: OverlayMode) => void;
 };
 
 const MapLegendControls = memo(function MapLegendControls({
   fillMode,
-  overlayMode,
   alignmentColor,
   alignmentLabel,
-  onFillModeChange,
-  onOverlayModeChange,
 }: MapLegendControlsProps) {
   return (
-    <>
-      <div className="map-legend">
+    <div className="map-legend">
         {fillMode === 'alignment' &&
           (Object.keys(alignmentLabel) as Alignment[]).map((key) => (
             <span key={key} className="legend-chip">
@@ -951,57 +1080,7 @@ const MapLegendControls = memo(function MapLegendControls({
             </span>
           </span>
         )}
-      </div>
-
-      <div className="map-fill-toggle">
-        <span className="map-overlay-label">Fill</span>
-        <select
-          className="filter-select map-overlay-select"
-          value={fillMode}
-          onChange={(e) => onFillModeChange(e.target.value as MapFillMode)}
-          title="Select map fill mode"
-        >
-          {fillModeGroups.map((group) => (
-            <optgroup key={group.label} label={group.label}>
-              {group.options.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-      </div>
-
-      <div className="map-overlay-toggle">
-        <span className="map-overlay-label">Overlay</span>
-        <div className="map-overlay-row">
-          <button
-            type="button"
-            className={`overlay-btn ${overlayMode === 'none' ? 'overlay-btn-active' : ''}`}
-            onClick={() => onOverlayModeChange('none')}
-          >
-            None
-          </button>
-          {overlayKeys.map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              className={`overlay-btn ${overlayMode === mode ? 'overlay-btn-active' : ''}`}
-              onClick={() => onOverlayModeChange(mode)}
-              style={
-                overlayMode === mode
-                  ? ({ ['--overlay-accent' as string]: overlayColor[mode] } as React.CSSProperties)
-                  : undefined
-              }
-            >
-              <i className="overlay-dot" style={{ background: overlayColor[mode] }} aria-hidden />
-              {overlayLabel[mode]}
-            </button>
-          ))}
-        </div>
-      </div>
-    </>
+    </div>
   );
 });
 
@@ -1030,23 +1109,6 @@ export const MapCanvas = memo(function MapCanvas({
   useEffect(() => {
     saveMapUiState({ overlayMode, fillMode });
   }, [fillMode, overlayMode]);
-
-  // Compute boundary point: extend from target centroid in direction away from source
-  const computeBoundaryPoint = (
-    sourceX: number,
-    sourceY: number,
-    targetX: number,
-    targetY: number,
-    offset: number = 45,
-  ): [number, number] => {
-    const dx = targetX - sourceX;
-    const dy = targetY - sourceY;
-    const distance = Math.hypot(dx, dy);
-    if (distance === 0) return [targetX, targetY];
-    const nx = dx / distance;
-    const ny = dy / distance;
-    return [targetX + nx * offset, targetY + ny * offset];
-  };
 
   // Overlay connections derive entirely from byName + selection + overlay mode,
   // so MapCanvas owns the computation. App.tsx no longer needs lib/map at all,
@@ -1129,6 +1191,13 @@ export const MapCanvas = memo(function MapCanvas({
   const hoverCardRef = useRef<HTMLDivElement | null>(null);
   const hoverCardMutedRef = useRef<HTMLDivElement | null>(null);
 
+  // ── Auto-center animation state ───────────────────────────────────────────────
+  const autoCenterAnimRef = useRef<number | null>(null);
+  // Set to true in handlePointerUp so the auto-center effect skips map clicks.
+  const mapClickRef      = useRef(false);
+  // Skip centering on the very first render (initial country is already visible).
+  const isFirstSelectRef = useRef(true);
+
   // ── Non-passive wheel handler for zoom-toward-cursor ──────────────────────────
   useEffect(() => {
     const svg = svgRef.current;
@@ -1136,6 +1205,10 @@ export const MapCanvas = memo(function MapCanvas({
 
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
+      if (autoCenterAnimRef.current != null) {
+        cancelAnimationFrame(autoCenterAnimRef.current);
+        autoCenterAnimRef.current = null;
+      }
 
       const ctm = svg.getScreenCTM();
       if (!ctm) return;
@@ -1172,6 +1245,11 @@ export const MapCanvas = memo(function MapCanvas({
 
   // ── Pointer handlers ──────────────────────────────────────────────────────────
   const handlePointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
+    // Cancel any running auto-center animation so the drag takes immediate control.
+    if (autoCenterAnimRef.current != null) {
+      cancelAnimationFrame(autoCenterAnimRef.current);
+      autoCenterAnimRef.current = null;
+    }
     dragPrevRef.current = { x: event.clientX, y: event.clientY };
     didDragRef.current = false;
     // Capture on the SVG so all pointer events route here during the drag
@@ -1230,6 +1308,7 @@ export const MapCanvas = memo(function MapCanvas({
     // that was under the pointer at press-down time (pointer capture prevents path
     // onClick from firing, so we handle selection here instead).
     if (!didDragRef.current && hoveredIsParamRef.current && hoveredNameRef.current) {
+      mapClickRef.current = true; // skip auto-center; country is already in view
       onSelect(hoveredNameRef.current);
     }
     dragPrevRef.current = null;
@@ -1258,12 +1337,13 @@ export const MapCanvas = memo(function MapCanvas({
   const hovered = hoveredName ? byName.get(hoveredName) : undefined;
   const hoverPos = hoverPosRef.current;
 
-  // Overlay geometry is drawn in world-space (inside the <g> transform), so
-  // we divide sizes by zoom to keep them visually constant regardless of zoom level.
+  // invZoom is used by the SVG layer (glow filter, labels) to keep sizes constant.
   const invZoom = 1 / zoom;
 
-  // Keep a transparent canvas perfectly aligned with the SVG viewport and current transform.
-  useEffect(() => {
+  // Draw the relationship arc overlay onto the transparent canvas.
+  // Uses the same uniform "xMidYMid slice" mapping as the SVG so arcs land
+  // exactly on their countries at any frame aspect ratio.
+  const drawRelationshipOverlay = useCallback(() => {
     const frame = frameRef.current;
     const canvas = relationshipCanvasRef.current;
     if (!frame || !canvas) return;
@@ -1280,28 +1360,26 @@ export const MapCanvas = memo(function MapCanvas({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.scale(dpr, dpr);
 
-    // Mirror SVG viewBox -> rendered CSS px transform, then apply map pan/zoom.
-    const scaleX = width / MAP_WIDTH;
-    const scaleY = height / MAP_HEIGHT;
-    ctx.scale(scaleX, scaleY);
+    // Uniform slice scale + centering matches SVG preserveAspectRatio="xMidYMid slice".
+    const slice = Math.max(width / MAP_WIDTH, height / MAP_HEIGHT);
+    ctx.translate((width - MAP_WIDTH * slice) / 2, (height - MAP_HEIGHT * slice) / 2);
+    ctx.scale(slice, slice);
     ctx.translate(offset.x, offset.y);
     ctx.scale(zoom, zoom);
+    // pixelScale converts world units → CSS px for zoom-invariant visual sizes.
+    const pixelScale = slice * zoom;
 
-    // Draw overlay relationships with mode-specific styling
     if (overlayMode !== 'none') {
-      const modeColor = overlayColor[overlayMode];
-      const isDependency = overlayMode === 'dependency';
-      const dashPattern = isDependency ? [6, 5] : undefined;
-      drawRelationshipArcs(ctx, selectedName, overlayConnections, zoom, {
-        stroke: modeColor,
-        width: 0.8,
-        minOpacity: 0.4,
+      drawRelationshipArcs(ctx, selectedName, overlayConnections, pixelScale, {
+        rgb:        parseHex(overlayColor[overlayMode]),
+        corePx:     MODE_CORE_PX[overlayMode],
+        minOpacity: MODE_MIN_OPACITY[overlayMode] ?? 0.34,
         maxOpacity: 0.85,
-        dashPattern,
+        dashPx:     MODE_DASH_PX[overlayMode],
       });
     }
 
-    // Highlight arc to hovered country (always visible, overlay-agnostic)
+    // Hover highlight arc — bright, overlay-agnostic.
     if (hoveredCountry && hoveredCountry !== selectedName) {
       const sourceCentroid = countryCentroids.get(selectedName);
       const targetCentroid = countryCentroids.get(hoveredCountry);
@@ -1316,32 +1394,85 @@ export const MapCanvas = memo(function MapCanvas({
           ctx,
           selectedName,
           [{ mapName: hoveredCountry, score: 100, boundaryX, boundaryY }],
-          zoom,
-          { stroke: 'rgba(248, 250, 252, __OPACITY__)', width: 2.5, minOpacity: 0.8, maxOpacity: 1 },
+          pixelScale,
+          { rgb: RELATIONSHIP_HOVER_RGB, corePx: 1.9, minOpacity: 0.85, maxOpacity: 1 },
         );
       }
     }
-  }, [hoveredCountry, offset.x, offset.y, overlayConnections, selectedName, zoom]);
+  }, [hoveredCountry, offset.x, offset.y, overlayConnections, overlayMode, selectedName, zoom]);
 
+  // Run the draw whenever inputs change.
+  useEffect(() => {
+    drawRelationshipOverlay();
+  }, [drawRelationshipOverlay]);
+
+  // Re-draw after resize without re-subscribing on every transform change.
+  const drawRelationshipOverlayRef = useRef(drawRelationshipOverlay);
+  drawRelationshipOverlayRef.current = drawRelationshipOverlay;
   useEffect(() => {
     const frame = frameRef.current;
     if (!frame || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(() => {
-      const canvas = relationshipCanvasRef.current;
-      if (!canvas) return;
-      // Trigger by nudging style-dependent render path via RAF callback.
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      const dpr = window.devicePixelRatio || 1;
-      const width = frame.clientWidth;
-      const height = frame.clientHeight;
-      canvas.width = Math.max(1, Math.floor(width * dpr));
-      canvas.height = Math.max(1, Math.floor(height * dpr));
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-    });
+    const observer = new ResizeObserver(() => drawRelationshipOverlayRef.current());
     observer.observe(frame);
     return () => observer.disconnect();
+  }, []);
+
+  // ── Auto-center on external selection (sidebar, URL state, auto-play, etc.) ──
+  useEffect(() => {
+    // Skip the first render — the default country is already in view.
+    if (isFirstSelectRef.current) {
+      isFirstSelectRef.current = false;
+      return;
+    }
+    // Skip selections that originated from a direct map click; the country is
+    // already visible and re-centering would feel jarring.
+    if (mapClickRef.current) {
+      mapClickRef.current = false;
+      return;
+    }
+
+    const centroid = countryCentroids.get(selectedName);
+    if (!centroid) return;
+
+    const [wx, wy] = centroid;
+    const { zoom: startZoom, offset: startOffset } = transformRef.current;
+
+    // Center the world point at MAP_WIDTH/2, MAP_HEIGHT/2 (the viewport centre
+    // in viewBox units), then clamp so the map doesn't scroll out of bounds.
+    const targetOffset = clampOffset(
+      { x: MAP_WIDTH / 2 - startZoom * wx, y: MAP_HEIGHT / 2 - startZoom * wy },
+      startZoom,
+    );
+
+    // Don't animate if already essentially centred.
+    if (Math.hypot(targetOffset.x - startOffset.x, targetOffset.y - startOffset.y) < 4) return;
+
+    if (autoCenterAnimRef.current != null) cancelAnimationFrame(autoCenterAnimRef.current);
+
+    const DURATION = 450;
+    const startTime = performance.now();
+    const animate = (now: number) => {
+      const t    = Math.min(1, (now - startTime) / DURATION);
+      const ease = easeInOut(t);
+      applyTransform({
+        zoom: startZoom,
+        offset: {
+          x: startOffset.x + (targetOffset.x - startOffset.x) * ease,
+          y: startOffset.y + (targetOffset.y - startOffset.y) * ease,
+        },
+      });
+      if (t < 1) {
+        autoCenterAnimRef.current = requestAnimationFrame(animate);
+      } else {
+        autoCenterAnimRef.current = null;
+      }
+    };
+    autoCenterAnimRef.current = requestAnimationFrame(animate);
+  }, [selectedName, applyTransform]);
+
+  // Cancel any running animation when the component unmounts.
+  useEffect(() => () => {
+    if (autoCenterAnimRef.current != null) cancelAnimationFrame(autoCenterAnimRef.current);
   }, []);
 
   return (
@@ -1664,28 +1795,81 @@ export const MapCanvas = memo(function MapCanvas({
 
         <MapLegendControls
           fillMode={fillMode}
-          overlayMode={overlayMode}
           alignmentColor={alignmentColor}
           alignmentLabel={alignmentLabel}
-          onFillModeChange={handleFillModeChange}
-          onOverlayModeChange={handleOverlayModeChange}
         />
 
-        <div className="map-zoom">
-          <IconButton label="Zoom out" onClick={() => zoomBy(-ZOOM_STEP)}>
-            <SvgIcon.Minus />
-          </IconButton>
-          <button
-            type="button"
-            className="map-zoom-readout"
-            onClick={resetView}
-            title="Reset view (click to fit world)"
-          >
-            {Math.round(zoom * 100)}%
-          </button>
-          <IconButton label="Zoom in" onClick={() => zoomBy(ZOOM_STEP)}>
-            <SvgIcon.Plus />
-          </IconButton>
+        {/* ── Unified bottom toolbar: Fill · Overlay · Zoom ── */}
+        <div className="map-toolbar">
+          <div className="map-toolbar-section">
+            <span className="map-toolbar-label">Fill</span>
+            <select
+              className="map-toolbar-select"
+              value={fillMode}
+              onChange={(e) => handleFillModeChange(e.target.value as MapFillMode)}
+              title="Select map fill mode"
+            >
+              {fillModeGroups.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          <div className="map-toolbar-divider" aria-hidden />
+
+          <div className="map-toolbar-section">
+            <span className="map-toolbar-label">Overlay</span>
+            <div className="map-toolbar-btn-row">
+              <button
+                type="button"
+                className={`map-toolbar-btn${overlayMode === 'none' ? ' map-toolbar-btn-active' : ''}`}
+                onClick={() => handleOverlayModeChange('none')}
+              >
+                None
+              </button>
+              {overlayKeys.map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  className={`map-toolbar-btn${overlayMode === mode ? ' map-toolbar-btn-active' : ''}`}
+                  onClick={() => handleOverlayModeChange(mode)}
+                  style={
+                    overlayMode === mode
+                      ? ({ '--toolbar-accent': overlayColor[mode] } as React.CSSProperties)
+                      : undefined
+                  }
+                >
+                  <i className="overlay-dot" style={{ background: overlayColor[mode] }} aria-hidden />
+                  {overlayLabel[mode]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="map-toolbar-divider" aria-hidden />
+
+          <div className="map-toolbar-section map-toolbar-zoom">
+            <IconButton label="Zoom out" onClick={() => zoomBy(-ZOOM_STEP)}>
+              <SvgIcon.Minus />
+            </IconButton>
+            <button
+              type="button"
+              className="map-toolbar-readout"
+              onClick={resetView}
+              title="Reset view (click to fit world)"
+            >
+              {Math.round(zoom * 100)}%
+            </button>
+            <IconButton label="Zoom in" onClick={() => zoomBy(ZOOM_STEP)}>
+              <SvgIcon.Plus />
+            </IconButton>
+          </div>
         </div>
       </div>
     </section>
