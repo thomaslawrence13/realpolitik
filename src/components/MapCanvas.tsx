@@ -814,24 +814,17 @@ const getRelationshipMetric = (
 
 type MapLegendControlsProps = {
   fillMode: MapFillMode;
-  overlayMode: OverlayMode;
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
-  onFillModeChange: (mode: MapFillMode) => void;
-  onOverlayModeChange: (mode: OverlayMode) => void;
 };
 
 const MapLegendControls = memo(function MapLegendControls({
   fillMode,
-  overlayMode,
   alignmentColor,
   alignmentLabel,
-  onFillModeChange,
-  onOverlayModeChange,
 }: MapLegendControlsProps) {
   return (
-    <>
-      <div className="map-legend">
+    <div className="map-legend">
         {fillMode === 'alignment' &&
           (Object.keys(alignmentLabel) as Alignment[]).map((key) => (
             <span key={key} className="legend-chip">
@@ -1087,57 +1080,7 @@ const MapLegendControls = memo(function MapLegendControls({
             </span>
           </span>
         )}
-      </div>
-
-      <div className="map-fill-toggle">
-        <span className="map-overlay-label">Fill</span>
-        <select
-          className="filter-select map-overlay-select"
-          value={fillMode}
-          onChange={(e) => onFillModeChange(e.target.value as MapFillMode)}
-          title="Select map fill mode"
-        >
-          {fillModeGroups.map((group) => (
-            <optgroup key={group.label} label={group.label}>
-              {group.options.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-      </div>
-
-      <div className="map-overlay-toggle">
-        <span className="map-overlay-label">Overlay</span>
-        <div className="map-overlay-row">
-          <button
-            type="button"
-            className={`overlay-btn ${overlayMode === 'none' ? 'overlay-btn-active' : ''}`}
-            onClick={() => onOverlayModeChange('none')}
-          >
-            None
-          </button>
-          {overlayKeys.map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              className={`overlay-btn ${overlayMode === mode ? 'overlay-btn-active' : ''}`}
-              onClick={() => onOverlayModeChange(mode)}
-              style={
-                overlayMode === mode
-                  ? ({ ['--overlay-accent' as string]: overlayColor[mode] } as React.CSSProperties)
-                  : undefined
-              }
-            >
-              <i className="overlay-dot" style={{ background: overlayColor[mode] }} aria-hidden />
-              {overlayLabel[mode]}
-            </button>
-          ))}
-        </div>
-      </div>
-    </>
+    </div>
   );
 });
 
@@ -1852,28 +1795,81 @@ export const MapCanvas = memo(function MapCanvas({
 
         <MapLegendControls
           fillMode={fillMode}
-          overlayMode={overlayMode}
           alignmentColor={alignmentColor}
           alignmentLabel={alignmentLabel}
-          onFillModeChange={handleFillModeChange}
-          onOverlayModeChange={handleOverlayModeChange}
         />
 
-        <div className="map-zoom">
-          <IconButton label="Zoom out" onClick={() => zoomBy(-ZOOM_STEP)}>
-            <SvgIcon.Minus />
-          </IconButton>
-          <button
-            type="button"
-            className="map-zoom-readout"
-            onClick={resetView}
-            title="Reset view (click to fit world)"
-          >
-            {Math.round(zoom * 100)}%
-          </button>
-          <IconButton label="Zoom in" onClick={() => zoomBy(ZOOM_STEP)}>
-            <SvgIcon.Plus />
-          </IconButton>
+        {/* ── Unified bottom toolbar: Fill · Overlay · Zoom ── */}
+        <div className="map-toolbar">
+          <div className="map-toolbar-section">
+            <span className="map-toolbar-label">Fill</span>
+            <select
+              className="map-toolbar-select"
+              value={fillMode}
+              onChange={(e) => handleFillModeChange(e.target.value as MapFillMode)}
+              title="Select map fill mode"
+            >
+              {fillModeGroups.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          <div className="map-toolbar-divider" aria-hidden />
+
+          <div className="map-toolbar-section">
+            <span className="map-toolbar-label">Overlay</span>
+            <div className="map-toolbar-btn-row">
+              <button
+                type="button"
+                className={`map-toolbar-btn${overlayMode === 'none' ? ' map-toolbar-btn-active' : ''}`}
+                onClick={() => handleOverlayModeChange('none')}
+              >
+                None
+              </button>
+              {overlayKeys.map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  className={`map-toolbar-btn${overlayMode === mode ? ' map-toolbar-btn-active' : ''}`}
+                  onClick={() => handleOverlayModeChange(mode)}
+                  style={
+                    overlayMode === mode
+                      ? ({ '--toolbar-accent': overlayColor[mode] } as React.CSSProperties)
+                      : undefined
+                  }
+                >
+                  <i className="overlay-dot" style={{ background: overlayColor[mode] }} aria-hidden />
+                  {overlayLabel[mode]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="map-toolbar-divider" aria-hidden />
+
+          <div className="map-toolbar-section map-toolbar-zoom">
+            <IconButton label="Zoom out" onClick={() => zoomBy(-ZOOM_STEP)}>
+              <SvgIcon.Minus />
+            </IconButton>
+            <button
+              type="button"
+              className="map-toolbar-readout"
+              onClick={resetView}
+              title="Reset view (click to fit world)"
+            >
+              {Math.round(zoom * 100)}%
+            </button>
+            <IconButton label="Zoom in" onClick={() => zoomBy(ZOOM_STEP)}>
+              <SvgIcon.Plus />
+            </IconButton>
+          </div>
         </div>
       </div>
     </section>
