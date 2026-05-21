@@ -2,7 +2,7 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent, MutableRefObject } from 'react';
 import type { Alignment, Filters, RegimeType, SimulatedCountry, Tier } from '../types';
 import { Segmented, SvgIcon } from './ui';
-import { summarizeCountryTrust, TrustTag } from './provenance';
+import { summarizeCountryTrust, TrustTag, aggregateGlobalDataWarnings } from './provenance';
 import { getRiskTier } from '../simulation';
 
 type Props = {
@@ -83,7 +83,31 @@ export const LeftRail = memo(function LeftRail({
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>('coverageDesc');
   const [groupMode, setGroupMode] = useState<GroupMode>('region');
+  const [dismissedWarnings, setDismissedWarnings] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('dismissed-global-warnings');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
   const selectedItemRef = useRef<HTMLButtonElement | null>(null);
+
+  const globalWarnings = useMemo(() => {
+    const warnings = aggregateGlobalDataWarnings(countries);
+    return warnings.filter((w) => !dismissedWarnings.has(w.type));
+  }, [countries, dismissedWarnings]);
+
+  const dismissWarning = (type: string) => {
+    const next = new Set(dismissedWarnings);
+    next.add(type);
+    setDismissedWarnings(next);
+    try {
+      localStorage.setItem('dismissed-global-warnings', JSON.stringify(Array.from(next)));
+    } catch {
+      // ignore
+    }
+  };
 
   const sorted = useMemo(() => {
     const next = [...countries];
@@ -348,6 +372,31 @@ export const LeftRail = memo(function LeftRail({
         </div>
       </div>
 
+      {globalWarnings.length > 0 && (
+        <div className="rail-global-warnings">
+          {globalWarnings.map((warning) => (
+            <div key={warning.type} className="global-warning-item">
+              <div className="global-warning-content">
+                <strong>{warning.message}</strong>
+                <span className="global-warning-examples">
+                  {warning.countryExamples.slice(0, 2).join(', ')}
+                  {warning.countryCount > 2 ? ` +${warning.countryCount - 2} more` : ''}
+                </span>
+              </div>
+              <button
+                type="button"
+                className="global-warning-dismiss"
+                onClick={() => dismissWarning(warning.type)}
+                aria-label="Dismiss this warning"
+                title="Dismiss"
+              >
+                <SvgIcon.X />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div
         className="rail-list"
         role="listbox"
@@ -399,12 +448,11 @@ export const LeftRail = memo(function LeftRail({
                     <span className="country-text">
                         <span className="country-name-row">
                           <strong className="country-name">{country.profile.displayName}</strong>
-                          <TrustTag summary={trust} />
+                          {trust.tone !== 'good' && <TrustTag summary={trust} compact />}
                         </span>
                       <span className="country-sub">
                         {formatTitle(country.profile.region)} · {alignmentLabel[country.alignment]}
                       </span>
-                        <span className="country-trust-detail">{trust.detail}</span>
                     </span>
                     <span className={`country-risk risk-${getRiskTier(country.risk)}`}>
                       {country.risk}%
