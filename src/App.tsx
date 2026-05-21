@@ -60,6 +60,7 @@ import type { DrawerTab, EventFeedItem } from './components/BottomDrawer';
 import { ShortcutsHelp } from './components/ShortcutsHelp';
 import { UndoToast } from './components/UndoToast';
 import { WelcomeGuide } from './components/WelcomeGuide';
+import { UI_TIMING, STORAGE_KEYS } from './lib/constants';
 
 // Lazy-load MapCanvas so the world-atlas TopoJSON ships in its own async chunk.
 const MapCanvas = lazy(() => import('./components/MapCanvas').then((m) => ({ default: m.MapCanvas })));
@@ -76,13 +77,11 @@ const defaultFilters: Filters = {
 
 const baselineWeightSet = getSimulationWeightSet('baseline');
 const weightSetOptions = Object.values(simulationWeightSets);
-const TIMELINE_AUTO_PLAY_INTERVAL_MS = 1200;
-// Milliseconds to wait before flushing UI state to localStorage after the last change.
-// 300 ms balances responsiveness (slider drag) with write frequency.
-const PERSIST_DEBOUNCE_MS = 300;
-const MIN_DRAWER_HEIGHT = 180;
-const MAX_DRAWER_HEIGHT_RATIO = 0.65;
-const WELCOME_DISMISSED_KEY = 'realpolitik:welcome-dismissed';
+const TIMELINE_AUTO_PLAY_INTERVAL_MS = UI_TIMING.autoPlayIntervalMs;
+const PERSIST_DEBOUNCE_MS = UI_TIMING.persistDebounceMs;
+const MIN_DRAWER_HEIGHT = UI_TIMING.minDrawerHeight;
+const MAX_DRAWER_HEIGHT_RATIO = UI_TIMING.maxDrawerHeightRatio;
+const WELCOME_DISMISSED_KEY = STORAGE_KEYS.welcomeDismissed;
 const INTERACTIVE_SHORTCUT_TAGS = new Set(['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A']);
 const INTERACTIVE_SHORTCUT_ROLES = new Set(['button', 'textbox', 'link']);
 

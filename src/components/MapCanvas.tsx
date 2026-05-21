@@ -19,21 +19,19 @@ import { getRiskTier } from '../simulation';
 import { IconButton, SvgIcon } from './ui';
 import { summarizeCountryTrust, TrustTag } from './provenance';
 import { useMapStore } from '../store/useMapStore';
+import { MAP, STORAGE_KEYS } from '../lib/constants';
 
-// Factors used to normalize WheelEvent.deltaY across different deltaMode values
-const WHEEL_LINE_PX = 17;  // approximate pixels per "line" scroll unit
-const WHEEL_PAGE_PX = 500; // approximate pixels per "page" scroll unit
-const MIN_ZOOM = 0.85;
-const MAX_ZOOM = 8;
-const ZOOM_STEP = 0.3;
-// How much of the map (in SVG viewBox units) must remain on-screen when panning
-const PAN_MARGIN = 80;
-// Approximate pixel height of the main hover card (used to clamp card position near the bottom edge)
-const HOVER_CARD_HEIGHT = 115;
-// Country label rendering constants — used when zoom ≥ LABELS_ZOOM_THRESHOLD
-const LABELS_ZOOM_THRESHOLD = 2.5;
-const LABEL_BASE_FONT_SIZE = 4.5; // SVG units; divided by zoom to stay constant on screen
-const LABEL_STROKE_WIDTH = 0.8;   // SVG units; divided by zoom to stay constant on screen
+const WHEEL_LINE_PX = MAP.wheelLinePx;
+const WHEEL_PAGE_PX = MAP.wheelPagePx;
+const MIN_ZOOM = MAP.minZoom;
+const MAX_ZOOM = MAP.maxZoom;
+const ZOOM_STEP = MAP.zoomStep;
+const PAN_MARGIN = MAP.panMargin;
+const HOVER_CARD_HEIGHT = MAP.hoverCardHeight;
+const LABELS_ZOOM_THRESHOLD = MAP.labelsZoomThreshold;
+const LABEL_BASE_FONT_SIZE = MAP.labelBaseFontSize;
+const LABEL_STROKE_WIDTH = MAP.labelStrokeWidth;
+const MAP_UI_STATE_KEY = STORAGE_KEYS.mapUiState;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -63,7 +61,6 @@ const overlayColor: Record<RelationshipDimension, string> = {
 };
 
 const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
-const MAP_UI_STATE_KEY = 'realpolitik:map-ui-state';
 
 type MapUiState = {
   overlayMode: OverlayMode;
