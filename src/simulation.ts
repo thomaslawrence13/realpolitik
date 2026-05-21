@@ -1,14 +1,11 @@
 import type {
   Alignment,
-  ConfidenceExplanation,
   ContributionLine,
   CountryProfile,
   DriverScore,
   EventTemplate,
-  ProbabilityExplanation,
   ProbabilitySet,
   RelationshipSummary,
-  RiskExplanation,
   ScenarioInputs,
   ScenarioSnapshot,
   SimulatedCountry,
@@ -32,9 +29,6 @@ const tierValue: Record<Tier, number> = TIER_VALUES;
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 const round1 = (value: number) => Math.round(value * 10) / 10;
-
-const sumContributions = (lines: ContributionLine[]) =>
-  lines.reduce((sum, line) => sum + line.contribution, 0);
 
 const normalizeRegionLabel = (value: string) => value.trim().toLowerCase();
 
@@ -338,9 +332,6 @@ export const simulateCountry = (
     : -6
     : 0;
   const fxCushionDelta = fiscal ? clamp((fiscal.fxReservesMonthsImports - 3) * 0.4, -4, 4) : 0;
-  const debtRiskBoost = fiscal && fiscal.externalDebtGdpPct > DEBT_RISK.thresholdPct
-    ? Math.min(DEBT_RISK.maxContribution, (fiscal.externalDebtGdpPct - DEBT_RISK.thresholdPct) * DEBT_RISK.multiplier)
-    : 0;
   const fiscalCohesionDelta = fiscal ? fiscalRatingValue + fxCushionDelta : 0;
 
   // Food / water: high import dependence + extreme water stress drains cohesion and
