@@ -4366,6 +4366,53 @@ input[type='range']::-moz-range-thumb {
   padding: 0.3rem 0 0;
 }
 
+.quality-info-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  margin-bottom: 0.3rem;
+}
+
+.quality-info-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  background: var(--bg-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.35rem;
+  cursor: pointer;
+  color: var(--text-3);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.quality-info-toggle:hover {
+  background: var(--risk-med-transparent, rgba(251, 191, 36, 0.12));
+  border-color: var(--risk-med);
+  color: var(--risk-med);
+}
+
+.quality-info-toggle:active {
+  background: var(--risk-med-transparent, rgba(251, 191, 36, 0.2));
+}
+
+.quality-info-toggle svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.quality-info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .stats-quality-notice {
   margin-bottom: 0.4rem;
 }

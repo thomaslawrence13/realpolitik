@@ -738,6 +738,7 @@ function StatsPanel({
   const availableHistorical = profile.historicalSeries ?? [];
   const [historicalMetricId, setHistoricalMetricId] = useState<string>('');
   const [comparisonCountryMapName, setComparisonCountryMapName] = useState<string>('');
+  const [qualityInfoExpanded, setQualityInfoExpanded] = useState(false);
 
   useEffect(() => {
     setHistoricalMetricId(availableHistorical[0]?.metricId ?? '');
@@ -817,37 +818,53 @@ function StatsPanel({
 
   return (
     <div className="panel-stack">
-      {/* ── Data quality banner ── */}
+      {/* ── Data quality info (collapsed icon) ── */}
       {showQualityBanner && (
-        <div className="callout callout-warning stats-quality-notice">
-          <strong>Data quality notice</strong>
-          <div className="methodology-priority-gaps methodology-evidence-gaps">
-            <span>Observed {evidenceSummary.observed}</span>
-            <span>Estimated {evidenceSummary.estimated}</span>
-            <span>Derived {evidenceSummary.derived}</span>
-            <span>Fallback {evidenceSummary.fallback}</span>
+        <>
+          <div className="quality-info-compact">
+            <button
+              type="button"
+              className="quality-info-toggle"
+              onClick={() => setQualityInfoExpanded(!qualityInfoExpanded)}
+              aria-expanded={qualityInfoExpanded}
+              title="Data quality information"
+            >
+              <SvgIcon.Info />
+            </button>
+            <span className="quality-info-label">Data quality</span>
           </div>
-          <ul className="stats-quality-list">
-            {staleIndicatorCount > 0 && <li>{staleIndicatorCount} indicators are stale against SLA thresholds.</li>}
-            {lowCoverage && (
-              <li>
-                Source coverage is {profile.sourceCoverage}% (below recommended {INFORMATION_QUALITY_CONTRACT.lowCoverageThresholdPct}%).
-              </li>
-            )}
-            {fallbackIndicators > 0 && <li>{fallbackIndicators} indicators are currently using fallback evidence.</li>}
-            {lowestIndicatorConfidence != null && (
-              <li>
-                v14 confidence floor ({Math.round(V14_RELEASE_CONFIDENCE_FLOOR * 100)}%) status: {releaseConfidenceFloorMet ? 'met' : 'below floor'} (min {Math.round(lowestIndicatorConfidence * 100)}%).
-              </li>
-            )}
-            {remediationDrivers.slice(0, 2).map((driver) => (
-              <li key={`driver-${driver}`}>{driver}</li>
-            ))}
-            {(profile.dataQuality?.degradedReasons ?? []).slice(0, 3).map((reason) => (
-              <li key={reason}>{reason}</li>
-            ))}
-          </ul>
-        </div>
+          {qualityInfoExpanded && (
+            <div className="callout callout-warning stats-quality-notice">
+              <strong>Data quality notice</strong>
+              <div className="methodology-priority-gaps methodology-evidence-gaps">
+                <span>Observed {evidenceSummary.observed}</span>
+                <span>Estimated {evidenceSummary.estimated}</span>
+                <span>Derived {evidenceSummary.derived}</span>
+                <span>Fallback {evidenceSummary.fallback}</span>
+              </div>
+              <ul className="stats-quality-list">
+                {staleIndicatorCount > 0 && <li>{staleIndicatorCount} indicators are stale against SLA thresholds.</li>}
+                {lowCoverage && (
+                  <li>
+                    Source coverage is {profile.sourceCoverage}% (below recommended {INFORMATION_QUALITY_CONTRACT.lowCoverageThresholdPct}%).
+                  </li>
+                )}
+                {fallbackIndicators > 0 && <li>{fallbackIndicators} indicators are currently using fallback evidence.</li>}
+                {lowestIndicatorConfidence != null && (
+                  <li>
+                    v14 confidence floor ({Math.round(V14_RELEASE_CONFIDENCE_FLOOR * 100)}%) status: {releaseConfidenceFloorMet ? 'met' : 'below floor'} (min {Math.round(lowestIndicatorConfidence * 100)}%).
+                  </li>
+                )}
+                {remediationDrivers.slice(0, 2).map((driver) => (
+                  <li key={`driver-${driver}`}>{driver}</li>
+                ))}
+                {(profile.dataQuality?.degradedReasons ?? []).slice(0, 3).map((reason) => (
+                  <li key={reason}>{reason}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
       )}
 
       <div className="profile-section">
