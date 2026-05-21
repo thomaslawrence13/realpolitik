@@ -609,11 +609,13 @@ function drawRelationshipArcs(
   ctx: CanvasRenderingContext2D,
   sourceCountry: string,
   targetCountries: RelationshipArcTarget[],
+  zoom: number,
   style?: { stroke?: string; width?: number; minOpacity?: number; maxOpacity?: number; dashPattern?: number[] },
 ) {
   const source = countryCentroids.get(sourceCountry);
   if (!source || targetCountries.length === 0) return;
   const [sx, sy] = source;
+  const invZoom = 1 / zoom;
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
@@ -655,12 +657,12 @@ function drawRelationshipArcs(
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Draw endpoint circle
+    // Draw endpoint circle (size constant visually regardless of zoom)
     ctx.beginPath();
     ctx.fillStyle = style?.stroke
       ? style.stroke.replace('__OPACITY__', `${opacity}`)
       : `rgba(148, 163, 184, ${opacity})`;
-    ctx.arc(tx, ty, 3 * (1 / scoreMultiplier), 0, Math.PI * 2);
+    ctx.arc(tx, ty, 3 * invZoom, 0, Math.PI * 2);
     ctx.fill();
   });
 
@@ -1263,7 +1265,7 @@ export const MapCanvas = memo(function MapCanvas({
       const modeColor = overlayColor[overlayMode];
       const isDependency = overlayMode === 'dependency';
       const dashPattern = isDependency ? [6, 5] : undefined;
-      drawRelationshipArcs(ctx, selectedName, overlayConnections, {
+      drawRelationshipArcs(ctx, selectedName, overlayConnections, zoom, {
         stroke: modeColor,
         width: 1.5,
         minOpacity: 0.4,
@@ -1278,6 +1280,7 @@ export const MapCanvas = memo(function MapCanvas({
         ctx,
         selectedName,
         [{ mapName: hoveredCountry, score: 100 }],
+        zoom,
         { stroke: 'rgba(248, 250, 252, __OPACITY__)', width: 3, minOpacity: 0.8, maxOpacity: 1 },
       );
     }
