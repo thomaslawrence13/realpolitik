@@ -604,26 +604,26 @@ type RelationshipArcTarget = {
   score?: number;
 };
 
-/**
- * Placeholder relationship renderer for the HTML5 canvas overlay.
- * Draws simple quadratic arcs from the source country centroid to each target.
- * This is intentionally minimal and will be replaced with richer bilateral styling later.
- */
+/** Draw relationship arcs from a source country to multiple targets. */
 function drawRelationshipArcs(
   ctx: CanvasRenderingContext2D,
   sourceCountry: string,
   targetCountries: RelationshipArcTarget[],
-  style?: { stroke?: string; width?: number; minOpacity?: number; maxOpacity?: number },
+  style?: { stroke?: string; width?: number; minOpacity?: number; maxOpacity?: number; dashPattern?: number[] },
 ) {
   const source = countryCentroids.get(sourceCountry);
   if (!source || targetCountries.length === 0) return;
   const [sx, sy] = source;
   ctx.save();
   ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
   targetCountries.forEach((target) => {
     const centroid = countryCentroids.get(target.mapName);
     if (!centroid) return;
     const [tx, ty] = centroid;
+
+    // Quadratic curve control point: perpendicular to midpoint
     const mx = (sx + tx) / 2;
     const my = (sy + ty) / 2;
     const dx = tx - sx;
@@ -634,19 +634,36 @@ function drawRelationshipArcs(
     const ny = distance === 0 ? -1 : dx / distance;
     const cx = mx + nx * lift;
     const cy = my + ny * lift;
+
+    // Opacity/width based on score
     const minOpacity = style?.minOpacity ?? 0.25;
     const maxOpacity = style?.maxOpacity ?? 0.85;
     const opacity = target.score != null ? Math.max(minOpacity, Math.min(maxOpacity, target.score / 100)) : 0.45;
+    const scoreMultiplier = target.score != null ? 1 + (target.score / 60) : 1;
 
+    // Draw the arc
     ctx.beginPath();
     ctx.strokeStyle = style?.stroke
       ? style.stroke.replace('__OPACITY__', `${opacity}`)
       : `rgba(148, 163, 184, ${opacity})`;
-    ctx.lineWidth = style?.width ?? 1.5;
+    ctx.lineWidth = (style?.width ?? 1.5) * scoreMultiplier;
+    if (style?.dashPattern) {
+      ctx.setLineDash(style.dashPattern);
+    }
     ctx.moveTo(sx, sy);
     ctx.quadraticCurveTo(cx, cy, tx, ty);
     ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw endpoint circle
+    ctx.beginPath();
+    ctx.fillStyle = style?.stroke
+      ? style.stroke.replace('__OPACITY__', `${opacity}`)
+      : `rgba(148, 163, 184, ${opacity})`;
+    ctx.arc(tx, ty, 3 * (1 / scoreMultiplier), 0, Math.PI * 2);
+    ctx.fill();
   });
+
   ctx.restore();
 }
 
@@ -1240,7 +1257,22 @@ export const MapCanvas = memo(function MapCanvas({
     ctx.scale(scaleX, scaleY);
     ctx.translate(offset.x, offset.y);
     ctx.scale(zoom, zoom);
-    drawRelationshipArcs(ctx, selectedName, overlayConnections);
+
+    // Draw overlay relationships with mode-specific styling
+    if (overlayMode !== 'none') {
+      const modeColor = overlayColor[overlayMode];
+      const isDependency = overlayMode === 'dependency';
+      const dashPattern = isDependency ? [6, 5] : undefined;
+      drawRelationshipArcs(ctx, selectedName, overlayConnections, {
+        stroke: modeColor,
+        width: 1.5,
+        minOpacity: 0.4,
+        maxOpacity: 0.85,
+        dashPattern,
+      });
+    }
+
+    // Highlight arc to hovered country (always visible, overlay-agnostic)
     if (hoveredCountry && hoveredCountry !== selectedName) {
       drawRelationshipArcs(
         ctx,
@@ -1353,27 +1385,6 @@ export const MapCanvas = memo(function MapCanvas({
               />
             )}
 
-            {overlayMode !== 'none' &&
-              overlayConnections.map((connection) => (
-                <g key={`overlay-${connection.countryId}-${overlayMode}`} className="relationship-overlay">
-                  <line
-                    x1={connection.x1}
-                    y1={connection.y1}
-                    x2={connection.x2}
-                    y2={connection.y2}
-                    stroke={overlayColor[overlayMode]}
-                    strokeWidth={(1 + connection.score / 60) * invZoom}
-                    strokeOpacity={0.75}
-                    strokeDasharray={overlayMode === 'dependency' ? `${6 * invZoom} ${5 * invZoom}` : undefined}
-                  />
-                  <circle
-                    cx={connection.x2}
-                    cy={connection.y2}
-                    r={3 * invZoom}
-                    fill={overlayColor[overlayMode]}
-                  />
-                </g>
-              ))}
 
             {/* Country name labels — visible when zoomed in beyond LABELS_ZOOM_THRESHOLD */}
             {zoom >= LABELS_ZOOM_THRESHOLD && centroidEntries.map(([name, [cx, cy]]) => {
