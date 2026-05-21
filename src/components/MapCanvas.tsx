@@ -1042,7 +1042,7 @@ export const MapCanvas = memo(function MapCanvas({
     return profile.relationships
       .map((relationship) => {
         const targetCentroid = countryCentroids.get(relationship.mapName);
-        if (!targetCentroid) return null;
+        if (!targetCentroid || relationship.mapName === selectedName) return null;
         return {
           countryId: relationship.countryId,
           mapName: relationship.mapName,
