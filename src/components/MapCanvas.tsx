@@ -35,6 +35,8 @@ const MAP_UI_STATE_KEY = STORAGE_KEYS.mapUiState;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+const easeInOut = (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
 /** Capitalise the first letter of a string (used in hover card labels). */
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -1246,6 +1248,13 @@ export const MapCanvas = memo(function MapCanvas({
   const hoverCardRef = useRef<HTMLDivElement | null>(null);
   const hoverCardMutedRef = useRef<HTMLDivElement | null>(null);
 
+  // ── Auto-center animation state ───────────────────────────────────────────────
+  const autoCenterAnimRef = useRef<number | null>(null);
+  // Set to true in handlePointerUp so the auto-center effect skips map clicks.
+  const mapClickRef      = useRef(false);
+  // Skip centering on the very first render (initial country is already visible).
+  const isFirstSelectRef = useRef(true);
+
   // ── Non-passive wheel handler for zoom-toward-cursor ──────────────────────────
   useEffect(() => {
     const svg = svgRef.current;
@@ -1253,6 +1262,10 @@ export const MapCanvas = memo(function MapCanvas({
 
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
+      if (autoCenterAnimRef.current != null) {
+        cancelAnimationFrame(autoCenterAnimRef.current);
+        autoCenterAnimRef.current = null;
+      }
 
       const ctm = svg.getScreenCTM();
       if (!ctm) return;
@@ -1289,6 +1302,11 @@ export const MapCanvas = memo(function MapCanvas({
 
   // ── Pointer handlers ──────────────────────────────────────────────────────────
   const handlePointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
+    // Cancel any running auto-center animation so the drag takes immediate control.
+    if (autoCenterAnimRef.current != null) {
+      cancelAnimationFrame(autoCenterAnimRef.current);
+      autoCenterAnimRef.current = null;
+    }
     dragPrevRef.current = { x: event.clientX, y: event.clientY };
     didDragRef.current = false;
     // Capture on the SVG so all pointer events route here during the drag
@@ -1347,6 +1365,7 @@ export const MapCanvas = memo(function MapCanvas({
     // that was under the pointer at press-down time (pointer capture prevents path
     // onClick from firing, so we handle selection here instead).
     if (!didDragRef.current && hoveredIsParamRef.current && hoveredNameRef.current) {
+      mapClickRef.current = true; // skip auto-center; country is already in view
       onSelect(hoveredNameRef.current);
     }
     dragPrevRef.current = null;
@@ -1453,6 +1472,64 @@ export const MapCanvas = memo(function MapCanvas({
     const observer = new ResizeObserver(() => drawRelationshipOverlayRef.current());
     observer.observe(frame);
     return () => observer.disconnect();
+  }, []);
+
+  // ── Auto-center on external selection (sidebar, URL state, auto-play, etc.) ──
+  useEffect(() => {
+    // Skip the first render — the default country is already in view.
+    if (isFirstSelectRef.current) {
+      isFirstSelectRef.current = false;
+      return;
+    }
+    // Skip selections that originated from a direct map click; the country is
+    // already visible and re-centering would feel jarring.
+    if (mapClickRef.current) {
+      mapClickRef.current = false;
+      return;
+    }
+
+    const centroid = countryCentroids.get(selectedName);
+    if (!centroid) return;
+
+    const [wx, wy] = centroid;
+    const { zoom: startZoom, offset: startOffset } = transformRef.current;
+
+    // Center the world point at MAP_WIDTH/2, MAP_HEIGHT/2 (the viewport centre
+    // in viewBox units), then clamp so the map doesn't scroll out of bounds.
+    const targetOffset = clampOffset(
+      { x: MAP_WIDTH / 2 - startZoom * wx, y: MAP_HEIGHT / 2 - startZoom * wy },
+      startZoom,
+    );
+
+    // Don't animate if already essentially centred.
+    if (Math.hypot(targetOffset.x - startOffset.x, targetOffset.y - startOffset.y) < 4) return;
+
+    if (autoCenterAnimRef.current != null) cancelAnimationFrame(autoCenterAnimRef.current);
+
+    const DURATION = 450;
+    const startTime = performance.now();
+    const animate = (now: number) => {
+      const t    = Math.min(1, (now - startTime) / DURATION);
+      const ease = easeInOut(t);
+      applyTransform({
+        zoom: startZoom,
+        offset: {
+          x: startOffset.x + (targetOffset.x - startOffset.x) * ease,
+          y: startOffset.y + (targetOffset.y - startOffset.y) * ease,
+        },
+      });
+      if (t < 1) {
+        autoCenterAnimRef.current = requestAnimationFrame(animate);
+      } else {
+        autoCenterAnimRef.current = null;
+      }
+    };
+    autoCenterAnimRef.current = requestAnimationFrame(animate);
+  }, [selectedName, applyTransform]);
+
+  // Cancel any running animation when the component unmounts.
+  useEffect(() => () => {
+    if (autoCenterAnimRef.current != null) cancelAnimationFrame(autoCenterAnimRef.current);
   }, []);
 
   return (
