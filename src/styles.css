@@ -701,21 +701,57 @@ input[type='range']::-moz-range-thumb {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.25rem 0.45rem 0.25rem;
-  color: var(--text-4);
+  padding: 0.5rem 0.45rem;
+  color: var(--text-3);
+  background: transparent;
+  border: none;
   border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  width: 100%;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+
+.country-group-header:hover {
+  background: var(--bg-2);
+  color: var(--text-2);
+}
+
+.country-group-header:active {
+  background: var(--bg-3);
+}
+
+.country-group-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.country-group-title svg {
+  flex-shrink: 0;
+  color: var(--text-4);
+  transition: color 0.15s;
+}
+
+.country-group-header:hover .country-group-title svg {
+  color: var(--text-3);
 }
 
 .country-group-header strong {
   font-size: 0.72rem;
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: normal;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.country-group-header span {
+.country-group-count {
   font-size: 0.625rem;
   color: var(--text-4);
+  flex-shrink: 0;
+  margin-left: 0.4rem;
 }
 
 .country-item {
