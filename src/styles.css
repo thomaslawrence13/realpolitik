@@ -1010,10 +1010,6 @@ input[type='range']::-moz-range-thumb {
   cursor: pointer;
 }
 
-.relationship-overlay line {
-  pointer-events: none;
-}
-
 /* Floating controls on the map */
 .map-legend {
   position: absolute;

@@ -62,6 +62,9 @@ const overlayColor: Record<RelationshipDimension, string> = {
 
 const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
 
+// Hover highlight arc colour (near-white), shared by the relationship overlay.
+const RELATIONSHIP_HOVER_RGB: [number, number, number] = [248, 250, 252];
+
 type MapUiState = {
   overlayMode: OverlayMode;
   fillMode: MapFillMode;
@@ -601,6 +604,21 @@ type Props = {
   alignmentLabel: Record<Alignment, string>;
 };
 
+/** Extend from target centroid in the source→target direction by `offset` world units. */
+const computeBoundaryPoint = (
+  sourceX: number,
+  sourceY: number,
+  targetX: number,
+  targetY: number,
+  offset = 45,
+): [number, number] => {
+  const dx = targetX - sourceX;
+  const dy = targetY - sourceY;
+  const distance = Math.hypot(dx, dy);
+  if (distance === 0) return [targetX, targetY];
+  return [targetX + (dx / distance) * offset, targetY + (dy / distance) * offset];
+};
+
 type RelationshipArcTarget = {
   mapName: string;
   score?: number;
@@ -608,65 +626,120 @@ type RelationshipArcTarget = {
   boundaryY: number;
 };
 
-/** Draw relationship arcs from a source country to multiple targets. */
+type RelationshipArcStyle = {
+  /** Base stroke colour as an [r, g, b] triple. */
+  rgb: [number, number, number];
+  /** Core line width in CSS pixels — stays visually constant regardless of zoom. */
+  corePx?: number;
+  minOpacity?: number;
+  maxOpacity?: number;
+  /** Dash [on, off] lengths in CSS pixels. Omit for a solid line. */
+  dashPx?: [number, number];
+  /** Suppress the soft halo beneath the core line. */
+  noGlow?: boolean;
+  /** Suppress the hub marker at the source centroid. */
+  noOriginNode?: boolean;
+};
+
+/**
+ * Draw relationship arcs from a source country to multiple targets.
+ *
+ * All visual sizes are expressed in CSS pixels and divided by `pixelScale`
+ * (world-units → CSS px = slice × zoom) so strokes and markers stay
+ * constant on screen at any map zoom level.
+ */
 function drawRelationshipArcs(
   ctx: CanvasRenderingContext2D,
   sourceCountry: string,
-  targetCountries: RelationshipArcTarget[],
-  zoom: number,
-  style?: { stroke?: string; width?: number; minOpacity?: number; maxOpacity?: number; dashPattern?: number[] },
+  targets: RelationshipArcTarget[],
+  pixelScale: number,
+  style: RelationshipArcStyle,
 ) {
   const source = countryCentroids.get(sourceCountry);
-  if (!source || targetCountries.length === 0) return;
+  if (!source || targets.length === 0) return;
   const [sx, sy] = source;
-  const invZoom = 1 / zoom;
+  const [r, g, b] = style.rgb;
+  const corePx = style.corePx ?? 1.15;
+  const minOpacity = style.minOpacity ?? 0.32;
+  const maxOpacity = style.maxOpacity ?? 0.85;
+  // Convert a CSS-px value into world units so it renders at a constant size.
+  const px = (v: number) => v / pixelScale;
+  const rgba = (alpha: number) => `rgba(${r}, ${g}, ${b}, ${clamp(alpha, 0, 1)})`;
+
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
-  targetCountries.forEach((target) => {
-    const [tx, ty] = [target.boundaryX, target.boundaryY];
-
-    // Quadratic curve control point: perpendicular to midpoint
-    const mx = (sx + tx) / 2;
-    const my = (sy + ty) / 2;
+  targets.forEach((target) => {
+    const tx = target.boundaryX;
+    const ty = target.boundaryY;
     const dx = tx - sx;
     const dy = ty - sy;
     const distance = Math.hypot(dx, dy);
-    const lift = Math.min(120, distance * 0.25);
+
+    // Control point lifted perpendicular to the chord — gentle, consistent arc.
+    const lift = Math.min(110, distance * 0.2);
     const nx = distance === 0 ? 0 : -dy / distance;
     const ny = distance === 0 ? -1 : dx / distance;
-    const cx = mx + nx * lift;
-    const cy = my + ny * lift;
+    const cpx = (sx + tx) / 2 + nx * lift;
+    const cpy = (sy + ty) / 2 + ny * lift;
 
-    // Opacity/width based on score
-    const minOpacity = style?.minOpacity ?? 0.25;
-    const maxOpacity = style?.maxOpacity ?? 0.85;
-    const opacity = target.score != null ? Math.max(minOpacity, Math.min(maxOpacity, target.score / 100)) : 0.45;
-    const scoreMultiplier = target.score != null ? 1 + (target.score / 60) : 1;
+    const strength = clamp((target.score ?? 60) / 100, 0, 1);
+    const opacity = target.score != null
+      ? clamp(target.score / 100, minOpacity, maxOpacity)
+      : (minOpacity + maxOpacity) / 2;
+    const widthPx = corePx * (0.8 + 0.6 * strength);
 
-    // Draw the arc with thinner lines
-    ctx.beginPath();
-    ctx.strokeStyle = style?.stroke
-      ? style.stroke.replace('__OPACITY__', `${opacity}`)
-      : `rgba(148, 163, 184, ${opacity})`;
-    ctx.lineWidth = (style?.width ?? 0.8) * scoreMultiplier;
-    if (style?.dashPattern) {
-      ctx.setLineDash(style.dashPattern);
+    // Soft halo — always solid so it reads cleanly beneath a dashed core.
+    if (!style.noGlow) {
+      ctx.beginPath();
+      ctx.setLineDash([]);
+      ctx.lineWidth = px(widthPx * 3);
+      ctx.strokeStyle = rgba(opacity * 0.16);
+      ctx.moveTo(sx, sy);
+      ctx.quadraticCurveTo(cpx, cpy, tx, ty);
+      ctx.stroke();
     }
+
+    // Core line: gradient fades from a bright source to a softer target end,
+    // giving implicit direction (source → target) without an explicit arrow.
+    const gradient = ctx.createLinearGradient(sx, sy, tx, ty);
+    gradient.addColorStop(0, rgba(opacity));
+    gradient.addColorStop(1, rgba(opacity * 0.45));
+    ctx.beginPath();
+    ctx.lineWidth = px(widthPx);
+    ctx.strokeStyle = gradient;
+    ctx.setLineDash(style.dashPx ? [px(style.dashPx[0]), px(style.dashPx[1])] : []);
     ctx.moveTo(sx, sy);
-    ctx.quadraticCurveTo(cx, cy, tx, ty);
+    ctx.quadraticCurveTo(cpx, cpy, tx, ty);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Draw endpoint circle (size constant visually regardless of zoom)
+    // Target node: small filled dot with a faint outer ring, sized by score.
+    const nodeR = px(2 + 1.1 * strength);
     ctx.beginPath();
-    ctx.fillStyle = style?.stroke
-      ? style.stroke.replace('__OPACITY__', `${opacity}`)
-      : `rgba(148, 163, 184, ${opacity})`;
-    ctx.arc(tx, ty, 2 * invZoom, 0, Math.PI * 2);
+    ctx.fillStyle = rgba(clamp(opacity + 0.15, 0, 1));
+    ctx.arc(tx, ty, nodeR, 0, Math.PI * 2);
     ctx.fill();
+    ctx.beginPath();
+    ctx.lineWidth = px(0.8);
+    ctx.strokeStyle = rgba(opacity * 0.5);
+    ctx.arc(tx, ty, nodeR + px(1.6), 0, Math.PI * 2);
+    ctx.stroke();
   });
+
+  // Hub marker at the source centroid — drawn once per arc fan.
+  if (!style.noOriginNode) {
+    ctx.beginPath();
+    ctx.fillStyle = rgba(maxOpacity);
+    ctx.arc(sx, sy, px(2.6), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.lineWidth = px(1);
+    ctx.strokeStyle = rgba(maxOpacity * 0.4);
+    ctx.arc(sx, sy, px(5), 0, Math.PI * 2);
+    ctx.stroke();
+  }
 
   ctx.restore();
 }
@@ -1031,23 +1104,6 @@ export const MapCanvas = memo(function MapCanvas({
     saveMapUiState({ overlayMode, fillMode });
   }, [fillMode, overlayMode]);
 
-  // Compute boundary point: extend from target centroid in direction away from source
-  const computeBoundaryPoint = (
-    sourceX: number,
-    sourceY: number,
-    targetX: number,
-    targetY: number,
-    offset: number = 45,
-  ): [number, number] => {
-    const dx = targetX - sourceX;
-    const dy = targetY - sourceY;
-    const distance = Math.hypot(dx, dy);
-    if (distance === 0) return [targetX, targetY];
-    const nx = dx / distance;
-    const ny = dy / distance;
-    return [targetX + nx * offset, targetY + ny * offset];
-  };
-
   // Overlay connections derive entirely from byName + selection + overlay mode,
   // so MapCanvas owns the computation. App.tsx no longer needs lib/map at all,
   // which lets the world-atlas TopoJSON ride along with this component's chunk.
@@ -1258,12 +1314,13 @@ export const MapCanvas = memo(function MapCanvas({
   const hovered = hoveredName ? byName.get(hoveredName) : undefined;
   const hoverPos = hoverPosRef.current;
 
-  // Overlay geometry is drawn in world-space (inside the <g> transform), so
-  // we divide sizes by zoom to keep them visually constant regardless of zoom level.
+  // invZoom is used by the SVG layer (glow filter, labels) to keep sizes constant.
   const invZoom = 1 / zoom;
 
-  // Keep a transparent canvas perfectly aligned with the SVG viewport and current transform.
-  useEffect(() => {
+  // Draw the relationship arc overlay onto the transparent canvas.
+  // Uses the same uniform "xMidYMid slice" mapping as the SVG so arcs land
+  // exactly on their countries at any frame aspect ratio.
+  const drawRelationshipOverlay = useCallback(() => {
     const frame = frameRef.current;
     const canvas = relationshipCanvasRef.current;
     if (!frame || !canvas) return;
@@ -1280,28 +1337,26 @@ export const MapCanvas = memo(function MapCanvas({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.scale(dpr, dpr);
 
-    // Mirror SVG viewBox -> rendered CSS px transform, then apply map pan/zoom.
-    const scaleX = width / MAP_WIDTH;
-    const scaleY = height / MAP_HEIGHT;
-    ctx.scale(scaleX, scaleY);
+    // Uniform slice scale + centering matches SVG preserveAspectRatio="xMidYMid slice".
+    const slice = Math.max(width / MAP_WIDTH, height / MAP_HEIGHT);
+    ctx.translate((width - MAP_WIDTH * slice) / 2, (height - MAP_HEIGHT * slice) / 2);
+    ctx.scale(slice, slice);
     ctx.translate(offset.x, offset.y);
     ctx.scale(zoom, zoom);
+    // pixelScale converts world units → CSS px for zoom-invariant visual sizes.
+    const pixelScale = slice * zoom;
 
-    // Draw overlay relationships with mode-specific styling
     if (overlayMode !== 'none') {
-      const modeColor = overlayColor[overlayMode];
-      const isDependency = overlayMode === 'dependency';
-      const dashPattern = isDependency ? [6, 5] : undefined;
-      drawRelationshipArcs(ctx, selectedName, overlayConnections, zoom, {
-        stroke: modeColor,
-        width: 0.8,
-        minOpacity: 0.4,
+      drawRelationshipArcs(ctx, selectedName, overlayConnections, pixelScale, {
+        rgb: parseHex(overlayColor[overlayMode]),
+        corePx: 1.15,
+        minOpacity: 0.34,
         maxOpacity: 0.85,
-        dashPattern,
+        dashPx: overlayMode === 'dependency' ? [7, 6] : undefined,
       });
     }
 
-    // Highlight arc to hovered country (always visible, overlay-agnostic)
+    // Hover highlight arc — bright, overlay-agnostic.
     if (hoveredCountry && hoveredCountry !== selectedName) {
       const sourceCentroid = countryCentroids.get(selectedName);
       const targetCentroid = countryCentroids.get(hoveredCountry);
@@ -1316,30 +1371,25 @@ export const MapCanvas = memo(function MapCanvas({
           ctx,
           selectedName,
           [{ mapName: hoveredCountry, score: 100, boundaryX, boundaryY }],
-          zoom,
-          { stroke: 'rgba(248, 250, 252, __OPACITY__)', width: 2.5, minOpacity: 0.8, maxOpacity: 1 },
+          pixelScale,
+          { rgb: RELATIONSHIP_HOVER_RGB, corePx: 1.9, minOpacity: 0.85, maxOpacity: 1 },
         );
       }
     }
-  }, [hoveredCountry, offset.x, offset.y, overlayConnections, selectedName, zoom]);
+  }, [hoveredCountry, offset.x, offset.y, overlayConnections, overlayMode, selectedName, zoom]);
 
+  // Run the draw whenever inputs change.
+  useEffect(() => {
+    drawRelationshipOverlay();
+  }, [drawRelationshipOverlay]);
+
+  // Re-draw after resize without re-subscribing on every transform change.
+  const drawRelationshipOverlayRef = useRef(drawRelationshipOverlay);
+  drawRelationshipOverlayRef.current = drawRelationshipOverlay;
   useEffect(() => {
     const frame = frameRef.current;
     if (!frame || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(() => {
-      const canvas = relationshipCanvasRef.current;
-      if (!canvas) return;
-      // Trigger by nudging style-dependent render path via RAF callback.
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      const dpr = window.devicePixelRatio || 1;
-      const width = frame.clientWidth;
-      const height = frame.clientHeight;
-      canvas.width = Math.max(1, Math.floor(width * dpr));
-      canvas.height = Math.max(1, Math.floor(height * dpr));
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-    });
+    const observer = new ResizeObserver(() => drawRelationshipOverlayRef.current());
     observer.observe(frame);
     return () => observer.disconnect();
   }, []);
