@@ -23,6 +23,19 @@ import { INFORMATION_QUALITY_CONTRACT } from '../data/quality/contract';
 import { deriveQualityRemediationDrivers } from '../data/quality/telemetry';
 import { BarRow, MetricCard, Tabs } from './ui';
 import { useMapStore } from '../store/useMapStore';
+import {
+  formatPercent,
+  formatSignedPercent,
+  formatSignedValue,
+  formatTitle,
+  formatIndicatorLabel,
+  formatEvidenceClass,
+  formatMineralName,
+  formatCountryId,
+  parsePeriod,
+  formatMetricValue,
+} from './inspectorUtils';
+import { HISTORICAL_CHART, INFORMATION_QUALITY } from '../lib/constants';
 
 export type InspectorTab = 'stats' | 'overview' | 'relationships' | 'analysis';
 
@@ -55,32 +68,16 @@ export interface SparklineSeries {
   currentIndex: number;
 }
 
-const formatPercent = (value: number) => `${value}%`;
-const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
-const formatSignedValue = (value: number) => `${value > 0 ? '+' : ''}${value}`;
-const formatTitle = (value: string) =>
-  value.length === 0 ? value : value.charAt(0).toUpperCase() + value.slice(1);
-const formatIndicatorLabel = (value: string) =>
-  value.replace(/([A-Z])/g, ' $1').trim().replace(/^./, (v) => v.toUpperCase());
-const formatEvidenceClass = (value: 'observed' | 'estimated' | 'fallback' | 'derived') =>
-  value.charAt(0).toUpperCase() + value.slice(1);
-/** Convert a camelCase mineral key (e.g. 'rareEarths') to a readable title ('Rare Earths'). Uses formatIndicatorLabel logic. */
-const formatMineralName = (value: string) => formatIndicatorLabel(value);
-/** Convert a kebab-case country ID (e.g. 'saudi-arabia') to title case ('Saudi Arabia'). */
-const formatCountryId = (id: string) =>
-  id.length === 0
-    ? id
-    : id.split('-').filter(Boolean).map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-const relationshipTagBorderAlpha = '33';
-const relationshipTagBackgroundAlpha = '14';
-const LARGE_VALUE_THRESHOLD = 100;
-const LARGE_VALUE_DECIMALS = 1;
-const SMALL_VALUE_DECIMALS = 2;
-const HISTORICAL_CHART_WIDTH = 520;
-const HISTORICAL_CHART_HEIGHT = 180;
-const HISTORICAL_CHART_PAD_X = 34;
-const HISTORICAL_CHART_PAD_Y = 18;
-const V14_RELEASE_CONFIDENCE_FLOOR = 0.35;
+const relationshipTagBorderAlpha = INFORMATION_QUALITY.relationshipTagBorderAlpha;
+const relationshipTagBackgroundAlpha = INFORMATION_QUALITY.relationshipTagBackgroundAlpha;
+const LARGE_VALUE_THRESHOLD = INFORMATION_QUALITY.largeValueThreshold;
+const LARGE_VALUE_DECIMALS = INFORMATION_QUALITY.largeValueDecimals;
+const SMALL_VALUE_DECIMALS = INFORMATION_QUALITY.smallValueDecimals;
+const HISTORICAL_CHART_WIDTH = HISTORICAL_CHART.width;
+const HISTORICAL_CHART_HEIGHT = HISTORICAL_CHART.height;
+const HISTORICAL_CHART_PAD_X = HISTORICAL_CHART.padX;
+const HISTORICAL_CHART_PAD_Y = HISTORICAL_CHART.padY;
+const V14_RELEASE_CONFIDENCE_FLOOR = INFORMATION_QUALITY.v14ReleaseConfidenceFloor;
 
 // Stable ordered key list for probability bars — avoids Object.keys() on every render.
 const PROBABILITY_KEYS: ReadonlyArray<keyof SimulatedCountry['probabilities']> = ['blocA', 'blocB', 'nonAligned'];
@@ -571,17 +568,6 @@ function InlineSourceTag({ sources, ids }: { sources: DatasetSource[]; ids: stri
   );
 }
 
-const parsePeriod = (period: string) => {
-  const year = Number.parseInt(period, 10);
-  return Number.isFinite(year) ? year : Number.NaN;
-};
-
-const formatMetricValue = (value: number, unit: string) => {
-  const rounded = Math.abs(value) >= LARGE_VALUE_THRESHOLD
-    ? value.toFixed(LARGE_VALUE_DECIMALS)
-    : value.toFixed(SMALL_VALUE_DECIMALS);
-  return `${rounded.replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')} ${unit}`;
-};
 
 const buildAverageHistoricalSeries = (
   countries: SimulatedCountry[],
@@ -903,6 +889,9 @@ function StatsPanel({
                         ? formatMetricValue(
                             selectedHistoricalLatestPoint.value,
                             selectedHistoricalSeries.metadata.unit,
+                            LARGE_VALUE_THRESHOLD,
+                            LARGE_VALUE_DECIMALS,
+                            SMALL_VALUE_DECIMALS,
                           )
                         : 'n/a'}
                     </strong>
@@ -914,6 +903,9 @@ function StatsPanel({
                         ? formatMetricValue(
                             selectedHistoricalBaseline,
                             selectedHistoricalSeries.metadata.unit,
+                            LARGE_VALUE_THRESHOLD,
+                            LARGE_VALUE_DECIMALS,
+                            SMALL_VALUE_DECIMALS,
                           )
                         : 'n/a'}
                     </strong>
@@ -923,7 +915,7 @@ function StatsPanel({
                     <strong>
                       {selectedHistoricalDelta == null
                         ? 'n/a'
-                        : `${selectedHistoricalDelta >= 0 ? '+' : ''}${formatMetricValue(selectedHistoricalDelta, selectedHistoricalSeries.metadata.unit)}`}
+                        : `${selectedHistoricalDelta >= 0 ? '+' : ''}${formatMetricValue(selectedHistoricalDelta, selectedHistoricalSeries.metadata.unit, LARGE_VALUE_THRESHOLD, LARGE_VALUE_DECIMALS, SMALL_VALUE_DECIMALS)}`}
                     </strong>
                   </article>
                 </div>

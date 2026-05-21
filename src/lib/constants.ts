@@ -66,6 +66,9 @@ export const INFORMATION_QUALITY = {
   largeValueThreshold: 100,
   largeValueDecimals: 1,
   smallValueDecimals: 2,
+  v14ReleaseConfidenceFloor: 0.35,
+  relationshipTagBorderAlpha: '33',
+  relationshipTagBackgroundAlpha: '14',
 } as const;
 
 // Tier mapping
