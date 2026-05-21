@@ -16,7 +16,6 @@ import type {
   ScenarioInputs,
   SimulatedCountry,
   SimulationWeightSet,
-  Tier,
 } from '../types';
 import { getRiskTier } from '../simulation';
 import { INFORMATION_QUALITY_CONTRACT } from '../data/quality/contract';
@@ -34,6 +33,8 @@ import {
   formatCountryId,
   parsePeriod,
   formatMetricValue,
+  formatNumber,
+  formatSigned,
 } from './inspectorUtils';
 import { HISTORICAL_CHART, INFORMATION_QUALITY } from '../lib/constants';
 
@@ -343,6 +344,12 @@ function OverviewPanel({
   onClearComparison: () => void;
   sparkline: SparklineSeries | null;
 }) {
+  const [disclosureState, setDisclosureState] = useState({
+    details: false,
+    alignment: false,
+    relationships: false,
+    trend: false,
+  });
   const tradeTelemetry = getIndicatorTelemetry(selected, 'tradeExposure');
   const regimeTelemetry = getIndicatorTelemetry(selected, 'regimeStability');
   const cohesionTelemetry = getIndicatorTelemetry(selected, 'cohesion');
@@ -364,42 +371,47 @@ function OverviewPanel({
         </div>
       </div>
 
-      <div className="metric-grid">
-        <MetricCard
-          label="Confidence"
-          value={formatPercent(selected.confidence)}
-          hint={<DeltaHint delta={confidenceDelta} higherIsBetter />}
-          explanation={selected.explanation ? <ConfidenceExplainer explanation={selected.explanation.confidence} /> : undefined}
-        />
-        <MetricCard
-          label="Conflict pressure index"
-          value={formatPercent(selected.risk)}
-          hint={<DeltaHint delta={riskDelta} higherIsBetter={false} />}
-          tone={getRiskTier(selected.risk)}
-          explanation={selected.explanation ? <RiskExplainer explanation={selected.explanation.risk} /> : undefined}
-        />
-        <MetricCard
-          label="Source coverage"
-          value={formatPercent(selected.profile.sourceCoverage)}
-          hint={<MetricTelemetryTag fallbackLabel="Profile coverage" />}
-        />
-        <MetricCard
-          label="Last updated"
-          value={selected.profile.lastUpdated}
-          hint={
-            <MetricTelemetryTag
-              entry={regimeTelemetry ?? cohesionTelemetry ?? tradeTelemetry}
-              fallbackLabel="Best available profile timestamp"
-            />
-          }
-          size="sm"
-        />
-      </div>
+      <button
+        type="button"
+        className="disclosure-toggle"
+        onClick={() => setDisclosureState({ ...disclosureState, details: !disclosureState.details })}
+        aria-expanded={disclosureState.details}
+      >
+        <SvgIcon.Chevron dir={disclosureState.details ? 'down' : 'right'} />
+        <span>Details</span>
+      </button>
 
-      {sparkline && sparkline.active.length > 1 && (
-        <div className="section">
-          <h3 className="section-title">Modeled risk trajectory</h3>
-          <RiskSparkline series={sparkline} />
+      {disclosureState.details && (
+        <div className="metric-grid">
+          <MetricCard
+            label="Confidence"
+            value={formatPercent(selected.confidence)}
+            hint={<DeltaHint delta={confidenceDelta} higherIsBetter />}
+            explanation={selected.explanation ? <ConfidenceExplainer explanation={selected.explanation.confidence} /> : undefined}
+          />
+          <MetricCard
+            label="Conflict pressure index"
+            value={formatPercent(selected.risk)}
+            hint={<DeltaHint delta={riskDelta} higherIsBetter={false} />}
+            tone={getRiskTier(selected.risk)}
+            explanation={selected.explanation ? <RiskExplainer explanation={selected.explanation.risk} /> : undefined}
+          />
+          <MetricCard
+            label="Source coverage"
+            value={formatPercent(selected.profile.sourceCoverage)}
+            hint={<MetricTelemetryTag fallbackLabel="Profile coverage" />}
+          />
+          <MetricCard
+            label="Last updated"
+            value={selected.profile.lastUpdated}
+            hint={
+              <MetricTelemetryTag
+                entry={regimeTelemetry ?? cohesionTelemetry ?? tradeTelemetry}
+                fallbackLabel="Best available profile timestamp"
+              />
+            }
+            size="sm"
+          />
         </div>
       )}
 
@@ -418,59 +430,98 @@ function OverviewPanel({
         </div>
       )}
 
-      <div className="section">
-        <h3 className="section-title">Modeled alignment</h3>
-        <div className="bar-stack">
-          {PROBABILITY_KEYS.map((key) => {
-            const baselineValue = baselineSelected.probabilities[key];
-            return (
-              <BarRow
-                key={key}
-                label={alignmentLabel[key as Alignment]}
-                value={selected.probabilities[key]}
-                delta={selected.probabilities[key] - baselineValue}
-                color={alignmentColor[key as Alignment]}
-                explanation={
-                  selected.explanation
-                    ? <ProbabilityExplainer
-                        explanation={selected.explanation.probabilities[key]}
-                        label={alignmentLabel[key as Alignment]}
-                        color={alignmentColor[key as Alignment]}
-                      />
-                    : undefined
-                }
-              />
-            );
-          })}
+      {sparkline && sparkline.active.length > 1 && (
+        <div className="section">
+          <button
+            type="button"
+            className="disclosure-toggle"
+            onClick={() => setDisclosureState({ ...disclosureState, trend: !disclosureState.trend })}
+            aria-expanded={disclosureState.trend}
+          >
+            <SvgIcon.Chevron dir={disclosureState.trend ? 'down' : 'right'} />
+            <span>Risk trajectory</span>
+          </button>
+          {disclosureState.trend && (
+            <div style={{ marginTop: '0.5rem' }}>
+              <RiskSparkline series={sparkline} />
+            </div>
+          )}
         </div>
+      )}
+
+      <div className="section">
+        <button
+          type="button"
+          className="disclosure-toggle"
+          onClick={() => setDisclosureState({ ...disclosureState, alignment: !disclosureState.alignment })}
+          aria-expanded={disclosureState.alignment}
+        >
+          <SvgIcon.Chevron dir={disclosureState.alignment ? 'down' : 'right'} />
+          <span>Alignment model</span>
+        </button>
+        {disclosureState.alignment && (
+          <div className="bar-stack" style={{ marginTop: '0.5rem' }}>
+            {PROBABILITY_KEYS.map((key) => {
+              const baselineValue = baselineSelected.probabilities[key];
+              return (
+                <BarRow
+                  key={key}
+                  label={alignmentLabel[key as Alignment]}
+                  value={selected.probabilities[key]}
+                  delta={selected.probabilities[key] - baselineValue}
+                  color={alignmentColor[key as Alignment]}
+                  explanation={
+                    selected.explanation
+                      ? <ProbabilityExplainer
+                          explanation={selected.explanation.probabilities[key]}
+                          label={alignmentLabel[key as Alignment]}
+                          color={alignmentColor[key as Alignment]}
+                        />
+                      : undefined
+                  }
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="section">
-        <h3 className="section-title">Relationship posture</h3>
-        <div className="metric-grid metric-grid-tight">
-          <MetricCard
-            label="Cooperation"
-            value={formatPercent(selected.relationshipSummary.cooperation)}
-            tone="accent"
-            size="sm"
-          />
-          <MetricCard
-            label="Hostility"
-            value={formatPercent(selected.relationshipSummary.hostility)}
-            tone={getRiskTier(selected.relationshipSummary.hostility)}
-            size="sm"
-          />
-          <MetricCard
-            label="Dependency"
-            value={formatPercent(selected.relationshipSummary.dependency)}
-            size="sm"
-          />
-          <MetricCard
-            label="Deterrence"
-            value={formatPercent(selected.relationshipSummary.deterrence)}
-            size="sm"
-          />
-        </div>
+        <button
+          type="button"
+          className="disclosure-toggle"
+          onClick={() => setDisclosureState({ ...disclosureState, relationships: !disclosureState.relationships })}
+          aria-expanded={disclosureState.relationships}
+        >
+          <SvgIcon.Chevron dir={disclosureState.relationships ? 'down' : 'right'} />
+          <span>Relationship dimensions</span>
+        </button>
+        {disclosureState.relationships && (
+          <div className="metric-grid metric-grid-tight" style={{ marginTop: '0.5rem' }}>
+            <MetricCard
+              label="Cooperation"
+              value={formatPercent(selected.relationshipSummary.cooperation)}
+              tone="accent"
+              size="sm"
+            />
+            <MetricCard
+              label="Hostility"
+              value={formatPercent(selected.relationshipSummary.hostility)}
+              tone={getRiskTier(selected.relationshipSummary.hostility)}
+              size="sm"
+            />
+            <MetricCard
+              label="Dependency"
+              value={formatPercent(selected.relationshipSummary.dependency)}
+              size="sm"
+            />
+            <MetricCard
+              label="Deterrence"
+              value={formatPercent(selected.relationshipSummary.deterrence)}
+              size="sm"
+            />
+          </div>
+        )}
       </div>
 
       {comparisonSelected && comparisonScenarioName && (
@@ -1925,101 +1976,6 @@ function AnalysisPanel({
   );
 }
 
-function SourcesPanel({
-  selected,
-  alignmentLabel,
-}: {
-  selected: SimulatedCountry;
-  alignmentLabel: Record<Alignment, string>;
-}) {
-  const remediationDrivers = deriveQualityRemediationDrivers(selected.profile);
-  return (
-    <div className="panel-stack">
-      <div className="section">
-        <h3 className="section-title">Historical trajectory (modeled)</h3>
-        <ul className="kv-list">
-          {selected.history.map((entry) => (
-            <li key={entry.label}>
-              <span>{entry.label}</span>
-              <strong>
-                {alignmentLabel[entry.alignment]} · {entry.confidence}%
-              </strong>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="section">
-        <h3 className="section-title">Analytical assumptions</h3>
-        <ul className="bullet-list">
-          {selected.profile.assumptions.map((assumption) => (
-            <li key={assumption}>{assumption}</li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="section">
-        <h3 className="section-title">Sources</h3>
-        <div className="source-list">
-          {selected.profile.sources.map((source) => (
-            <article key={source.id} className="source-card">
-              <strong>{source.title}</strong>
-              <span className="source-meta">
-                {source.publisher} · accessed {source.accessedOn}
-              </span>
-              <a href={source.url} target="_blank" rel="noreferrer" className="source-link">
-                Open source →
-              </a>
-            </article>
-          ))}
-        </div>
-      </div>
-
-      {selected.profile.dataQuality && (
-        <>
-          <div className="section">
-            <h3 className="section-title">Indicator freshness</h3>
-            <ul className="kv-list">
-              {selected.profile.dataQuality.indicators.map((entry) => (
-                <li key={`${entry.indicator}-${entry.sourceId}`}>
-                  <span>
-                    {formatIndicatorLabel(entry.indicator)} · {entry.sourceId}
-                  </span>
-                  <strong>
-                    {formatEvidenceClass(entry.evidenceClass)} · {entry.observedAt} · {Math.round(entry.confidence * 100)}%
-                    {entry.stale ? ' · stale' : ''}
-                  </strong>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {selected.profile.dataQuality.degradedReasons.length > 0 && (
-            <div className="section">
-              <h3 className="section-title">Data quality notices</h3>
-              <ul className="bullet-list">
-                {selected.profile.dataQuality.degradedReasons.map((reason) => (
-                  <li key={reason}>{reason}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {remediationDrivers.length > 0 && (
-            <div className="section">
-              <h3 className="section-title">Priority remediation drivers</h3>
-              <ul className="bullet-list">
-                {remediationDrivers.map((driver) => (
-                  <li key={driver}>{driver}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
 function EmptyState({ title, body }: { title: string; body: string }) {
   return (
     <div className="empty-state">
@@ -2269,15 +2225,6 @@ function toRows(components: ContributionLine[]): ExplainerRow[] {
     multiplier: component.multiplier,
     inputValue: component.inputValue,
   }));
-}
-
-function formatNumber(value: number) {
-  return Number.isInteger(value) ? value.toString() : value.toFixed(1);
-}
-
-function formatSigned(value: number) {
-  if (value === 0) return '0';
-  return `${value > 0 ? '+' : ''}${formatNumber(value)}`;
 }
 
 function EconomicMilitarySection({

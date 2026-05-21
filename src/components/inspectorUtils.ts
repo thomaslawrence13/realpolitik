@@ -39,3 +39,10 @@ export const formatMetricValue = (
     : value.toFixed(smallDecimals);
   return `${rounded.replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')} ${unit}`;
 };
+
+export const formatNumber = (value: number) => (Number.isInteger(value) ? value.toString() : value.toFixed(1));
+
+export const formatSigned = (value: number) => {
+  if (value === 0) return '0';
+  return `${value > 0 ? '+' : ''}${formatNumber(value)}`;
+};
