@@ -1203,6 +1203,19 @@ input[type='range']::-moz-range-thumb {
   border-radius: var(--r-pill);
 }
 
+.legend-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.14rem 0.45rem;
+  font-size: 0.66rem;
+  color: var(--text-3);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  font-style: italic;
+}
+
 /* Continuous gradient scale bar for numeric choropleth fill modes */
 .legend-gradient-bar {
   display: flex;
@@ -1382,20 +1395,23 @@ input[type='range']::-moz-range-thumb {
   display: grid;
   gap: 0.35rem;
   padding: 0.6rem 0.75rem;
-  background: rgba(15, 15, 17, 0.95);
+  background: rgba(15, 15, 17, 0.96);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   font-size: 0.78rem;
   min-width: 160px;
-  box-shadow: var(--shadow);
+  box-shadow: 
+    var(--shadow),
+    0 0 0 1px rgba(255,255,255,0.04) inset;
   z-index: 3;
   transition: left 60ms linear, top 60ms linear;
 }
 
 .hover-card strong {
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-1);
+  letter-spacing: -0.01em;
 }
 
 .hover-card-row {
@@ -1410,6 +1426,7 @@ input[type='range']::-moz-range-thumb {
   width: 8px;
   height: 8px;
   border-radius: var(--r-pill);
+  box-shadow: 0 0 6px currentColor;
 }
 
 .hover-stats {
@@ -1481,23 +1498,24 @@ input[type='range']::-moz-range-thumb {
   gap: 0.75rem;
   padding: 0.95rem 1rem 0.7rem;
   border-bottom: 1px solid var(--border);
-  background: var(--surface-0);
+  background: linear-gradient(180deg, var(--surface-1) 0%, var(--surface-0) 100%);
 }
 
 .inspector-title h2 {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: -0.015em;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--text-1);
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
 .inspector-title p {
   margin: 0.2rem 0 0;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   color: var(--text-3);
   display: flex;
   flex-wrap: wrap;
@@ -1506,6 +1524,7 @@ input[type='range']::-moz-range-thumb {
 
 .inspector-sep {
   color: var(--text-4);
+  opacity: 0.6;
 }
 
 .alignment-pill {
@@ -1916,6 +1935,48 @@ input[type='range']::-moz-range-thumb {
 .metric-accent .metric-value {
   color: var(--accent);
   text-shadow: 0 0 12px rgba(96, 165, 250, 0.25);
+}
+
+/* Metric value row with delta */
+.metric-value-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.metric-delta {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--r-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.metric-delta.delta-pos {
+  color: var(--risk-low);
+  background: rgba(52, 211, 153, 0.12);
+}
+
+.metric-delta.delta-neg {
+  color: var(--risk-high);
+  background: rgba(248, 113, 113, 0.12);
+}
+
+/* Metric bar track for inline visualization */
+.metric-bar-track {
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: var(--r-xs);
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.metric-bar-fill {
+  height: 100%;
+  border-radius: var(--r-xs);
+  transition: width 300ms var(--ease-out);
 }
 
 /* Bar rows (probability, etc) */
