@@ -12,6 +12,7 @@ export function UndoToast({ message, durationMs, onUndo, onDismiss }: Props) {
 
   useEffect(() => {
     const start = Date.now();
+    let rafId: number;
     const tick = () => {
       const elapsed = Date.now() - start;
       const remaining = Math.max(0, 100 - (elapsed / durationMs) * 100);
@@ -20,7 +21,7 @@ export function UndoToast({ message, durationMs, onUndo, onDismiss }: Props) {
         rafId = requestAnimationFrame(tick);
       }
     };
-    let rafId = requestAnimationFrame(tick);
+    rafId = requestAnimationFrame(tick);
     const dismissId = window.setTimeout(onDismiss, durationMs);
     return () => {
       cancelAnimationFrame(rafId);

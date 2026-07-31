@@ -51,6 +51,7 @@ import {
   searchCountries,
   selectCountryOrFallback,
 } from './state/selectors';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { TopBar } from './components/TopBar';
 import { LeftRail } from './components/LeftRail';
 import { RightInspector } from './components/RightInspector';
@@ -796,13 +797,14 @@ export default function App() {
   }, []);
 
   return (
-    <div
-      className="shell"
-      data-left-open={leftOpen}
-      data-right-open={rightOpen}
-      data-drawer-open={drawerOpen}
-      style={shellStyle}
-    >
+    <ErrorBoundary>
+      <div
+        className="shell"
+        data-left-open={leftOpen}
+        data-right-open={rightOpen}
+        data-drawer-open={drawerOpen}
+        style={shellStyle}
+      >
       <TopBar
         timelineIndex={timelineIndex}
         timeline={scenarioTimeline}
@@ -954,5 +956,6 @@ export default function App() {
         />
       )}
     </div>
+    </ErrorBoundary>
   );
 }

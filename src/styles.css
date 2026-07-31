@@ -43,6 +43,15 @@
   --drawer-h: 320px;
 
   --ease: cubic-bezier(0.32, 0.72, 0.16, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 0.6, 1);
+
+  --transition-fast: 120ms var(--ease);
+  --transition-med: 200ms var(--ease);
+  --transition-slow: 300ms var(--ease);
+
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px rgba(96, 165, 250, 0.15);
 
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv11', 'ss01';
@@ -119,6 +128,24 @@ a:hover {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Smooth scroll behavior for all scrollable containers */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ----------------------------------------------------------------------------
@@ -364,6 +391,17 @@ a:hover {
   border: 1px solid transparent;
   transition: all 120ms var(--ease);
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.icon-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(96, 165, 250, 0.08) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 150ms var(--ease);
 }
 
 .icon-btn:hover {
@@ -371,10 +409,19 @@ a:hover {
   background: var(--surface-2);
 }
 
+.icon-btn:hover::before {
+  opacity: 1;
+}
+
+.icon-btn:active {
+  transform: scale(0.96);
+}
+
 .icon-btn-active {
   color: var(--accent);
   background: var(--accent-soft);
   border-color: transparent;
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.2);
 }
 
 /* ----------------------------------------------------------------------------
@@ -446,6 +493,7 @@ input[type='range']::-moz-range-thumb {
   border-right: 1px solid var(--border);
   overflow: hidden;
   min-width: 0;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
 }
 
 .rail-controls {
@@ -765,11 +813,31 @@ input[type='range']::-moz-range-thumb {
   text-align: left;
   border: 1px solid transparent;
   border-left-width: 2px;
-  transition: background 120ms var(--ease), border-color 120ms var(--ease);
+  transition: all 120ms var(--ease);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.country-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 120ms var(--ease);
 }
 
 .country-item:hover {
   background: var(--surface-1);
+  transform: translateX(2px);
+}
+
+.country-item:hover::before {
+  opacity: 0.5;
 }
 
 .country-item-active {
@@ -777,10 +845,12 @@ input[type='range']::-moz-range-thumb {
   border-color: transparent;
   border-left-color: var(--accent);
   padding-left: calc(0.5rem - 1px);
+  box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.08);
 }
 
 .country-item-active:hover {
   background: var(--surface-2);
+  transform: translateX(2px);
 }
 
 .country-text {
@@ -1311,6 +1381,7 @@ input[type='range']::-moz-range-thumb {
   border-left: 1px solid var(--border);
   overflow: hidden;
   min-width: 0;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
 }
 
 .inspector-header {
@@ -1400,6 +1471,8 @@ input[type='range']::-moz-range-thumb {
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
   scrollbar-width: none;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tabs::-webkit-scrollbar {
@@ -1414,37 +1487,56 @@ input[type='range']::-moz-range-thumb {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.55rem 0.75rem;
+  padding: 0.6rem 0.85rem;
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--text-4);
   position: relative;
   white-space: nowrap;
-  transition: color 120ms var(--ease);
+  transition: color 150ms var(--ease-out), background-color 150ms var(--ease-out);
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+  cursor: pointer;
+  user-select: none;
 }
 
-.tabs-sm .tab {
-  padding: 0.5rem 0.65rem;
-  font-size: 0.76rem;
+.tab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(96, 165, 250, 0.06) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 150ms var(--ease-out);
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
 }
 
 .tab:hover {
-  color: var(--text-2);
+  color: var(--text-1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.tab:hover::before {
+  opacity: 1;
+}
+
+.tab:active {
+  transform: translateY(1px);
 }
 
 .tab-active {
   color: var(--text-1);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .tab-active::after {
   content: '';
   position: absolute;
-  left: 0.4rem;
-  right: 0.4rem;
+  left: 0;
+  right: 0;
   bottom: -1px;
   height: 2px;
-  background: var(--accent);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-hi) 50%, var(--accent) 100%);
   border-radius: 2px 2px 0 0;
+  box-shadow: 0 -2px 8px rgba(96, 165, 250, 0.3);
 }
 
 .tab-count {
@@ -1453,18 +1545,27 @@ input[type='range']::-moz-range-thumb {
   justify-content: center;
   min-width: 18px;
   height: 16px;
-  padding: 0 4px;
+  padding: 0 5px;
   font-style: normal;
-  font-size: 0.66rem;
-  font-weight: 500;
-  color: var(--text-3);
+  font-size: 0.64rem;
+  font-weight: 600;
+  color: var(--text-2);
   background: var(--surface-2);
   border-radius: var(--r-pill);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 150ms var(--ease-out);
 }
 
 .tab-active .tab-count {
-  color: var(--accent);
-  background: var(--accent-soft);
+  color: var(--text-1);
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.2) 0%, rgba(96, 165, 250, 0.1) 100%);
+  border-color: rgba(96, 165, 250, 0.3);
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.15);
+}
+
+.tabs-sm .tab {
+  padding: 0.5rem 0.7rem;
+  font-size: 0.76rem;
 }
 
 /* ----------------------------------------------------------------------------
@@ -1640,62 +1741,91 @@ input[type='range']::-moz-range-thumb {
 
 .metric {
   display: grid;
-  gap: 0.18rem;
-  padding: 0.58rem 0.66rem;
-  background: transparent;
+  gap: 0.2rem;
+  padding: 0.65rem 0.75rem;
+  background: linear-gradient(135deg, var(--surface-1) 0%, var(--surface-0) 100%);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
-  transition: border-color 140ms var(--ease);
+  transition: all 180ms var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.metric::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+  opacity: 0;
+  transition: opacity 180ms var(--ease-out);
 }
 
 .metric-explainable:hover {
-  border-color: var(--border-strong);
-  background: transparent;
+  border-color: var(--accent-line);
+  background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(96, 165, 250, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+}
+
+.metric-explainable:hover::before {
+  opacity: 1;
 }
 
 .metric-sm {
-  padding: 0.46rem 0.55rem;
+  padding: 0.5rem 0.6rem;
 }
 
 .metric-label {
-  font-size: 0.62rem;
-  letter-spacing: 0.06em;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-3);
+  color: var(--text-4);
+  font-weight: 600;
 }
 
 .metric-value {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--text-1);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   line-height: 1.1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .metric-sm .metric-value {
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 .metric-hint {
-  font-size: 0.58rem;
+  font-size: 0.56rem;
   color: var(--text-4);
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .metric-low .metric-value {
   color: var(--risk-low);
+  text-shadow: 0 0 12px rgba(52, 211, 153, 0.2);
 }
 
 .metric-medium .metric-value {
   color: var(--risk-med);
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.15);
 }
 
 .metric-high .metric-value {
   color: var(--risk-high);
+  text-shadow: 0 0 12px rgba(248, 113, 113, 0.2);
 }
 
 .metric-accent .metric-value {
   color: var(--accent);
+  text-shadow: 0 0 12px rgba(96, 165, 250, 0.25);
 }
 
 /* Bar rows (probability, etc) */
@@ -1709,16 +1839,18 @@ input[type='range']::-moz-range-thumb {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.7rem;
+  padding: 0.35rem 0;
 }
 
 .bar-label {
-  font-size: 0.78rem;
-  color: var(--text-2);
+  font-size: 0.79rem;
+  color: var(--text-1);
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.3rem;
   min-width: 0;
+  font-weight: 500;
 }
 
 .bar-label-text {
@@ -1728,40 +1860,70 @@ input[type='range']::-moz-range-thumb {
 }
 
 .bar-track {
-  height: 2px;
-  background: var(--surface-2);
+  height: 4px;
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface-3) 100%);
   border-radius: var(--r-pill);
   overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.bar-track::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
 }
 
 .bar-fill {
   height: 100%;
   border-radius: inherit;
-  transition: width 280ms var(--ease);
+  transition: width 350ms var(--ease-out);
+  position: relative;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+  border-radius: inherit;
 }
 
 .bar-value {
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: var(--text-2);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-1);
   min-width: 64px;
   text-align: right;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .bar-delta {
   font-style: normal;
-  font-size: 0.68rem;
-  font-weight: 500;
-  color: var(--text-4);
-  margin-left: 0.3rem;
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--text-3);
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .bar-delta.pos {
   color: var(--risk-low);
+  background: rgba(52, 211, 153, 0.1);
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.15);
 }
 
 .bar-delta.neg {
   color: var(--risk-high);
+  background: rgba(248, 113, 113, 0.1);
+  box-shadow: 0 0 6px rgba(248, 113, 113, 0.15);
 }
 
 /* Callout */
@@ -2163,6 +2325,7 @@ input[type='range']::-moz-range-thumb {
   border-top: 1px solid var(--border);
   overflow: hidden;
   min-height: 0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .drawer-closed {
@@ -2349,16 +2512,42 @@ input[type='range']::-moz-range-thumb {
   color: var(--text-1);
   transition: all 120ms var(--ease);
   white-space: nowrap;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 150ms var(--ease);
 }
 
 .btn:hover {
   background: var(--surface-2);
   border-color: var(--border-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn:hover::before {
+  opacity: 1;
+}
+
+.btn:active {
+  transform: translateY(0);
 }
 
 .btn-ghost {
   background: transparent;
   color: var(--text-2);
+}
+
+.btn-ghost:hover {
+  background: var(--surface-1);
 }
 
 .btn-primary {
@@ -2371,6 +2560,7 @@ input[type='range']::-moz-range-thumb {
   background: rgba(96, 165, 250, 0.24);
   border-color: var(--accent);
   color: var(--text-1);
+  box-shadow: 0 4px 16px rgba(96, 165, 250, 0.25);
 }
 
 .scenario-sliders {
@@ -2382,31 +2572,43 @@ input[type='range']::-moz-range-thumb {
 
 .slider {
   display: grid;
-  gap: 0.45rem;
-  padding: 0.35rem 0;
-  background: transparent;
-  border: none;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
+  border: 1px solid transparent;
   border-bottom: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: var(--r-md);
+  transition: all 150ms var(--ease-out);
+  margin: 0 -0.6rem;
+}
+
+.slider:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .slider-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  padding: 0 0.2rem;
 }
 
 .slider-label {
-  font-size: 0.75rem;
-  color: var(--text-3);
-  letter-spacing: normal;
+  font-size: 0.76rem;
+  color: var(--text-2);
+  letter-spacing: 0.02em;
   text-transform: none;
+  font-weight: 500;
 }
 
 .slider-value {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-1);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
+  min-width: 60px;
+  text-align: right;
 }
 
 /* Feed */
@@ -2902,34 +3104,66 @@ input[type='range']::-moz-range-thumb {
  * ------------------------------------------------------------------------- */
 .segmented {
   display: inline-flex;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 0;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 3px;
   width: 100%;
+  gap: 2px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .segment {
   flex: 1;
-  padding: 0.3rem 0.35rem;
-  font-size: 0.72rem;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.74rem;
   font-weight: 500;
-  color: var(--text-4);
-  border-radius: 0;
-  border-bottom: 2px solid transparent;
-  transition: all 120ms var(--ease);
+  color: var(--text-3);
+  border-radius: var(--r-sm);
+  border: none;
+  transition: all 150ms var(--ease-out);
   white-space: nowrap;
   letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+
+.segment::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(96, 165, 250, 0.08) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 150ms var(--ease-out);
+  border-radius: var(--r-sm);
 }
 
 .segment:hover {
-  color: var(--text-2);
+  color: var(--text-1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.segment:hover::before {
+  opacity: 1;
+}
+
+.segment:active {
+  transform: scale(0.98);
 }
 
 .segment-active {
-  background: transparent;
   color: var(--text-1);
-  border-bottom-color: var(--accent);
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.25) 0%, rgba(96, 165, 250, 0.15) 100%);
+  border-bottom-color: transparent;
+  box-shadow: 
+    0 1px 3px rgba(96, 165, 250, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.segment-active::before {
+  opacity: 1;
 }
 
 /* ----------------------------------------------------------------------------
@@ -3084,16 +3318,21 @@ input[type='range']::-moz-range-thumb {
 .popover {
   position: fixed;
   z-index: 50;
-  background: var(--surface-0);
+  background: linear-gradient(180deg, var(--surface-0) 0%, var(--surface-1) 100%);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  box-shadow: var(--shadow);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   max-height: min(440px, calc(100vh - 24px));
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--surface-3) transparent;
-  animation: popover-in 140ms var(--ease);
+  animation: popover-in 180ms var(--ease-out);
   transform-origin: top center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .popover-above {
@@ -3104,7 +3343,7 @@ input[type='range']::-moz-range-thumb {
 @keyframes popover-in-above {
   from {
     opacity: 0;
-    transform: translateY(4px) scale(0.985);
+    transform: translateY(6px) scale(0.97);
   }
   to {
     opacity: 1;
@@ -3115,7 +3354,7 @@ input[type='range']::-moz-range-thumb {
 @keyframes popover-in {
   from {
     opacity: 0;
-    transform: translateY(-4px) scale(0.985);
+    transform: translateY(-6px) scale(0.97);
   }
   to {
     opacity: 1;
