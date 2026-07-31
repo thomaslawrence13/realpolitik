@@ -814,17 +814,20 @@ const getRelationshipMetric = (
 
 type MapLegendControlsProps = {
   fillMode: MapFillMode;
+  overlayMode: OverlayMode;
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
 };
 
 const MapLegendControls = memo(function MapLegendControls({
   fillMode,
+  overlayMode,
   alignmentColor,
   alignmentLabel,
 }: MapLegendControlsProps) {
   return (
     <div className="map-legend">
+        {/* Fill mode legend */}
         {fillMode === 'alignment' &&
           (Object.keys(alignmentLabel) as Alignment[]).map((key) => (
             <span key={key} className="legend-chip">
@@ -832,6 +835,15 @@ const MapLegendControls = memo(function MapLegendControls({
               {alignmentLabel[key]}
             </span>
           ))}
+        {/* Overlay mode legend - only shown when overlay is active */}
+        {overlayMode !== 'none' && (
+          <>
+            <span className="legend-chip" style={{ borderLeft: `3px solid ${overlayColor[overlayMode]}` }}>
+              {overlayLabel[overlayMode]} arcs
+            </span>
+            <span className="legend-note">Showing top 6 relationships for selected country</span>
+          </>
+        )}
         {fillMode === 'risk' && (
           <span className="legend-gradient-bar">
             <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${RISK_LOW}, ${RISK_MED}, ${RISK_HIGH})` }} />
@@ -1098,7 +1110,7 @@ export const MapCanvas = memo(function MapCanvas({
 }: Props) {
   const persistedMapUiState = useMemo(() => loadMapUiState(), []);
   const [overlayMode, setOverlayMode] = useState<OverlayMode>(
-    persistedMapUiState?.overlayMode ?? initialOverlayMode ?? 'cooperation',
+    persistedMapUiState?.overlayMode ?? initialOverlayMode ?? 'none',
   );
   const [fillMode, setFillMode] = useState<MapFillMode>(
     persistedMapUiState?.fillMode ?? initialFillMode ?? 'alignment',
@@ -1569,11 +1581,16 @@ export const MapCanvas = memo(function MapCanvas({
                   fontSize={LABEL_BASE_FONT_SIZE * invZoom}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  fill="rgba(248,250,252,0.9)"
-                  stroke="rgba(5,9,18,0.6)"
-                  strokeWidth={LABEL_STROKE_WIDTH * invZoom}
+                  fill="rgba(248,250,252,0.95)"
+                  stroke="rgba(15,23,42,0.85)"
+                  strokeWidth={LABEL_STROKE_WIDTH * 1.5 * invZoom}
                   paintOrder="stroke"
-                  style={{ pointerEvents: 'none', fontWeight: 600, letterSpacing: '0.01em' }}
+                  style={{ 
+                    pointerEvents: 'none', 
+                    fontWeight: 700, 
+                    letterSpacing: '0.02em',
+                    textShadow: '0 1px 3px rgba(0,0,0,0.6)'
+                  }}
                 >
                   {name}
                 </text>
@@ -1795,6 +1812,7 @@ export const MapCanvas = memo(function MapCanvas({
 
         <MapLegendControls
           fillMode={fillMode}
+          overlayMode={overlayMode}
           alignmentColor={alignmentColor}
           alignmentLabel={alignmentLabel}
         />

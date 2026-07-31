@@ -139,11 +139,43 @@ type MetricCardProps = {
   tone?: 'low' | 'medium' | 'high' | 'accent' | 'neutral';
   size?: 'sm' | 'md';
   explanation?: ReactNode;
+  barValue?: number; // 0-100 for inline visualization
+  barColor?: string;
+  showDelta?: boolean;
+  delta?: number;
+  maxValue?: number; // for context (e.g., 100 for percentages)
+  minValue?: number; // for context (default 0)
 };
 
-export function MetricCard({ label, value, hint, tone = 'neutral', size = 'md', explanation }: MetricCardProps) {
+const toneToColor: Record<string, string> = {
+  low: 'var(--risk-low)',
+  medium: 'var(--risk-medium)',
+  high: 'var(--risk-high)',
+  accent: 'var(--accent)',
+  neutral: 'var(--text-muted)',
+};
+
+export function MetricCard({ 
+  label, 
+  value, 
+  hint, 
+  tone = 'neutral', 
+  size = 'md', 
+  explanation,
+  barValue,
+  barColor,
+  showDelta,
+  delta,
+  maxValue = 100,
+  minValue = 0,
+}: MetricCardProps) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
+  
+  const effectiveBarColor = barColor || toneToColor[`metric-${tone}`] || toneToColor[tone] || 'var(--text-muted)';
+  const range = maxValue - minValue;
+  const normalizedValue = range > 0 ? ((barValue ?? 0) - minValue) / range * 100 : 0;
+  const clampedValue = Math.max(0, Math.min(100, normalizedValue));
 
   return (
     <div className={`metric metric-${size} metric-${tone} ${explanation ? 'metric-explainable' : ''}`}>
@@ -162,8 +194,29 @@ export function MetricCard({ label, value, hint, tone = 'neutral', size = 'md', 
           </button>
         )}
       </div>
-      <strong className="metric-value">{value}</strong>
+      <div className="metric-value-row">
+        <strong className="metric-value">{value}</strong>
+        {showDelta && typeof delta === 'number' && (
+          <span className={`metric-delta ${delta > 0 ? 'delta-pos' : delta < 0 ? 'delta-neg' : ''}`}>
+            <SvgIcon.Chevron dir={delta > 0 ? 'up' : delta < 0 ? 'down' : 'right'} />
+            {delta > 0 ? '+' : ''}{delta}%
+          </span>
+        )}
+      </div>
       {hint != null && <span className="metric-hint">{hint}</span>}
+      {typeof barValue === 'number' && (
+        <div className="metric-bar-track">
+          <div
+            className="metric-bar-fill"
+            style={{ 
+              width: `${clampedValue}%`, 
+              background: effectiveBarColor,
+              opacity: 0.85
+            }}
+            aria-label={`${label} level: ${Math.round(barValue)}%`}
+          />
+        </div>
+      )}
       {explanation && (
         <Popover open={open} anchor={triggerRef.current} onClose={() => setOpen(false)} width={380}>
           {explanation}

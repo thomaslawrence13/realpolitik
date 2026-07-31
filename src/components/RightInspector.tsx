@@ -388,6 +388,8 @@ function OverviewPanel({
             value={formatPercent(selected.confidence)}
             hint={<DeltaHint delta={confidenceDelta} higherIsBetter />}
             explanation={selected.explanation ? <ConfidenceExplainer explanation={selected.explanation.confidence} /> : undefined}
+            barValue={selected.confidence}
+            tone="accent"
           />
           <MetricCard
             label="Conflict pressure index"
@@ -395,11 +397,14 @@ function OverviewPanel({
             hint={<DeltaHint delta={riskDelta} higherIsBetter={false} />}
             tone={getRiskTier(selected.risk)}
             explanation={selected.explanation ? <RiskExplainer explanation={selected.explanation.risk} /> : undefined}
+            barValue={selected.risk}
           />
           <MetricCard
             label="Source coverage"
             value={formatPercent(selected.profile.sourceCoverage)}
             hint={<MetricTelemetryTag fallbackLabel="Profile coverage" />}
+            barValue={selected.profile.sourceCoverage}
+            tone="low"
           />
           <MetricCard
             label="Last updated"
@@ -503,22 +508,30 @@ function OverviewPanel({
               value={formatPercent(selected.relationshipSummary.cooperation)}
               tone="accent"
               size="sm"
+              barValue={selected.relationshipSummary.cooperation}
+              barColor="#38bdf8"
             />
             <MetricCard
               label="Hostility"
               value={formatPercent(selected.relationshipSummary.hostility)}
               tone={getRiskTier(selected.relationshipSummary.hostility)}
               size="sm"
+              barValue={selected.relationshipSummary.hostility}
+              barColor="#fb7185"
             />
             <MetricCard
               label="Dependency"
               value={formatPercent(selected.relationshipSummary.dependency)}
               size="sm"
+              barValue={selected.relationshipSummary.dependency}
+              barColor="#f59e0b"
             />
             <MetricCard
               label="Deterrence"
               value={formatPercent(selected.relationshipSummary.deterrence)}
               size="sm"
+              barValue={selected.relationshipSummary.deterrence}
+              barColor="#a78bfa"
             />
           </div>
         )}
