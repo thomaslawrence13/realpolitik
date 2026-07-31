@@ -4,7 +4,7 @@
   "description": "Interactive geopolitical map simulation prototype",
   "scripts": {
     "test": "npm run test:unit && npm run build",
-    "test:unit": "tsx --test \"src/**/*.test.ts\"",
+    "test:unit": "tsx --test src/**/*.test.ts src/simulation.test.ts src/data/pipeline/*.test.ts src/data/quality/*.test.ts",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
