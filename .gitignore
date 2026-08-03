@@ -1,4 +1,18 @@
-```
+# Dependencies
+node_modules/
+
 # Build artifacts
 dist/
-```
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor files
+.vscode/
+.idea/
+.DS_Store
+
+# Env
+.env
+.env.local

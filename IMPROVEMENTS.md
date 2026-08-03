@@ -2,6 +2,41 @@
 
 This document summarizes the improvements made to the realpolitik codebase in this session.
 
+## Repository hygiene
+
+- **Removed committed build artifacts**: 809 tracked files (`node_modules/` and `dist/`, ~818k lines) were untracked via `git rm --cached` — the repository now contains only source. Clones and fresh installs are dramatically smaller.
+- **Fixed `.gitignore`**: it contained a stray code fence and only ignored `dist/`. Now ignores `node_modules/`, `dist/`, logs, editor dirs, and env files.
+- **Dependency security**: `npm audit fix` cleared 3 vulnerabilities (2 high: esbuild Windows arbitrary file read, postcss source-map disclosure, vite launch-editor NTLMv2 disclosure). `npm audit` reports 0 vulnerabilities.
+
+## Component splitting
+
+The two largest components documented as follow-up work are now split into focused modules:
+
+- **`RightInspector.tsx` (2,315 lines) → shell (320 lines) + `src/components/inspector/`:**
+  - `OverviewPanel.tsx` — at-a-glance metrics, disclosures, risk trajectory sparkline, alignment model
+  - `StatsPanel.tsx` — full country data snapshot with provenance, historical trend charts, quality notices
+  - `RelationshipsPanel.tsx` — searchable/sortable relationship edge list
+  - `AnalysisPanel.tsx` — model-derived outputs and active analysis parameters
+  - `ComparisonSection.tsx` — pinned saved-analysis comparison
+  - `explainers.tsx` — risk/confidence/probability math breakdowns
+  - `shared.tsx` — shared presentational components, dimension metadata, formatting constants
+- **`BottomDrawer.tsx` (1,440 lines) → shell (260 lines) + `src/components/drawer/`:**
+  - `IndexPanel.tsx` — factual index with search/filter/compare and CSV export
+  - `ScenarioPanel.tsx` — weight sets and shock sliders
+  - `EventsPanel.tsx` — event library with category filters and bulk actions
+  - `HistoryPanel.tsx` — saved scenarios with rename/compare/export
+  - `MethodologyPanel.tsx` — telemetry, reconciliation rules, ingest coverage
+  - `types.ts` — `DrawerTab` / `EventFeedItem` (re-exported by `BottomDrawer` for backwards compatibility)
+- Public APIs unchanged: `App.tsx` still imports `RightInspector`/`BottomDrawer` and their types from the same paths.
+
+## Bundle optimization
+
+- **Main entry chunk: 1,542 KB → 199 KB** (gzip 256 KB → 54 KB) via rolldown `codeSplitting.groups` in `vite.config.ts`:
+  - `react-vendor` (190 KB): react, react-dom, scheduler — independently cacheable
+  - `dataset` (1,153 KB): the versioned country dataset modules under `src/data/datasets`
+- `MapCanvas` (816 KB) remains lazy-loaded as its own async chunk (world-atlas TopoJSON rides along).
+- All chunks now sit under the 1200 KB warning threshold; the previous "larger than 1200 kB" warning is gone.
+
 ## Build & TypeScript
 
 - **Fixed TypeScript build**: Installed missing `@types/node` and `@types/vite` to resolve TS2688 errors
@@ -91,19 +126,14 @@ This document summarizes the improvements made to the realpolitik codebase in th
 
 The following improvements were identified but not implemented in this session:
 
-1. **Component Splitting**: `RightInspector.tsx` (2,321 lines) and `BottomDrawer.tsx` (1,440 lines) remain large
-   - Recommend splitting into focused sub-components (stats, relationships, analysis panels)
-   - Would improve testability and maintainability
-
-2. **UI Component Tests**: No test coverage for React components
+1. **UI Component Tests**: No test coverage for React components
    - Consider adding snapshot or regression tests for inspector and map rendering
 
-3. **Accessibility**: No ARIA labels or keyboard navigation improvements
+2. **Accessibility**: No ARIA labels or keyboard navigation improvements
    - Recommend audit and enhancement for screen readers and keyboard users
 
-4. **Bundle Optimization**: Large chunk warnings for MapCanvas (813KB)
-   - Could potentially split TopoJSON data into separate async chunk
-   - Consider analyzing code coverage to identify unused dependencies
+3. **Dataset chunk (1.15 MB raw)**: The versioned dataset is loaded eagerly at startup
+   - Could defer parts of the dataset until the map is interactive, or stream it after first paint
 
 ## Verification
 
