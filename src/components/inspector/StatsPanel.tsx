@@ -27,6 +27,9 @@ import {
   SMALL_VALUE_DECIMALS,
   getIndicatorTelemetry,
 } from './shared';
+import { InlineSourceTag } from './EconomicStatsSection';
+import { EconomicStatsSection } from './EconomicStatsSection';
+import { MilitaryStatsSection } from './MilitaryStatsSection';
 
 const HISTORICAL_CHART_WIDTH = HISTORICAL_CHART.width;
 const HISTORICAL_CHART_HEIGHT = HISTORICAL_CHART.height;
@@ -91,30 +94,6 @@ function ProfileStat({
       {sub && <span className="profile-stat-sub">{sub}</span>}
       {telemetry}
     </div>
-  );
-}
-
-/** Inline source attribution tag used throughout the Statistics tab. */
-function InlineSourceTag({ sources, ids }: { sources: DatasetSource[]; ids: string[] }) {
-  const matched = sources.filter((s) => ids.includes(s.id));
-  if (matched.length === 0) return null;
-  return (
-    <span className="inline-source-tag">
-      {matched.map((s, i) => (
-        <span key={s.id}>
-          {i > 0 && ' · '}
-          <a
-            href={s.url}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-source-link"
-            title={`${s.title} — ${s.publisher} (accessed ${s.accessedOn})`}
-          >
-            {s.publisher}
-          </a>
-        </span>
-      ))}
-    </span>
   );
 }
 
@@ -265,9 +244,6 @@ export function StatsPanel({
   const ind = profile.indicators;
   const srcs = profile.sources;
 
-  const tradeTelemetry = getIndicatorTelemetry(selected, 'tradeExposure');
-  const militaryTelemetry = getIndicatorTelemetry(selected, 'militaryTreatyLevel');
-  const cohesionTelemetry = getIndicatorTelemetry(selected, 'cohesion');
   const availableHistorical = profile.historicalSeries ?? [];
   const [historicalMetricId, setHistoricalMetricId] = useState<string>('');
   const [comparisonCountryMapName, setComparisonCountryMapName] = useState<string>('');
@@ -606,63 +582,12 @@ export function StatsPanel({
 
       {/* ── Economic statistics ── */}
       {econ && (
-        <ProfileStatGrid
-          title="Economy"
-          icon="📈"
-          sourceTag={<InlineSourceTag sources={srcs} ids={['imf-weo', 'world-bank-wdi']} />}
-        >
-          <ProfileStat label="GDP" value={`$${econ.gdpBillionUsd.toLocaleString()}B`} sub="nominal USD" />
-          <ProfileStat label="GDP per capita" value={`$${econ.gdpPerCapitaUsd.toLocaleString()}`} sub="nominal USD" />
-          <ProfileStat
-            label="GDP growth"
-            value={`${econ.gdpGrowthPct > 0 ? '+' : ''}${econ.gdpGrowthPct}%`}
-            tone={econ.gdpGrowthPct >= 0 ? 'positive' : 'negative'}
-            sub="annual"
-          />
-          <ProfileStat
-            label="Inflation"
-            value={`${econ.inflationPct}%`}
-            tone={econ.inflationPct > 10 ? 'negative' : econ.inflationPct < 4 ? 'positive' : 'neutral'}
-            sub="CPI annual"
-          />
-          <ProfileStat
-            label="Trade / GDP"
-            value={`${econ.tradeGdpPct}%`}
-            sub="openness"
-            telemetry={<MetricTelemetryTag entry={tradeTelemetry} fallbackLabel="Curated economic snapshot" />}
-          />
-        </ProfileStatGrid>
+        <EconomicStatsSection econ={econ} sources={srcs} selected={selected} />
       )}
 
       {/* ── Military statistics ── */}
       {mil && (
-        <ProfileStatGrid
-          title="Military"
-          icon="🛡"
-          sourceTag={<InlineSourceTag sources={srcs} ids={['sipri-milex', 'iiss-military-balance']} />}
-        >
-          <ProfileStat
-            label="Defence spending"
-            value={`$${mil.militaryExpBillionUsd.toLocaleString()}B`}
-            sub="annual"
-          />
-          <ProfileStat
-            label="Spending / GDP"
-            value={`${mil.militaryExpGdpPct}%`}
-            sub="burden"
-            telemetry={<MetricTelemetryTag entry={militaryTelemetry} fallbackLabel="Curated military snapshot" />}
-          />
-          <ProfileStat
-            label="Active personnel"
-            value={mil.activePersonnelThousands > 0 ? `${mil.activePersonnelThousands.toLocaleString()}k` : '—'}
-            sub="troops"
-          />
-          <ProfileStat
-            label="Nuclear armed"
-            value={mil.nuclearArmed ? 'Yes' : 'No'}
-            tone={mil.nuclearArmed ? 'negative' : 'neutral'}
-          />
-        </ProfileStatGrid>
+        <MilitaryStatsSection mil={mil} sources={srcs} selected={selected} />
       )}
 
       {/* ── Demographics ── */}
@@ -948,26 +873,15 @@ export function StatsPanel({
           Geopolitical indicators
         </h3>
         <div className="profile-indicator-grid">
-          {(Object.entries(ind) as [keyof CountryIndicators, string | number][])
-            .filter(([key]) => key !== 'cohesion')
-            .map(([key, value]) => (
-              <div key={key} className="profile-indicator-row">
-                <div className="profile-indicator-meta">
-                  <span className="profile-indicator-key">{formatIndicatorLabel(String(key))}</span>
-                  <MetricTelemetryTag entry={getIndicatorTelemetry(selected, key)} />
-                </div>
-                <IndicatorBadge value={String(value)} />
+          {(Object.entries(ind) as [keyof CountryIndicators, string | number][]).map(([key, value]) => (
+            <div key={key} className="profile-indicator-row">
+              <div className="profile-indicator-meta">
+                <span className="profile-indicator-key">{formatIndicatorLabel(String(key))}</span>
+                <MetricTelemetryTag entry={getIndicatorTelemetry(selected, key)} />
               </div>
-            ))}
-          <div className="profile-indicator-row">
-            <div className="profile-indicator-meta">
-              <span className="profile-indicator-key">Cohesion score</span>
-              <MetricTelemetryTag entry={cohesionTelemetry} />
+              <IndicatorBadge value={String(value)} />
             </div>
-            <span className="profile-indicator-badge profile-indicator-badge-neutral">
-              {ind.cohesion}
-            </span>
-          </div>
+          ))}
         </div>
       </div>
 
