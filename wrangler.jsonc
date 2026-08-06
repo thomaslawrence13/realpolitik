@@ -3,5 +3,24 @@
   "compatibility_date": "2026-05-09",
   "assets": {
     "directory": "./dist"
-  }
+  },
+  "headers": [
+    {
+      "path": "/*",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self' https://api.worldbank.org; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; base-uri 'self'; form-action 'self'"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
 }
