@@ -123,7 +123,24 @@ export const downloadScenariosFile = (
 };
 
 export const parseScenariosFile = async (file: File): Promise<SavedScenario[]> => {
+  // Validate file size before processing (1MB limit)
+  const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error('File exceeds maximum size of 1MB');
+  }
+
+  // Validate file type - only allow JSON files
+  if (file.type !== '' && !file.type.startsWith('application/json') && !file.name.toLowerCase().endsWith('.json')) {
+    throw new Error('Only JSON files are allowed');
+  }
+
   const text = await file.text();
+
+  // Limit text content size before parsing
+  if (text.length > MAX_FILE_SIZE) {
+    throw new Error('File content exceeds maximum size of 1MB');
+  }
+
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);

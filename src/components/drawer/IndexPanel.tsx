@@ -10,7 +10,14 @@ const maxComparisonCountries = 4;
 const CSV_COLUMNS = ['Country', 'Region', 'Regime', 'Coverage%', 'Confidence%', 'Risk%', 'Relationships', 'Trust'] as const;
 
 const exportIndexCsv = (rows: SimulatedCountry[]) => {
-  const escape = (value: string) => `"${value.replace(/"/g, '""')}"`;
+  // Prevent CSV formula injection by prefixing dangerous characters with a single quote
+  const escape = (value: string) => {
+    // If value starts with formula-inducing characters (=, +, -, @), prefix with single quote
+    if (/^[=+\-@]/.test(value)) {
+      value = `'${value}`;
+    }
+    return `"${value.replace(/"/g, '""')}"`;
+  };
   const header = CSV_COLUMNS.join(',');
   const body = rows.map((country) => {
     const trust = summarizeCountryTrust(country.profile);
