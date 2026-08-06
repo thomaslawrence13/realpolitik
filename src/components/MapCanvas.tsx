@@ -20,6 +20,14 @@ import { IconButton, SvgIcon } from './ui';
 import { summarizeCountryTrust, TrustTag } from './provenance';
 import { useMapStore } from '../store/useMapStore';
 import { MAP, STORAGE_KEYS } from '../lib/constants';
+import { clamp, easeInOut, capitalize } from './map';
+import { overlayLabel, overlayColor, MODE_CORE_PX, MODE_DASH_PX, MODE_MIN_OPACITY, overlayKeys, RELATIONSHIP_HOVER_RGB } from './map/relationshipArcs';
+import { fillModeGroups } from './map/fillModeGroups';
+
+const clampOffset = (offset: { x: number; y: number }, zoom: number): { x: number; y: number } => ({
+  x: clamp(offset.x, -(MAP_WIDTH * zoom - PAN_MARGIN), MAP_WIDTH - PAN_MARGIN),
+  y: clamp(offset.y, -(MAP_HEIGHT * zoom - PAN_MARGIN), MAP_HEIGHT - PAN_MARGIN),
+});
 
 const WHEEL_LINE_PX = MAP.wheelLinePx;
 const WHEEL_PAGE_PX = MAP.wheelPagePx;
@@ -32,56 +40,6 @@ const LABELS_ZOOM_THRESHOLD = MAP.labelsZoomThreshold;
 const LABEL_BASE_FONT_SIZE = MAP.labelBaseFontSize;
 const LABEL_STROKE_WIDTH = MAP.labelStrokeWidth;
 const MAP_UI_STATE_KEY = STORAGE_KEYS.mapUiState;
-
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-const easeInOut = (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-
-/** Capitalise the first letter of a string (used in hover card labels). */
-const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
-
-/** Prevent the map from being dragged completely off-screen. */
-function clampOffset(offset: { x: number; y: number }, zoom: number) {
-  return {
-    x: clamp(offset.x, -(MAP_WIDTH * zoom - PAN_MARGIN), MAP_WIDTH - PAN_MARGIN),
-    y: clamp(offset.y, -(MAP_HEIGHT * zoom - PAN_MARGIN), MAP_HEIGHT - PAN_MARGIN),
-  };
-}
-
-const overlayLabel: Record<RelationshipDimension, string> = {
-  cooperation: 'Cooperation',
-  hostility: 'Hostility',
-  dependency: 'Dependency',
-  deterrence: 'Deterrence',
-};
-
-const overlayColor: Record<RelationshipDimension, string> = {
-  cooperation: '#38bdf8',
-  hostility: '#fb7185',
-  dependency: '#f59e0b',
-  deterrence: '#a78bfa',
-};
-
-// Per-mode arc visual parameters — keep character consistent without the call
-// site needing to know anything about the relationship dimension's semantics.
-const MODE_CORE_PX: Record<RelationshipDimension, number> = {
-  cooperation: 1.15,
-  hostility:   1.4,
-  dependency:  1.1,
-  deterrence:  1.2,
-};
-const MODE_DASH_PX: Partial<Record<RelationshipDimension, [number, number]>> = {
-  dependency: [10, 5],
-  deterrence: [3,  6],
-};
-const MODE_MIN_OPACITY: Partial<Record<RelationshipDimension, number>> = {
-  hostility: 0.42,
-};
-
-const overlayKeys: RelationshipDimension[] = ['cooperation', 'hostility', 'dependency', 'deterrence'];
-
-// Hover highlight arc colour (near-white), shared by the relationship overlay.
-const RELATIONSHIP_HOVER_RGB: [number, number, number] = [248, 250, 252];
 
 type MapUiState = {
   overlayMode: OverlayMode;
@@ -108,61 +66,6 @@ const saveMapUiState = (state: MapUiState) => {
     // ignore
   }
 };
-
-const fillModeGroups: ReadonlyArray<{ label: string; options: ReadonlyArray<{ value: MapFillMode; label: string; hint: string }> }> = [
-  {
-    label: 'Core Alignment',
-    options: [
-      { value: 'alignment', label: 'Alignment', hint: 'Color by current bloc alignment' },
-      { value: 'risk', label: 'Risk', hint: 'Green → red as escalation risk rises' },
-      { value: 'confidence', label: 'Confidence', hint: 'Brighter = higher confidence' },
-      { value: 'shift', label: 'Shift', hint: 'Highlights countries that diverge from baseline' },
-    ],
-  },
-  {
-    label: 'Macroeconomics',
-    options: [
-      { value: 'gdpPerCapita', label: 'GDP per capita', hint: 'Choropleth by GDP per capita (USD)' },
-      { value: 'gdpGrowth', label: 'GDP Growth', hint: 'GDP growth rate — red for contraction, green for fast growth' },
-      { value: 'inflation', label: 'Inflation', hint: 'Consumer price inflation — green (low) → red (high)' },
-      { value: 'tradeOpenness', label: 'Trade Openness', hint: 'Total trade as % of GDP — economic openness' },
-      { value: 'debtVulnerability', label: 'Debt Vulnerability', hint: 'Composite fiscal vulnerability from rating, debt load, and FX cushion' },
-      { value: 'sovereignRating', label: 'Sovereign Rating', hint: 'Sovereign credit tier' },
-    ],
-  },
-  {
-    label: 'Security & State',
-    options: [
-      { value: 'nuclearArmed', label: 'Nuclear Armed', hint: 'Highlight nuclear-armed states' },
-      { value: 'militaryBurden', label: 'Military % GDP', hint: 'Military expenditure as % of GDP' },
-      { value: 'regime', label: 'Regime Type', hint: 'Color by regime type (democracy / hybrid / authoritarian)' },
-      { value: 'conflictPressure', label: 'Conflict Pressure', hint: 'Indicator-based conflict pressure (low / medium / high)' },
-      { value: 'defensePactDensity', label: 'Defense Pacts', hint: 'Active defense-pact density' },
-    ],
-  },
-  {
-    label: 'Demographics & Resources',
-    options: [
-      { value: 'population', label: 'Population', hint: 'Total population (millions, log-scaled)' },
-      { value: 'medianAge', label: 'Median Age', hint: 'Median age — young (green) → aged (indigo)' },
-      { value: 'demographicPressure', label: 'Demo Pressure', hint: 'Composite demographic pressure score (youth bulge + aging + migration)' },
-      { value: 'energyExports', label: 'Energy Exports', hint: 'Net energy exports — green (exporter) → red (importer)' },
-      { value: 'foodImportDependence', label: 'Food Dependency', hint: 'Food import dependence — exporter → importer' },
-      { value: 'waterStress', label: 'Water Stress', hint: 'Water stress index — low → extreme' },
-      { value: 'criticalMineralIntensity', label: 'Critical Minerals', hint: 'Weighted critical-mineral supply-chain footprint' },
-    ],
-  },
-  {
-    label: 'Information & Soft Power',
-    options: [
-      { value: 'unVotingBlocA', label: 'UN-A Alignment', hint: 'UN voting alignment with bloc A anchor' },
-      { value: 'unVotingBlocB', label: 'UN-B Alignment', hint: 'UN voting alignment with bloc B anchor' },
-      { value: 'softPower', label: 'Soft Power', hint: 'Soft-power reach score' },
-      { value: 'cyberCapability', label: 'Cyber Capability', hint: 'Composite offensive and defensive cyber capability' },
-      { value: 'internetFreedom', label: 'Internet Freedom', hint: 'Internet freedom score — controlled → open' },
-    ],
-  },
-];
 
 // Risk gradient: low (green) → medium (amber) → high (red).
 const RISK_LOW = '#34d399';
