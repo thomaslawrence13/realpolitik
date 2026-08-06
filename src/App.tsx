@@ -44,6 +44,7 @@ import {
   decodeStateFromHash,
 } from './lib/urlState';
 import { clampTimelineIndex } from './lib/timeline';
+import { useSimulation } from './hooks/useSimulation';
 import {
   buildEventFeed,
   buildVisibleNames,
@@ -356,7 +357,6 @@ export default function App() {
   }, []);
 
   const activeWeightSet = useMemo(() => getSimulationWeightSet(deferredWeightSetKey), [deferredWeightSetKey]);
-  const simulationSnapshot = useMapStore((state) => state.simulationSnapshot);
   const setSimulationPayload = useMapStore((state) => state.setSimulationPayload);
 
   useEffect(() => {
@@ -368,9 +368,30 @@ export default function App() {
     });
   }, [activeEvents, activeProfiles, deferredScenarioInputs, deferredWeightSetKey, setSimulationPayload]);
 
-  const simulated = simulationSnapshot?.simulated ?? [];
-  const baselineSimulated = simulationSnapshot?.baselineSimulated ?? [];
-  const byName = useMemo(() => new Map(simulated.map((entry) => [entry.profile.mapName, entry])), [simulated]);
+  const {
+    simulated,
+    baselineSimulated,
+    selected,
+    baselineSelected,
+    selectedRiskDelta,
+    selectedConfidenceDelta,
+    sparkline: selectedSparkline,
+  } = useSimulation(
+    activeProfiles,
+    activeEvents,
+    deferredScenarioInputs,
+    deferredWeightSetKey,
+    selectedCountry,
+    timelineIndex,
+    scenarioTimeline,
+    alignmentColor,
+    alignmentLabel,
+  );
+
+  const byName = useMemo(
+    () => new Map(simulated.map((entry) => [entry.profile.mapName, entry])),
+    [simulated],
+  );
   const baselineByName = useMemo(
     () => new Map(baselineSimulated.map((entry) => [entry.profile.mapName, entry])),
     [baselineSimulated],
@@ -386,32 +407,9 @@ export default function App() {
 
   const railCountries = useMemo(() => searchCountries(filtered, search), [filtered, search]);
 
-  const selected = useMemo<SimulatedCountry | null>(() => {
-    const snapshotSelected = selectCountryOrFallback(byName, simulated, selectedCountry);
-    if (snapshotSelected) return snapshotSelected;
-    if (!selectedProfile) return null;
-    return simulateCountry(selectedProfile, timelineIndex, {
-      scenarioInputs: deferredScenarioInputs,
-      activeEvents,
-      weightSet: activeWeightSet,
-      includeExplanation: true,
-    });
-  }, [activeEvents, activeWeightSet, byName, deferredScenarioInputs, selectedCountry, selectedProfile, simulated, timelineIndex]);
-  const baselineSelected = useMemo<SimulatedCountry | null>(() => {
-    const snapshotSelected = selectCountryOrFallback(baselineByName, baselineSimulated, selectedCountry);
-    if (snapshotSelected) return snapshotSelected;
-    if (!selectedProfile) return null;
-    return simulateCountry(selectedProfile, timelineIndex, {
-      scenarioInputs: defaultScenarioInputs,
-      weightSet: baselineWeightSet,
-      includeExplanation: false,
-    });
-  }, [baselineByName, baselineSimulated, selectedCountry, selectedProfile, timelineIndex]);
   if (!selected || !baselineSelected) {
     return <div className="app-shell" role="status" aria-live="polite" aria-busy="true" aria-label="Loading simulation data">Loading simulation...</div>;
   }
-  const selectedRiskDelta = Math.round(selected.risk - baselineSelected.risk);
-  const selectedConfidenceDelta = Math.round(selected.confidence - baselineSelected.confidence);
 
   const selectedActiveEvents = useMemo(
     () => getActiveEventsForProfile(selected.profile, activeEvents),
@@ -474,50 +472,6 @@ export default function App() {
     if (comparisonSimulated.length === 0) return null;
     return new Map(comparisonSimulated.map((entry) => [entry.profile.mapName, entry]));
   }, [comparisonSimulated]);
-
-  // Inspector sparkline — baseline profile resolved from the already-built byName
-  // map (O(1)) instead of a linear scan over activeProfiles.
-  const sparklineProfile = useMemo(
-    () => selectedProfile,
-    [selectedProfile],
-  );
-
-  const sparklineBaselineRisks = useMemo<number[]>(() => {
-    if (!sparklineProfile) return [];
-    return scenarioTimeline.map((_, index) =>
-      Math.round(
-        simulateCountry(sparklineProfile, index, {
-          scenarioInputs: defaultScenarioInputs,
-          weightSet: baselineWeightSet,
-          includeHistory: false,
-        }).risk,
-      ),
-    );
-  }, [sparklineProfile]);
-
-  const sparklineActiveRisks = useMemo<number[]>(() => {
-    if (!sparklineProfile) return [];
-    return scenarioTimeline.map((_, index) =>
-      Math.round(
-        simulateCountry(sparklineProfile, index, {
-          scenarioInputs: deferredScenarioInputs,
-          activeEvents,
-          weightSet: activeWeightSet,
-          includeHistory: false,
-        }).risk,
-      ),
-    );
-  }, [activeEvents, activeWeightSet, deferredScenarioInputs, sparklineProfile]);
-
-  const selectedSparkline = useMemo<SparklineSeries | null>(() => {
-    if (!sparklineProfile) return null;
-    return {
-      labels: scenarioTimeline.slice(),
-      active: sparklineActiveRisks,
-      baseline: sparklineBaselineRisks,
-      currentIndex: timelineIndex,
-    };
-  }, [sparklineActiveRisks, sparklineBaselineRisks, sparklineProfile, timelineIndex]);
 
   const handleScenarioInputChange = useCallback(<K extends keyof ScenarioInputs>(key: K, value: number) => {
     setScenarioInputs((current) => ({ ...current, [key]: value }));
@@ -793,6 +747,7 @@ export default function App() {
       if (shareResetRef.current) window.clearTimeout(shareResetRef.current);
       if (undoTimeoutRef.current) window.clearTimeout(undoTimeoutRef.current);
       if (persistDebounceRef.current) window.clearTimeout(persistDebounceRef.current);
+      useMapStore.destroy();
     };
   }, []);
 

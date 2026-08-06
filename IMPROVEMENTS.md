@@ -135,6 +135,20 @@ The following improvements were identified but not implemented in this session:
 3. **Dataset chunk (1.15 MB raw)**: The versioned dataset is loaded eagerly at startup
    - Could defer parts of the dataset until the map is interactive, or stream it after first paint
 
+4. **App.tsx complexity**: The main App component is ~900 lines with 79 hooks
+   - Consider extracting more hooks (usePersistedState, useTimeline, useScenario) to reduce complexity
+
+The following improvements were identified but not implemented in this session:
+
+1. **UI Component Tests**: No test coverage for React components
+   - Consider adding snapshot or regression tests for inspector and map rendering
+
+2. **Accessibility**: No ARIA labels or keyboard navigation improvements
+   - Recommend audit and enhancement for screen readers and keyboard users
+
+3. **Dataset chunk (1.15 MB raw)**: The versioned dataset is loaded eagerly at startup
+   - Could defer parts of the dataset until the map is interactive, or stream it after first paint
+
 ## Verification
 
 ```bash

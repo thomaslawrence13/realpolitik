@@ -32,6 +32,7 @@ type UseMapStore = {
   <T>(selector: (store: StoreShape) => T): T;
   setState: (partial: Partial<MapState>) => void;
   getState: () => StoreShape;
+  destroy: () => void;
 };
 
 const listeners = new Set<() => void>();
@@ -92,6 +93,13 @@ const setState = (partial: Partial<MapState>) => {
   listeners.forEach((listener) => listener());
 };
 
+const destroy = (): void => {
+  if (simulationWorker) {
+    simulationWorker.terminate();
+    simulationWorker = null;
+  }
+};
+
 export const useMapStore = ((selector) =>
   useSyncExternalStore(
     (listener) => {
@@ -103,3 +111,4 @@ export const useMapStore = ((selector) =>
 
 useMapStore.setState = setState;
 useMapStore.getState = getSnapshot;
+useMapStore.destroy = destroy;
