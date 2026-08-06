@@ -135,11 +135,25 @@ The following improvements were identified but not implemented in this session:
 3. **Dataset chunk (1.15 MB raw)**: The versioned dataset is loaded eagerly at startup
    - Could defer parts of the dataset until the map is interactive, or stream it after first paint
 
+4. **App.tsx complexity**: The main App component is ~900 lines with 79 hooks
+   - Consider extracting more hooks (usePersistedState, useTimeline, useScenario) to reduce complexity
+
+The following improvements were identified but not implemented in this session:
+
+1. **UI Component Tests**: No test coverage for React components
+   - Consider adding snapshot or regression tests for inspector and map rendering
+
+2. **Accessibility**: No ARIA labels or keyboard navigation improvements
+   - Recommend audit and enhancement for screen readers and keyboard users
+
+3. **Dataset chunk (1.15 MB raw)**: The versioned dataset is loaded eagerly at startup
+   - Could defer parts of the dataset until the map is interactive, or stream it after first paint
+
 ## Verification
 
 ```bash
 npm run build    # ✓ Success (no TypeScript errors)
-npm run test:unit # ✓ All 21 tests passing
+npm run test:unit # ✓ All 57 tests passing
 npm run test     # ✓ Build + tests both pass
 ```
 
@@ -148,8 +162,11 @@ npm run test     # ✓ Build + tests both pass
 - `src/lib/constants.ts` (NEW, 79 lines)
 - `src/lib/constants.test.ts` (NEW, 30 lines)
 - `src/lib/logger.ts` (NEW, 21 lines)
+- `src/lib/useDebounce.ts` (NEW, 28 lines)
+- `src/lib/useLocalStorage.ts` (NEW, 42 lines)
 - `src/components/inspectorUtils.ts` (NEW, 37 lines)
-- `src/simulation.ts` (JSDoc + constants import, +13 lines)
+- `src/simulation.ts` (probability normalization fix, result caching, +45 lines)
+- `src/simulation.test.ts` (12 new tests, +270 lines)
 - `src/App.tsx` (constants import + usage, -3 lines)
 - `src/components/MapCanvas.tsx` (constants import + usage, -33 lines)
 - `src/components/RightInspector.tsx` (utils import, -50 lines)

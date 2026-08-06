@@ -67,6 +67,21 @@ const resolveAlignment = (probabilities: ProbabilitySet, risk: number): Alignmen
 // computation only needs to run once per country regardless of how many simulations are run.
 const relationshipSummaryCache = new WeakMap<CountryProfile, RelationshipSummary>();
 
+// Cache full simulation results keyed by profile+timeline+options hash so repeated
+// calls with identical inputs return instantly — critical for sparkline/history paths
+// that call simulateCountry many times per country.
+const simulationCache = new Map<string, SimulatedCountry>();
+
+const simulationCacheKey = (
+  profile: CountryProfile,
+  timelineIndex: number,
+  options?: SimulationOptions,
+): string => {
+  const inputsHash = `${options?.scenarioInputs?.sanctionShock ?? 0},${options?.scenarioInputs?.treatyShift ?? 0},${options?.scenarioInputs?.electionVolatility ?? 0},${options?.scenarioInputs?.invasionPressure ?? 0},${options?.scenarioInputs?.coupRisk ?? 0}`;
+  const eventsHash = (options?.activeEvents ?? []).map((e) => e.id).join(';');
+  return `${profile.id}:${timelineIndex}:${inputsHash}:${eventsHash}:${options?.weightSet?.key ?? 'baseline'}:${options?.includeExplanation ?? false}:${options?.includeHistory ?? true}`;
+};
+
 const summarizeRelationships = (profile: CountryProfile): RelationshipSummary => {
   const cached = relationshipSummaryCache.get(profile);
   if (cached) return cached;
@@ -271,6 +286,10 @@ export const simulateCountry = (
   timelineIndex: number,
   options?: SimulationOptions,
 ): SimulatedCountry => {
+  const cacheKey = simulationCacheKey(profile, timelineIndex, options);
+  const cached = simulationCache.get(cacheKey);
+  if (cached) return cached;
+
   const { includeHistory, includeExplanation, scenarioInputs, activeEvents, weightSet } = resolveOptions(options);
   const effectiveScenarioInputs = getScenarioInputsForProfile(scenarioInputs, activeEvents, profile);
   const momentum = timelineIndex * 1.8;
@@ -455,10 +474,20 @@ export const simulateCountry = (
   const probTotal = blocAClamped + blocBClamped + nonAlignedClamped;
   // Round the first two and compute the third as the remainder so the three values
   // always sum to exactly 100, regardless of floating-point rounding.
-  const pBlocA = Math.round((blocAClamped / probTotal) * 100);
-  const pBlocB = Math.round((blocBClamped / probTotal) * 100);
-  // Derive top-two probabilities directly from known variables — no sort needed.
-  const pNonAligned = 100 - pBlocA - pBlocB;
+  let pBlocA = Math.round((blocAClamped / probTotal) * 100);
+  let pBlocB = Math.round((blocBClamped / probTotal) * 100);
+  let pNonAligned = 100 - pBlocA - pBlocB;
+  // Rounding can push the sum over 100, making pNonAligned negative.
+  // Clamp to zero and reduce the largest probability to absorb the excess.
+  if (pNonAligned < 0) {
+    pNonAligned = 0;
+    const excess = pBlocA + pBlocB - 100;
+    if (pBlocA >= pBlocB) {
+      pBlocA -= excess;
+    } else {
+      pBlocB -= excess;
+    }
+  }
   const probabilities: ProbabilitySet = { blocA: pBlocA, blocB: pBlocB, nonAligned: pNonAligned };
   const topProbability = Math.max(pBlocA, pBlocB, pNonAligned);
   // For exactly three normalized probabilities (which sum to 100), the
@@ -621,7 +650,7 @@ export const simulateCountry = (
       }
     : null;
 
-  return {
+  const result: SimulatedCountry = {
     profile,
     alignment,
     confidence: Math.round(confidence),
@@ -634,6 +663,8 @@ export const simulateCountry = (
     relationshipSummary,
     explanation,
   };
+  simulationCache.set(cacheKey, result);
+  return result;
 };
 
 export const getRiskTier = classifyRisk;
