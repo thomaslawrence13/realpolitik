@@ -139,7 +139,7 @@ The following improvements were identified but not implemented in this session:
 
 ```bash
 npm run build    # ✓ Success (no TypeScript errors)
-npm run test:unit # ✓ All 21 tests passing
+npm run test:unit # ✓ All 57 tests passing
 npm run test     # ✓ Build + tests both pass
 ```
 
@@ -148,8 +148,11 @@ npm run test     # ✓ Build + tests both pass
 - `src/lib/constants.ts` (NEW, 79 lines)
 - `src/lib/constants.test.ts` (NEW, 30 lines)
 - `src/lib/logger.ts` (NEW, 21 lines)
+- `src/lib/useDebounce.ts` (NEW, 28 lines)
+- `src/lib/useLocalStorage.ts` (NEW, 42 lines)
 - `src/components/inspectorUtils.ts` (NEW, 37 lines)
-- `src/simulation.ts` (JSDoc + constants import, +13 lines)
+- `src/simulation.ts` (probability normalization fix, result caching, +45 lines)
+- `src/simulation.test.ts` (12 new tests, +270 lines)
 - `src/App.tsx` (constants import + usage, -3 lines)
 - `src/components/MapCanvas.tsx` (constants import + usage, -33 lines)
 - `src/components/RightInspector.tsx` (utils import, -50 lines)
