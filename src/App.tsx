@@ -43,7 +43,6 @@ import {
   clearHash,
   decodeStateFromHash,
 } from './lib/urlState';
-import { clampTimelineIndex } from './lib/timeline';
 import { useSimulation } from './hooks/useSimulation';
 import {
   buildEventFeed,
@@ -79,7 +78,6 @@ const defaultFilters: Filters = {
 
 const baselineWeightSet = getSimulationWeightSet('baseline');
 const weightSetOptions = Object.values(simulationWeightSets);
-const TIMELINE_AUTO_PLAY_INTERVAL_MS = UI_TIMING.autoPlayIntervalMs;
 const PERSIST_DEBOUNCE_MS = UI_TIMING.persistDebounceMs;
 const MIN_DRAWER_HEIGHT = UI_TIMING.minDrawerHeight;
 const MAX_DRAWER_HEIGHT_RATIO = UI_TIMING.maxDrawerHeightRatio;
@@ -151,18 +149,20 @@ const fromHash = decodeStateFromHash();
 if (fromHash) clearHash();
 
 export default function App() {
-  const clampIndex = (index: number) => clampTimelineIndex(index, scenarioTimeline.length);
   const [search, setSearch] = useState('');
   const selectedCountry = useMapStore((state) => state.selectedCountry);
   const setSelectedCountry = useMapStore((state) => state.setSelectedCountry);
-  const timelineIndex = useMapStore((state) => state.currentYear);
-  const setTimelineIndex = useMapStore((state) => state.setCurrentYear);
   const filters = useMapStore((state) => state.activeFilters);
   const setFilters = useMapStore((state) => state.setActiveFilters);
-  
+
+  // Present-only tracker: always pin to the latest period. Timeline scrubbing
+  // is intentionally removed — the product surfaces live global statistics.
+  const presentIndex = Math.max(0, scenarioTimeline.length - 1);
+  const asOfLabel = scenarioTimeline[presentIndex] ?? 'Present';
+
   useEffect(() => {
     useMapStore.setState({
-      currentYear: clampIndex(fromHash?.timelineIndex ?? persisted?.timelineIndex ?? 0),
+      currentYear: presentIndex,
       activeFilters: persisted?.filters ?? defaultFilters,
       selectedCountry: fromHash?.selectedCountry ?? persisted?.selectedCountry ?? 'United States of America',
     });
@@ -275,32 +275,6 @@ export default function App() {
     [activeProfiles],
   );
 
-  // Timeline auto-play — steps through scenario years at a fixed interval.
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  useEffect(() => {
-    if (!isPlaying) return;
-    const lastIndex = scenarioTimeline.length - 1;
-    const id = setInterval(() => {
-      const current = useMapStore.getState().currentYear;
-      if (current >= lastIndex) {
-        setIsPlaying(false);
-        return;
-      }
-      setTimelineIndex(current + 1);
-    }, TIMELINE_AUTO_PLAY_INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [isPlaying, scenarioTimeline.length]);
-
-  const handleTogglePlay = useCallback(() => {
-    setIsPlaying((prev) => {
-      if (!prev && timelineIndex >= scenarioTimeline.length - 1) {
-        // Restart from the beginning when pressing play at the last year.
-        setTimelineIndex(0);
-      }
-      return !prev;
-    });
-  }, [timelineIndex]);
 
   // Dragging the top edge of the bottom drawer resizes it.
   const handleDrawerResizeStart = useCallback((startClientY: number) => {
@@ -325,11 +299,6 @@ export default function App() {
     setDrawerHeight(edge === 'min' ? MIN_DRAWER_HEIGHT : maxDrawerHeight());
   }, []);
 
-  // Keep a ref so the keydown handler always closes over the latest toggle function
-  // without needing to be re-registered on every render.
-  const handleTogglePlayRef = useRef(handleTogglePlay);
-  handleTogglePlayRef.current = handleTogglePlay;
-
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (isInteractiveShortcutTarget(event.target)) {
@@ -338,10 +307,6 @@ export default function App() {
       if (event.key === '[') setLeftOpen((value) => !value);
       if (event.key === ']') setRightOpen((value) => !value);
       if (event.key === '\\') setDrawerOpen((value) => !value);
-      if (event.key === ' ') {
-        event.preventDefault();
-        handleTogglePlayRef.current();
-      }
       if (event.key === '/') {
         event.preventDefault();
         searchInputRef.current?.focus();
@@ -382,7 +347,7 @@ export default function App() {
     deferredScenarioInputs,
     deferredWeightSetKey,
     selectedCountry,
-    timelineIndex,
+    presentIndex,
     scenarioTimeline,
     alignmentColor,
     alignmentLabel,
@@ -426,10 +391,10 @@ export default function App() {
         filtered,
         baselineByName,
         scenarioTimeline,
-        timelineIndex,
+        timelineIndex: presentIndex,
         alignmentLabel,
       }),
-    [alignmentLabel, baselineByName, filtered, timelineIndex],
+    [alignmentLabel, baselineByName, filtered, presentIndex],
   );
 
   // Optional comparison track.
@@ -512,7 +477,7 @@ export default function App() {
         {
           id: `${Date.now()}`,
           name,
-          timelineIndex,
+          timelineIndex: presentIndex,
           weightSetKey,
           inputs: { ...scenarioInputs },
           activeEventIds: [...activeEventIds],
@@ -521,13 +486,12 @@ export default function App() {
         ...current,
       ].slice(0, 12),
     );
-  }, [activeEventIds, savedScenarios.length, scenarioInputs, scenarioName, timelineIndex, weightSetKey]);
+  }, [activeEventIds, savedScenarios.length, scenarioInputs, scenarioName, presentIndex, weightSetKey]);
 
   const loadScenario = useCallback((scenario: SavedScenario) => {
     setScenarioName(scenario.name);
     setScenarioInputs({ ...scenario.inputs });
     setWeightSetKey(scenario.weightSetKey);
-    setTimelineIndex(clampIndex(scenario.timelineIndex));
     setActiveEventIds(scenario.activeEventIds ?? []);
   }, []);
 
@@ -640,7 +604,7 @@ export default function App() {
       scenarioInputs,
       weightSetKey,
       activeEventIds,
-      timelineIndex,
+      timelineIndex: presentIndex,
       selectedCountry,
     });
     if (shareResetRef.current) window.clearTimeout(shareResetRef.current);
@@ -651,7 +615,7 @@ export default function App() {
       setShareStatus('error');
     }
     shareResetRef.current = window.setTimeout(() => setShareStatus('idle'), 1800);
-  }, [activeEventIds, scenarioInputs, scenarioName, selectedCountry, timelineIndex, weightSetKey]);
+  }, [activeEventIds, scenarioInputs, scenarioName, selectedCountry, presentIndex, weightSetKey]);
 
   const handleSelectCountryFromMovers = useCallback(
     (mapName: string) => {
@@ -675,11 +639,11 @@ export default function App() {
   );
 
   const totalCountries = activeProfiles.length;
+  const highRiskCount = useMemo(
+    () => simulated.filter((entry) => entry.risk >= 55).length,
+    [simulated],
+  );
   const shellStyle = useMemo(() => ({ '--drawer-h': `${drawerHeight}px` } as CSSProperties), [drawerHeight]);
-  const handleTimelineChange = useCallback((index: number) => {
-    setIsPlaying(false);
-    setTimelineIndex(clampIndex(index));
-  }, []);
   const handleToggleLeft = useCallback(() => setLeftOpen((value) => !value), []);
   const handleToggleRight = useCallback(() => setRightOpen((value) => !value), []);
   const handleToggleDrawer = useCallback(() => setDrawerOpen((value) => !value), []);
@@ -716,7 +680,7 @@ export default function App() {
       activeEventIds,
       savedScenarios,
       filters,
-      timelineIndex,
+      timelineIndex: presentIndex,
       inspectorTab,
       drawerTab,
       drawerOpen,
@@ -733,7 +697,7 @@ export default function App() {
     activeEventIds,
     savedScenarios,
     filters,
-    timelineIndex,
+    presentIndex,
     inspectorTab,
     drawerTab,
     drawerOpen,
@@ -761,12 +725,11 @@ export default function App() {
         style={shellStyle}
       >
       <TopBar
-        timelineIndex={timelineIndex}
-        timeline={scenarioTimeline}
-        onTimelineChange={handleTimelineChange}
+        asOfLabel={asOfLabel}
         scenarioName={scenarioName}
         datasetVersion={datasetVersion}
         countryCount={totalCountries}
+        highRiskCount={highRiskCount}
         liveDataStatus={liveDataStatus}
         liveDataDiagnostics={liveDataDiagnostics}
         onRetryLiveData={loadLiveData}
@@ -778,8 +741,6 @@ export default function App() {
         onToggleRight={handleToggleRight}
         onToggleDrawer={handleToggleDrawer}
         onToggleHelp={handleToggleHelp}
-        isPlaying={isPlaying}
-        onTogglePlay={handleTogglePlay}
         activeEventCount={activeEventIds.length}
       />
 

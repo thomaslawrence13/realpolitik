@@ -1,14 +1,17 @@
 import { memo } from 'react';
 import { IconButton, SvgIcon } from './ui';
 
+export type LiveDataStatus = 'loading' | 'live' | 'partial' | 'error';
+
 type Props = {
-  timelineIndex: number;
-  timeline: string[];
-  onTimelineChange: (index: number) => void;
+  /** Calendar-facing label for the frozen present period (e.g. "2024"). */
+  asOfLabel: string;
   scenarioName: string;
   datasetVersion: string;
   countryCount: number;
-  liveDataStatus: 'loading' | 'live' | 'partial' | 'error';
+  /** Countries currently at high / critical simulated risk (present snapshot). */
+  highRiskCount: number;
+  liveDataStatus: LiveDataStatus;
   liveDataDiagnostics: {
     totalIndicators: number;
     succeededIndicators: number;
@@ -24,18 +27,29 @@ type Props = {
   onToggleRight: () => void;
   onToggleDrawer: () => void;
   onToggleHelp: () => void;
-  isPlaying: boolean;
-  onTogglePlay: () => void;
   activeEventCount: number;
 };
 
+const liveStatusCopy = (
+  status: LiveDataStatus,
+  diagnostics: Props['liveDataDiagnostics'],
+): string => {
+  if (status === 'live') return 'World Bank indicators live';
+  if (status === 'partial') {
+    const ok = diagnostics?.succeededIndicators ?? 0;
+    const total = diagnostics?.totalIndicators ?? 0;
+    return `Partial live data · ${ok}/${total} indicators`;
+  }
+  if (status === 'error') return 'Live data unavailable · using static dataset';
+  return 'Fetching live indicators…';
+};
+
 export const TopBar = memo(function TopBar({
-  timelineIndex,
-  timeline,
-  onTimelineChange,
+  asOfLabel,
   scenarioName,
   datasetVersion,
   countryCount,
+  highRiskCount,
   liveDataStatus,
   liveDataDiagnostics,
   onRetryLiveData,
@@ -47,12 +61,10 @@ export const TopBar = memo(function TopBar({
   onToggleRight,
   onToggleDrawer,
   onToggleHelp,
-  isPlaying,
-  onTogglePlay,
   activeEventCount,
 }: Props) {
-  const lastIndex = timeline.length - 1;
-  const pct = lastIndex === 0 ? 0 : (timelineIndex / lastIndex) * 100;
+  const liveLabel = liveStatusCopy(liveDataStatus, liveDataDiagnostics);
+  const canRetry = liveDataStatus === 'error' || liveDataStatus === 'partial';
 
   return (
     <header className="topbar">
@@ -63,92 +75,40 @@ export const TopBar = memo(function TopBar({
         <div className="brand">
           <strong
             className="brand-name"
-            title={`${datasetVersion} · ${countryCount} parameterized · ${
-              liveDataStatus === 'live'
-                ? 'Live data ready'
-                : liveDataStatus === 'partial'
-                  ? `${liveDataDiagnostics?.succeededIndicators ?? 0}/${liveDataDiagnostics?.totalIndicators ?? 0} live indicators`
-                  : liveDataStatus === 'error'
-                    ? 'Live data unavailable (using static dataset)'
-                    : 'Fetching live data…'
-            }`}
+            title={`${datasetVersion} · ${countryCount} parameterized countries`}
           >
             Realpolitik
           </strong>
-          <button
-            type="button"
-            className={`live-status-dot live-status-${liveDataStatus}`}
-            title={liveDataStatus === 'error' || liveDataStatus === 'partial' ? 'Retry live data fetch' : 'Live data status'}
-            onClick={() => {
-              if (liveDataStatus === 'error' || liveDataStatus === 'partial') onRetryLiveData();
-            }}
-            aria-label="Live data status"
-          />
+          <span className="brand-tagline">Live tracker</span>
         </div>
       </div>
 
       <div className="topbar-section topbar-center">
-        <div className="timeline">
+        <div className="live-strip" role="status" aria-live="polite">
           <button
             type="button"
-            className="timeline-step"
-            onClick={() => onTimelineChange(0)}
-            disabled={timelineIndex === 0}
-            aria-label="Skip to first period"
-            title="Skip to earliest period"
+            className={`live-status-chip live-status-${liveDataStatus}`}
+            title={canRetry ? 'Retry live data fetch' : liveLabel}
+            onClick={() => {
+              if (canRetry) onRetryLiveData();
+            }}
+            aria-label={liveLabel}
           >
-            <SvgIcon.SkipBack />
+            <span className={`live-status-dot live-status-${liveDataStatus}`} aria-hidden />
+            <span className="live-status-text">{liveLabel}</span>
           </button>
-          <button
-            type="button"
-            className="timeline-step"
-            onClick={() => onTimelineChange(Math.max(0, timelineIndex - 1))}
-            disabled={timelineIndex === 0}
-            aria-label="Previous period"
-          >
-            <SvgIcon.Chevron dir="left" />
-          </button>
-          <div className="timeline-track-wrap">
-            <strong className="timeline-year">{timeline[timelineIndex]}</strong>
-            <input
-              type="range"
-              min={0}
-              max={lastIndex}
-              value={timelineIndex}
-              onChange={(event) => onTimelineChange(Number(event.target.value))}
-              className="timeline-input"
-              style={{ ['--track-pct' as string]: `${pct}%` }}
-              aria-label="Historical period"
-            />
+          <div className="live-stat" title="Present analysis period (not scrubbable)">
+            <span className="live-stat-label">As of</span>
+            <strong className="live-stat-value">{asOfLabel}</strong>
           </div>
-          <button
-            type="button"
-            className="timeline-step"
-            onClick={() => onTimelineChange(Math.min(lastIndex, timelineIndex + 1))}
-            disabled={timelineIndex === lastIndex}
-            aria-label="Next period"
-          >
-            <SvgIcon.Chevron dir="right" />
-          </button>
-          <button
-            type="button"
-            className="timeline-step"
-            onClick={() => onTimelineChange(lastIndex)}
-            disabled={timelineIndex === lastIndex}
-            aria-label="Skip to latest period"
-            title="Skip to latest period"
-          >
-            <SvgIcon.SkipForward />
-          </button>
-          <button
-            type="button"
-            className={`timeline-play ${isPlaying ? 'timeline-play-active' : ''}`}
-            onClick={onTogglePlay}
-            aria-label={isPlaying ? 'Pause timeline' : 'Play timeline'}
-            title={isPlaying ? 'Pause (auto-stepping periods)' : 'Play (auto-step through periods)'}
-          >
-            {isPlaying ? <SvgIcon.Pause /> : <SvgIcon.Play />}
-          </button>
+          <div className="live-stat" title="Parameterized countries in the active dataset">
+            <span className="live-stat-label">Countries</span>
+            <strong className="live-stat-value">{countryCount}</strong>
+          </div>
+          <div className="live-stat" title="High or critical risk in the present snapshot">
+            <span className="live-stat-label">Elevated risk</span>
+            <strong className="live-stat-value">{highRiskCount}</strong>
+          </div>
         </div>
       </div>
 
@@ -157,9 +117,10 @@ export const TopBar = memo(function TopBar({
           type="button"
           className={`scenario-chip ${drawerOpen ? 'scenario-chip-active' : ''}`}
           onClick={onToggleDrawer}
+          title="Open analysis tools (scenarios are optional what-ifs on the live snapshot)"
         >
           <em className="scenario-chip-name">
-            Analysis · {scenarioName}
+            What-if · {scenarioName}
             {activeEventCount > 0 ? ` · ${activeEventCount}` : ''}
           </em>
           <SvgIcon.Chevron dir="down" />
