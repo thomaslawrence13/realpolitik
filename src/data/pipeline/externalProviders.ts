@@ -71,6 +71,15 @@ const buildObservedAtIndex = (rawAudit?: RawWorldBankAuditPayload): Record<Snaps
   return empty;
 };
 
+/** Skip WDI rows older than this so curated fallbacks can fill sparse reporters. */
+const MAX_INGEST_OBSERVATION_AGE_DAYS = 6 * 365;
+
+const isObservationTooOld = (observedAt: string): boolean => {
+  const ts = new Date(observedAt).getTime();
+  if (Number.isNaN(ts)) return false;
+  return Date.now() - ts > MAX_INGEST_OBSERVATION_AGE_DAYS * 24 * 60 * 60 * 1000;
+};
+
 export const buildIngestedObservations = (
   profiles: CountryProfile[],
   snapshot: IngestedSnapshot,
@@ -88,14 +97,15 @@ export const buildIngestedObservations = (
     const militaryExpPct = snapshot.world_bank_military_expenditure_pct?.[geo];
     if (militaryExpPct !== undefined) {
       const military = toMilitaryTier(militaryExpPct);
-      if (military !== null) {
+      const observedAt = observationDateFor('world_bank_military_expenditure_pct');
+      if (military !== null && !isObservationTooOld(observedAt)) {
         observations.push({
           providerId: 'wb-military-ingest',
           sourceId: 'world-bank-wdi',
           countryId: profile.id,
           indicator: 'militaryTreatyLevel', // Fallback proxy for treaty level for now
           value: military,
-          observedAt: observationDateFor('world_bank_military_expenditure_pct'),
+          observedAt,
           method: 'snapshot',
           confidence: 0.90, // High confidence for official data
         });
@@ -105,14 +115,15 @@ export const buildIngestedObservations = (
     const tradePct = snapshot.world_bank_trade_pct?.[geo];
     if (tradePct !== undefined) {
       const trade = toTradeTier(tradePct);
-      if (trade !== null) {
+      const observedAt = observationDateFor('world_bank_trade_pct');
+      if (trade !== null && !isObservationTooOld(observedAt)) {
         observations.push({
           providerId: 'wb-trade-ingest',
           sourceId: 'world-bank-wdi',
           countryId: profile.id,
           indicator: 'tradeExposure',
           value: trade,
-          observedAt: observationDateFor('world_bank_trade_pct'),
+          observedAt,
           method: 'snapshot',
           confidence: 0.88,
         });
@@ -121,14 +132,15 @@ export const buildIngestedObservations = (
 
     const politicalStability = snapshot.world_bank_political_stability?.[geo];
     const stability = toStabilityTier(politicalStability);
-    if (stability !== null) {
+    const stabilityObservedAt = observationDateFor('world_bank_political_stability');
+    if (stability !== null && !isObservationTooOld(stabilityObservedAt)) {
       observations.push({
         providerId: 'wb-governance-ingest',
         sourceId: 'world-bank-wdi',
         countryId: profile.id,
         indicator: 'regimeStability',
         value: stability,
-        observedAt: observationDateFor('world_bank_political_stability'),
+        observedAt: stabilityObservedAt,
         method: 'snapshot',
         confidence: 0.8,
       });
@@ -136,14 +148,15 @@ export const buildIngestedObservations = (
 
     const ruleOfLaw = snapshot.world_bank_rule_of_law?.[geo];
     const ruleOfLawTier = toRuleOfLawTier(ruleOfLaw);
-    if (ruleOfLawTier !== null) {
+    const ruleObservedAt = observationDateFor('world_bank_rule_of_law');
+    if (ruleOfLawTier !== null && !isObservationTooOld(ruleObservedAt)) {
       observations.push({
         providerId: 'wb-governance-ingest',
         sourceId: 'world-bank-wdi',
         countryId: profile.id,
         indicator: 'regimeStability',
         value: ruleOfLawTier,
-        observedAt: observationDateFor('world_bank_rule_of_law'),
+        observedAt: ruleObservedAt,
         method: 'snapshot',
         confidence: 0.84,
       });
@@ -160,16 +173,19 @@ export const buildIngestedObservations = (
         observationDateFor('world_bank_inflation'),
         observationDateFor('world_bank_unemployment'),
       ];
-      observations.push({
-        providerId: 'wb-cohesion-ingest',
-        sourceId: 'world-bank-wdi',
-        countryId: profile.id,
-        indicator: 'cohesion',
-        value: toCohesionValue(profile.indicators.cohesion, gdpGrowth, inflation, unemployment),
-        observedAt: cohesionObservedDates.sort().at(-1) ?? fallbackObservedAt,
-        method: 'snapshot',
-        confidence: 0.74,
-      });
+      const observedAt = cohesionObservedDates.sort().at(-1) ?? fallbackObservedAt;
+      if (!isObservationTooOld(observedAt)) {
+        observations.push({
+          providerId: 'wb-cohesion-ingest',
+          sourceId: 'world-bank-wdi',
+          countryId: profile.id,
+          indicator: 'cohesion',
+          value: toCohesionValue(profile.indicators.cohesion, gdpGrowth, inflation, unemployment),
+          observedAt,
+          method: 'snapshot',
+          confidence: 0.74,
+        });
+      }
     }
   }
 

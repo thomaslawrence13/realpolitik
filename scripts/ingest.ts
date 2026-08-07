@@ -112,34 +112,64 @@ const ensureDir = (dirPath: string) => {
   fs.mkdirSync(dirPath, { recursive: true });
 };
 
+/** Drop observations older than this — WDI lags 1–3y, but 2014-era rows are too stale to surface. */
+const MAX_OBSERVATION_AGE_YEARS = 6;
+const minAcceptedYear = () => String(new Date().getUTCFullYear() - MAX_OBSERVATION_AGE_YEARS);
+
+/** Prefer newest non-null annual observation per country (not API row order). */
+const pickNewestValues = (
+  points: WorldBankPoint[],
+): { values: Record<string, number>; newestObservation: string | null } => {
+  const floorYear = minAcceptedYear();
+  const best = new Map<string, { year: string; value: number }>();
+  for (const point of points) {
+    if (point.value === null || point.value === undefined) continue;
+    const iso = point.country.id.toUpperCase();
+    const countryId = isoToCountryId.get(iso);
+    if (!countryId) continue;
+    const year = String(point.date ?? '').slice(0, 4);
+    if (!/^\d{4}$/.test(year) || year < floorYear) continue;
+    const prev = best.get(countryId);
+    if (!prev || year > prev.year) {
+      best.set(countryId, { year, value: point.value });
+    }
+  }
+
+  const values: Record<string, number> = {};
+  let newestObservation: string | null = null;
+  for (const [countryId, row] of best) {
+    values[countryId] = row.value;
+    if (!newestObservation || row.year > newestObservation) {
+      newestObservation = row.year;
+    }
+  }
+  return { values, newestObservation };
+};
+
 async function fetchWbIndicator(
   indicator: IndicatorConfig,
 ): Promise<IndicatorFetchResult> {
   const sourceParam = indicator.sourceId ? `&source=${indicator.sourceId}` : '';
-  const url = `${WB_API}/country/${isoCodes}/indicator/${indicator.code}?format=json&mrv=3&per_page=1000${sourceParam}`;
+  // mrv=10 recovers sparse reporters (conflict zones, small states) that lack the
+  // latest 1–3 years but still publish older WDI observations.
+  const url =
+    `${WB_API}/country/${isoCodes}/indicator/${indicator.code}` +
+    `?format=json&mrv=10&per_page=2000${sourceParam}`;
 
   console.log(`Fetching ${indicator.code} (${indicator.label})...`);
-  const response = await fetch(url);
+  const response = await fetch(url, { cache: 'no-cache' });
   if (!response.ok) throw new Error(`World Bank API (${indicator.code}): HTTP ${response.status}`);
 
   const json = (await response.json()) as [unknown, WorldBankPoint[] | null];
   const points = json[1] ?? [];
-
-  const result: Record<string, number> = {};
-  for (const point of points) {
-    const iso = point.country.id.toUpperCase();
-    const countryId = isoToCountryId.get(iso);
-    if (countryId && point.value !== null && !(countryId in result)) {
-      result[countryId] = point.value;
-    }
-  }
+  const { values, newestObservation } = pickNewestValues(points);
 
   return {
-    values: result,
+    values,
     rawPoints: points,
-    newestObservation: points.find((point) => point.value !== null)?.date ?? null,
-    coverageCount: Object.keys(result).length,
-    missingCountryCount: Object.keys(countryIso2).length - Object.keys(result).length,
+    newestObservation,
+    coverageCount: Object.keys(values).length,
+    missingCountryCount: Object.keys(countryIso2).length - Object.keys(values).length,
   };
 }
 
@@ -154,7 +184,7 @@ async function main() {
     const results = await Promise.all(indicators.map(async (indicator) => [indicator, await fetchWbIndicator(indicator)] as const));
 
     const dataset: IngestSnapshot = {
-      version: '1.3.0-ingested',
+      version: '1.4.0-ingested',
       timestamp: fetchedAt,
       countryCountRequested: Object.keys(countryIso2).length,
       world_bank_military_expenditure_pct: {},

@@ -498,7 +498,7 @@ export interface EnhancementAcceptanceStatus {
 
 export interface EnhancementReleaseTelemetry {
   releaseTag: string;
-  scope: 'coverage-refresh' | 'schema-expansion';
+  scope: 'coverage-refresh' | 'coverage-density' | 'schema-expansion';
   datasetVersion: string;
   criteria: EnhancementAcceptanceCriteria;
   status: EnhancementAcceptanceStatus;

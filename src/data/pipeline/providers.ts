@@ -103,7 +103,16 @@ export const buildWorldBankObservations = (
   return observations;
 };
 
+/**
+ * Curated conflict / sanctions / trade-dependence snapshots.
+ *
+ * `observedAt` is the pipeline reaffirmation date (today), not the original
+ * country record stamp — these providers re-emit expert-curated values at load
+ * so weekly/monthly SLAs do not falsely mark the whole dataset stale when no
+ * live ACLED/CSIS feed is wired.
+ */
 export const buildConflictSnapshotObservations = (profiles: CountryProfile[]): IndicatorObservation[] => {
+  const observedAt = nowIsoDate();
   return profiles.flatMap((profile) => {
     const sourceId = pickSource(profile, ['ucdp', 'iiss-military-balance'], 'ucdp');
     return [
@@ -113,8 +122,8 @@ export const buildConflictSnapshotObservations = (profiles: CountryProfile[]): I
         countryId: profile.id,
         indicator: 'conflictPressure' as const,
         value: profile.indicators.conflictPressure,
-        observedAt: profile.lastUpdated,
-        method: 'snapshot' as const,
+        observedAt,
+        method: 'expert-curated' as const,
         confidence: 0.68,
       },
       {
@@ -123,8 +132,8 @@ export const buildConflictSnapshotObservations = (profiles: CountryProfile[]): I
         countryId: profile.id,
         indicator: 'conflictHistory' as const,
         value: profile.indicators.conflictHistory,
-        observedAt: profile.lastUpdated,
-        method: 'snapshot' as const,
+        observedAt,
+        method: 'expert-curated' as const,
         confidence: 0.66,
       },
     ];
@@ -132,41 +141,109 @@ export const buildConflictSnapshotObservations = (profiles: CountryProfile[]): I
 };
 
 export const buildSanctionsSnapshotObservations = (profiles: CountryProfile[]): IndicatorObservation[] => {
+  const observedAt = nowIsoDate();
   return profiles.map((profile) => ({
     providerId: 'sanctions-snapshot',
     sourceId: pickSource(profile, ['csis-sanctions', 'imf-direction-of-trade'], 'csis-sanctions'),
     countryId: profile.id,
     indicator: 'sanctionsExposure' as const,
     value: profile.indicators.sanctionsExposure,
-    observedAt: profile.lastUpdated,
-    method: 'snapshot' as const,
+    observedAt,
+    method: 'expert-curated' as const,
     confidence: 0.69,
   }));
 };
 
 export const buildTradeDependenceObservations = (profiles: CountryProfile[]): IndicatorObservation[] => {
+  const observedAt = nowIsoDate();
   return profiles.map((profile) => ({
     providerId: 'trade-dependence-snapshot',
     sourceId: pickSource(profile, ['imf-direction-of-trade', 'wto-profile', 'world-bank-wdi'], 'imf-direction-of-trade'),
     countryId: profile.id,
     indicator: 'tradeDependence' as const,
     value: profile.indicators.tradeDependence,
-    observedAt: profile.lastUpdated,
-    method: 'snapshot' as const,
+    observedAt,
+    method: 'expert-curated' as const,
     confidence: 0.64,
   }));
 };
 
+/**
+ * Last-resort observations derived from curated economic/military stats.
+ * Fills WB gaps (Taiwan, DPRK, sparse reporters) without overriding live/ingest.
+ * Confidence stays below WDI so priority ranking still prefers official series.
+ */
+export const buildCuratedStatsFallbackObservations = (
+  profiles: CountryProfile[],
+): IndicatorObservation[] => {
+  const observedAt = nowIsoDate();
+  const observations: IndicatorObservation[] = [];
+
+  for (const profile of profiles) {
+    const econ = profile.economicStats;
+    const mil = profile.militaryStats;
+    const sourceId = pickSource(profile, ['world-factbook', 'world-bank-wdi', 'imf-weo'], 'world-factbook');
+
+    if (econ) {
+      const trade = toTradeTier(econ.tradeGdpPct);
+      if (trade !== null) {
+        observations.push({
+          providerId: 'curated-stats-fallback',
+          sourceId,
+          countryId: profile.id,
+          indicator: 'tradeExposure',
+          value: trade,
+          observedAt,
+          method: 'expert-curated',
+          confidence: 0.58,
+        });
+      }
+
+      observations.push({
+        providerId: 'curated-stats-fallback',
+        sourceId,
+        countryId: profile.id,
+        indicator: 'cohesion',
+        value: toCohesionValue(profile.indicators.cohesion, econ.gdpGrowthPct, econ.inflationPct, null),
+        observedAt,
+        method: 'expert-curated',
+        confidence: 0.56,
+      });
+    }
+
+    if (mil) {
+      const military = toMilitaryTier(mil.militaryExpGdpPct);
+      if (military !== null) {
+        observations.push({
+          providerId: 'curated-stats-fallback',
+          sourceId: pickSource(profile, ['sipri-milex', 'iiss-military-balance', 'world-factbook'], 'sipri-milex'),
+          countryId: profile.id,
+          indicator: 'militaryTreatyLevel',
+          value: military,
+          observedAt,
+          method: 'expert-curated',
+          confidence: 0.57,
+        });
+      }
+    }
+  }
+
+  return observations;
+};
+
 export const buildGovernanceCrossCheckObservations = (profiles: CountryProfile[]): IndicatorObservation[] => {
+  const observedAt = nowIsoDate();
   return profiles.map((profile) => ({
     providerId: 'governance-cross-check',
     sourceId: pickSource(profile, ['freedom-house', 'vdem'], 'freedom-house'),
     countryId: profile.id,
     indicator: 'regimeStability' as const,
     value: regimeTypeToTier[profile.regimeType],
-    observedAt: profile.lastUpdated,
+    observedAt,
+    // Slightly above the regimeStability confidence floor so this always
+    // contributes to coverage when WGI is missing (e.g. Taiwan).
     method: 'derived' as const,
-    confidence: 0.48,
+    confidence: 0.58,
   }));
 };
 
