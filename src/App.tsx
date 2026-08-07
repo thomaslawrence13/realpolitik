@@ -28,8 +28,6 @@ import type {
   SimulatedCountry,
   WeightSetKey,
 } from './types';
-import { fetchLiveData } from './data/worldBankClient';
-import { enrichProfiles } from './data/liveEnrichment';
 import { buildInformationQualityTelemetry } from './data/quality/telemetry';
 import { eventLibrary, eventById } from './data/eventLibrary';
 import {
@@ -45,11 +43,10 @@ import {
 } from './lib/urlState';
 import { clampTimelineIndex } from './lib/timeline';
 import { useSimulation } from './hooks/useSimulation';
+import { useLiveData } from './hooks/useLiveData';
+import { useFilteredCountries } from './hooks/useFilteredCountries';
 import {
   buildEventFeed,
-  buildVisibleNames,
-  filterCountries,
-  searchCountries,
   selectCountryOrFallback,
 } from './state/selectors';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -198,43 +195,7 @@ export default function App() {
 
   // Live World Bank data enrichment — starts with static profiles and upgrades
   // in the background. Failures fall back silently to the static dataset.
-  const [activeProfiles, setActiveProfiles] = useState(countryProfiles);
-  const [liveDataStatus, setLiveDataStatus] = useState<'loading' | 'live' | 'partial' | 'error'>('loading');
-  const [liveDataDiagnostics, setLiveDataDiagnostics] = useState<{
-    totalIndicators: number;
-    succeededIndicators: number;
-    failedIndicators: number;
-    failedCodes: string[];
-  } | null>(null);
-  const liveFetchRef = useRef<AbortController | null>(null);
-
-  const loadLiveData = useCallback(() => {
-    liveFetchRef.current?.abort();
-    const controller = new AbortController();
-    liveFetchRef.current = controller;
-    setLiveDataStatus('loading');
-    setLiveDataDiagnostics(null);
-    fetchLiveData(controller.signal)
-      .then((live) => {
-        // countryProfiles is a stable module-level constant — no dep needed.
-        setActiveProfiles(enrichProfiles(countryProfiles, live));
-        setLiveDataDiagnostics(live.diagnostics);
-        if (live.diagnostics.failedIndicators === 0) setLiveDataStatus('live');
-        else if (live.diagnostics.succeededIndicators === 0) setLiveDataStatus('error');
-        else setLiveDataStatus('partial');
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setLiveDataStatus('error');
-      });
-    // Keep callback stable for TopBar retry button wiring; it only references stable
-    // module constants (`countryProfiles`) and React state setters.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    loadLiveData();
-    return () => liveFetchRef.current?.abort();
-  }, [loadLiveData]);
+  const { activeProfiles, liveDataStatus, liveDataDiagnostics, loadLiveData } = useLiveData(countryProfiles);
 
   // Defer heavy simulation re-runs so UI (sliders, timeline) stays responsive while
   // the map catches up asynchronously via React's concurrent scheduler.
@@ -401,11 +362,7 @@ export default function App() {
     [activeProfiles, selectedCountry],
   );
 
-  const filtered = useMemo(() => filterCountries(simulated, filters), [filters, simulated]);
-
-  const visibleNames = useMemo(() => buildVisibleNames(filtered), [filtered]);
-
-  const railCountries = useMemo(() => searchCountries(filtered, search), [filtered, search]);
+  const { filtered, visibleNames, railCountries } = useFilteredCountries(simulated, filters, search);
 
   if (!selected || !baselineSelected) {
     return <div className="app-shell" role="status" aria-live="polite" aria-busy="true" aria-label="Loading simulation data">Loading simulation...</div>;
