@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, useDeferredValue } from 'react';
 import { useMapStore } from './store/useMapStore';
 import type { ChangeEvent, CSSProperties } from 'react';
 import {
@@ -17,6 +17,7 @@ import {
   getActiveEventsForProfile,
   getScenarioInputsForProfile,
   getSimulationWeightSet,
+  simulateCountry,
   simulationWeightSets,
 } from './simulation';
 import type {
@@ -24,22 +25,30 @@ import type {
   Filters,
   SavedScenario,
   ScenarioInputs,
+  SimulatedCountry,
   WeightSetKey,
 } from './types';
 import { buildInformationQualityTelemetry } from './data/quality/telemetry';
 import { eventLibrary, eventById } from './data/eventLibrary';
 import {
   downloadScenariosFile,
+  loadPersistedState,
   parseScenariosFile,
+  savePersistedState,
 } from './lib/persistence';
-import { buildShareableUrl, clearHash, decodeStateFromHash } from './lib/urlState';
+import {
+  buildShareableUrl,
+  clearHash,
+  decodeStateFromHash,
+} from './lib/urlState';
 import { clampTimelineIndex } from './lib/timeline';
-import { loadPersistedState } from './lib/persistence';
 import { useSimulation } from './hooks/useSimulation';
-import { usePersistedState } from './hooks/usePersistedState';
 import { useLiveData } from './hooks/useLiveData';
 import { useFilteredCountries } from './hooks/useFilteredCountries';
-import { buildEventFeed } from './state/selectors';
+import {
+  buildEventFeed,
+  selectCountryOrFallback,
+} from './state/selectors';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TopBar } from './components/TopBar';
 import { LeftRail } from './components/LeftRail';
@@ -139,58 +148,40 @@ const fromHash = decodeStateFromHash();
 if (fromHash) clearHash();
 
 export default function App() {
+  const clampIndex = (index: number) => clampTimelineIndex(index, scenarioTimeline.length);
   const [search, setSearch] = useState('');
   const selectedCountry = useMapStore((state) => state.selectedCountry);
   const setSelectedCountry = useMapStore((state) => state.setSelectedCountry);
+  const timelineIndex = useMapStore((state) => state.currentYear);
+  const setTimelineIndex = useMapStore((state) => state.setCurrentYear);
   const filters = useMapStore((state) => state.activeFilters);
   const setFilters = useMapStore((state) => state.setActiveFilters);
   
-  // Use custom hooks for persisted state, live data, and filtered countries
-  const [persistedState, persistedActions] = usePersistedState({});
-  const { activeProfiles, liveDataStatus, liveDataDiagnostics, loadLiveData } = useLiveData(countryProfiles);
-  
-  // Extract timeline management
-  const { timelineIndex, isPlaying, handleTimelineChange, handleTogglePlay } = useTimeline({
-    totalPeriods: scenarioTimeline.length,
-    initialIndex: persistedState.timelineIndex,
-  });
-  
-  // Sync map store with persisted state on mount
   useEffect(() => {
     useMapStore.setState({
-      currentYear: persistedState.timelineIndex,
-      activeFilters: persistedState.filters,
-      selectedCountry: persistedState.selectedCountry,
+      currentYear: clampIndex(fromHash?.timelineIndex ?? persisted?.timelineIndex ?? 0),
+      activeFilters: persisted?.filters ?? defaultFilters,
+      selectedCountry: fromHash?.selectedCountry ?? persisted?.selectedCountry ?? 'United States of America',
     });
+  // one-time hydration from persisted/hash state
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
-  // Destructure persisted state and actions
-  const {
-    scenarioName,
-    scenarioInputs,
-    weightSetKey,
-    activeEventIds,
-    savedScenarios,
-    comparisonScenarioId,
-    inspectorTab,
-    drawerTab,
-    drawerOpen,
-    drawerHeight,
-  } = persistedState;
-  
-  const {
-    setScenarioName,
-    setScenarioInputs,
-    setWeightSetKey,
-    setActiveEventIds,
-    setSavedScenarios,
-    setComparisonScenarioId,
-    setInspectorTab,
-    setDrawerTab,
-    setDrawerOpen,
-    setDrawerHeight,
-  } = persistedActions;
-  
+  const [scenarioName, setScenarioName] = useState(
+    fromHash?.scenarioName ?? persisted?.scenarioName ?? 'Baseline+',
+  );
+  const [scenarioInputs, setScenarioInputs] = useState<ScenarioInputs>(
+    fromHash?.scenarioInputs ?? persisted?.scenarioInputs ?? { ...defaultScenarioInputs },
+  );
+  const [weightSetKey, setWeightSetKey] = useState<WeightSetKey>(
+    fromHash?.weightSetKey ?? persisted?.weightSetKey ?? 'baseline',
+  );
+  const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>(persisted?.savedScenarios ?? []);
+  const [activeEventIds, setActiveEventIds] = useState<string[]>(
+    fromHash?.activeEventIds ?? persisted?.activeEventIds ?? [],
+  );
+  const [comparisonScenarioId, setComparisonScenarioId] = useState<string | null>(
+    persisted?.comparisonScenarioId ?? null,
+  );
   const [helpOpen, setHelpOpen] = useState(false);
   const [welcomeOpen, setWelcomeOpen] = useState<boolean>(() => !isWelcomeDismissed());
   const [importError, setImportError] = useState<string | null>(null);
@@ -200,7 +191,12 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const shareResetRef = useRef<number | null>(null);
   const undoTimeoutRef = useRef<number | null>(null);
-  
+  const persistDebounceRef = useRef<number | null>(null);
+
+  // Live World Bank data enrichment — starts with static profiles and upgrades
+  // in the background. Failures fall back silently to the static dataset.
+  const { activeProfiles, liveDataStatus, liveDataDiagnostics, loadLiveData } = useLiveData(countryProfiles);
+
   // Defer heavy simulation re-runs so UI (sliders, timeline) stays responsive while
   // the map catches up asynchronously via React's concurrent scheduler.
   const deferredScenarioInputs = useDeferredValue(scenarioInputs);
@@ -212,6 +208,24 @@ export default function App() {
 
   const [leftOpen, setLeftOpen] = useState<boolean>(() => !isMobile());
   const [rightOpen, setRightOpen] = useState<boolean>(() => !isMobile());
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(persisted?.drawerOpen ?? false);
+  const [drawerTab, setDrawerTab] = useState<DrawerTab>(() => {
+    const raw = persisted?.drawerTab as string | undefined;
+    if (raw === 'scenario') return 'analysis';
+    if (raw === 'feed') return 'events';
+    const valid: DrawerTab[] = ['index', 'movers', 'methodology', 'analysis', 'events', 'history'];
+    return valid.includes(raw as DrawerTab) ? (raw as DrawerTab) : 'index';
+  });
+  const [inspectorTab, setInspectorTab] = useState<InspectorTab>(() => {
+    const raw = persisted?.inspectorTab as string | undefined;
+    if (raw === 'profile') return 'stats';
+    if (raw === 'drivers') return 'analysis';
+    const valid: InspectorTab[] = ['stats', 'overview', 'relationships', 'analysis'];
+    return valid.includes(raw as InspectorTab) ? (raw as InspectorTab) : 'stats';
+  });
+
+  // Resizable bottom drawer — height is applied as a CSS custom property on the shell.
+  const [drawerHeight, setDrawerHeight] = useState(persisted?.drawerHeight ?? 320);
 
   const runtimeInformationQuality = useMemo(
     () =>
@@ -221,6 +235,33 @@ export default function App() {
       }),
     [activeProfiles],
   );
+
+  // Timeline auto-play — steps through scenario years at a fixed interval.
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const lastIndex = scenarioTimeline.length - 1;
+    const id = setInterval(() => {
+      const current = useMapStore.getState().currentYear;
+      if (current >= lastIndex) {
+        setIsPlaying(false);
+        return;
+      }
+      setTimelineIndex(current + 1);
+    }, TIMELINE_AUTO_PLAY_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [isPlaying, scenarioTimeline.length]);
+
+  const handleTogglePlay = useCallback(() => {
+    setIsPlaying((prev) => {
+      if (!prev && timelineIndex >= scenarioTimeline.length - 1) {
+        // Restart from the beginning when pressing play at the last year.
+        setTimelineIndex(0);
+      }
+      return !prev;
+    });
+  }, [timelineIndex]);
 
   // Dragging the top edge of the bottom drawer resizes it.
   const handleDrawerResizeStart = useCallback((startClientY: number) => {
@@ -245,6 +286,11 @@ export default function App() {
     setDrawerHeight(edge === 'min' ? MIN_DRAWER_HEIGHT : maxDrawerHeight());
   }, []);
 
+  // Keep a ref so the keydown handler always closes over the latest toggle function
+  // without needing to be re-registered on every render.
+  const handleTogglePlayRef = useRef(handleTogglePlay);
+  handleTogglePlayRef.current = handleTogglePlay;
+
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (isInteractiveShortcutTarget(event.target)) {
@@ -255,7 +301,7 @@ export default function App() {
       if (event.key === '\\') setDrawerOpen((value) => !value);
       if (event.key === ' ') {
         event.preventDefault();
-        handleTogglePlay();
+        handleTogglePlayRef.current();
       }
       if (event.key === '/') {
         event.preventDefault();
@@ -316,11 +362,7 @@ export default function App() {
     [activeProfiles, selectedCountry],
   );
 
-  const filtered = useMemo(() => filterCountries(simulated, filters), [filters, simulated]);
-
-  const visibleNames = useMemo(() => buildVisibleNames(filtered), [filtered]);
-
-  const railCountries = useMemo(() => searchCountries(filtered, search), [filtered, search]);
+  const { filtered, visibleNames, railCountries } = useFilteredCountries(simulated, filters, search);
 
   if (!selected || !baselineSelected) {
     return <div className="app-shell" role="status" aria-live="polite" aria-busy="true" aria-label="Loading simulation data">Loading simulation...</div>;
@@ -442,9 +484,9 @@ export default function App() {
     setScenarioName(scenario.name);
     setScenarioInputs({ ...scenario.inputs });
     setWeightSetKey(scenario.weightSetKey);
-    persistedActions.setTimelineIndex(clampIndex(scenario.timelineIndex));
+    setTimelineIndex(clampIndex(scenario.timelineIndex));
     setActiveEventIds(scenario.activeEventIds ?? []);
-  }, [persistedActions]);
+  }, []);
 
   const deleteScenario = useCallback((id: string) => {
     setSavedScenarios((current) => {
