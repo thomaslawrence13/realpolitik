@@ -112,10 +112,11 @@ const alignmentLabel: Record<Alignment, string> = {
 };
 
 const alignmentColor: Record<Alignment, string> = {
-  blocA: '#5ea3ff',
-  blocB: '#ff6b6b',
-  nonAligned: '#ffd166',
-  unstable: '#c77dff',
+  // Slightly luminous so choropleth fills read cleanly on the deep ocean base.
+  blocA: '#5eb0ff',
+  blocB: '#ff7a7a',
+  nonAligned: '#ffd56a',
+  unstable: '#d08cff',
 };
 
 const resolveEventIds = (eventIds: string[]) =>

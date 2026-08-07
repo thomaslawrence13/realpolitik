@@ -61,11 +61,15 @@ const saveMapUiState = (state: MapUiState) => {
   }
 };
 
-// Risk gradient: low (green) → medium (amber) → high (red).
-const RISK_LOW = '#34d399';
-const RISK_MED = '#fbbf24';
+// Risk gradient: low (teal) → medium (amber) → high (coral) — tuned for dark ocean.
+const RISK_LOW = '#2dd4a8';
+const RISK_MED = '#f0b429';
 const RISK_HIGH = '#f87171';
-const NEUTRAL = '#1b2538';
+/** Unparameterized / empty land — slightly warmer than pure navy so continents read as land. */
+const NEUTRAL = '#1a2436';
+/** Filtered-out parameterized states (still on map, dimmed). */
+const FILTERED_OPACITY = 0.28;
+const UNTRACKED_OPACITY = 0.42;
 
 // Cache hex-string → [r,g,b] decomposition so lerpColor never re-parses the
 // same constant color string on every country-fill render call.
@@ -454,12 +458,27 @@ const CountryLayers = memo(function CountryLayers({
         const fill = simulated
           ? resolveFill(fillMode, { simulated, baseline, alignmentColor })
           : NEUTRAL;
-        const opacity = !isParameterized ? 0.3 : isVisible ? 1 : 0.2;
+        // Selection is always full opacity so the focus country never looks filtered out.
+        const opacity = isSelected
+          ? 1
+          : !isParameterized
+            ? UNTRACKED_OPACITY
+            : isVisible
+              ? 1
+              : FILTERED_OPACITY;
 
-        let stroke = 'rgba(148,163,184,0.18)';
-        let strokeWidth = 0.4;
-        if (isRelated && overlayMode !== 'none') { stroke = overlayColor[overlayMode]; strokeWidth = 1.3; }
-        if (isSelected) { stroke = '#f8fafc'; strokeWidth = 2; }
+        // Base hairline borders; related/selected chrome is drawn in overlay layers
+        // so it never fights choropleth fills.
+        let stroke = 'rgba(186, 200, 222, 0.14)';
+        let strokeWidth = 0.35;
+        if (isRelated && overlayMode !== 'none') {
+          stroke = overlayColor[overlayMode];
+          strokeWidth = 1.15;
+        }
+        if (isSelected) {
+          stroke = 'transparent';
+          strokeWidth = 0;
+        }
 
         return (
           <path
@@ -469,9 +488,9 @@ const CountryLayers = memo(function CountryLayers({
             fillOpacity={opacity}
             stroke={stroke}
             strokeWidth={strokeWidth}
+            strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
-            filter={isSelected ? 'url(#selected-glow)' : undefined}
-            className="country-path"
+            className={`country-path${isSelected ? ' country-path-selected' : ''}${isRelated ? ' country-path-related' : ''}`}
             onPointerEnter={() => {
               hoveredNameRef.current = name;
               hoveredIsParamRef.current = isParameterized;
@@ -1258,86 +1277,170 @@ export const MapCanvas = memo(function MapCanvas({
           }}
         >
           <defs>
-            {/* Deep navy ocean — soft vignette under the HUD glass chrome. */}
-            <radialGradient id="map-glow" cx="50%" cy="42%" r="68%">
-              <stop offset="0%" stopColor="#1a356f" stopOpacity="1" />
-              <stop offset="55%" stopColor="#0c1a3a" stopOpacity="1" />
-              <stop offset="100%" stopColor="#060912" stopOpacity="1" />
+            {/* Layered ocean: deep base → cool mid → soft center highlight */}
+            <radialGradient id="map-ocean-base" cx="48%" cy="40%" r="72%">
+              <stop offset="0%" stopColor="#173a6e" />
+              <stop offset="42%" stopColor="#0d2248" />
+              <stop offset="78%" stopColor="#081428" />
+              <stop offset="100%" stopColor="#04080f" />
             </radialGradient>
-            <pattern id="map-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148,163,184,0.04)" strokeWidth="0.5" />
+            <radialGradient id="map-ocean-sheen" cx="36%" cy="28%" r="55%">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.14" />
+              <stop offset="45%" stopColor="#1d4ed8" stopOpacity="0.05" />
+              <stop offset="100%" stopColor="#000" stopOpacity="0" />
+            </radialGradient>
+            <linearGradient id="map-ocean-horizon" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.05" />
+              <stop offset="35%" stopColor="#000" stopOpacity="0" />
+              <stop offset="100%" stopColor="#000" stopOpacity="0.28" />
+            </linearGradient>
+            <pattern id="map-grid" width="48" height="48" patternUnits="userSpaceOnUse">
+              <path
+                d="M 48 0 L 0 0 0 48"
+                fill="none"
+                stroke="rgba(148,163,184,0.035)"
+                strokeWidth="0.6"
+              />
             </pattern>
-            {/* stdDeviation divided by zoom → constant visual blur size at any zoom level */}
-            <filter id="selected-glow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation={2.4 * invZoom} result="blur" />
+            <pattern id="map-stars" width="120" height="120" patternUnits="userSpaceOnUse">
+              <circle cx="12" cy="18" r="0.45" fill="rgba(226,232,240,0.28)" />
+              <circle cx="68" cy="42" r="0.35" fill="rgba(226,232,240,0.18)" />
+              <circle cx="96" cy="88" r="0.4" fill="rgba(226,232,240,0.22)" />
+              <circle cx="40" cy="96" r="0.3" fill="rgba(226,232,240,0.14)" />
+              <circle cx="110" cy="22" r="0.35" fill="rgba(226,232,240,0.16)" />
+            </pattern>
+            {/* Soft land edge shadow for cartographic depth */}
+            <filter id="land-shadow" x="-8%" y="-8%" width="116%" height="116%">
+              <feDropShadow dx="0" dy="0.6" stdDeviation="0.7" floodColor="#000" floodOpacity="0.35" />
+            </filter>
+            {/* Selection outer bloom — size stays roughly constant on screen via invZoom */}
+            <filter id="selected-glow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation={3.2 * invZoom} result="blur" />
+              <feFlood floodColor="#6eb0ff" floodOpacity="0.55" result="color" />
+              <feComposite in="color" in2="blur" operator="in" result="glow" />
               <feMerge>
-                <feMergeNode in="blur" />
+                <feMergeNode in="glow" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
           </defs>
 
-          <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#map-glow)" />
+          {/* Ocean stack (fixed to viewBox — does not pan with countries) */}
+          <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#map-ocean-base)" />
+          <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#map-ocean-sheen)" />
+          <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#map-stars)" opacity="0.55" />
           <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#map-grid)" />
+          <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#map-ocean-horizon)" />
 
           <g transform={`translate(${offset.x} ${offset.y}) scale(${zoom})`}>
-            {/* Memoized — only re-renders when data/selection/overlay changes, not on hover or zoom */}
-            <CountryLayers
-              byName={byName}
-              baselineByName={baselineByName}
-              visibleNames={visibleNames}
-              selectedName={selectedName}
-              relatedNames={relatedNames}
-              overlayMode={overlayMode}
-              fillMode={fillMode}
-              alignmentColor={alignmentColor}
-              setHoveredName={setHoveredName}
-              setHoveredCountry={setHoveredCountry}
-              hoveredNameRef={hoveredNameRef}
-              hoveredIsParamRef={hoveredIsParamRef}
-            />
-            {/* Hover highlight — single path re-render instead of all 240+ paths */}
-            {hoveredName && (
-              <path
-                d={countryPathStrings.get(hoveredName) ?? undefined}
-                fill="none"
-                stroke="#cbd5e1"
-                strokeWidth={1.1}
-                vectorEffect="non-scaling-stroke"
-                style={{ pointerEvents: 'none' }}
+            {/* Memoized country fills — group filter adds a single soft land edge */}
+            <g filter="url(#land-shadow)" className="map-countries">
+              <CountryLayers
+                byName={byName}
+                baselineByName={baselineByName}
+                visibleNames={visibleNames}
+                selectedName={selectedName}
+                relatedNames={relatedNames}
+                overlayMode={overlayMode}
+                fillMode={fillMode}
+                alignmentColor={alignmentColor}
+                setHoveredName={setHoveredName}
+                setHoveredCountry={setHoveredCountry}
+                hoveredNameRef={hoveredNameRef}
+                hoveredIsParamRef={hoveredIsParamRef}
               />
+            </g>
+
+            {/* Selection chrome: outer bloom + bright inner ring (drawn above fills) */}
+            {selectedName && countryPathStrings.get(selectedName) && (
+              <g className="map-selection-ring" style={{ pointerEvents: 'none' }} filter="url(#selected-glow)">
+                <path
+                  d={countryPathStrings.get(selectedName)!}
+                  fill="none"
+                  stroke="rgba(110, 176, 255, 0.55)"
+                  strokeWidth={3.4}
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <path
+                  d={countryPathStrings.get(selectedName)!}
+                  fill="none"
+                  stroke="rgba(248, 250, 252, 0.95)"
+                  strokeWidth={1.35}
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </g>
             )}
 
+            {/* Hover highlight — single path re-render instead of all 240+ paths */}
+            {hoveredName && hoveredName !== selectedName && (
+              <g className="map-hover-ring" style={{ pointerEvents: 'none' }}>
+                <path
+                  d={countryPathStrings.get(hoveredName) ?? undefined}
+                  fill="none"
+                  stroke="rgba(226, 232, 240, 0.28)"
+                  strokeWidth={2.6}
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <path
+                  d={countryPathStrings.get(hoveredName) ?? undefined}
+                  fill="none"
+                  stroke="rgba(248, 250, 252, 0.92)"
+                  strokeWidth={1.15}
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </g>
+            )}
 
-            {/* Country name labels — visible when zoomed in beyond LABELS_ZOOM_THRESHOLD */}
-            {zoom >= LABELS_ZOOM_THRESHOLD && centroidEntries.map(([name, [cx, cy]]) => {
-              const isParameterized = byName.has(name);
-              if (!isParameterized) return null;
-              return (
-                <text
-                  key={`label-${name}`}
-                  x={cx}
-                  y={cy}
-                  fontSize={LABEL_BASE_FONT_SIZE * invZoom}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill="rgba(248,250,252,0.95)"
-                  stroke="rgba(15,23,42,0.85)"
-                  strokeWidth={LABEL_STROKE_WIDTH * 1.5 * invZoom}
-                  paintOrder="stroke"
-                  style={{ 
-                    pointerEvents: 'none', 
-                    fontWeight: 700, 
-                    letterSpacing: '0.02em',
-                    textShadow: '0 1px 3px rgba(0,0,0,0.6)'
-                  }}
-                >
-                  {name}
-                </text>
-              );
-            })}
+            {/* Country labels — denser when zoomed in; always show selected at threshold */}
+            {zoom >= LABELS_ZOOM_THRESHOLD &&
+              centroidEntries.map(([name, [cx, cy]]) => {
+                const entry = byName.get(name);
+                if (!entry) return null;
+                const isSelected = name === selectedName;
+                const isHovered = name === hoveredName;
+                const isRelated = relatedNames.has(name);
+                // At moderate zoom, only label focus / related / hover to reduce clutter.
+                if (zoom < LABELS_ZOOM_THRESHOLD + 0.55 && !isSelected && !isHovered && !isRelated) {
+                  return null;
+                }
+                const label = entry.profile.displayName;
+                const weight = isSelected || isHovered ? 700 : 600;
+                const fill = isSelected
+                  ? 'rgba(248,250,252,0.98)'
+                  : isHovered
+                    ? 'rgba(248,250,252,0.95)'
+                    : 'rgba(226,232,240,0.88)';
+                return (
+                  <text
+                    key={`label-${name}`}
+                    x={cx}
+                    y={cy}
+                    fontSize={LABEL_BASE_FONT_SIZE * invZoom * (isSelected ? 1.08 : 1)}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill={fill}
+                    stroke="rgba(6, 10, 18, 0.78)"
+                    strokeWidth={LABEL_STROKE_WIDTH * 1.65 * invZoom}
+                    paintOrder="stroke"
+                    className="map-country-label"
+                    style={{
+                      pointerEvents: 'none',
+                      fontWeight: weight,
+                      letterSpacing: '0.01em',
+                      fontFamily: 'Inter, system-ui, sans-serif',
+                    }}
+                  >
+                    {label}
+                  </text>
+                );
+              })}
           </g>
         </svg>
+        <div className="map-vignette" aria-hidden />
 
         {hovered && hoverPos && (
           <div

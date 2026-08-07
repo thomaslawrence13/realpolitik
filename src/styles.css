@@ -1418,7 +1418,7 @@ input[type='range']::-moz-range-thumb {
   grid-area: map;
   position: relative;
   background:
-    radial-gradient(120% 90% at 50% 35%, #0d1a3a 0%, #07080c 70%);
+    radial-gradient(110% 90% at 50% 38%, #10264d 0%, #070b14 62%, #04060c 100%);
   overflow: hidden;
   min-width: 0;
 }
@@ -1427,6 +1427,16 @@ input[type='range']::-moz-range-thumb {
   position: relative;
   width: 100%;
   height: 100%;
+}
+
+.map-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(78% 72% at 50% 46%, transparent 42%, rgba(2, 6, 14, 0.18) 72%, rgba(2, 6, 14, 0.55) 100%),
+    linear-gradient(180deg, rgba(8, 12, 22, 0.18) 0%, transparent 14%, transparent 78%, rgba(2, 6, 12, 0.32) 100%);
 }
 
 .world-map {
@@ -1438,8 +1448,25 @@ input[type='range']::-moz-range-thumb {
 }
 
 .country-path {
-  transition: fill-opacity 180ms var(--ease), stroke 180ms var(--ease), stroke-width 180ms var(--ease);
+  transition:
+    fill-opacity 200ms var(--ease),
+    stroke 160ms var(--ease),
+    stroke-width 160ms var(--ease);
   cursor: pointer;
+}
+
+.map-countries {
+  /* Soft land edge via SVG filter on the group */
+}
+
+.map-selection-ring,
+.map-hover-ring {
+  pointer-events: none;
+}
+
+.map-country-label {
+  paint-order: stroke fill;
+  opacity: 0.96;
 }
 
 /* Floating controls on the map */

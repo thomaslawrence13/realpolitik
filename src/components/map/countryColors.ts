@@ -1,10 +1,11 @@
 import type { Alignment, MapFillMode, RegimeType, SimulatedCountry } from '../../types';
 
-// Risk gradient: low (green) → medium (amber) → high (red).
-export const RISK_LOW = '#34d399';
-export const RISK_MED = '#fbbf24';
+// Risk gradient: low (teal) → medium (amber) → high (coral) — tuned for dark ocean.
+export const RISK_LOW = '#2dd4a8';
+export const RISK_MED = '#f0b429';
 export const RISK_HIGH = '#f87171';
-export const NEUTRAL = '#1b2538';
+/** Unparameterized land — slightly warmer than pure navy so continents read as land. */
+export const NEUTRAL = '#1a2436';
 
 // Cache hex-string → [r,g,b] decomposition so lerpColor never re-parses the
 // same constant color string on every country-fill render call.
