@@ -11,7 +11,7 @@ export const NEUTRAL = '#1a2436';
 // same constant color string on every country-fill render call.
 const hexCache = new Map<string, [number, number, number]>();
 
-const parseHex = (hex: string): [number, number, number] => {
+export const parseHex = (hex: string): [number, number, number] => {
   let cached = hexCache.get(hex);
   if (!cached) {
     cached = [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
@@ -176,7 +176,7 @@ export const energyExportsColor = (depPct: number | undefined): string => {
 
 // Demographic pressure score, derived from youth share, aging, and net migration.
 // Higher score = more pressure on stability and labour-market absorption.
-const demographicPressureScore = (profile: SimulatedCountry['profile']): number | null => {
+export const demographicPressureScore = (profile: SimulatedCountry['profile']): number | null => {
   const demo = profile.demographics;
   if (!demo) return null;
   let score = 0;
@@ -248,7 +248,7 @@ export const DEBT_LOW = '#22c55e';
 export const DEBT_MID = '#f59e0b';
 export const DEBT_HIGH = '#ef4444';
 
-const debtVulnerabilityScore = (profile: SimulatedCountry['profile']): number | null => {
+export const debtVulnerabilityScore = (profile: SimulatedCountry['profile']): number | null => {
   const fiscal = profile.fiscal;
   if (!fiscal) return null;
   const ratingBase = fiscal.sovereignRatingTier === 'investment'
@@ -275,7 +275,7 @@ export const sovereignRatingColor: Record<NonNullable<SimulatedCountry['profile'
   distressed: '#ef4444',
 };
 
-const criticalMineralIntensityScore = (profile: SimulatedCountry['profile']): number | null => {
+export const criticalMineralIntensityScore = (profile: SimulatedCountry['profile']): number | null => {
   const entries = profile.criticalMinerals;
   if (!entries || entries.length === 0) return null;
   const roleWeight = {

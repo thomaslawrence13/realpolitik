@@ -80,6 +80,9 @@ type Props = {
     onSelectCountry: (mapName: string) => void;
     alignmentColor: Record<Alignment, string>;
     alignmentLabel: Record<Alignment, string>;
+    staticProfiles?: import('../types').CountryProfile[];
+    liveProfiles?: import('../types').CountryProfile[];
+    liveDataStatus?: import('./TopBar').LiveDataStatus;
   };
   indexCountries: SimulatedCountry[];
 };
@@ -206,6 +209,9 @@ export const BottomDrawer = memo(function BottomDrawer({
             onSelectCountry={movers.onSelectCountry}
             alignmentColor={movers.alignmentColor}
             alignmentLabel={movers.alignmentLabel}
+            staticProfiles={movers.staticProfiles}
+            liveProfiles={movers.liveProfiles}
+            liveDataStatus={movers.liveDataStatus}
           />
         )}
 

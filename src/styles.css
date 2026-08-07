@@ -525,6 +525,39 @@ html {
   background: rgba(110, 176, 255, 0.06);
 }
 
+.movers-section-live {
+  margin-bottom: 0.85rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid rgba(110, 176, 255, 0.18);
+  border-radius: var(--r-lg);
+  background: rgba(110, 176, 255, 0.04);
+}
+
+.movers-section-head,
+.movers-subheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.45rem;
+}
+
+.movers-subheader {
+  margin-top: 0.35rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--border);
+}
+
+.movers-subheader strong {
+  font-size: 0.78rem;
+  color: var(--text-2);
+}
+
+.movers-row-stats-live {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 /* Legacy timeline styles kept for any residual class names / tests */
 .timeline {
   display: flex;

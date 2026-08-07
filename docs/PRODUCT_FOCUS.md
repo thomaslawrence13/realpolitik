@@ -36,17 +36,18 @@ The **draggable timeline / autoplay** is not: it only walks a three-label array 
 
 ### P1 — Structure
 - [x] Extract `CountryLayers` into `components/map/` (continue MapCanvas split)  
-- [ ] Finish splitting `MapCanvas.tsx` (legend controls, interaction hooks)  
-- [ ] Split `App.tsx` into shell + `useAppChrome` / `useScenarios` / `useLiveSession`  
+- [x] Deduplicate `MapLegendControls` + drop MapCanvas color/legend clones  
+- [x] Split `App.tsx` into shell + `useAppChrome` / `useScenarios` / `useLiveSession`  
 - [ ] One ownership model for UI state (map store **or** React state — not both for the same fields)  
 - [x] Delete dead inspector panels (Overview/Stats/Relationships) after Snapshot amalgamation  
 - [ ] Delete or quarantine residual timeline helpers once present-only is fully stable  
+- [ ] Extract map pan/zoom interaction into `useMapInteraction`  
 
 ### P2 — Live tracker product
 - [x] Global dashboard strip: median risk, elevated count, mean coverage, last fetch time  
 - [x] Country inspector: lead with **observed** econ/mil KPIs; sim scores secondary  
 - [x] Explicit “as of” timestamps on coverage / profile data  
-- [ ] Ranked tables (movers by live delta when series exist, not scenario year deltas)  
+- [x] Ranked tables — live series movers (static → enriched) lead; scenario deltas secondary  
 - [x] Offline/static fallback copy that never pretends to be live (status chip + retry)  
 - [x] Data coverage density (ingest MRV, curated fallbacks, pipeline bootstrap)  
 
@@ -78,4 +79,5 @@ The **draggable timeline / autoplay** is not: it only walks a three-label array 
 | Perf / bugs | Hooks order, single sim owner, worker bulk flags |
 | HUD + map aesthetics | Glass chrome, ocean layers, selection rings |
 | Data coverage (v15) | Dense ingest, curated fallbacks, 100% indicator coverage |
-| **Next phase (this)** | Global aggregates strip, risk-default map, observed-first KPIs, CountryLayers extract |
+| Live summary phase | Global aggregates strip, risk-default map, observed-first KPIs, CountryLayers extract |
+| **Structure phase (this)** | App hooks split, MapCanvas legend dedupe, live-series movers ranking |
