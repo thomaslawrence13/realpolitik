@@ -26,12 +26,8 @@ import { useSimulation } from './hooks/useSimulation';
 import { useLiveSession } from './hooks/useLiveSession';
 import { useAppChrome } from './hooks/useAppChrome';
 import { useScenarios } from './hooks/useScenarios';
-import {
-  buildEventFeed,
-  buildVisibleNames,
-  filterCountries,
-  searchCountries,
-} from './state/selectors';
+import { useFilteredCountries } from './hooks/useFilteredCountries';
+import { buildEventFeed } from './state/selectors';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TopBar } from './components/TopBar';
 import { LeftRail } from './components/LeftRail';
@@ -186,11 +182,10 @@ export default function App() {
     [live.activeProfiles, selectedCountry],
   );
 
-  const filtered = useMemo(() => filterCountries(simulated, filters), [filters, simulated]);
-  const visibleNames = useMemo(() => buildVisibleNames(filtered), [filtered]);
-  const railCountries = useMemo(
-    () => searchCountries(filtered, chrome.search),
-    [filtered, chrome.search],
+  const { filtered, visibleNames, railCountries } = useFilteredCountries(
+    simulated,
+    filters,
+    chrome.search,
   );
 
   const selectedActiveEvents = useMemo(
