@@ -199,23 +199,36 @@ interface WbDataPoint {
   value: number | null;
 }
 
-const CACHE_PREFIX = 'rp_wb2_';
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+/** Bump prefix when the fetch shape changes so stale caches are ignored. */
+const CACHE_PREFIX = 'rp_wb3_';
+/** Short TTL so the tracker stays current without thrashing the API. */
+const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
+/** How many most-recent annual observations to request (prefer newest non-null). */
+const MRV_YEARS = 6;
+
+type CacheEnvelope = {
+  fetchedAt: number;
+  data: IndicatorValues;
+  /** ISO year of the newest observation kept in this cache entry (diagnostics). */
+  latestYear?: string;
+};
 
 const readCache = (key: string): IndicatorValues | null => {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return null;
-    const { fetchedAt, data } = JSON.parse(raw) as { fetchedAt: number; data: IndicatorValues };
-    return Date.now() - fetchedAt < CACHE_TTL_MS ? data : null;
+    const parsed = JSON.parse(raw) as CacheEnvelope;
+    if (!parsed?.data || typeof parsed.fetchedAt !== 'number') return null;
+    return Date.now() - parsed.fetchedAt < CACHE_TTL_MS ? parsed.data : null;
   } catch {
     return null;
   }
 };
 
-const writeCache = (key: string, data: IndicatorValues): void => {
+const writeCache = (key: string, data: IndicatorValues, latestYear?: string): void => {
   try {
-    localStorage.setItem(key, JSON.stringify({ fetchedAt: Date.now(), data }));
+    const envelope: CacheEnvelope = { fetchedAt: Date.now(), data, latestYear };
+    localStorage.setItem(key, JSON.stringify(envelope));
   } catch {
     // Ignore — localStorage may be unavailable (private mode, quota exceeded, etc.)
   }
@@ -224,12 +237,9 @@ const writeCache = (key: string, data: IndicatorValues): void => {
 /**
  * Fetch a single World Bank indicator for all tracked countries.
  *
- * Uses mrv=3 (up to 3 most-recent observations) so we fall back to a prior
- * year if the latest value is not yet published, then picks the first
- * non-null value per country.
- *
- * Returns a map of ISO alpha-2 → most recent non-null value.
- * Results are cached in localStorage for 24 hours.
+ * Requests up to {@link MRV_YEARS} recent observations and keeps the **newest
+ * non-null year per country** (not merely the first row the API returns).
+ * Cached for {@link CACHE_TTL_MS}.
  */
 export const fetchIndicator = async (
   indicator: WbIndicator,
@@ -244,11 +254,17 @@ export const fetchIndicator = async (
 
   try {
     const isoCodes = Object.values(countryIso2).join(';');
-    // per_page=1000 accommodates 134 countries × 3 years = 402 rows with headroom.
+    // per_page covers 134 countries × MRV years with headroom.
     const sourceParam = indicatorSourceId[indicator] ? `&source=${indicatorSourceId[indicator]}` : '';
-    const url = `${WB_API}/country/${isoCodes}/indicator/${indicatorRequestCode[indicator]}?format=json&mrv=3&per_page=1000${sourceParam}`;
+    const url =
+      `${WB_API}/country/${isoCodes}/indicator/${indicatorRequestCode[indicator]}` +
+      `?format=json&mrv=${MRV_YEARS}&per_page=2000${sourceParam}`;
 
-    const response = await fetch(url, { signal });
+    const response = await fetch(url, {
+      signal,
+      // Prefer network when the browser still has a stale HTTP cache of the API.
+      cache: 'no-cache',
+    });
     if (!response.ok) {
       throw new Error(`World Bank API (${indicator}): HTTP ${response.status}`);
     }
@@ -256,17 +272,31 @@ export const fetchIndicator = async (
     const json = (await response.json()) as [unknown, WbDataPoint[] | null];
     const points = json[1] ?? [];
 
-    // Keep only the first (most recent) non-null value per country.
-    const result: IndicatorValues = {};
+    // Newest non-null observation per ISO, by calendar year.
+    const best = new Map<string, { year: string; value: number }>();
     for (const point of points) {
+      if (point.value === null || point.value === undefined) continue;
       const iso = point.country.id.toUpperCase();
-      if (point.value !== null && !(iso in result)) {
-        result[iso] = point.value;
+      const year = String(point.date ?? '').slice(0, 4);
+      if (!/^\d{4}$/.test(year)) continue;
+      const prev = best.get(iso);
+      if (!prev || year > prev.year) {
+        best.set(iso, { year, value: point.value });
       }
     }
 
-    writeCache(cacheKey, result);
-    logger.debug(`World Bank fetch succeeded for ${indicator}, cached ${Object.keys(result).length} values`);
+    const result: IndicatorValues = {};
+    let latestYear = '';
+    for (const [iso, row] of best) {
+      result[iso] = row.value;
+      if (row.year > latestYear) latestYear = row.year;
+    }
+
+    writeCache(cacheKey, result, latestYear || undefined);
+    logger.debug(
+      `World Bank fetch succeeded for ${indicator}, cached ${Object.keys(result).length} values` +
+        (latestYear ? ` (newest year ${latestYear})` : ''),
+    );
     return result;
   } catch (error) {
     logger.error(`World Bank fetch failed for ${indicator}`, error);

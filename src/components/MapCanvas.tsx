@@ -8,20 +8,14 @@ import type {
   RelationshipDimension,
   SimulatedCountry,
 } from '../types';
-import {
-  MAP_HEIGHT,
-  MAP_WIDTH,
-  countries,
-  countryCentroids,
-  countryPathStrings,
-} from '../lib/map';
+import { MAP_HEIGHT, MAP_WIDTH, countries, countryCentroids, countryPathStrings, projectLonLat } from '../lib/map';
 import { getRiskTier } from '../simulation';
 import { IconButton, SvgIcon } from './ui';
 import { summarizeCountryTrust, TrustTag } from './provenance';
 import { useMapStore } from '../store/useMapStore';
 import { MAP, STORAGE_KEYS } from '../lib/constants';
-import { clamp, easeInOut, capitalize } from './map';
-import { overlayLabel, overlayColor, MODE_CORE_PX, MODE_DASH_PX, MODE_MIN_OPACITY, overlayKeys, RELATIONSHIP_HOVER_RGB } from './map/relationshipArcs';
+import { clamp, easeInOut, capitalize } from './map/utils';
+import { overlayLabel, overlayColor, MODE_CORE_PX, MODE_DASH_PX, MODE_MIN_OPACITY, overlayKeys, RELATIONSHIP_HOVER_RGB, computeBoundaryPoint, drawRelationshipArcs } from './map/relationshipArcs';
 import { fillModeGroups } from './map/fillModeGroups';
 
 const clampOffset = (offset: { x: number; y: number }, zoom: number): { x: number; y: number } => ({
@@ -525,191 +519,6 @@ type Props = {
   alignmentLabel: Record<Alignment, string>;
 };
 
-/** Extend from target centroid in the source→target direction by `offset` world units. */
-const computeBoundaryPoint = (
-  sourceX: number,
-  sourceY: number,
-  targetX: number,
-  targetY: number,
-  offset = 30,
-): [number, number] => {
-  const dx = targetX - sourceX;
-  const dy = targetY - sourceY;
-  const distance = Math.hypot(dx, dy);
-  if (distance === 0) return [targetX, targetY];
-  return [targetX + (dx / distance) * offset, targetY + (dy / distance) * offset];
-};
-
-type RelationshipArcTarget = {
-  mapName: string;
-  score?: number;
-  boundaryX: number;
-  boundaryY: number;
-};
-
-type RelationshipArcStyle = {
-  /** Base stroke colour as an [r, g, b] triple. */
-  rgb: [number, number, number];
-  /** Core line width in CSS pixels — stays visually constant regardless of zoom. */
-  corePx?: number;
-  minOpacity?: number;
-  maxOpacity?: number;
-  /** Dash [on, off] lengths in CSS pixels. Omit for a solid line. */
-  dashPx?: [number, number];
-  /** Arrowhead size in CSS pixels (tip-to-base length). 0 suppresses it. */
-  arrowheadPx?: number;
-  /** Suppress the soft halo beneath the core line. */
-  noGlow?: boolean;
-  /** Suppress the hub marker at the source centroid. */
-  noOriginNode?: boolean;
-};
-
-/**
- * Draw relationship arcs from a source country to multiple targets.
- *
- * All visual sizes are expressed in CSS pixels and divided by `pixelScale`
- * (world-units → CSS px = slice × zoom) so strokes and markers stay
- * constant on screen at any map zoom level.
- *
- * Arcs alternate their perpendicular bend direction (even = left, odd = right)
- * so a fan of connections spreads naturally rather than all bowing one way.
- */
-function drawRelationshipArcs(
-  ctx: CanvasRenderingContext2D,
-  sourceCountry: string,
-  targets: RelationshipArcTarget[],
-  pixelScale: number,
-  style: RelationshipArcStyle,
-) {
-  const source = countryCentroids.get(sourceCountry);
-  if (!source || targets.length === 0) return;
-  const [sx, sy] = source;
-  const [r, g, b] = style.rgb;
-  const corePx      = style.corePx      ?? 1.15;
-  const minOpacity  = style.minOpacity  ?? 0.32;
-  const maxOpacity  = style.maxOpacity  ?? 0.85;
-  const arrowheadPx = style.arrowheadPx ?? 5;
-  // Convert a CSS-px measurement into world units.
-  const px   = (v: number) => v / pixelScale;
-  const rgba = (alpha: number) => `rgba(${r}, ${g}, ${b}, ${clamp(alpha, 0, 1)})`;
-
-  ctx.save();
-  ctx.lineCap  = 'round';
-  ctx.lineJoin = 'round';
-
-  targets.forEach((target, arcIndex) => {
-    const tx = target.boundaryX;
-    const ty = target.boundaryY;
-    const dx = tx - sx;
-    const dy = ty - sy;
-    const distance = Math.hypot(dx, dy);
-
-    // Alternate bend direction so arcs fan out symmetrically from the source.
-    // sqrt-based magnitude gives good curvature even for short connections.
-    const liftSign = arcIndex % 2 === 0 ? 1 : -1;
-    const liftMag  = Math.min(100, Math.sqrt(distance) * 4);
-    const lift     = liftSign * liftMag;
-    const nx  = distance === 0 ? 0  : -dy / distance;
-    const ny  = distance === 0 ? -1 :  dx / distance;
-    const cpx = (sx + tx) / 2 + nx * lift;
-    const cpy = (sy + ty) / 2 + ny * lift;
-
-    const strength = clamp((target.score ?? 60) / 100, 0, 1);
-    const opacity  = target.score != null
-      ? clamp(target.score / 100, minOpacity, maxOpacity)
-      : (minOpacity + maxOpacity) / 2;
-    const widthPx  = corePx * (0.8 + 0.6 * strength);
-
-    // Point and tangent on the quadratic bezier at parameter t.
-    const bezierAt = (t: number): [number, number] => {
-      const mt = 1 - t;
-      return [mt * mt * sx + 2 * mt * t * cpx + t * t * tx,
-              mt * mt * sy + 2 * mt * t * cpy + t * t * ty];
-    };
-    const bezierTangentAt = (t: number): [number, number] => {
-      const mt = 1 - t;
-      return [2 * mt * (cpx - sx) + 2 * t * (tx - cpx),
-              2 * mt * (cpy - sy) + 2 * t * (ty - cpy)];
-    };
-
-    // Soft halo — always solid so it shows clearly beneath a dashed core.
-    if (!style.noGlow) {
-      ctx.beginPath();
-      ctx.setLineDash([]);
-      ctx.lineWidth   = px(widthPx * 3);
-      ctx.strokeStyle = rgba(opacity * 0.2);
-      ctx.moveTo(sx, sy);
-      ctx.quadraticCurveTo(cpx, cpy, tx, ty);
-      ctx.stroke();
-    }
-
-    // Core line: gradient bright at source, faint at target → implicit direction.
-    const gradient = ctx.createLinearGradient(sx, sy, tx, ty);
-    gradient.addColorStop(0, rgba(opacity));
-    gradient.addColorStop(1, rgba(opacity * 0.45));
-    ctx.beginPath();
-    ctx.lineWidth   = px(widthPx);
-    ctx.strokeStyle = gradient;
-    ctx.setLineDash(style.dashPx ? [px(style.dashPx[0]), px(style.dashPx[1])] : []);
-    ctx.moveTo(sx, sy);
-    ctx.quadraticCurveTo(cpx, cpy, tx, ty);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Arrowhead near the target — placed at t≈0.86 so it sits just before
-    // the endpoint node, aligned to the actual bezier tangent direction.
-    if (arrowheadPx > 0) {
-      const [ax, ay]     = bezierAt(0.86);
-      const [tanX, tanY] = bezierTangentAt(0.86);
-      const tanLen       = Math.hypot(tanX, tanY);
-      if (tanLen > 0) {
-        const utx    = tanX / tanLen;
-        const uty    = tanY / tanLen;
-        const perpX  = -uty;
-        const perpY  =  utx;
-        const aLen   = px(arrowheadPx);
-        const aHalfW = px(arrowheadPx * 0.44);
-        ctx.beginPath();
-        ctx.fillStyle = rgba(opacity * 0.72);
-        ctx.moveTo(ax + utx * aLen * 0.55,  ay + uty * aLen * 0.55);          // tip
-        ctx.lineTo(ax - utx * aLen * 0.45 + perpX * aHalfW,
-                   ay - uty * aLen * 0.45 + perpY * aHalfW);                  // left wing
-        ctx.lineTo(ax - utx * aLen * 0.45 - perpX * aHalfW,
-                   ay - uty * aLen * 0.45 - perpY * aHalfW);                  // right wing
-        ctx.closePath();
-        ctx.fill();
-      }
-    }
-
-    // Target node: filled dot + faint outer ring, sized subtly by score.
-    const nodeR = px(2 + 1.1 * strength);
-    ctx.beginPath();
-    ctx.fillStyle = rgba(clamp(opacity + 0.15, 0, 1));
-    ctx.arc(tx, ty, nodeR, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.lineWidth   = px(0.8);
-    ctx.strokeStyle = rgba(opacity * 0.5);
-    ctx.arc(tx, ty, nodeR + px(1.6), 0, Math.PI * 2);
-    ctx.stroke();
-  });
-
-  // Hub marker at source centroid — drawn last so it sits atop arc starts.
-  if (!style.noOriginNode) {
-    ctx.beginPath();
-    ctx.fillStyle = rgba(maxOpacity);
-    ctx.arc(sx, sy, px(2.6), 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.lineWidth   = px(1);
-    ctx.strokeStyle = rgba(maxOpacity * 0.4);
-    ctx.arc(sx, sy, px(5), 0, Math.PI * 2);
-    ctx.stroke();
-  }
-
-  ctx.restore();
-}
-
 const getRelationshipMetric = (
   mode: RelationshipDimension,
   relationship: { cooperation: number; hostility: number; dependency: number; deterrence: number },
@@ -999,6 +808,19 @@ const MapLegendControls = memo(function MapLegendControls({
   );
 });
 
+
+/** Prefer curated geo centroid projected into map space; fall back to path centroid. */
+const resolveCountryAnchor = (
+  mapName: string,
+  geo?: { lat: number; lng: number } | null,
+): [number, number] | null => {
+  if (geo && Number.isFinite(geo.lat) && Number.isFinite(geo.lng)) {
+    const projected = projectLonLat(geo.lng, geo.lat);
+    if (projected) return projected;
+  }
+  return countryCentroids.get(mapName) ?? null;
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export const MapCanvas = memo(function MapCanvas({
   byName,
@@ -1030,20 +852,22 @@ export const MapCanvas = memo(function MapCanvas({
   // which lets the world-atlas TopoJSON ride along with this component's chunk.
   const overlayConnections = useMemo<OverlayConnection[]>(() => {
     if (overlayMode === 'none') return [];
-    const sourceCentroid = countryCentroids.get(selectedName);
-    if (!sourceCentroid) return [];
     const profile = byName.get(selectedName)?.profile;
     if (!profile) return [];
-    const [sourceX, sourceY] = sourceCentroid;
+    const sourceAnchor = resolveCountryAnchor(selectedName, profile.geo);
+    if (!sourceAnchor) return [];
+    const [sourceX, sourceY] = sourceAnchor;
     return profile.relationships
       .map((relationship) => {
-        const targetCentroid = countryCentroids.get(relationship.mapName);
-        if (!targetCentroid || relationship.mapName === selectedName) return null;
+        if (relationship.mapName === selectedName) return null;
+        const targetProfile = byName.get(relationship.mapName)?.profile;
+        const targetAnchor = resolveCountryAnchor(relationship.mapName, targetProfile?.geo);
+        if (!targetAnchor) return null;
         const [boundaryX, boundaryY] = computeBoundaryPoint(
           sourceX,
           sourceY,
-          targetCentroid[0],
-          targetCentroid[1],
+          targetAnchor[0],
+          targetAnchor[1],
         );
         return {
           countryId: relationship.countryId,
@@ -1052,8 +876,8 @@ export const MapCanvas = memo(function MapCanvas({
           score: getRelationshipMetric(overlayMode, relationship),
           x1: sourceX,
           y1: sourceY,
-          x2: targetCentroid[0],
-          y2: targetCentroid[1],
+          x2: targetAnchor[0],
+          y2: targetAnchor[1],
           boundaryX,
           boundaryY,
         };
@@ -1284,37 +1108,51 @@ export const MapCanvas = memo(function MapCanvas({
     // pixelScale converts world units → CSS px for zoom-invariant visual sizes.
     const pixelScale = slice * zoom;
 
-    if (overlayMode !== 'none') {
-      drawRelationshipArcs(ctx, selectedName, overlayConnections, pixelScale, {
-        rgb:        parseHex(overlayColor[overlayMode]),
-        corePx:     MODE_CORE_PX[overlayMode],
-        minOpacity: MODE_MIN_OPACITY[overlayMode] ?? 0.34,
-        maxOpacity: 0.85,
-        dashPx:     MODE_DASH_PX[overlayMode],
-      });
+    if (overlayMode !== 'none' && overlayConnections.length > 0) {
+      const sourceProfile = byName.get(selectedName)?.profile;
+      const sourceAnchor = resolveCountryAnchor(selectedName, sourceProfile?.geo);
+      drawRelationshipArcs(
+        ctx,
+        selectedName,
+        overlayConnections,
+        pixelScale,
+        {
+          rgb:        parseHex(overlayColor[overlayMode]),
+          corePx:     MODE_CORE_PX[overlayMode],
+          minOpacity: MODE_MIN_OPACITY[overlayMode] ?? 0.34,
+          maxOpacity: 0.85,
+          dashPx:     MODE_DASH_PX[overlayMode],
+        },
+        sourceAnchor,
+      );
     }
 
     // Hover highlight arc — bright, overlay-agnostic.
     if (hoveredCountry && hoveredCountry !== selectedName) {
-      const sourceCentroid = countryCentroids.get(selectedName);
-      const targetCentroid = countryCentroids.get(hoveredCountry);
-      if (sourceCentroid && targetCentroid) {
+      const sourceProfile = byName.get(selectedName)?.profile;
+      const targetProfile = byName.get(hoveredCountry)?.profile;
+      const sourceAnchor = resolveCountryAnchor(selectedName, sourceProfile?.geo);
+      const targetAnchor = resolveCountryAnchor(hoveredCountry, targetProfile?.geo);
+      if (sourceAnchor && targetAnchor) {
         const [boundaryX, boundaryY] = computeBoundaryPoint(
-          sourceCentroid[0],
-          sourceCentroid[1],
-          targetCentroid[0],
-          targetCentroid[1],
+          sourceAnchor[0],
+          sourceAnchor[1],
+          targetAnchor[0],
+          targetAnchor[1],
         );
+        // Pass explicit endpoints via boundary; sourceCountry string is only used
+        // when targets lack coordinates — we always supply boundaryX/Y here.
         drawRelationshipArcs(
           ctx,
           selectedName,
           [{ mapName: hoveredCountry, score: 100, boundaryX, boundaryY }],
           pixelScale,
           { rgb: RELATIONSHIP_HOVER_RGB, corePx: 1.9, minOpacity: 0.85, maxOpacity: 1 },
+          sourceAnchor,
         );
       }
     }
-  }, [hoveredCountry, offset.x, offset.y, overlayConnections, overlayMode, selectedName, zoom]);
+  }, [byName, hoveredCountry, offset.x, offset.y, overlayConnections, overlayMode, selectedName, zoom]);
 
   // Run the draw whenever inputs change.
   useEffect(() => {

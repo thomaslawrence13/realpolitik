@@ -27,19 +27,30 @@ type RelationshipArcStyle = {
   noOriginNode?: boolean;
 };
 
-/** Extend from target centroid in the source→target direction by `offset` world units. */
+/**
+ * Arc endpoint near the target country.
+ *
+ * Previously this *overshot* the target away from the source, so lines often
+ * landed in the ocean next to small states. We now stop at the target anchor
+ * (or slightly short of it so the arrowhead/node sits on the country).
+ *
+ * `inset` is world units pulled back toward the source; 0 pins exactly on the
+ * target centroid / geo anchor.
+ */
 export const computeBoundaryPoint = (
   sourceX: number,
   sourceY: number,
   targetX: number,
   targetY: number,
-  offset = 30,
+  inset = 0,
 ): [number, number] => {
+  if (inset <= 0) return [targetX, targetY];
   const dx = targetX - sourceX;
   const dy = targetY - sourceY;
   const distance = Math.hypot(dx, dy);
   if (distance === 0) return [targetX, targetY];
-  return [targetX + (dx / distance) * offset, targetY + (dy / distance) * offset];
+  const pull = Math.min(inset, distance * 0.35);
+  return [targetX - (dx / distance) * pull, targetY - (dy / distance) * pull];
 };
 
 /**
@@ -58,8 +69,10 @@ export function drawRelationshipArcs(
   targets: RelationshipArcTarget[],
   pixelScale: number,
   style: RelationshipArcStyle,
+  /** Optional projected source anchor (prefer curated geo). Falls back to path centroid. */
+  sourceAnchor?: [number, number] | null,
 ) {
-  const source = countryCentroids.get(sourceCountry);
+  const source = sourceAnchor ?? countryCentroids.get(sourceCountry);
   if (!source || targets.length === 0) return;
   const [sx, sy] = source;
   const [r, g, b] = style.rgb;
@@ -82,10 +95,10 @@ export function drawRelationshipArcs(
     const dy = ty - sy;
     const distance = Math.hypot(dx, dy);
 
-    // Alternate bend direction so arcs fan out symmetrically from the source.
-    // sqrt-based magnitude gives good curvature even for short connections.
+    // Mild alternate bend so fans separate without drifting off-target.
+    // Cap lift tightly — large bows made endpoints feel detached from countries.
     const liftSign = arcIndex % 2 === 0 ? 1 : -1;
-    const liftMag  = Math.min(100, Math.sqrt(distance) * 4);
+    const liftMag  = Math.min(36, Math.sqrt(Math.max(distance, 1)) * 2.2);
     const lift     = liftSign * liftMag;
     const nx  = distance === 0 ? 0  : -dy / distance;
     const ny  = distance === 0 ? -1 :  dx / distance;
