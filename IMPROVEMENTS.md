@@ -12,14 +12,13 @@ This document summarizes the improvements made to the realpolitik codebase in th
 
 The two largest components documented as follow-up work are now split into focused modules:
 
-- **`RightInspector.tsx` (2,315 lines) → shell (320 lines) + `src/components/inspector/`:**
-  - `OverviewPanel.tsx` — at-a-glance metrics, disclosures, risk trajectory sparkline, alignment model
-  - `StatsPanel.tsx` — full country data snapshot with provenance, historical trend charts, quality notices
-  - `RelationshipsPanel.tsx` — searchable/sortable relationship edge list
+- **`RightInspector.tsx` → dense Snapshot shell + `src/components/inspector/`:**
+  - Snapshot KPI strip / glance cards live in `RightInspector.tsx` (amalgamated overview + relationships)
+  - `EconomicStatsSection.tsx` / `MilitaryStatsSection.tsx` — full stats tab sections
   - `AnalysisPanel.tsx` — model-derived outputs and active analysis parameters
   - `ComparisonSection.tsx` — pinned saved-analysis comparison
-  - `explainers.tsx` — risk/confidence/probability math breakdowns
   - `shared.tsx` — shared presentational components, dimension metadata, formatting constants
+  - (Removed unused `OverviewPanel` / `StatsPanel` / `RelationshipsPanel` / `explainers` after Snapshot amalgamation)
 - **`BottomDrawer.tsx` (1,440 lines) → shell (260 lines) + `src/components/drawer/`:**
   - `IndexPanel.tsx` — factual index with search/filter/compare and CSV export
   - `ScenarioPanel.tsx` — weight sets and shock sliders

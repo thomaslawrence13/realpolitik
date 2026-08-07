@@ -426,8 +426,6 @@ type CountryLayersProps = {
   hoveredIsParamRef: MutableRefObject<boolean>;
 };
 
-import type React from 'react';
-
 const CountryLayers = memo(function CountryLayers({
   byName,
   baselineByName,

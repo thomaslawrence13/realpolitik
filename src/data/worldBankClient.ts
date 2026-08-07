@@ -4,8 +4,8 @@
  * https://datahelpdesk.worldbank.org/knowledgebase/articles/898581
  *
  * Fetches real-time macroeconomic and governance indicators for all tracked
- * countries. Results are cached in localStorage for 24 hours so the API is
- * not hammered on every page load.
+ * countries. Results are cached in localStorage for 4 hours so the API is
+ * not hammered on every page load while stats stay reasonably current.
  */
 
 import { logger } from '../lib/logger';

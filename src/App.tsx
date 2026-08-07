@@ -55,7 +55,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { TopBar } from './components/TopBar';
 import { LeftRail } from './components/LeftRail';
 import { RightInspector, normalizeInspectorTab } from './components/RightInspector';
-import type { InspectorTab, SparklineSeries } from './components/RightInspector';
+import type { InspectorTab } from './components/RightInspector';
 import { BottomDrawer } from './components/BottomDrawer';
 import type { DrawerTab, EventFeedItem } from './components/BottomDrawer';
 import { ShortcutsHelp } from './components/ShortcutsHelp';
@@ -345,8 +345,6 @@ export default function App() {
     selectedCountry,
     presentIndex,
     scenarioTimeline,
-    alignmentColor,
-    alignmentLabel,
   );
 
   const byName = useMemo(
@@ -368,17 +366,17 @@ export default function App() {
 
   const railCountries = useMemo(() => searchCountries(filtered, search), [filtered, search]);
 
-  if (!selected || !baselineSelected) {
-    return <div className="app-shell" role="status" aria-live="polite" aria-busy="true" aria-label="Loading simulation data">Loading simulation...</div>;
-  }
-
+  // All hooks must run before any early return (Rules of Hooks).
   const selectedActiveEvents = useMemo(
-    () => getActiveEventsForProfile(selected.profile, activeEvents),
-    [activeEvents, selected.profile],
+    () => (selected ? getActiveEventsForProfile(selected.profile, activeEvents) : []),
+    [activeEvents, selected],
   );
   const selectedScenarioInputs = useMemo(
-    () => getScenarioInputsForProfile(deferredScenarioInputs, activeEvents, selected.profile),
-    [activeEvents, deferredScenarioInputs, selected.profile],
+    () =>
+      selected
+        ? getScenarioInputsForProfile(deferredScenarioInputs, activeEvents, selected.profile)
+        : deferredScenarioInputs,
+    [activeEvents, deferredScenarioInputs, selected],
   );
 
   const eventFeed = useMemo<EventFeedItem[]>(
@@ -390,7 +388,7 @@ export default function App() {
         timelineIndex: presentIndex,
         alignmentLabel,
       }),
-    [alignmentLabel, baselineByName, filtered, presentIndex],
+    [baselineByName, filtered, presentIndex],
   );
 
   // Optional comparison track.
@@ -411,6 +409,7 @@ export default function App() {
       scenarioInputs: comparisonScenario.inputs,
       activeEvents: comparisonEvents,
       weightSet: compWeights,
+      includeHistory: false,
     });
   }, [comparisonScenario, selectedProfile]);
 
@@ -425,6 +424,7 @@ export default function App() {
         scenarioInputs: comparisonScenario.inputs,
         activeEvents: comparisonEvents,
         weightSet: compWeights,
+        includeHistory: false,
       }),
     );
   }, [activeProfiles, comparisonScenario, drawerTab]);
@@ -624,14 +624,14 @@ export default function App() {
     if (byName.has(mapName)) setSelectedCountry(mapName);
   }, [byName, setSelectedCountry]);
 
-  /** Selecting a country from the map also ensures the right panel is open and shows the overview. */
+  /** Selecting a country from the map also ensures the right panel is open on Snapshot. */
   const handleSelectFromMap = useCallback(
     (mapName: string) => {
       setSelectedCountry(mapName);
       setRightOpen(true);
       setInspectorTab('snapshot');
     },
-    [],
+    [setSelectedCountry],
   );
 
   const totalCountries = activeProfiles.length;
@@ -710,6 +710,20 @@ export default function App() {
       useMapStore.destroy();
     };
   }, []);
+
+  if (!selected || !baselineSelected) {
+    return (
+      <div
+        className="app-shell"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        aria-label="Loading simulation data"
+      >
+        Loading simulation...
+      </div>
+    );
+  }
 
   return (
     <ErrorBoundary>
