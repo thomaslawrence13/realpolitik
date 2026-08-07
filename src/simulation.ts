@@ -71,6 +71,17 @@ const relationshipSummaryCache = new WeakMap<CountryProfile, RelationshipSummary
 // calls with identical inputs return instantly — critical for sparkline/history paths
 // that call simulateCountry many times per country.
 const simulationCache = new Map<string, SimulatedCountry>();
+/** Bound memory: FIFO eviction once the cache exceeds this many entries. */
+const SIMULATION_CACHE_MAX = 768;
+
+const rememberSimulation = (cacheKey: string, result: SimulatedCountry): SimulatedCountry => {
+  if (simulationCache.size >= SIMULATION_CACHE_MAX) {
+    const oldest = simulationCache.keys().next().value;
+    if (oldest !== undefined) simulationCache.delete(oldest);
+  }
+  simulationCache.set(cacheKey, result);
+  return result;
+};
 
 const simulationCacheKey = (
   profile: CountryProfile,
@@ -79,7 +90,8 @@ const simulationCacheKey = (
 ): string => {
   const inputsHash = `${options?.scenarioInputs?.sanctionShock ?? 0},${options?.scenarioInputs?.treatyShift ?? 0},${options?.scenarioInputs?.electionVolatility ?? 0},${options?.scenarioInputs?.invasionPressure ?? 0},${options?.scenarioInputs?.coupRisk ?? 0}`;
   const eventsHash = (options?.activeEvents ?? []).map((e) => e.id).join(';');
-  return `${profile.id}:${timelineIndex}:${inputsHash}:${eventsHash}:${options?.weightSet?.key ?? 'baseline'}:${options?.includeExplanation ?? false}:${options?.includeHistory ?? true}`;
+  // Default flags match resolveOptions (history/explanation off for bulk paths).
+  return `${profile.id}:${timelineIndex}:${inputsHash}:${eventsHash}:${options?.weightSet?.key ?? 'baseline'}:${options?.includeExplanation ?? false}:${options?.includeHistory ?? false}`;
 };
 
 const summarizeRelationships = (profile: CountryProfile): RelationshipSummary => {
@@ -238,7 +250,8 @@ export const simulationWeightSets: Record<WeightSetKey, SimulationWeightSet> = {
 export const getSimulationWeightSet = (key: WeightSetKey) => simulationWeightSets[key];
 
 const resolveOptions = (options?: SimulationOptions) => ({
-  includeHistory: options?.includeHistory ?? true,
+  // History is unused by the live UI; default off so bulk map/worker sims stay cheap.
+  includeHistory: options?.includeHistory ?? false,
   includeExplanation: options?.includeExplanation ?? false,
   scenarioInputs: options?.scenarioInputs ?? defaultScenarioInputs,
   activeEvents: options?.activeEvents ?? [],
@@ -663,8 +676,7 @@ export const simulateCountry = (
     relationshipSummary,
     explanation,
   };
-  simulationCache.set(cacheKey, result);
-  return result;
+  return rememberSimulation(cacheKey, result);
 };
 
 export const getRiskTier = classifyRisk;

@@ -15,16 +15,19 @@ export const modelIndicatorKeys: IndicatorKey[] = [
 ];
 
 export const indicatorQualityRules: Record<IndicatorKey, IndicatorQualityRule> = {
-  tradeExposure: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.56, includeInCoverage: true },
-  militaryTreatyLevel: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.56, includeInCoverage: true },
-  conflictPressure: { cadence: 'weekly', staleAfterDays: 21, minimumConfidence: 0.56, includeInCoverage: true },
-  sanctionsExposure: { cadence: 'weekly', staleAfterDays: 21, minimumConfidence: 0.56, includeInCoverage: true },
+  // WDI/WGI series often publish with a 1–3 year lag — keep SLAs realistic.
+  tradeExposure: { cadence: 'annual', staleAfterDays: 1200, minimumConfidence: 0.56, includeInCoverage: true },
+  militaryTreatyLevel: { cadence: 'annual', staleAfterDays: 1200, minimumConfidence: 0.56, includeInCoverage: true },
+  // Conflict/sanctions are expert-curated in this build (no live ACLED/CSIS wire).
+  // SLAs match quarterly reaffirmation rather than true weekly feeds.
+  conflictPressure: { cadence: 'quarterly', staleAfterDays: 120, minimumConfidence: 0.56, includeInCoverage: true },
+  sanctionsExposure: { cadence: 'quarterly', staleAfterDays: 120, minimumConfidence: 0.56, includeInCoverage: true },
   ideology: { cadence: 'annual', staleAfterDays: 730, minimumConfidence: 0.4, includeInCoverage: false },
   borderDisputes: { cadence: 'quarterly', staleAfterDays: 180, minimumConfidence: 0.45, includeInCoverage: false },
-  regimeStability: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.56, includeInCoverage: true },
-  conflictHistory: { cadence: 'monthly', staleAfterDays: 60, minimumConfidence: 0.56, includeInCoverage: true },
-  tradeDependence: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.56, includeInCoverage: true },
-  cohesion: { cadence: 'monthly', staleAfterDays: 60, minimumConfidence: 0.52, includeInCoverage: true },
+  regimeStability: { cadence: 'annual', staleAfterDays: 1200, minimumConfidence: 0.56, includeInCoverage: true },
+  conflictHistory: { cadence: 'quarterly', staleAfterDays: 120, minimumConfidence: 0.56, includeInCoverage: true },
+  tradeDependence: { cadence: 'annual', staleAfterDays: 1200, minimumConfidence: 0.56, includeInCoverage: true },
+  cohesion: { cadence: 'annual', staleAfterDays: 1200, minimumConfidence: 0.52, includeInCoverage: true },
 };
 
 export const indicatorSourcePriority: Record<IndicatorKey, string[]> = {

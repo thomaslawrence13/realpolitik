@@ -1,28 +1,40 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { MutableRefObject, PointerEvent as ReactPointerEvent } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import type {
   Alignment,
   MapFillMode,
   OverlayMode,
-  RegimeType,
-  RelationshipDimension,
   SimulatedCountry,
 } from '../types';
-import {
-  MAP_HEIGHT,
-  MAP_WIDTH,
-  countries,
-  countryCentroids,
-  countryPathStrings,
-} from '../lib/map';
+import { MAP_HEIGHT, MAP_WIDTH, countryCentroids, countryPathStrings, projectLonLat } from '../lib/map';
 import { getRiskTier } from '../simulation';
 import { IconButton, SvgIcon } from './ui';
 import { summarizeCountryTrust, TrustTag } from './provenance';
 import { useMapStore } from '../store/useMapStore';
 import { MAP, STORAGE_KEYS } from '../lib/constants';
-import { clamp, easeInOut, capitalize } from './map';
-import { overlayLabel, overlayColor, MODE_CORE_PX, MODE_DASH_PX, MODE_MIN_OPACITY, overlayKeys, RELATIONSHIP_HOVER_RGB } from './map/relationshipArcs';
+import { clamp, easeInOut, capitalize } from './map/utils';
+import {
+  overlayLabel,
+  overlayColor,
+  MODE_CORE_PX,
+  MODE_DASH_PX,
+  MODE_MIN_OPACITY,
+  overlayKeys,
+  RELATIONSHIP_HOVER_RGB,
+  computeBoundaryPoint,
+  drawRelationshipArcs,
+  getRelationshipMetric,
+} from './map/relationshipArcs';
 import { fillModeGroups } from './map/fillModeGroups';
+import { CountryLayers } from './map/CountryLayers';
+import { MapLegendControls } from './map/MapLegendControls';
+import {
+  criticalMineralIntensityScore,
+  debtVulnerabilityScore,
+  demographicPressureScore,
+  formatGrowthPct,
+  parseHex,
+} from './map/countryColors';
 
 const clampOffset = (offset: { x: number; y: number }, zoom: number): { x: number; y: number } => ({
   x: clamp(offset.x, -(MAP_WIDTH * zoom - PAN_MARGIN), MAP_WIDTH - PAN_MARGIN),
@@ -67,439 +79,6 @@ const saveMapUiState = (state: MapUiState) => {
   }
 };
 
-// Risk gradient: low (green) → medium (amber) → high (red).
-const RISK_LOW = '#34d399';
-const RISK_MED = '#fbbf24';
-const RISK_HIGH = '#f87171';
-const NEUTRAL = '#1b2538';
-
-// Cache hex-string → [r,g,b] decomposition so lerpColor never re-parses the
-// same constant color string on every country-fill render call.
-const hexCache = new Map<string, [number, number, number]>();
-const parseHex = (hex: string): [number, number, number] => {
-  let cached = hexCache.get(hex);
-  if (!cached) {
-    cached = [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
-    hexCache.set(hex, cached);
-  }
-  return cached;
-};
-
-const lerpColor = (from: string, to: string, t: number): string => {
-  const [fr, fg, fb] = parseHex(from);
-  const [tr, tg, tb] = parseHex(to);
-  const r = Math.round(fr + (tr - fr) * t);
-  const g = Math.round(fg + (tg - fg) * t);
-  const b = Math.round(fb + (tb - fb) * t);
-  return `rgb(${r}, ${g}, ${b})`;
-};
-
-const riskColor = (risk: number): string => {
-  const t = Math.max(0, Math.min(1, risk / 100));
-  if (t < 0.5) return lerpColor(RISK_LOW, RISK_MED, t * 2);
-  return lerpColor(RISK_MED, RISK_HIGH, (t - 0.5) * 2);
-};
-
-const confidenceColor = (confidence: number): string => {
-  // Darker blue (low) to bright cyan (high).
-  const t = Math.max(0, Math.min(1, (confidence - 30) / 60));
-  return lerpColor('#1e3a8a', '#67e8f9', t);
-};
-
-// GDP per capita: log-scale purple (< $1 K) → amber (~$10 K) → green (>$100 K).
-const GDP_POOR = '#581c87';
-const GDP_MID  = '#f59e0b';
-const GDP_RICH = '#22c55e';
-const gdpPerCapitaColor = (gdp: number | undefined): string => {
-  if (!gdp) return NEUTRAL;
-  // log10 scale: $1 K → 0, $10 K → 0.5, $100 K → 1
-  const t = Math.max(0, Math.min(1, (Math.log10(Math.max(1, gdp)) - 3) / 2));
-  if (t < 0.5) return lerpColor(GDP_POOR, GDP_MID, t * 2);
-  return lerpColor(GDP_MID, GDP_RICH, (t - 0.5) * 2);
-};
-
-// Nuclear-armed: vivid yellow (armed) vs deep navy (unarmed).
-const NUCLEAR_YES = '#fef08a';
-const NUCLEAR_NO  = '#1b2d4a';
-const nuclearArmedColor = (armed: boolean | undefined): string => {
-  if (armed === undefined) return NEUTRAL;
-  return armed ? NUCLEAR_YES : NUCLEAR_NO;
-};
-
-// Military burden: sky blue (0 %) → red (≥ 5 % GDP).
-const MIL_LOW  = '#0ea5e9';
-const MIL_HIGH = '#f87171';
-const militaryBurdenColor = (pct: number | undefined): string => {
-  if (pct == null) return NEUTRAL;
-  const t = Math.max(0, Math.min(1, pct / 5));
-  return lerpColor(MIL_LOW, MIL_HIGH, t);
-};
-
-// Regime type: fixed palette.
-const regimeTypeColor: Record<RegimeType, string> = {
-  democracy:     '#22d3ee',
-  hybrid:        '#f59e0b',
-  authoritarian: '#f87171',
-};
-
-// GDP growth: diverging — contraction (red) → 0 % (neutral) → fast growth (green).
-// Scale saturates symmetrically at ±8 % to keep the gradient comparable across directions.
-const GROWTH_NEG  = '#f87171';
-const GROWTH_ZERO = '#334155';
-const GROWTH_POS  = '#34d399';
-const GROWTH_SATURATION_PCT = 8; // ± % at which the gradient is fully saturated
-const gdpGrowthColor = (growthPct: number | undefined): string => {
-  if (growthPct == null) return NEUTRAL;
-  if (growthPct < 0) {
-    const t = Math.max(0, Math.min(1, -growthPct / GROWTH_SATURATION_PCT));
-    return lerpColor(GROWTH_ZERO, GROWTH_NEG, t);
-  }
-  const t = Math.max(0, Math.min(1, growthPct / GROWTH_SATURATION_PCT));
-  return lerpColor(GROWTH_ZERO, GROWTH_POS, t);
-};
-
-/** Format a GDP growth percentage for display (e.g. "+3.1%" or "−1.4%"). */
-const formatGrowthPct = (pct: number) => `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`;
-
-// Inflation: low (cool green) → moderate (amber) → high (hot red).
-const INFL_LOW  = '#34d399';
-const INFL_MED  = '#fbbf24';
-const INFL_HIGH = '#f87171';
-const inflationColor = (inflPct: number | undefined): string => {
-  if (inflPct == null) return NEUTRAL;
-  const t = Math.max(0, Math.min(1, inflPct / 20)); // saturates at 20 %
-  if (t < 0.25) return lerpColor(INFL_LOW, INFL_MED, t * 4);
-  return lerpColor(INFL_MED, INFL_HIGH, Math.min(1, (t - 0.25) * (1 / 0.75)));
-};
-
-// Trade openness: navy (closed) → bright sky-blue (very open, > 150 % GDP).
-const TRADE_LOW  = '#1e3a5f';
-const TRADE_HIGH = '#38bdf8';
-const tradeOpennessColor = (tradePct: number | undefined): string => {
-  if (tradePct == null) return NEUTRAL;
-  const t = Math.max(0, Math.min(1, tradePct / 150));
-  return lerpColor(TRADE_LOW, TRADE_HIGH, t);
-};
-
-// Conflict pressure tier: three-stop scale.
-const CONFLICT_LOW  = '#34d399';
-const CONFLICT_MED  = '#fbbf24';
-const CONFLICT_HIGH = '#f87171';
-const conflictPressureColor: Record<string, string> = {
-  low:    CONFLICT_LOW,
-  medium: CONFLICT_MED,
-  high:   CONFLICT_HIGH,
-};
-
-// Population: log-scale charcoal (< 1 M) → cyan (~ 50 M) → magenta (> 1 B).
-const POP_LOW = '#0f172a';
-const POP_MID = '#22d3ee';
-const POP_HIGH = '#e879f9';
-const populationColor = (popMillions: number | undefined): string => {
-  if (popMillions == null) return NEUTRAL;
-  // log10 scale: 1 M → 0, 50 M → 0.5, 1 B → 1
-  const t = Math.max(0, Math.min(1, (Math.log10(Math.max(1, popMillions)) - 0) / 3));
-  if (t < 0.5) return lerpColor(POP_LOW, POP_MID, t * 2);
-  return lerpColor(POP_MID, POP_HIGH, (t - 0.5) * 2);
-};
-
-// Median age: green (very young, ≤ 22) → amber (~33) → indigo (very aged, ≥ 48).
-const AGE_YOUNG = '#34d399';
-const AGE_MID   = '#f59e0b';
-const AGE_OLD   = '#6366f1';
-const medianAgeColor = (age: number | undefined): string => {
-  if (age == null) return NEUTRAL;
-  const t = Math.max(0, Math.min(1, (age - 22) / 26));
-  if (t < 0.5) return lerpColor(AGE_YOUNG, AGE_MID, t * 2);
-  return lerpColor(AGE_MID, AGE_OLD, (t - 0.5) * 2);
-};
-
-// Energy exports: red (heavy importer) → slate (balanced) → green (heavy exporter).
-// Scale uses energyImportDependencePct: positive = importer, negative = exporter.
-const ENERGY_IMPORTER = '#f87171';
-const ENERGY_BALANCED = '#475569';
-const ENERGY_EXPORTER = '#22c55e';
-const energyExportsColor = (depPct: number | undefined): string => {
-  if (depPct == null) return NEUTRAL;
-  if (depPct > 0) {
-    const t = Math.max(0, Math.min(1, depPct / 90));
-    return lerpColor(ENERGY_BALANCED, ENERGY_IMPORTER, t);
-  }
-  const t = Math.max(0, Math.min(1, -depPct / 200));
-  return lerpColor(ENERGY_BALANCED, ENERGY_EXPORTER, t);
-};
-
-// Demographic pressure score, derived from youth share, aging, and net migration.
-// Higher score = more pressure on stability and labour-market absorption.
-const demographicPressureScore = (profile: SimulatedCountry['profile']): number | null => {
-  const demo = profile.demographics;
-  if (!demo) return null;
-  let score = 0;
-  if (demo.youthSharePct > 25) score += (demo.youthSharePct - 25) * 4;
-  if (demo.medianAge > 45) score += (demo.medianAge - 45) * 3;
-  if (demo.netMigrationPer1000 != null && demo.netMigrationPer1000 < -3) {
-    score += Math.abs(demo.netMigrationPer1000 + 3) * 5;
-  }
-  return Math.min(100, Math.round(score));
-};
-const DEMO_LOW  = '#0ea5e9';
-const DEMO_HIGH = '#dc2626';
-const demographicPressureColor = (profile: SimulatedCountry['profile']): string => {
-  const score = demographicPressureScore(profile);
-  if (score == null) return NEUTRAL;
-  const t = Math.max(0, Math.min(1, score / 60));
-  return lerpColor(DEMO_LOW, DEMO_HIGH, t);
-};
-
-const CYBER_LOW = '#132238';
-const CYBER_HIGH = '#38bdf8';
-const cyberCapabilityColor = (profile: SimulatedCountry['profile']): string => {
-  if (!profile.cyber) return NEUTRAL;
-  const tierScore = { low: 20, medium: 55, high: 90 } as const;
-  const score = (tierScore[profile.cyber.offensiveTier] * 0.6) + (tierScore[profile.cyber.defensiveTier] * 0.4);
-  return lerpColor(CYBER_LOW, CYBER_HIGH, score / 100);
-};
-
-const INTERNET_UNFREE = '#991b1b';
-const INTERNET_MID = '#f59e0b';
-const INTERNET_FREE = '#34d399';
-const internetFreedomColor = (score: number | undefined): string => {
-  if (score == null) return NEUTRAL;
-  const t = Math.max(0, Math.min(1, score / 100));
-  if (t < 0.5) return lerpColor(INTERNET_UNFREE, INTERNET_MID, t * 2);
-  return lerpColor(INTERNET_MID, INTERNET_FREE, (t - 0.5) * 2);
-};
-
-const FOOD_EXPORTER = '#22c55e';
-const FOOD_BALANCED = '#475569';
-const FOOD_IMPORTER = '#f97316';
-const foodImportDependenceColor = (dependencePct: number | undefined): string => {
-  if (dependencePct == null) return NEUTRAL;
-  if (dependencePct > 0) {
-    const t = Math.max(0, Math.min(1, dependencePct / 90));
-    return lerpColor(FOOD_BALANCED, FOOD_IMPORTER, t);
-  }
-  const t = Math.max(0, Math.min(1, -dependencePct / 120));
-  return lerpColor(FOOD_BALANCED, FOOD_EXPORTER, t);
-};
-
-const WATER_LOW = '#38bdf8';
-const WATER_MID = '#fbbf24';
-const WATER_HIGH = '#ef4444';
-const waterStressColor = (index: number | undefined): string => {
-  if (index == null) return NEUTRAL;
-  const t = Math.max(0, Math.min(1, (index - 1) / 4));
-  if (t < 0.5) return lerpColor(WATER_LOW, WATER_MID, t * 2);
-  return lerpColor(WATER_MID, WATER_HIGH, (t - 0.5) * 2);
-};
-
-const DEBT_LOW = '#22c55e';
-const DEBT_MID = '#f59e0b';
-const DEBT_HIGH = '#ef4444';
-const debtVulnerabilityScore = (profile: SimulatedCountry['profile']): number | null => {
-  const fiscal = profile.fiscal;
-  if (!fiscal) return null;
-  const ratingBase = fiscal.sovereignRatingTier === 'investment'
-    ? 15
-    : fiscal.sovereignRatingTier === 'speculative'
-      ? 50
-      : 80;
-  const debtPressure = clamp((fiscal.externalDebtGdpPct - 50) * 0.4, 0, 25);
-  const reserveStress = clamp((6 - fiscal.fxReservesMonthsImports) * 5, 0, 25);
-  return Math.round(clamp(ratingBase + debtPressure + reserveStress, 0, 100));
-};
-const debtVulnerabilityColor = (profile: SimulatedCountry['profile']): string => {
-  const score = debtVulnerabilityScore(profile);
-  if (score == null) return NEUTRAL;
-  const t = Math.max(0, Math.min(1, score / 100));
-  if (t < 0.5) return lerpColor(DEBT_LOW, DEBT_MID, t * 2);
-  return lerpColor(DEBT_MID, DEBT_HIGH, (t - 0.5) * 2);
-};
-
-const sovereignRatingColor: Record<NonNullable<SimulatedCountry['profile']['fiscal']>['sovereignRatingTier'], string> = {
-  investment: '#22c55e',
-  speculative: '#f59e0b',
-  distressed: '#ef4444',
-};
-
-const criticalMineralIntensityScore = (profile: SimulatedCountry['profile']): number | null => {
-  const entries = profile.criticalMinerals;
-  if (!entries || entries.length === 0) return null;
-  const roleWeight = {
-    producer: 1,
-    processor: 1.2,
-    reserves: 0.8,
-    consumer: 0.4,
-  } as const;
-  const weightedShare = entries.reduce((sum, entry) => {
-    return sum + (entry.globalSharePct ?? 8) * roleWeight[entry.role];
-  }, 0);
-  return Math.round(clamp(weightedShare / 2, 0, 100));
-};
-
-const MINERAL_LOW = '#1f2937';
-const MINERAL_HIGH = '#eab308';
-const criticalMineralIntensityColor = (profile: SimulatedCountry['profile']): string => {
-  const score = criticalMineralIntensityScore(profile);
-  if (score == null) return NEUTRAL;
-  return lerpColor(MINERAL_LOW, MINERAL_HIGH, score / 100);
-};
-
-const SOFT_LOW = '#1e293b';
-const SOFT_HIGH = '#ec4899';
-const softPowerColor = (reachScore: number | undefined): string => {
-  if (reachScore == null) return NEUTRAL;
-  return lerpColor(SOFT_LOW, SOFT_HIGH, Math.max(0, Math.min(1, reachScore / 100)));
-};
-
-const PACT_LOW = '#334155';
-const PACT_HIGH = '#a78bfa';
-const defensePactDensityColor = (count: number | undefined): string => {
-  if (count == null) return NEUTRAL;
-  return lerpColor(PACT_LOW, PACT_HIGH, Math.max(0, Math.min(1, count / 5)));
-};
-
-type FillResolverArgs = {
-  simulated: SimulatedCountry;
-  baseline?: SimulatedCountry;
-  alignmentColor: Record<Alignment, string>;
-};
-
-const resolveFill = (mode: MapFillMode, args: FillResolverArgs): string => {
-  const { simulated, baseline, alignmentColor } = args;
-  if (mode === 'alignment') return alignmentColor[simulated.alignment];
-  if (mode === 'risk') return riskColor(simulated.risk);
-  if (mode === 'confidence') return confidenceColor(simulated.confidence);
-  if (mode === 'gdpPerCapita') return gdpPerCapitaColor(simulated.profile.economicStats?.gdpPerCapitaUsd);
-  if (mode === 'gdpGrowth') return gdpGrowthColor(simulated.profile.economicStats?.gdpGrowthPct);
-  if (mode === 'inflation') return inflationColor(simulated.profile.economicStats?.inflationPct);
-  if (mode === 'tradeOpenness') return tradeOpennessColor(simulated.profile.economicStats?.tradeGdpPct);
-  if (mode === 'nuclearArmed') return nuclearArmedColor(simulated.profile.militaryStats?.nuclearArmed);
-  if (mode === 'militaryBurden') return militaryBurdenColor(simulated.profile.militaryStats?.militaryExpGdpPct);
-  if (mode === 'regime') return regimeTypeColor[simulated.profile.regimeType];
-  if (mode === 'conflictPressure')
-    return conflictPressureColor[simulated.profile.indicators.conflictPressure] ?? NEUTRAL;
-  if (mode === 'population') return populationColor(simulated.profile.demographics?.populationMillions);
-  if (mode === 'medianAge') return medianAgeColor(simulated.profile.demographics?.medianAge);
-  if (mode === 'energyExports') return energyExportsColor(simulated.profile.energy?.energyImportDependencePct);
-  if (mode === 'demographicPressure') return demographicPressureColor(simulated.profile);
-  if (mode === 'cyberCapability') return cyberCapabilityColor(simulated.profile);
-  if (mode === 'internetFreedom') return internetFreedomColor(simulated.profile.cyber?.internetFreedomScore);
-  if (mode === 'foodImportDependence') return foodImportDependenceColor(simulated.profile.foodWater?.foodImportDependencePct);
-  if (mode === 'waterStress') return waterStressColor(simulated.profile.foodWater?.waterStressIndex);
-  if (mode === 'debtVulnerability') return debtVulnerabilityColor(simulated.profile);
-  if (mode === 'sovereignRating') {
-    const rating = simulated.profile.fiscal?.sovereignRatingTier;
-    return rating ? sovereignRatingColor[rating] : NEUTRAL;
-  }
-  if (mode === 'unVotingBlocA') {
-    const score = simulated.profile.diplomatic?.unVotingAlignmentBlocA;
-    return score == null ? NEUTRAL : lerpColor(NEUTRAL, alignmentColor.blocA, Math.max(0, Math.min(1, score / 100)));
-  }
-  if (mode === 'unVotingBlocB') {
-    const score = simulated.profile.diplomatic?.unVotingAlignmentBlocB;
-    return score == null ? NEUTRAL : lerpColor(NEUTRAL, alignmentColor.blocB, Math.max(0, Math.min(1, score / 100)));
-  }
-  if (mode === 'criticalMineralIntensity') return criticalMineralIntensityColor(simulated.profile);
-  if (mode === 'softPower') return softPowerColor(simulated.profile.softPower?.reachScore);
-  if (mode === 'defensePactDensity') return defensePactDensityColor(simulated.profile.diplomatic?.defensePacts.length);
-  // shift: highlight countries whose risk or alignment diverged from baseline.
-  if (!baseline) return alignmentColor[simulated.alignment];
-  const alignmentChanged = simulated.alignment !== baseline.alignment;
-  const riskGap = simulated.risk - baseline.risk;
-  if (alignmentChanged) return alignmentColor[simulated.alignment];
-  if (Math.abs(riskGap) < 4) return NEUTRAL;
-  return riskGap > 0 ? lerpColor(NEUTRAL, RISK_HIGH, Math.min(1, riskGap / 30))
-    : lerpColor(NEUTRAL, RISK_LOW, Math.min(1, -riskGap / 30));
-};
-
-// ─── Memoized country paths layer ────────────────────────────────────────────
-// Defined outside MapCanvas so React.memo has stable component identity.
-// Only re-renders when alignment data, filters, selection, or overlays change —
-// NOT on hover or zoom/pan.
-type CountryLayersProps = {
-  byName: Map<string, SimulatedCountry>;
-  baselineByName: Map<string, SimulatedCountry>;
-  visibleNames: Set<string>;
-  selectedName: string;
-  relatedNames: Set<string>;
-  overlayMode: OverlayMode;
-  fillMode: MapFillMode;
-  alignmentColor: Record<Alignment, string>;
-  setHoveredName: (name: string | null) => void;
-  setHoveredCountry: (name: string | null) => void;
-  hoveredNameRef: MutableRefObject<string | null>;
-  hoveredIsParamRef: MutableRefObject<boolean>;
-};
-
-import type React from 'react';
-
-const CountryLayers = memo(function CountryLayers({
-  byName,
-  baselineByName,
-  visibleNames,
-  selectedName,
-  relatedNames,
-  overlayMode,
-  fillMode,
-  alignmentColor,
-  setHoveredName,
-  setHoveredCountry,
-  hoveredNameRef,
-  hoveredIsParamRef,
-}: CountryLayersProps) {
-  return (
-    <>
-      {countries.map((country) => {
-        const name = country.properties.name;
-        const simulated = byName.get(name);
-        const baseline = baselineByName.get(name);
-        const isParameterized = Boolean(simulated);
-        const isVisible = isParameterized && visibleNames.has(name);
-        const isSelected = selectedName === name;
-        const isRelated = relatedNames.has(name);
-
-        const fill = simulated
-          ? resolveFill(fillMode, { simulated, baseline, alignmentColor })
-          : NEUTRAL;
-        const opacity = !isParameterized ? 0.3 : isVisible ? 1 : 0.2;
-
-        let stroke = 'rgba(148,163,184,0.18)';
-        let strokeWidth = 0.4;
-        if (isRelated && overlayMode !== 'none') { stroke = overlayColor[overlayMode]; strokeWidth = 1.3; }
-        if (isSelected) { stroke = '#f8fafc'; strokeWidth = 2; }
-
-        return (
-          <path
-            key={`${country.id ?? name}-${name}`}
-            d={countryPathStrings.get(name) ?? undefined}
-            fill={fill}
-            fillOpacity={opacity}
-            stroke={stroke}
-            strokeWidth={strokeWidth}
-            vectorEffect="non-scaling-stroke"
-            filter={isSelected ? 'url(#selected-glow)' : undefined}
-            className="country-path"
-            onPointerEnter={() => {
-              hoveredNameRef.current = name;
-              hoveredIsParamRef.current = isParameterized;
-              setHoveredName(name);
-              setHoveredCountry(name);
-            }}
-            onPointerLeave={() => {
-              hoveredNameRef.current = null;
-              hoveredIsParamRef.current = false;
-              setHoveredName(null);
-              setHoveredCountry(null);
-            }}
-          />
-        );
-      })}
-    </>
-  );
-});
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 export type OverlayConnection = {
   countryId: string;
   mapName: string;
@@ -525,479 +104,17 @@ type Props = {
   alignmentLabel: Record<Alignment, string>;
 };
 
-/** Extend from target centroid in the source→target direction by `offset` world units. */
-const computeBoundaryPoint = (
-  sourceX: number,
-  sourceY: number,
-  targetX: number,
-  targetY: number,
-  offset = 30,
-): [number, number] => {
-  const dx = targetX - sourceX;
-  const dy = targetY - sourceY;
-  const distance = Math.hypot(dx, dy);
-  if (distance === 0) return [targetX, targetY];
-  return [targetX + (dx / distance) * offset, targetY + (dy / distance) * offset];
-};
-
-type RelationshipArcTarget = {
-  mapName: string;
-  score?: number;
-  boundaryX: number;
-  boundaryY: number;
-};
-
-type RelationshipArcStyle = {
-  /** Base stroke colour as an [r, g, b] triple. */
-  rgb: [number, number, number];
-  /** Core line width in CSS pixels — stays visually constant regardless of zoom. */
-  corePx?: number;
-  minOpacity?: number;
-  maxOpacity?: number;
-  /** Dash [on, off] lengths in CSS pixels. Omit for a solid line. */
-  dashPx?: [number, number];
-  /** Arrowhead size in CSS pixels (tip-to-base length). 0 suppresses it. */
-  arrowheadPx?: number;
-  /** Suppress the soft halo beneath the core line. */
-  noGlow?: boolean;
-  /** Suppress the hub marker at the source centroid. */
-  noOriginNode?: boolean;
-};
-
-/**
- * Draw relationship arcs from a source country to multiple targets.
- *
- * All visual sizes are expressed in CSS pixels and divided by `pixelScale`
- * (world-units → CSS px = slice × zoom) so strokes and markers stay
- * constant on screen at any map zoom level.
- *
- * Arcs alternate their perpendicular bend direction (even = left, odd = right)
- * so a fan of connections spreads naturally rather than all bowing one way.
- */
-function drawRelationshipArcs(
-  ctx: CanvasRenderingContext2D,
-  sourceCountry: string,
-  targets: RelationshipArcTarget[],
-  pixelScale: number,
-  style: RelationshipArcStyle,
-) {
-  const source = countryCentroids.get(sourceCountry);
-  if (!source || targets.length === 0) return;
-  const [sx, sy] = source;
-  const [r, g, b] = style.rgb;
-  const corePx      = style.corePx      ?? 1.15;
-  const minOpacity  = style.minOpacity  ?? 0.32;
-  const maxOpacity  = style.maxOpacity  ?? 0.85;
-  const arrowheadPx = style.arrowheadPx ?? 5;
-  // Convert a CSS-px measurement into world units.
-  const px   = (v: number) => v / pixelScale;
-  const rgba = (alpha: number) => `rgba(${r}, ${g}, ${b}, ${clamp(alpha, 0, 1)})`;
-
-  ctx.save();
-  ctx.lineCap  = 'round';
-  ctx.lineJoin = 'round';
-
-  targets.forEach((target, arcIndex) => {
-    const tx = target.boundaryX;
-    const ty = target.boundaryY;
-    const dx = tx - sx;
-    const dy = ty - sy;
-    const distance = Math.hypot(dx, dy);
-
-    // Alternate bend direction so arcs fan out symmetrically from the source.
-    // sqrt-based magnitude gives good curvature even for short connections.
-    const liftSign = arcIndex % 2 === 0 ? 1 : -1;
-    const liftMag  = Math.min(100, Math.sqrt(distance) * 4);
-    const lift     = liftSign * liftMag;
-    const nx  = distance === 0 ? 0  : -dy / distance;
-    const ny  = distance === 0 ? -1 :  dx / distance;
-    const cpx = (sx + tx) / 2 + nx * lift;
-    const cpy = (sy + ty) / 2 + ny * lift;
-
-    const strength = clamp((target.score ?? 60) / 100, 0, 1);
-    const opacity  = target.score != null
-      ? clamp(target.score / 100, minOpacity, maxOpacity)
-      : (minOpacity + maxOpacity) / 2;
-    const widthPx  = corePx * (0.8 + 0.6 * strength);
-
-    // Point and tangent on the quadratic bezier at parameter t.
-    const bezierAt = (t: number): [number, number] => {
-      const mt = 1 - t;
-      return [mt * mt * sx + 2 * mt * t * cpx + t * t * tx,
-              mt * mt * sy + 2 * mt * t * cpy + t * t * ty];
-    };
-    const bezierTangentAt = (t: number): [number, number] => {
-      const mt = 1 - t;
-      return [2 * mt * (cpx - sx) + 2 * t * (tx - cpx),
-              2 * mt * (cpy - sy) + 2 * t * (ty - cpy)];
-    };
-
-    // Soft halo — always solid so it shows clearly beneath a dashed core.
-    if (!style.noGlow) {
-      ctx.beginPath();
-      ctx.setLineDash([]);
-      ctx.lineWidth   = px(widthPx * 3);
-      ctx.strokeStyle = rgba(opacity * 0.2);
-      ctx.moveTo(sx, sy);
-      ctx.quadraticCurveTo(cpx, cpy, tx, ty);
-      ctx.stroke();
-    }
-
-    // Core line: gradient bright at source, faint at target → implicit direction.
-    const gradient = ctx.createLinearGradient(sx, sy, tx, ty);
-    gradient.addColorStop(0, rgba(opacity));
-    gradient.addColorStop(1, rgba(opacity * 0.45));
-    ctx.beginPath();
-    ctx.lineWidth   = px(widthPx);
-    ctx.strokeStyle = gradient;
-    ctx.setLineDash(style.dashPx ? [px(style.dashPx[0]), px(style.dashPx[1])] : []);
-    ctx.moveTo(sx, sy);
-    ctx.quadraticCurveTo(cpx, cpy, tx, ty);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Arrowhead near the target — placed at t≈0.86 so it sits just before
-    // the endpoint node, aligned to the actual bezier tangent direction.
-    if (arrowheadPx > 0) {
-      const [ax, ay]     = bezierAt(0.86);
-      const [tanX, tanY] = bezierTangentAt(0.86);
-      const tanLen       = Math.hypot(tanX, tanY);
-      if (tanLen > 0) {
-        const utx    = tanX / tanLen;
-        const uty    = tanY / tanLen;
-        const perpX  = -uty;
-        const perpY  =  utx;
-        const aLen   = px(arrowheadPx);
-        const aHalfW = px(arrowheadPx * 0.44);
-        ctx.beginPath();
-        ctx.fillStyle = rgba(opacity * 0.72);
-        ctx.moveTo(ax + utx * aLen * 0.55,  ay + uty * aLen * 0.55);          // tip
-        ctx.lineTo(ax - utx * aLen * 0.45 + perpX * aHalfW,
-                   ay - uty * aLen * 0.45 + perpY * aHalfW);                  // left wing
-        ctx.lineTo(ax - utx * aLen * 0.45 - perpX * aHalfW,
-                   ay - uty * aLen * 0.45 - perpY * aHalfW);                  // right wing
-        ctx.closePath();
-        ctx.fill();
-      }
-    }
-
-    // Target node: filled dot + faint outer ring, sized subtly by score.
-    const nodeR = px(2 + 1.1 * strength);
-    ctx.beginPath();
-    ctx.fillStyle = rgba(clamp(opacity + 0.15, 0, 1));
-    ctx.arc(tx, ty, nodeR, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.lineWidth   = px(0.8);
-    ctx.strokeStyle = rgba(opacity * 0.5);
-    ctx.arc(tx, ty, nodeR + px(1.6), 0, Math.PI * 2);
-    ctx.stroke();
-  });
-
-  // Hub marker at source centroid — drawn last so it sits atop arc starts.
-  if (!style.noOriginNode) {
-    ctx.beginPath();
-    ctx.fillStyle = rgba(maxOpacity);
-    ctx.arc(sx, sy, px(2.6), 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.lineWidth   = px(1);
-    ctx.strokeStyle = rgba(maxOpacity * 0.4);
-    ctx.arc(sx, sy, px(5), 0, Math.PI * 2);
-    ctx.stroke();
+/** Prefer curated geo centroid projected into map space; fall back to path centroid. */
+const resolveCountryAnchor = (
+  mapName: string,
+  geo?: { lat: number; lng: number } | null,
+): [number, number] | null => {
+  if (geo && Number.isFinite(geo.lat) && Number.isFinite(geo.lng)) {
+    const projected = projectLonLat(geo.lng, geo.lat);
+    if (projected) return projected;
   }
-
-  ctx.restore();
-}
-
-const getRelationshipMetric = (
-  mode: RelationshipDimension,
-  relationship: { cooperation: number; hostility: number; dependency: number; deterrence: number },
-) => relationship[mode];
-
-type MapLegendControlsProps = {
-  fillMode: MapFillMode;
-  overlayMode: OverlayMode;
-  alignmentColor: Record<Alignment, string>;
-  alignmentLabel: Record<Alignment, string>;
+  return countryCentroids.get(mapName) ?? null;
 };
-
-const MapLegendControls = memo(function MapLegendControls({
-  fillMode,
-  overlayMode,
-  alignmentColor,
-  alignmentLabel,
-}: MapLegendControlsProps) {
-  return (
-    <div className="map-legend">
-        {/* Fill mode legend */}
-        {fillMode === 'alignment' &&
-          (Object.keys(alignmentLabel) as Alignment[]).map((key) => (
-            <span key={key} className="legend-chip">
-              <i style={{ background: alignmentColor[key] }} aria-hidden />
-              {alignmentLabel[key]}
-            </span>
-          ))}
-        {/* Overlay mode legend - only shown when overlay is active */}
-        {overlayMode !== 'none' && (
-          <>
-            <span className="legend-chip" style={{ borderLeft: `3px solid ${overlayColor[overlayMode]}` }}>
-              {overlayLabel[overlayMode]} arcs
-            </span>
-            <span className="legend-note">Showing top 6 relationships for selected country</span>
-          </>
-        )}
-        {fillMode === 'risk' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${RISK_LOW}, ${RISK_MED}, ${RISK_HIGH})` }} />
-            <span className="legend-gradient-labels">
-              <span>Low</span><span>Medium</span><span>High</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'confidence' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: 'linear-gradient(to right, #1e3a8a, #67e8f9)' }} />
-            <span className="legend-gradient-labels">
-              <span>Low</span><span>High</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'shift' && (
-          <>
-            <span className="legend-chip">
-              <i style={{ background: NEUTRAL }} aria-hidden />
-              Tracks baseline
-            </span>
-            <span className="legend-chip">
-              <i style={{ background: RISK_LOW }} aria-hidden />
-              Risk down
-            </span>
-            <span className="legend-chip">
-              <i style={{ background: RISK_HIGH }} aria-hidden />
-              Risk up
-            </span>
-            <span className="legend-chip">
-              <i style={{ background: '#c77dff' }} aria-hidden />
-              Alignment shifted
-            </span>
-          </>
-        )}
-        {fillMode === 'gdpPerCapita' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${GDP_POOR}, ${GDP_MID}, ${GDP_RICH})` }} />
-            <span className="legend-gradient-labels">
-              <span>&lt; $1 K</span><span>~$10 K</span><span>&gt; $100 K</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'gdpGrowth' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${GROWTH_NEG}, ${GROWTH_ZERO}, ${GROWTH_POS})` }} />
-            <span className="legend-gradient-labels">
-              <span>−8%</span><span>0%</span><span>+8%</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'inflation' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${INFL_LOW}, ${INFL_MED}, ${INFL_HIGH})` }} />
-            <span className="legend-gradient-labels">
-              <span>Low</span><span>~5%</span><span>20%+</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'tradeOpenness' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${TRADE_LOW}, ${TRADE_HIGH})` }} />
-            <span className="legend-gradient-labels">
-              <span>Closed</span><span>Open (150%+ GDP)</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'nuclearArmed' && (
-          <>
-            <span className="legend-chip">
-              <i style={{ background: NUCLEAR_YES }} aria-hidden />
-              Nuclear armed
-            </span>
-            <span className="legend-chip">
-              <i style={{ background: NUCLEAR_NO }} aria-hidden />
-              Non-nuclear
-            </span>
-          </>
-        )}
-        {fillMode === 'militaryBurden' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${MIL_LOW}, ${MIL_HIGH})` }} />
-            <span className="legend-gradient-labels">
-              <span>&lt; 1%</span><span>5%+ GDP</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'regime' && (
-          <>
-            <span className="legend-chip">
-              <i style={{ background: regimeTypeColor.democracy }} aria-hidden />
-              Democracy
-            </span>
-            <span className="legend-chip">
-              <i style={{ background: regimeTypeColor.hybrid }} aria-hidden />
-              Hybrid
-            </span>
-            <span className="legend-chip">
-              <i style={{ background: regimeTypeColor.authoritarian }} aria-hidden />
-              Authoritarian
-            </span>
-          </>
-        )}
-        {fillMode === 'conflictPressure' && (
-          <>
-            <span className="legend-chip">
-              <i style={{ background: CONFLICT_LOW }} aria-hidden />
-              Low
-            </span>
-            <span className="legend-chip">
-              <i style={{ background: CONFLICT_MED }} aria-hidden />
-              Medium
-            </span>
-            <span className="legend-chip">
-              <i style={{ background: CONFLICT_HIGH }} aria-hidden />
-              High
-            </span>
-          </>
-        )}
-        {fillMode === 'population' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${POP_LOW}, ${POP_MID}, ${POP_HIGH})` }} />
-            <span className="legend-gradient-labels">
-              <span>&lt; 1M</span><span>~50M</span><span>1B+</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'medianAge' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${AGE_YOUNG}, ${AGE_MID}, ${AGE_OLD})` }} />
-            <span className="legend-gradient-labels">
-              <span>22y</span><span>35y</span><span>48y+</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'energyExports' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${ENERGY_EXPORTER}, ${ENERGY_BALANCED}, ${ENERGY_IMPORTER})` }} />
-            <span className="legend-gradient-labels">
-              <span>Net exporter</span><span>Balanced</span><span>Heavy importer</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'demographicPressure' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${DEMO_LOW}, ${DEMO_HIGH})` }} />
-            <span className="legend-gradient-labels">
-              <span>Stable</span><span>High pressure</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'cyberCapability' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${CYBER_LOW}, ${CYBER_HIGH})` }} />
-            <span className="legend-gradient-labels">
-              <span>Low</span><span>High</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'internetFreedom' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${INTERNET_UNFREE}, ${INTERNET_MID}, ${INTERNET_FREE})` }} />
-            <span className="legend-gradient-labels">
-              <span>Restricted</span><span>Mixed</span><span>Open</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'foodImportDependence' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${FOOD_EXPORTER}, ${FOOD_BALANCED}, ${FOOD_IMPORTER})` }} />
-            <span className="legend-gradient-labels">
-              <span>Exporter</span><span>Balanced</span><span>Importer</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'waterStress' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${WATER_LOW}, ${WATER_MID}, ${WATER_HIGH})` }} />
-            <span className="legend-gradient-labels">
-              <span>1</span><span>3</span><span>5</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'debtVulnerability' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${DEBT_LOW}, ${DEBT_MID}, ${DEBT_HIGH})` }} />
-            <span className="legend-gradient-labels">
-              <span>Resilient</span><span>Stretched</span><span>Fragile</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'sovereignRating' && (
-          <>
-            <span className="legend-chip">
-              <i style={{ background: sovereignRatingColor.investment }} aria-hidden />
-              Investment
-            </span>
-            <span className="legend-chip">
-              <i style={{ background: sovereignRatingColor.speculative }} aria-hidden />
-              Speculative
-            </span>
-            <span className="legend-chip">
-              <i style={{ background: sovereignRatingColor.distressed }} aria-hidden />
-              Distressed
-            </span>
-          </>
-        )}
-        {fillMode === 'unVotingBlocA' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${NEUTRAL}, ${alignmentColor.blocA})` }} />
-            <span className="legend-gradient-labels">
-              <span>Low alignment</span><span>Bloc A aligned</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'unVotingBlocB' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${NEUTRAL}, ${alignmentColor.blocB})` }} />
-            <span className="legend-gradient-labels">
-              <span>Low alignment</span><span>Bloc B aligned</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'criticalMineralIntensity' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${MINERAL_LOW}, ${MINERAL_HIGH})` }} />
-            <span className="legend-gradient-labels">
-              <span>Low</span><span>High</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'softPower' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${SOFT_LOW}, ${SOFT_HIGH})` }} />
-            <span className="legend-gradient-labels">
-              <span>Low</span><span>High</span>
-            </span>
-          </span>
-        )}
-        {fillMode === 'defensePactDensity' && (
-          <span className="legend-gradient-bar">
-            <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${PACT_LOW}, ${PACT_HIGH})` }} />
-            <span className="legend-gradient-labels">
-              <span>None</span><span>5+</span>
-            </span>
-          </span>
-        )}
-    </div>
-  );
-});
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export const MapCanvas = memo(function MapCanvas({
@@ -1015,8 +132,9 @@ export const MapCanvas = memo(function MapCanvas({
   const [overlayMode, setOverlayMode] = useState<OverlayMode>(
     persistedMapUiState?.overlayMode ?? initialOverlayMode ?? 'none',
   );
+  // Live-tracker default: risk choropleth (stats-first). Alignment remains available.
   const [fillMode, setFillMode] = useState<MapFillMode>(
-    persistedMapUiState?.fillMode ?? initialFillMode ?? 'alignment',
+    persistedMapUiState?.fillMode ?? initialFillMode ?? 'risk',
   );
   const handleOverlayModeChange = useCallback((mode: OverlayMode) => setOverlayMode(mode), []);
   const handleFillModeChange = useCallback((mode: MapFillMode) => setFillMode(mode), []);
@@ -1030,20 +148,22 @@ export const MapCanvas = memo(function MapCanvas({
   // which lets the world-atlas TopoJSON ride along with this component's chunk.
   const overlayConnections = useMemo<OverlayConnection[]>(() => {
     if (overlayMode === 'none') return [];
-    const sourceCentroid = countryCentroids.get(selectedName);
-    if (!sourceCentroid) return [];
     const profile = byName.get(selectedName)?.profile;
     if (!profile) return [];
-    const [sourceX, sourceY] = sourceCentroid;
+    const sourceAnchor = resolveCountryAnchor(selectedName, profile.geo);
+    if (!sourceAnchor) return [];
+    const [sourceX, sourceY] = sourceAnchor;
     return profile.relationships
       .map((relationship) => {
-        const targetCentroid = countryCentroids.get(relationship.mapName);
-        if (!targetCentroid || relationship.mapName === selectedName) return null;
+        if (relationship.mapName === selectedName) return null;
+        const targetProfile = byName.get(relationship.mapName)?.profile;
+        const targetAnchor = resolveCountryAnchor(relationship.mapName, targetProfile?.geo);
+        if (!targetAnchor) return null;
         const [boundaryX, boundaryY] = computeBoundaryPoint(
           sourceX,
           sourceY,
-          targetCentroid[0],
-          targetCentroid[1],
+          targetAnchor[0],
+          targetAnchor[1],
         );
         return {
           countryId: relationship.countryId,
@@ -1052,8 +172,8 @@ export const MapCanvas = memo(function MapCanvas({
           score: getRelationshipMetric(overlayMode, relationship),
           x1: sourceX,
           y1: sourceY,
-          x2: targetCentroid[0],
-          y2: targetCentroid[1],
+          x2: targetAnchor[0],
+          y2: targetAnchor[1],
           boundaryX,
           boundaryY,
         };
@@ -1076,6 +196,23 @@ export const MapCanvas = memo(function MapCanvas({
   const [hoveredName, setHoveredName] = useState<string | null>(null);
   const hoveredCountry = useMapStore((state) => state.hoveredCountry);
   const setHoveredCountry = useMapStore((state) => state.setHoveredCountry);
+  // Coalesce rapid border-crossing hover updates so RightInspector bilateral
+  // strip does not re-render more than once per frame.
+  const hoverRafRef = useRef<number | null>(null);
+  const pendingHoverRef = useRef<string | null | undefined>(undefined);
+  const setHoveredCountryCoalesced = useCallback(
+    (name: string | null) => {
+      pendingHoverRef.current = name;
+      if (hoverRafRef.current != null) return;
+      hoverRafRef.current = requestAnimationFrame(() => {
+        hoverRafRef.current = null;
+        if (pendingHoverRef.current === undefined) return;
+        setHoveredCountry(pendingHoverRef.current);
+        pendingHoverRef.current = undefined;
+      });
+    },
+    [setHoveredCountry],
+  );
   // Refs so pointer handlers always see the latest value without stale closures
   const hoveredNameRef = useRef<string | null>(null);
   const hoveredIsParamRef = useRef<boolean>(false);
@@ -1284,37 +421,51 @@ export const MapCanvas = memo(function MapCanvas({
     // pixelScale converts world units → CSS px for zoom-invariant visual sizes.
     const pixelScale = slice * zoom;
 
-    if (overlayMode !== 'none') {
-      drawRelationshipArcs(ctx, selectedName, overlayConnections, pixelScale, {
-        rgb:        parseHex(overlayColor[overlayMode]),
-        corePx:     MODE_CORE_PX[overlayMode],
-        minOpacity: MODE_MIN_OPACITY[overlayMode] ?? 0.34,
-        maxOpacity: 0.85,
-        dashPx:     MODE_DASH_PX[overlayMode],
-      });
+    if (overlayMode !== 'none' && overlayConnections.length > 0) {
+      const sourceProfile = byName.get(selectedName)?.profile;
+      const sourceAnchor = resolveCountryAnchor(selectedName, sourceProfile?.geo);
+      drawRelationshipArcs(
+        ctx,
+        selectedName,
+        overlayConnections,
+        pixelScale,
+        {
+          rgb:        parseHex(overlayColor[overlayMode]),
+          corePx:     MODE_CORE_PX[overlayMode],
+          minOpacity: MODE_MIN_OPACITY[overlayMode] ?? 0.34,
+          maxOpacity: 0.85,
+          dashPx:     MODE_DASH_PX[overlayMode],
+        },
+        sourceAnchor,
+      );
     }
 
     // Hover highlight arc — bright, overlay-agnostic.
     if (hoveredCountry && hoveredCountry !== selectedName) {
-      const sourceCentroid = countryCentroids.get(selectedName);
-      const targetCentroid = countryCentroids.get(hoveredCountry);
-      if (sourceCentroid && targetCentroid) {
+      const sourceProfile = byName.get(selectedName)?.profile;
+      const targetProfile = byName.get(hoveredCountry)?.profile;
+      const sourceAnchor = resolveCountryAnchor(selectedName, sourceProfile?.geo);
+      const targetAnchor = resolveCountryAnchor(hoveredCountry, targetProfile?.geo);
+      if (sourceAnchor && targetAnchor) {
         const [boundaryX, boundaryY] = computeBoundaryPoint(
-          sourceCentroid[0],
-          sourceCentroid[1],
-          targetCentroid[0],
-          targetCentroid[1],
+          sourceAnchor[0],
+          sourceAnchor[1],
+          targetAnchor[0],
+          targetAnchor[1],
         );
+        // Pass explicit endpoints via boundary; sourceCountry string is only used
+        // when targets lack coordinates — we always supply boundaryX/Y here.
         drawRelationshipArcs(
           ctx,
           selectedName,
           [{ mapName: hoveredCountry, score: 100, boundaryX, boundaryY }],
           pixelScale,
           { rgb: RELATIONSHIP_HOVER_RGB, corePx: 1.9, minOpacity: 0.85, maxOpacity: 1 },
+          sourceAnchor,
         );
       }
     }
-  }, [hoveredCountry, offset.x, offset.y, overlayConnections, overlayMode, selectedName, zoom]);
+  }, [byName, hoveredCountry, offset.x, offset.y, overlayConnections, overlayMode, selectedName, zoom]);
 
   // Run the draw whenever inputs change.
   useEffect(() => {
@@ -1417,90 +568,175 @@ export const MapCanvas = memo(function MapCanvas({
             hoveredNameRef.current = null;
             hoveredIsParamRef.current = false;
             setHoveredName(null);
-              setHoveredCountry(null);
+              setHoveredCountryCoalesced(null);
             hoverPosRef.current = null;
           }}
         >
           <defs>
-            {/* Navy ocean — saturated blue at the focus, deepening toward the edges. */}
-            <radialGradient id="map-glow" cx="50%" cy="40%" r="60%">
-              <stop offset="0%" stopColor="#1e3a8a" stopOpacity="1" />
-              <stop offset="100%" stopColor="#0a1f4a" stopOpacity="1" />
+            {/* Layered ocean: deep base → cool mid → soft center highlight */}
+            <radialGradient id="map-ocean-base" cx="48%" cy="40%" r="72%">
+              <stop offset="0%" stopColor="#173a6e" />
+              <stop offset="42%" stopColor="#0d2248" />
+              <stop offset="78%" stopColor="#081428" />
+              <stop offset="100%" stopColor="#04080f" />
             </radialGradient>
-            <pattern id="map-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148,163,184,0.05)" strokeWidth="0.5" />
+            <radialGradient id="map-ocean-sheen" cx="36%" cy="28%" r="55%">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.14" />
+              <stop offset="45%" stopColor="#1d4ed8" stopOpacity="0.05" />
+              <stop offset="100%" stopColor="#000" stopOpacity="0" />
+            </radialGradient>
+            <linearGradient id="map-ocean-horizon" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.05" />
+              <stop offset="35%" stopColor="#000" stopOpacity="0" />
+              <stop offset="100%" stopColor="#000" stopOpacity="0.28" />
+            </linearGradient>
+            <pattern id="map-grid" width="48" height="48" patternUnits="userSpaceOnUse">
+              <path
+                d="M 48 0 L 0 0 0 48"
+                fill="none"
+                stroke="rgba(148,163,184,0.035)"
+                strokeWidth="0.6"
+              />
             </pattern>
-            {/* stdDeviation divided by zoom → constant visual blur size at any zoom level */}
-            <filter id="selected-glow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation={2.4 * invZoom} result="blur" />
+            <pattern id="map-stars" width="120" height="120" patternUnits="userSpaceOnUse">
+              <circle cx="12" cy="18" r="0.45" fill="rgba(226,232,240,0.28)" />
+              <circle cx="68" cy="42" r="0.35" fill="rgba(226,232,240,0.18)" />
+              <circle cx="96" cy="88" r="0.4" fill="rgba(226,232,240,0.22)" />
+              <circle cx="40" cy="96" r="0.3" fill="rgba(226,232,240,0.14)" />
+              <circle cx="110" cy="22" r="0.35" fill="rgba(226,232,240,0.16)" />
+            </pattern>
+            {/* Soft land edge shadow for cartographic depth */}
+            <filter id="land-shadow" x="-8%" y="-8%" width="116%" height="116%">
+              <feDropShadow dx="0" dy="0.6" stdDeviation="0.7" floodColor="#000" floodOpacity="0.35" />
+            </filter>
+            {/* Selection outer bloom — size stays roughly constant on screen via invZoom */}
+            <filter id="selected-glow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation={3.2 * invZoom} result="blur" />
+              <feFlood floodColor="#6eb0ff" floodOpacity="0.55" result="color" />
+              <feComposite in="color" in2="blur" operator="in" result="glow" />
               <feMerge>
-                <feMergeNode in="blur" />
+                <feMergeNode in="glow" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
           </defs>
 
-          <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#map-glow)" />
+          {/* Ocean stack (fixed to viewBox — does not pan with countries) */}
+          <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#map-ocean-base)" />
+          <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#map-ocean-sheen)" />
+          <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#map-stars)" opacity="0.55" />
           <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#map-grid)" />
+          <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="url(#map-ocean-horizon)" />
 
           <g transform={`translate(${offset.x} ${offset.y}) scale(${zoom})`}>
-            {/* Memoized — only re-renders when data/selection/overlay changes, not on hover or zoom */}
-            <CountryLayers
-              byName={byName}
-              baselineByName={baselineByName}
-              visibleNames={visibleNames}
-              selectedName={selectedName}
-              relatedNames={relatedNames}
-              overlayMode={overlayMode}
-              fillMode={fillMode}
-              alignmentColor={alignmentColor}
-              setHoveredName={setHoveredName}
-              setHoveredCountry={setHoveredCountry}
-              hoveredNameRef={hoveredNameRef}
-              hoveredIsParamRef={hoveredIsParamRef}
-            />
-            {/* Hover highlight — single path re-render instead of all 240+ paths */}
-            {hoveredName && (
-              <path
-                d={countryPathStrings.get(hoveredName) ?? undefined}
-                fill="none"
-                stroke="#cbd5e1"
-                strokeWidth={1.1}
-                vectorEffect="non-scaling-stroke"
-                style={{ pointerEvents: 'none' }}
+            {/* Memoized country fills — group filter adds a single soft land edge */}
+            <g filter="url(#land-shadow)" className="map-countries">
+              <CountryLayers
+                byName={byName}
+                baselineByName={baselineByName}
+                visibleNames={visibleNames}
+                selectedName={selectedName}
+                relatedNames={relatedNames}
+                overlayMode={overlayMode}
+                fillMode={fillMode}
+                alignmentColor={alignmentColor}
+                setHoveredName={setHoveredName}
+                setHoveredCountry={setHoveredCountryCoalesced}
+                hoveredNameRef={hoveredNameRef}
+                hoveredIsParamRef={hoveredIsParamRef}
               />
+            </g>
+
+            {/* Selection chrome: outer bloom + bright inner ring (drawn above fills) */}
+            {selectedName && countryPathStrings.get(selectedName) && (
+              <g className="map-selection-ring" style={{ pointerEvents: 'none' }} filter="url(#selected-glow)">
+                <path
+                  d={countryPathStrings.get(selectedName)!}
+                  fill="none"
+                  stroke="rgba(110, 176, 255, 0.55)"
+                  strokeWidth={3.4}
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <path
+                  d={countryPathStrings.get(selectedName)!}
+                  fill="none"
+                  stroke="rgba(248, 250, 252, 0.95)"
+                  strokeWidth={1.35}
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </g>
             )}
 
+            {/* Hover highlight — single path re-render instead of all 240+ paths */}
+            {hoveredName && hoveredName !== selectedName && (
+              <g className="map-hover-ring" style={{ pointerEvents: 'none' }}>
+                <path
+                  d={countryPathStrings.get(hoveredName) ?? undefined}
+                  fill="none"
+                  stroke="rgba(226, 232, 240, 0.28)"
+                  strokeWidth={2.6}
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <path
+                  d={countryPathStrings.get(hoveredName) ?? undefined}
+                  fill="none"
+                  stroke="rgba(248, 250, 252, 0.92)"
+                  strokeWidth={1.15}
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </g>
+            )}
 
-            {/* Country name labels — visible when zoomed in beyond LABELS_ZOOM_THRESHOLD */}
-            {zoom >= LABELS_ZOOM_THRESHOLD && centroidEntries.map(([name, [cx, cy]]) => {
-              const isParameterized = byName.has(name);
-              if (!isParameterized) return null;
-              return (
-                <text
-                  key={`label-${name}`}
-                  x={cx}
-                  y={cy}
-                  fontSize={LABEL_BASE_FONT_SIZE * invZoom}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill="rgba(248,250,252,0.95)"
-                  stroke="rgba(15,23,42,0.85)"
-                  strokeWidth={LABEL_STROKE_WIDTH * 1.5 * invZoom}
-                  paintOrder="stroke"
-                  style={{ 
-                    pointerEvents: 'none', 
-                    fontWeight: 700, 
-                    letterSpacing: '0.02em',
-                    textShadow: '0 1px 3px rgba(0,0,0,0.6)'
-                  }}
-                >
-                  {name}
-                </text>
-              );
-            })}
+            {/* Country labels — denser when zoomed in; always show selected at threshold */}
+            {zoom >= LABELS_ZOOM_THRESHOLD &&
+              centroidEntries.map(([name, [cx, cy]]) => {
+                const entry = byName.get(name);
+                if (!entry) return null;
+                const isSelected = name === selectedName;
+                const isHovered = name === hoveredName;
+                const isRelated = relatedNames.has(name);
+                // At moderate zoom, only label focus / related / hover to reduce clutter.
+                if (zoom < LABELS_ZOOM_THRESHOLD + 0.55 && !isSelected && !isHovered && !isRelated) {
+                  return null;
+                }
+                const label = entry.profile.displayName;
+                const weight = isSelected || isHovered ? 700 : 600;
+                const fill = isSelected
+                  ? 'rgba(248,250,252,0.98)'
+                  : isHovered
+                    ? 'rgba(248,250,252,0.95)'
+                    : 'rgba(226,232,240,0.88)';
+                return (
+                  <text
+                    key={`label-${name}`}
+                    x={cx}
+                    y={cy}
+                    fontSize={LABEL_BASE_FONT_SIZE * invZoom * (isSelected ? 1.08 : 1)}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill={fill}
+                    stroke="rgba(6, 10, 18, 0.78)"
+                    strokeWidth={LABEL_STROKE_WIDTH * 1.65 * invZoom}
+                    paintOrder="stroke"
+                    className="map-country-label"
+                    style={{
+                      pointerEvents: 'none',
+                      fontWeight: weight,
+                      letterSpacing: '0.01em',
+                      fontFamily: 'Inter, system-ui, sans-serif',
+                    }}
+                  >
+                    {label}
+                  </text>
+                );
+              })}
           </g>
         </svg>
+        <div className="map-vignette" aria-hidden />
 
         {hovered && hoverPos && (
           <div

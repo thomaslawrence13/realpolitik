@@ -18,6 +18,7 @@ import type {
 } from '../types';
 import { INFORMATION_QUALITY_CONTRACT } from './quality/contract';
 import { buildInformationQualityTelemetry } from './quality/telemetry';
+import { emptyLiveData, enrichProfilesWithSourcePipeline } from './pipeline';
 
 const dataset = geopoliticalDatasetV1;
 const sourceById = new Map(dataset.sources.map((source) => [source.id, source]));
@@ -405,7 +406,7 @@ const deriveCountryDataQuality = (country: CountryRecord) => {
   };
 };
 
-const countries = enhancedCountries
+const baseCountries = enhancedCountries
   .map<CountryProfile>((country) => ({
     ...country,
     historicalSeries: historicalSeriesByCountryId[country.id] ?? [],
@@ -415,7 +416,12 @@ const countries = enhancedCountries
   }))
   .sort((left, right) => left.displayName.localeCompare(right.displayName));
 
-export const datasetVersion = '0.14.0';
+// Bootstrap through the source pipeline with ingest + curated fallbacks so first
+// paint already has high indicator coverage before the live WB fetch returns.
+// Live enrichment in App re-runs the same pipeline with API data on top.
+const countries = enrichProfilesWithSourcePipeline(baseCountries, emptyLiveData());
+
+export const datasetVersion = '0.15.0';
 export const methodologyNotes = [
   ...dataset.methodologyNotes,
   'v11 (data enhancement): adds cyber, fiscal, food/water, diplomatic, critical-mineral and soft-power dimensions for G20 plus ~50 strategic mid-tier powers.',
@@ -425,6 +431,7 @@ export const methodologyNotes = [
   'v12 also emits per-country dataQuality telemetry (indicator confidence, staleness, and degraded reasons) to make remediation workflows explicit.',
   'v13 (coverage expansion): adds cyber, fiscal, food/water, diplomatic, critical-mineral and soft-power dimensions for 88 additional countries, bringing strategic-dimension coverage to all 134 parameterised states.',
   'v14 (coverage refresh): refreshes selected v10/v11 country enrichments with 2025–2026 snapshots, tightens reconciliation confidence floors, and introduces explicit release acceptance criteria for coverage, recency, confidence, and relationship completeness.',
+  'v15 (coverage density): World Bank ingest uses a 10-year MRV window with newest-year selection; curated economic/military stats fill remaining gaps (Taiwan, sparse reporters); conflict/sanctions reaffirmations stay fresh; live + ingest series merge into economic/military snapshots.',
 ];
 export const scenarioTimeline = dataset.scenarioTimeline;
 export const countryProfiles = countries;
@@ -515,8 +522,8 @@ const enhancementReleaseStatus: EnhancementReleaseTelemetry['status'] = {
 };
 
 export const enhancementReleaseTelemetry: EnhancementReleaseTelemetry = {
-  releaseTag: 'v14',
-  scope: 'coverage-refresh',
+  releaseTag: 'v15',
+  scope: 'coverage-density',
   datasetVersion,
   criteria: { ...V14_ACCEPTANCE_CRITERIA },
   status: enhancementReleaseStatus,

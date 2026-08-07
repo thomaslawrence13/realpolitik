@@ -6,7 +6,6 @@ import {
   simulateCountry,
 } from '../simulation';
 import type {
-  Alignment,
   CountryProfile,
   ScenarioInputs,
   SimulatedCountry,
@@ -15,6 +14,12 @@ import type {
 import type { EventTemplate } from '../types';
 import type { SparklineSeries } from '../components/RightInspector';
 
+const EMPTY_SIMULATED: SimulatedCountry[] = [];
+
+/**
+ * Reads the worker simulation snapshot and derives the selected-country view.
+ * Payload dispatch lives in App (single owner) — this hook must not re-post.
+ */
 export function useSimulation(
   activeProfiles: CountryProfile[],
   activeEvents: EventTemplate[],
@@ -23,8 +28,6 @@ export function useSimulation(
   selectedCountry: string,
   timelineIndex: number,
   scenarioTimeline: string[],
-  alignmentColor: Record<Alignment, string>,
-  alignmentLabel: Record<Alignment, string>,
 ): {
   simulated: SimulatedCountry[];
   baselineSimulated: SimulatedCountry[];
@@ -34,29 +37,16 @@ export function useSimulation(
   selectedConfidenceDelta: number;
   sparkline: SparklineSeries | null;
 } {
-  const simulationSnapshot = useMapStore(
-    (state) => state.simulationSnapshot,
-  );
-  const setSimulationPayload = useMapStore(
-    (state) => state.setSimulationPayload,
-  );
+  const simulationSnapshot = useMapStore((state) => state.simulationSnapshot);
 
   const activeWeightSet = useMemo(
     () => getSimulationWeightSet(deferredWeightSetKey),
     [deferredWeightSetKey],
   );
 
-  useMemo(() => {
-    setSimulationPayload({
-      profiles: activeProfiles,
-      scenarioInputs: deferredScenarioInputs,
-      activeEvents,
-      weightSetKey: deferredWeightSetKey,
-    });
-  }, [activeEvents, activeProfiles, deferredScenarioInputs, deferredWeightSetKey, setSimulationPayload]);
+  const simulated = simulationSnapshot?.simulated ?? EMPTY_SIMULATED;
+  const baselineSimulated = simulationSnapshot?.baselineSimulated ?? EMPTY_SIMULATED;
 
-  const simulated = simulationSnapshot?.simulated ?? [];
-  const baselineSimulated = simulationSnapshot?.baselineSimulated ?? [];
   const byName = useMemo(
     () => new Map(simulated.map((entry) => [entry.profile.mapName, entry])),
     [simulated],
@@ -74,15 +64,19 @@ export function useSimulation(
     [activeProfiles, selectedCountry],
   );
 
+  // Prefer the worker row for map-parity risk/alignment; re-sim with explanation
+  // on the main thread so the inspector always has contribution breakdowns even
+  // when the user selects a country the worker did not mark for explanation.
   const selected = useMemo<SimulatedCountry | null>(() => {
-    const snapshotSelected = byName.get(selectedCountry) ?? null;
-    if (snapshotSelected) return snapshotSelected;
     if (!selectedProfile) return null;
+    const snapshotSelected = byName.get(selectedCountry) ?? null;
+    if (snapshotSelected?.explanation) return snapshotSelected;
     return simulateCountry(selectedProfile, timelineIndex, {
       scenarioInputs: deferredScenarioInputs,
       activeEvents,
       weightSet: activeWeightSet,
       includeExplanation: true,
+      includeHistory: false,
     });
   }, [
     activeEvents,
@@ -91,26 +85,20 @@ export function useSimulation(
     deferredScenarioInputs,
     selectedCountry,
     selectedProfile,
-    simulated,
     timelineIndex,
   ]);
 
   const baselineSelected = useMemo<SimulatedCountry | null>(() => {
+    if (!selectedProfile) return null;
     const snapshotSelected = baselineByName.get(selectedCountry) ?? null;
     if (snapshotSelected) return snapshotSelected;
-    if (!selectedProfile) return null;
     return simulateCountry(selectedProfile, timelineIndex, {
       scenarioInputs: defaultScenarioInputs,
       weightSet: getSimulationWeightSet('baseline'),
       includeExplanation: false,
+      includeHistory: false,
     });
-  }, [
-    baselineByName,
-    baselineSimulated,
-    selectedCountry,
-    selectedProfile,
-    timelineIndex,
-  ]);
+  }, [baselineByName, selectedCountry, selectedProfile, timelineIndex]);
 
   const selectedRiskDelta =
     selected && baselineSelected
@@ -121,29 +109,24 @@ export function useSimulation(
       ? Math.round(selected.confidence - baselineSelected.confidence)
       : 0;
 
-  const sparklineProfile = useMemo(
-    () => selectedProfile,
-    [selectedProfile],
-  );
-
   const sparklineBaselineRisks = useMemo<number[]>(() => {
-    if (!sparklineProfile) return [];
+    if (!selectedProfile) return [];
     return scenarioTimeline.map((_, index) =>
       Math.round(
-        simulateCountry(sparklineProfile, index, {
+        simulateCountry(selectedProfile, index, {
           scenarioInputs: defaultScenarioInputs,
           weightSet: getSimulationWeightSet('baseline'),
           includeHistory: false,
         }).risk,
       ),
     );
-  }, [scenarioTimeline, sparklineProfile]);
+  }, [scenarioTimeline, selectedProfile]);
 
   const sparklineActiveRisks = useMemo<number[]>(() => {
-    if (!sparklineProfile) return [];
+    if (!selectedProfile) return [];
     return scenarioTimeline.map((_, index) =>
       Math.round(
-        simulateCountry(sparklineProfile, index, {
+        simulateCountry(selectedProfile, index, {
           scenarioInputs: deferredScenarioInputs,
           activeEvents,
           weightSet: activeWeightSet,
@@ -151,25 +134,17 @@ export function useSimulation(
         }).risk,
       ),
     );
-  }, [activeEvents, activeWeightSet, deferredScenarioInputs, scenarioTimeline, sparklineProfile]);
+  }, [activeEvents, activeWeightSet, deferredScenarioInputs, scenarioTimeline, selectedProfile]);
 
-  const sparkline: SparklineSeries | null = useMemo(
-    () => {
-      if (!sparklineProfile) return null;
-      return {
-        labels: scenarioTimeline.slice(),
-        active: sparklineActiveRisks,
-        baseline: sparklineBaselineRisks,
-        currentIndex: timelineIndex,
-      };
-    },
-    [
-      sparklineActiveRisks,
-      sparklineBaselineRisks,
-      sparklineProfile,
-      timelineIndex,
-    ],
-  );
+  const sparkline: SparklineSeries | null = useMemo(() => {
+    if (!selectedProfile) return null;
+    return {
+      labels: scenarioTimeline.slice(),
+      active: sparklineActiveRisks,
+      baseline: sparklineBaselineRisks,
+      currentIndex: timelineIndex,
+    };
+  }, [sparklineActiveRisks, sparklineBaselineRisks, selectedProfile, scenarioTimeline, timelineIndex]);
 
   return {
     simulated,

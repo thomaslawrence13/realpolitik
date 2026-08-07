@@ -5,6 +5,9 @@ import { countries, countryPathStrings } from '../../lib/map';
 import { resolveFill, NEUTRAL } from './countryColors';
 import { overlayColor } from './relationshipArcs';
 
+const FILTERED_OPACITY = 0.28;
+const UNTRACKED_OPACITY = 0.42;
+
 type CountryLayersProps = {
   byName: Map<string, SimulatedCountry>;
   baselineByName: Map<string, SimulatedCountry>;
@@ -20,10 +23,10 @@ type CountryLayersProps = {
   hoveredIsParamRef: MutableRefObject<boolean>;
 };
 
-// ─── Memoized country paths layer ────────────────────────────────────────────
-// Defined outside MapCanvas so React.memo has stable component identity.
-// Only re-renders when alignment data, filters, selection, or overlays change —
-// NOT on hover or zoom/pan.
+/**
+ * Memoized country paths — re-renders on data/selection/overlay changes,
+ * not on zoom/pan. Hover rings are drawn separately in MapCanvas.
+ */
 export const CountryLayers = memo(function CountryLayers({
   byName,
   baselineByName,
@@ -52,12 +55,24 @@ export const CountryLayers = memo(function CountryLayers({
         const fill = simulated
           ? resolveFill(fillMode, { simulated, baseline, alignmentColor })
           : NEUTRAL;
-        const opacity = !isParameterized ? 0.3 : isVisible ? 1 : 0.2;
+        const opacity = isSelected
+          ? 1
+          : !isParameterized
+            ? UNTRACKED_OPACITY
+            : isVisible
+              ? 1
+              : FILTERED_OPACITY;
 
-        let stroke = 'rgba(148,163,184,0.18)';
-        let strokeWidth = 0.4;
-        if (isRelated && overlayMode !== 'none') { stroke = overlayColor[overlayMode]; strokeWidth = 1.3; }
-        if (isSelected) { stroke = '#f8fafc'; strokeWidth = 2; }
+        let stroke = 'rgba(186, 200, 222, 0.14)';
+        let strokeWidth = 0.35;
+        if (isRelated && overlayMode !== 'none') {
+          stroke = overlayColor[overlayMode];
+          strokeWidth = 1.15;
+        }
+        if (isSelected) {
+          stroke = 'transparent';
+          strokeWidth = 0;
+        }
 
         return (
           <path
@@ -67,9 +82,9 @@ export const CountryLayers = memo(function CountryLayers({
             fillOpacity={opacity}
             stroke={stroke}
             strokeWidth={strokeWidth}
+            strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
-            filter={isSelected ? 'url(#selected-glow)' : undefined}
-            className="country-path"
+            className={`country-path${isSelected ? ' country-path-selected' : ''}${isRelated ? ' country-path-related' : ''}`}
             onPointerEnter={() => {
               hoveredNameRef.current = name;
               hoveredIsParamRef.current = isParameterized;

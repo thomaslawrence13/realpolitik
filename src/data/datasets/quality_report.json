@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-21T19:36:42.004Z",
+  "generatedAt": "2026-08-07T11:21:47.322Z",
   "contract": {
     "contractVersion": "iq-contract-v1.0.0",
     "scoringVersion": "iq-score-v2.0.0",
@@ -44,169 +44,145 @@
     }
   },
   "trendableAggregates": {
-    "averageInformationScore": 81.5,
+    "averageInformationScore": 93.4,
     "lowQualityCount": 0,
-    "staleCountryCount": 0,
-    "highQualityCount": 80,
-    "ingestAverageCoveragePct": 95.7,
+    "staleCountryCount": 4,
+    "highQualityCount": 134,
+    "ingestAverageCoveragePct": 96.3,
     "ingestMissingCountriesByWeakestIndicator": [
       {
         "snapshotKey": "world_bank_military_expenditure_pct",
-        "missingCountryCount": 15,
+        "missingCountryCount": 13,
         "newestObservation": "2024"
       },
       {
         "snapshotKey": "world_bank_inflation",
         "missingCountryCount": 11,
-        "newestObservation": "2024"
+        "newestObservation": "2025"
       },
       {
         "snapshotKey": "world_bank_gdp_growth",
         "missingCountryCount": 4,
-        "newestObservation": "2023"
+        "newestObservation": "2025"
       },
       {
         "snapshotKey": "world_bank_trade_pct",
-        "missingCountryCount": 4,
-        "newestObservation": "2024"
+        "missingCountryCount": 3,
+        "newestObservation": "2025"
       }
     ]
   },
   "baseline": {
-    "staticAverageInformationScore": 81.5,
-    "runtimeAverageInformationScore": 81.5,
+    "staticAverageInformationScore": 93.4,
+    "runtimeAverageInformationScore": 93.4,
     "staticRuntimeScoreDelta": 0
   },
   "weakestCountries": [
     {
-      "countryId": "somalia",
-      "displayName": "Somalia",
-      "informationScore": 67,
-      "staleIndicatorCount": 0,
-      "fallbackIndicatorCount": 0,
-      "lowConfidenceIndicatorCount": 10,
+      "countryId": "cuba",
+      "displayName": "Cuba",
+      "informationScore": 89,
+      "staleIndicatorCount": 1,
+      "fallbackIndicatorCount": 1,
+      "lowConfidenceIndicatorCount": 0,
       "remediationDrivers": [
-        "Improve confidence for 10 low-confidence indicators.",
-        "Raise source coverage from 38% toward 70%+ baseline.",
-        "source coverage below recommended threshold (70)"
+        "Refresh 1 stale indicator exceeding freshness SLA.",
+        "Replace 1 fallback indicator with observed or higher-confidence evidence.",
+        "tradeExposure from world-bank-wdi is stale (2045d old, SLA 1200d)."
       ]
     },
     {
-      "countryId": "south-sudan",
-      "displayName": "South Sudan",
-      "informationScore": 68,
+      "countryId": "taiwan",
+      "displayName": "Taiwan",
+      "informationScore": 90,
       "staleIndicatorCount": 0,
       "fallbackIndicatorCount": 0,
-      "lowConfidenceIndicatorCount": 10,
+      "lowConfidenceIndicatorCount": 0,
+      "remediationDrivers": []
+    },
+    {
+      "countryId": "sudan",
+      "displayName": "Sudan",
+      "informationScore": 90,
+      "staleIndicatorCount": 1,
+      "fallbackIndicatorCount": 1,
+      "lowConfidenceIndicatorCount": 0,
       "remediationDrivers": [
-        "Improve confidence for 10 low-confidence indicators.",
-        "Raise source coverage from 38% toward 70%+ baseline.",
-        "source coverage below recommended threshold (70)"
+        "Refresh 1 stale indicator exceeding freshness SLA.",
+        "Replace 1 fallback indicator with observed or higher-confidence evidence.",
+        "militaryTreatyLevel from world-bank-wdi is stale (1680d old, SLA 1200d)."
       ]
     },
     {
-      "countryId": "yemen",
-      "displayName": "Yemen",
-      "informationScore": 69,
-      "staleIndicatorCount": 0,
-      "fallbackIndicatorCount": 0,
-      "lowConfidenceIndicatorCount": 10,
+      "countryId": "qatar",
+      "displayName": "Qatar",
+      "informationScore": 90,
+      "staleIndicatorCount": 1,
+      "fallbackIndicatorCount": 1,
+      "lowConfidenceIndicatorCount": 0,
       "remediationDrivers": [
-        "Improve confidence for 10 low-confidence indicators.",
-        "Raise source coverage from 44% toward 70%+ baseline.",
-        "source coverage below recommended threshold (70)"
-      ]
-    },
-    {
-      "countryId": "north-korea",
-      "displayName": "North Korea",
-      "informationScore": 69,
-      "staleIndicatorCount": 0,
-      "fallbackIndicatorCount": 0,
-      "lowConfidenceIndicatorCount": 10,
-      "remediationDrivers": [
-        "Improve confidence for 10 low-confidence indicators.",
-        "Raise source coverage from 40% toward 70%+ baseline.",
-        "source coverage below recommended threshold (70)"
-      ]
-    },
-    {
-      "countryId": "niger",
-      "displayName": "Niger",
-      "informationScore": 69,
-      "staleIndicatorCount": 0,
-      "fallbackIndicatorCount": 0,
-      "lowConfidenceIndicatorCount": 10,
-      "remediationDrivers": [
-        "Improve confidence for 10 low-confidence indicators.",
-        "Raise source coverage from 40% toward 70%+ baseline.",
-        "source coverage below recommended threshold (70)"
-      ]
-    },
-    {
-      "countryId": "mali",
-      "displayName": "Mali",
-      "informationScore": 69,
-      "staleIndicatorCount": 0,
-      "fallbackIndicatorCount": 0,
-      "lowConfidenceIndicatorCount": 10,
-      "remediationDrivers": [
-        "Improve confidence for 10 low-confidence indicators.",
-        "Raise source coverage from 40% toward 70%+ baseline.",
-        "source coverage below recommended threshold (70)"
-      ]
-    },
-    {
-      "countryId": "turkmenistan",
-      "displayName": "Turkmenistan",
-      "informationScore": 70,
-      "staleIndicatorCount": 0,
-      "fallbackIndicatorCount": 0,
-      "lowConfidenceIndicatorCount": 10,
-      "remediationDrivers": [
-        "Improve confidence for 10 low-confidence indicators.",
-        "Raise source coverage from 42% toward 70%+ baseline.",
-        "source coverage below recommended threshold (70)"
+        "Refresh 1 stale indicator exceeding freshness SLA.",
+        "Replace 1 fallback indicator with observed or higher-confidence evidence.",
+        "militaryTreatyLevel from world-bank-wdi is stale (1315d old, SLA 1200d)."
       ]
     },
     {
       "countryId": "afghanistan",
       "displayName": "Afghanistan",
-      "informationScore": 70,
+      "informationScore": 90,
+      "staleIndicatorCount": 1,
+      "fallbackIndicatorCount": 1,
+      "lowConfidenceIndicatorCount": 0,
+      "remediationDrivers": [
+        "Refresh 1 stale indicator exceeding freshness SLA.",
+        "Replace 1 fallback indicator with observed or higher-confidence evidence.",
+        "militaryTreatyLevel from world-bank-wdi is stale (1680d old, SLA 1200d)."
+      ]
+    },
+    {
+      "countryId": "yemen",
+      "displayName": "Yemen",
+      "informationScore": 92,
       "staleIndicatorCount": 0,
       "fallbackIndicatorCount": 0,
-      "lowConfidenceIndicatorCount": 10,
-      "remediationDrivers": [
-        "Improve confidence for 10 low-confidence indicators.",
-        "Raise source coverage from 42% toward 70%+ baseline.",
-        "source coverage below recommended threshold (70)"
-      ]
+      "lowConfidenceIndicatorCount": 0,
+      "remediationDrivers": []
     },
     {
       "countryId": "syria",
       "displayName": "Syria",
-      "informationScore": 72,
+      "informationScore": 92,
       "staleIndicatorCount": 0,
       "fallbackIndicatorCount": 0,
-      "lowConfidenceIndicatorCount": 10,
-      "remediationDrivers": [
-        "Improve confidence for 10 low-confidence indicators.",
-        "Raise source coverage from 50% toward 70%+ baseline.",
-        "source coverage below recommended threshold (70)"
-      ]
+      "lowConfidenceIndicatorCount": 0,
+      "remediationDrivers": []
     },
     {
-      "countryId": "sudan",
-      "displayName": "Sudan",
-      "informationScore": 72,
+      "countryId": "panama",
+      "displayName": "Panama",
+      "informationScore": 92,
       "staleIndicatorCount": 0,
       "fallbackIndicatorCount": 0,
-      "lowConfidenceIndicatorCount": 10,
-      "remediationDrivers": [
-        "Improve confidence for 10 low-confidence indicators.",
-        "Raise source coverage from 45% toward 70%+ baseline.",
-        "source coverage below recommended threshold (70)"
-      ]
+      "lowConfidenceIndicatorCount": 0,
+      "remediationDrivers": []
+    },
+    {
+      "countryId": "north-korea",
+      "displayName": "North Korea",
+      "informationScore": 92,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 0,
+      "remediationDrivers": []
+    },
+    {
+      "countryId": "kosovo",
+      "displayName": "Kosovo",
+      "informationScore": 92,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 0,
+      "remediationDrivers": []
     }
   ],
   "kpiStatus": {
@@ -217,9 +193,9 @@
     "staticRuntimeScoreDelta": 0
   },
   "enhancementRelease": {
-    "releaseTag": "v14",
-    "scope": "coverage-refresh",
-    "datasetVersion": "0.14.0",
+    "releaseTag": "v15",
+    "scope": "coverage-density",
+    "datasetVersion": "0.15.0",
     "criteria": {
       "minimumV10CoveragePct": 95,
       "minimumV11CoveragePct": 95,
@@ -232,8 +208,8 @@
     "status": {
       "v10CoveragePct": 100,
       "v11CoveragePct": 100,
-      "averageInformationScore": 81.5,
-      "staleCountryCount": 0,
+      "averageInformationScore": 93.4,
+      "staleCountryCount": 4,
       "indicatorConfidenceFloorBreaches": 0,
       "averageRelationshipsPerCountry": 61.5,
       "isolatedCountries": 0,

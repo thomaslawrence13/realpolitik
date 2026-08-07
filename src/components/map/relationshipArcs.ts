@@ -27,19 +27,30 @@ type RelationshipArcStyle = {
   noOriginNode?: boolean;
 };
 
-/** Extend from target centroid in the source→target direction by `offset` world units. */
+/**
+ * Arc endpoint near the target country.
+ *
+ * Previously this *overshot* the target away from the source, so lines often
+ * landed in the ocean next to small states. We now stop at the target anchor
+ * (or slightly short of it so the arrowhead/node sits on the country).
+ *
+ * `inset` is world units pulled back toward the source; 0 pins exactly on the
+ * target centroid / geo anchor.
+ */
 export const computeBoundaryPoint = (
   sourceX: number,
   sourceY: number,
   targetX: number,
   targetY: number,
-  offset = 30,
+  inset = 0,
 ): [number, number] => {
+  if (inset <= 0) return [targetX, targetY];
   const dx = targetX - sourceX;
   const dy = targetY - sourceY;
   const distance = Math.hypot(dx, dy);
   if (distance === 0) return [targetX, targetY];
-  return [targetX + (dx / distance) * offset, targetY + (dy / distance) * offset];
+  const pull = Math.min(inset, distance * 0.35);
+  return [targetX - (dx / distance) * pull, targetY - (dy / distance) * pull];
 };
 
 /**
@@ -58,8 +69,10 @@ export function drawRelationshipArcs(
   targets: RelationshipArcTarget[],
   pixelScale: number,
   style: RelationshipArcStyle,
+  /** Optional projected source anchor (prefer curated geo). Falls back to path centroid. */
+  sourceAnchor?: [number, number] | null,
 ) {
-  const source = countryCentroids.get(sourceCountry);
+  const source = sourceAnchor ?? countryCentroids.get(sourceCountry);
   if (!source || targets.length === 0) return;
   const [sx, sy] = source;
   const [r, g, b] = style.rgb;
@@ -82,10 +95,10 @@ export function drawRelationshipArcs(
     const dy = ty - sy;
     const distance = Math.hypot(dx, dy);
 
-    // Alternate bend direction so arcs fan out symmetrically from the source.
-    // sqrt-based magnitude gives good curvature even for short connections.
+    // Mild alternate bend so fans separate without drifting off-target.
+    // Cap lift tightly — large bows made endpoints feel detached from countries.
     const liftSign = arcIndex % 2 === 0 ? 1 : -1;
-    const liftMag  = Math.min(100, Math.sqrt(distance) * 4);
+    const liftMag  = Math.min(36, Math.sqrt(Math.max(distance, 1)) * 2.2);
     const lift     = liftSign * liftMag;
     const nx  = distance === 0 ? 0  : -dy / distance;
     const ny  = distance === 0 ? -1 :  dx / distance;
@@ -110,23 +123,31 @@ export function drawRelationshipArcs(
               2 * mt * (cpy - sy) + 2 * t * (ty - cpy)];
     };
 
-    // Soft halo — always solid so it shows clearly beneath a dashed core.
+    // Soft outer bloom, then mid glow — reads as fibre-optic links over dark ocean.
     if (!style.noGlow) {
       ctx.beginPath();
       ctx.setLineDash([]);
-      ctx.lineWidth   = px(widthPx * 3);
-      ctx.strokeStyle = rgba(opacity * 0.2);
+      ctx.lineWidth = px(widthPx * 4.2);
+      ctx.strokeStyle = rgba(opacity * 0.12);
+      ctx.moveTo(sx, sy);
+      ctx.quadraticCurveTo(cpx, cpy, tx, ty);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.lineWidth = px(widthPx * 2.2);
+      ctx.strokeStyle = rgba(opacity * 0.22);
       ctx.moveTo(sx, sy);
       ctx.quadraticCurveTo(cpx, cpy, tx, ty);
       ctx.stroke();
     }
 
-    // Core line: gradient bright at source, faint at target → implicit direction.
+    // Core line: bright near source, softer toward target → implicit direction.
     const gradient = ctx.createLinearGradient(sx, sy, tx, ty);
-    gradient.addColorStop(0, rgba(opacity));
-    gradient.addColorStop(1, rgba(opacity * 0.45));
+    gradient.addColorStop(0, rgba(Math.min(1, opacity + 0.08)));
+    gradient.addColorStop(0.55, rgba(opacity * 0.78));
+    gradient.addColorStop(1, rgba(opacity * 0.38));
     ctx.beginPath();
-    ctx.lineWidth   = px(widthPx);
+    ctx.lineWidth = px(widthPx);
     ctx.strokeStyle = gradient;
     ctx.setLineDash(style.dashPx ? [px(style.dashPx[0]), px(style.dashPx[1])] : []);
     ctx.moveTo(sx, sy);
@@ -137,51 +158,63 @@ export function drawRelationshipArcs(
     // Arrowhead near the target — placed at t≈0.86 so it sits just before
     // the endpoint node, aligned to the actual bezier tangent direction.
     if (arrowheadPx > 0) {
-      const [ax, ay]     = bezierAt(0.86);
+      const [ax, ay] = bezierAt(0.86);
       const [tanX, tanY] = bezierTangentAt(0.86);
-      const tanLen       = Math.hypot(tanX, tanY);
+      const tanLen = Math.hypot(tanX, tanY);
       if (tanLen > 0) {
-        const utx    = tanX / tanLen;
-        const uty    = tanY / tanLen;
-        const perpX  = -uty;
-        const perpY  =  utx;
-        const aLen   = px(arrowheadPx);
-        const aHalfW = px(arrowheadPx * 0.44);
+        const utx = tanX / tanLen;
+        const uty = tanY / tanLen;
+        const perpX = -uty;
+        const perpY = utx;
+        const aLen = px(arrowheadPx * 1.05);
+        const aHalfW = px(arrowheadPx * 0.42);
         ctx.beginPath();
-        ctx.fillStyle = rgba(opacity * 0.72);
-        ctx.moveTo(ax + utx * aLen * 0.55,  ay + uty * aLen * 0.55);          // tip
-        ctx.lineTo(ax - utx * aLen * 0.45 + perpX * aHalfW,
-                   ay - uty * aLen * 0.45 + perpY * aHalfW);                  // left wing
-        ctx.lineTo(ax - utx * aLen * 0.45 - perpX * aHalfW,
-                   ay - uty * aLen * 0.45 - perpY * aHalfW);                  // right wing
+        ctx.fillStyle = rgba(opacity * 0.8);
+        ctx.moveTo(ax + utx * aLen * 0.55, ay + uty * aLen * 0.55);
+        ctx.lineTo(
+          ax - utx * aLen * 0.45 + perpX * aHalfW,
+          ay - uty * aLen * 0.45 + perpY * aHalfW,
+        );
+        ctx.lineTo(
+          ax - utx * aLen * 0.45 - perpX * aHalfW,
+          ay - uty * aLen * 0.45 - perpY * aHalfW,
+        );
         ctx.closePath();
         ctx.fill();
       }
     }
 
-    // Target node: filled dot + faint outer ring, sized subtly by score.
-    const nodeR = px(2 + 1.1 * strength);
+    // Target node: filled core + soft halo ring, sized by score.
+    const nodeR = px(2.1 + 1.2 * strength);
     ctx.beginPath();
-    ctx.fillStyle = rgba(clamp(opacity + 0.15, 0, 1));
+    ctx.fillStyle = rgba(opacity * 0.2);
+    ctx.arc(tx, ty, nodeR + px(2.4), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.fillStyle = rgba(clamp(opacity + 0.18, 0, 1));
     ctx.arc(tx, ty, nodeR, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.lineWidth   = px(0.8);
-    ctx.strokeStyle = rgba(opacity * 0.5);
-    ctx.arc(tx, ty, nodeR + px(1.6), 0, Math.PI * 2);
+    ctx.lineWidth = px(0.9);
+    ctx.strokeStyle = rgba(opacity * 0.55);
+    ctx.arc(tx, ty, nodeR + px(1.5), 0, Math.PI * 2);
     ctx.stroke();
   });
 
   // Hub marker at source centroid — drawn last so it sits atop arc starts.
   if (!style.noOriginNode) {
     ctx.beginPath();
-    ctx.fillStyle = rgba(maxOpacity);
-    ctx.arc(sx, sy, px(2.6), 0, Math.PI * 2);
+    ctx.fillStyle = rgba(maxOpacity * 0.22);
+    ctx.arc(sx, sy, px(7.5), 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.lineWidth   = px(1);
-    ctx.strokeStyle = rgba(maxOpacity * 0.4);
-    ctx.arc(sx, sy, px(5), 0, Math.PI * 2);
+    ctx.fillStyle = rgba(maxOpacity);
+    ctx.arc(sx, sy, px(2.8), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.lineWidth = px(1.1);
+    ctx.strokeStyle = rgba(maxOpacity * 0.5);
+    ctx.arc(sx, sy, px(5.4), 0, Math.PI * 2);
     ctx.stroke();
   }
 

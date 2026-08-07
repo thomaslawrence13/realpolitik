@@ -40,9 +40,10 @@ export const MAP = {
   zoomStep: 0.3,
   panMargin: 80,
   hoverCardHeight: 115,
-  labelsZoomThreshold: 2.5,
-  labelBaseFontSize: 4.5,
-  labelStrokeWidth: 0.8,
+  /** Labels start appearing for selected/related; full labels after +0.55 */
+  labelsZoomThreshold: 2.2,
+  labelBaseFontSize: 4.2,
+  labelStrokeWidth: 0.75,
 } as const;
 
 // UI debouncing and persistence

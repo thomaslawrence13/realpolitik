@@ -16,9 +16,8 @@ const SHORTCUTS: ReadonlyArray<{ group: string; entries: Shortcut[] }> = [
     ],
   },
   {
-    group: 'Timeline & navigation',
+    group: 'Navigation',
     entries: [
-      { keys: ['Space'], description: 'Play / pause timeline' },
       { keys: ['/'], description: 'Focus country search' },
       { keys: ['↑', '↓'], description: 'Move selection in country rail' },
     ],
