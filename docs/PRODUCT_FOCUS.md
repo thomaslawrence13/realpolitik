@@ -20,37 +20,40 @@ The **draggable timeline / autoplay** is not: it only walks a three-label array 
 | App shell / wiring | `src/App.tsx` (~900 lines) | Still the god component: persistence, scenarios, panels, live data, shortcuts |
 | Map store + worker | `src/store/useMapStore.ts`, `src/workers/` | Good isolation of heavy sim; still keyed by `timelineIndex` |
 | Simulation | `src/simulation.ts` | Pure logic; timeline used as a momentum offset, not calendar truth |
-| Live WB data | `src/data/worldBankClient.ts`, `liveEnrichment.ts` | Real product differentiator; under-featured in the chrome |
-| Dataset | `src/data/datasets/*`, `countryData.ts` | Strong v11 surface (cyber, fiscal, food/water, minerals…) |
-| Map UI | `MapCanvas.tsx` (~1.8k lines) | Partially split under `components/map/`; still huge |
-| Panels | LeftRail, RightInspector, BottomDrawer | Scenario-centric drawer tabs compete with “live stats” |
+| Live WB data | `src/data/worldBankClient.ts`, `liveEnrichment.ts` | Real product differentiator; first-class in chrome |
+| Dataset | `src/data/datasets/*`, `countryData.ts` | Pipeline bootstrap + denser ingest (v15 coverage) |
+| Map UI | `MapCanvas.tsx` + `components/map/*` | CountryLayers extracted; still large canvas shell |
+| Panels | LeftRail, RightInspector, BottomDrawer | Snapshot inspector default; what-if demoted |
 
 ## Refactor backlog (engineering)
 
 ### P0 — Focus (this direction)
 - [x] Remove timeline scrubber / play controls from the top bar  
 - [x] Pin simulation to the present period (latest index)  
-- [ ] Replace scenario-first chrome with **global live summary** (aggregates, as-of, coverage)  
-- [ ] Promote economic/military/stats fill modes as the default map reading  
-- [ ] Demote scenario lab (events/weights/save) to a clearly secondary “what-if” mode  
+- [x] Replace scenario-first chrome with **global live summary** (aggregates, as-of, coverage)  
+- [x] Promote economic/military/stats fill modes as the default map reading (default **risk**)  
+- [x] Demote scenario lab (events/weights/save) to a clearly secondary “what-if” mode  
 
 ### P1 — Structure
-- Finish splitting `MapCanvas.tsx` (layers, projection, interaction, legend already started)  
-- Split `App.tsx` into shell + `useAppChrome` / `useScenarios` / `useLiveSession`  
-- One ownership model for UI state (map store **or** React state — not both for the same fields)  
-- Delete or quarantine dead timeline helpers once present-only is stable  
+- [x] Extract `CountryLayers` into `components/map/` (continue MapCanvas split)  
+- [ ] Finish splitting `MapCanvas.tsx` (legend controls, interaction hooks)  
+- [ ] Split `App.tsx` into shell + `useAppChrome` / `useScenarios` / `useLiveSession`  
+- [ ] One ownership model for UI state (map store **or** React state — not both for the same fields)  
+- [x] Delete dead inspector panels (Overview/Stats/Relationships) after Snapshot amalgamation  
+- [ ] Delete or quarantine residual timeline helpers once present-only is fully stable  
 
 ### P2 — Live tracker product
-- Global dashboard strip: median risk, high-risk count, live indicator coverage, last fetch time  
-- Country inspector: lead with **observed** WB series + static provenance; sim scores secondary  
-- Ranked tables (movers by live delta when series exist, not scenario year deltas)  
-- Explicit “as of” timestamps on every metric  
-- Offline/static fallback copy that never pretends to be live  
+- [x] Global dashboard strip: median risk, elevated count, mean coverage, last fetch time  
+- [x] Country inspector: lead with **observed** econ/mil KPIs; sim scores secondary  
+- [x] Explicit “as of” timestamps on coverage / profile data  
+- [ ] Ranked tables (movers by live delta when series exist, not scenario year deltas)  
+- [x] Offline/static fallback copy that never pretends to be live (status chip + retry)  
+- [x] Data coverage density (ingest MRV, curated fallbacks, pipeline bootstrap)  
 
 ### P3 — Scenario lab (keep, narrow)
-- Keep shocks/events/weights as an optional analysis drawer  
-- Drop fake multi-year scrubbing; scenarios apply to **current** snapshot only  
-- Share URLs encode scenario shocks, not timeline index  
+- [x] Keep shocks/events/weights as an optional analysis drawer  
+- [x] Drop fake multi-year scrubbing; scenarios apply to **current** snapshot only  
+- [ ] Share URLs encode scenario shocks, not timeline index (index still persisted for compat)  
 
 ## Non-goals (for now)
 
@@ -65,3 +68,14 @@ The **draggable timeline / autoplay** is not: it only walks a three-label array 
 2. Live World Bank status is first-class (loading / partial / live / error + retry).  
 3. Scenario tools remain available but do not dominate the default chrome.  
 4. Build/test stay green; MapCanvas and App continue to shrink over subsequent PRs.
+
+## Phase log
+
+| Phase | Outcome |
+|-------|---------|
+| Live tracker pivot | Timeline scrubber removed; present pin; what-if label |
+| Dense sidebars | Snapshot inspector + compact left rail |
+| Perf / bugs | Hooks order, single sim owner, worker bulk flags |
+| HUD + map aesthetics | Glass chrome, ocean layers, selection rings |
+| Data coverage (v15) | Dense ingest, curated fallbacks, 100% indicator coverage |
+| **Next phase (this)** | Global aggregates strip, risk-default map, observed-first KPIs, CountryLayers extract |

@@ -163,8 +163,29 @@ export const RightInspector = memo(function RightInspector({
           </p>
         </div>
 
-        {/* Always-visible KPI strip — the one-eyeshot core */}
+        {/* Always-visible KPI strip — observed stats first, model scores second */}
         <div className="inspector-kpi-strip" aria-label="At a glance">
+          {econ && (
+            <div className="inspector-kpi inspector-kpi-observed">
+              <span>GDP/cap</span>
+              <strong>
+                {econ.gdpPerCapitaUsd >= 1000
+                  ? `$${(econ.gdpPerCapitaUsd / 1000).toFixed(1)}k`
+                  : `$${Math.round(econ.gdpPerCapitaUsd)}`}
+              </strong>
+              <em>
+                growth {econ.gdpGrowthPct >= 0 ? '+' : ''}
+                {econ.gdpGrowthPct.toFixed(1)}%
+              </em>
+            </div>
+          )}
+          {mil && (
+            <div className="inspector-kpi inspector-kpi-observed">
+              <span>Defence</span>
+              <strong>{mil.militaryExpGdpPct}%</strong>
+              <em>of GDP · ${mil.militaryExpBillionUsd.toLocaleString()}B</em>
+            </div>
+          )}
           <div className={`inspector-kpi risk-${getRiskTier(selected.risk)}`}>
             <span>Risk</span>
             <strong>{selected.risk}%</strong>
@@ -182,27 +203,15 @@ export const RightInspector = memo(function RightInspector({
           <div className="inspector-kpi">
             <span>Coverage</span>
             <strong>{selected.profile.sourceCoverage}%</strong>
-            <em>{selected.profile.lastUpdated}</em>
+            <em title="Indicator / source recency">as of {selected.profile.lastUpdated}</em>
           </div>
-          {econ && (
-            <div className="inspector-kpi">
-              <span>GDP/cap</span>
-              <strong>
-                {econ.gdpPerCapitaUsd >= 1000
-                  ? `$${(econ.gdpPerCapitaUsd / 1000).toFixed(1)}k`
-                  : `$${Math.round(econ.gdpPerCapitaUsd)}`}
-              </strong>
-              <em>growth {econ.gdpGrowthPct >= 0 ? '+' : ''}{econ.gdpGrowthPct.toFixed(1)}%</em>
-            </div>
-          )}
-          {mil && (
-            <div className="inspector-kpi">
-              <span>Defence</span>
-              <strong>{mil.militaryExpGdpPct}%</strong>
-              <em>of GDP · ${mil.militaryExpBillionUsd.toLocaleString()}B</em>
-            </div>
-          )}
         </div>
+        <p className="inspector-asof" title="Observed series may lag the calendar year">
+          Data as of <strong>{selected.profile.lastUpdated}</strong>
+          {econ ? ' · econ/mil snapshots' : ''}
+          {' · '}
+          model scores secondary
+        </p>
       </header>
 
       <div className="inspector-mode-row">

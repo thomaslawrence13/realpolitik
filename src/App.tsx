@@ -62,6 +62,7 @@ import { ShortcutsHelp } from './components/ShortcutsHelp';
 import { UndoToast } from './components/UndoToast';
 import { WelcomeGuide } from './components/WelcomeGuide';
 import { UI_TIMING, STORAGE_KEYS } from './lib/constants';
+import { buildGlobalLiveSummary } from './lib/globalStats';
 
 // Lazy-load MapCanvas so the world-atlas TopoJSON ships in its own async chunk.
 const MapCanvas = lazy(() => import('./components/MapCanvas').then((m) => ({ default: m.MapCanvas })));
@@ -207,6 +208,7 @@ export default function App() {
     failedIndicators: number;
     failedCodes: string[];
   } | null>(null);
+  const [liveFetchedAt, setLiveFetchedAt] = useState<string | null>(null);
   const liveFetchRef = useRef<AbortController | null>(null);
 
   const loadLiveData = useCallback(() => {
@@ -220,6 +222,7 @@ export default function App() {
         // countryProfiles is a stable module-level constant — no dep needed.
         setActiveProfiles(enrichProfiles(countryProfiles, live));
         setLiveDataDiagnostics(live.diagnostics);
+        setLiveFetchedAt(new Date().toISOString());
         if (live.diagnostics.failedIndicators === 0) setLiveDataStatus('live');
         else if (live.diagnostics.succeededIndicators === 0) setLiveDataStatus('error');
         else setLiveDataStatus('partial');
@@ -636,10 +639,13 @@ export default function App() {
   );
 
   const totalCountries = activeProfiles.length;
-  const highRiskCount = useMemo(
-    () => simulated.filter((entry) => entry.risk >= 55).length,
-    [simulated],
-  );
+  const globalSummary = useMemo(() => buildGlobalLiveSummary(simulated), [simulated]);
+  const liveIndicatorCoveragePct = useMemo(() => {
+    if (!liveDataDiagnostics || liveDataDiagnostics.totalIndicators === 0) return null;
+    return Math.round(
+      (liveDataDiagnostics.succeededIndicators / liveDataDiagnostics.totalIndicators) * 100,
+    );
+  }, [liveDataDiagnostics]);
   const shellStyle = useMemo(() => ({ '--drawer-h': `${drawerHeight}px` } as CSSProperties), [drawerHeight]);
   const handleToggleLeft = useCallback(() => setLeftOpen((value) => !value), []);
   const handleToggleRight = useCallback(() => setRightOpen((value) => !value), []);
@@ -740,7 +746,11 @@ export default function App() {
         scenarioName={scenarioName}
         datasetVersion={datasetVersion}
         countryCount={totalCountries}
-        highRiskCount={highRiskCount}
+        elevatedRiskCount={globalSummary.elevatedRiskCount}
+        medianRisk={globalSummary.medianRisk}
+        meanCoverage={globalSummary.meanCoverage}
+        liveIndicatorCoveragePct={liveIndicatorCoveragePct}
+        liveFetchedAt={liveFetchedAt}
         liveDataStatus={liveDataStatus}
         liveDataDiagnostics={liveDataDiagnostics}
         onRetryLiveData={loadLiveData}

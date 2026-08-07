@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { IconButton, SvgIcon } from './ui';
+import { formatHudAge, formatHudClock } from '../lib/globalStats';
 
 export type LiveDataStatus = 'loading' | 'live' | 'partial' | 'error';
 
@@ -9,8 +10,16 @@ type Props = {
   scenarioName: string;
   datasetVersion: string;
   countryCount: number;
-  /** Countries currently at high / critical simulated risk (present snapshot). */
-  highRiskCount: number;
+  /** Countries currently at elevated risk (≥55) in the present snapshot. */
+  elevatedRiskCount: number;
+  /** Median model risk across all simulated countries. */
+  medianRisk: number;
+  /** Mean per-country source coverage (0–100). */
+  meanCoverage: number;
+  /** Live World Bank indicator success ratio as 0–100, or null while unknown. */
+  liveIndicatorCoveragePct: number | null;
+  /** ISO timestamp of last successful live fetch (partial counts). */
+  liveFetchedAt: string | null;
   liveDataStatus: LiveDataStatus;
   liveDataDiagnostics: {
     totalIndicators: number;
@@ -47,13 +56,15 @@ const liveStatusCopy = (
 const liveStatusDetail = (
   status: LiveDataStatus,
   diagnostics: Props['liveDataDiagnostics'],
+  liveFetchedAt: string | null,
 ): string => {
-  if (status === 'live') return 'World Bank indicators are up to date';
+  const age = formatHudAge(liveFetchedAt);
+  if (status === 'live') return `World Bank indicators up to date · fetched ${age}`;
   if (status === 'partial') {
     const failed = diagnostics?.failedIndicators ?? 0;
-    return `${failed} indicator${failed === 1 ? '' : 's'} failed · click to retry`;
+    return `${failed} indicator${failed === 1 ? '' : 's'} failed · fetched ${age} · click to retry`;
   }
-  if (status === 'error') return 'Live data unavailable · using static dataset · click to retry';
+  if (status === 'error') return 'Live data unavailable · using static + ingest · click to retry';
   return 'Fetching World Bank indicators…';
 };
 
@@ -62,7 +73,11 @@ export const TopBar = memo(function TopBar({
   scenarioName,
   datasetVersion,
   countryCount,
-  highRiskCount,
+  elevatedRiskCount,
+  medianRisk,
+  meanCoverage,
+  liveIndicatorCoveragePct,
+  liveFetchedAt,
   liveDataStatus,
   liveDataDiagnostics,
   onRetryLiveData,
@@ -77,8 +92,10 @@ export const TopBar = memo(function TopBar({
   activeEventCount,
 }: Props) {
   const liveLabel = liveStatusCopy(liveDataStatus, liveDataDiagnostics);
-  const liveDetail = liveStatusDetail(liveDataStatus, liveDataDiagnostics);
+  const liveDetail = liveStatusDetail(liveDataStatus, liveDataDiagnostics, liveFetchedAt);
   const canRetry = liveDataStatus === 'error' || liveDataStatus === 'partial';
+  const liveCovLabel =
+    liveIndicatorCoveragePct == null ? '—' : `${liveIndicatorCoveragePct}%`;
 
   return (
     <header className="topbar">
@@ -115,22 +132,41 @@ export const TopBar = memo(function TopBar({
 
           <span className="live-strip-divider" aria-hidden />
 
-          <div className="live-stat" title="Present analysis period">
+          <div className="live-stat" title="Present analysis period (not scrubbable)">
             <span className="live-stat-label">As of</span>
             <strong className="live-stat-value">{asOfLabel}</strong>
           </div>
 
-          <div className="live-stat" title="Parameterized countries in the active dataset">
-            <span className="live-stat-label">States</span>
-            <strong className="live-stat-value">{countryCount}</strong>
+          <div className="live-stat" title="Median model risk across all states">
+            <span className="live-stat-label">Med risk</span>
+            <strong className="live-stat-value">{medianRisk}%</strong>
           </div>
 
           <div
-            className={`live-stat ${highRiskCount > 0 ? 'live-stat-risk' : ''}`}
-            title="High or critical risk in the present snapshot"
+            className={`live-stat ${elevatedRiskCount > 0 ? 'live-stat-risk' : ''}`}
+            title="States with risk ≥ 55 in the present snapshot"
           >
             <span className="live-stat-label">Elevated</span>
-            <strong className="live-stat-value">{highRiskCount}</strong>
+            <strong className="live-stat-value">{elevatedRiskCount}</strong>
+          </div>
+
+          <div
+            className="live-stat"
+            title={`Mean source coverage ${meanCoverage}% · live WB series ${liveCovLabel}`}
+          >
+            <span className="live-stat-label">Data</span>
+            <strong className="live-stat-value">
+              {meanCoverage}
+              <span className="live-stat-suffix">%</span>
+            </strong>
+          </div>
+
+          <div
+            className="live-stat live-stat-clock"
+            title={liveFetchedAt ? `Last live fetch ${formatHudAge(liveFetchedAt)}` : 'Live fetch pending'}
+          >
+            <span className="live-stat-label">Synced</span>
+            <strong className="live-stat-value">{formatHudClock(liveFetchedAt)}</strong>
           </div>
         </div>
       </div>
@@ -138,9 +174,11 @@ export const TopBar = memo(function TopBar({
       <div className="topbar-section topbar-right">
         <button
           type="button"
-          className={`scenario-chip ${drawerOpen ? 'scenario-chip-active' : ''}`}
+          className={`scenario-chip ${drawerOpen ? 'scenario-chip-active' : ''} ${
+            activeEventCount > 0 ? 'scenario-chip-armed' : ''
+          }`}
           onClick={onToggleDrawer}
-          title="Open analysis tools (what-if shocks on the live snapshot)"
+          title="Optional what-if shocks on the live snapshot (secondary to live stats)"
         >
           <span className="scenario-chip-kicker">What-if</span>
           <em className="scenario-chip-name">
@@ -152,7 +190,7 @@ export const TopBar = memo(function TopBar({
           <SvgIcon.Chevron dir="down" />
         </button>
         <div className="topbar-actions">
-          <IconButton label="Toggle analysis drawer (\)" active={drawerOpen} onClick={onToggleDrawer}>
+          <IconButton label="Toggle what-if drawer (\)" active={drawerOpen} onClick={onToggleDrawer}>
             <SvgIcon.PanelBottom />
           </IconButton>
           <IconButton label="Toggle inspector (])" active={rightOpen} onClick={onToggleRight}>

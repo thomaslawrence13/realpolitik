@@ -13,11 +13,11 @@ export type FillModeGroup = {
 
 export const fillModeGroups: ReadonlyArray<FillModeGroup> = [
   {
-    label: 'Core Alignment',
+    label: 'Live pressure',
     options: [
-      { value: 'alignment', label: 'Alignment', hint: 'Color by current bloc alignment' },
-      { value: 'risk', label: 'Risk', hint: 'Green → red as escalation risk rises' },
-      { value: 'confidence', label: 'Confidence', hint: 'Brighter = higher confidence' },
+      { value: 'risk', label: 'Risk', hint: 'Default live view — teal → red as escalation risk rises' },
+      { value: 'confidence', label: 'Confidence', hint: 'Brighter = higher model confidence' },
+      { value: 'conflictPressure', label: 'Conflict Pressure', hint: 'Indicator-based conflict pressure (low / medium / high)' },
       { value: 'shift', label: 'Shift', hint: 'Highlights countries that diverge from baseline' },
     ],
   },
@@ -33,12 +33,12 @@ export const fillModeGroups: ReadonlyArray<FillModeGroup> = [
     ],
   },
   {
-    label: 'Security & State',
+    label: 'Security & alignment',
     options: [
+      { value: 'alignment', label: 'Alignment', hint: 'Color by current bloc alignment' },
       { value: 'nuclearArmed', label: 'Nuclear Armed', hint: 'Highlight nuclear-armed states' },
       { value: 'militaryBurden', label: 'Military % GDP', hint: 'Military expenditure as % of GDP' },
       { value: 'regime', label: 'Regime Type', hint: 'Color by regime type (democracy / hybrid / authoritarian)' },
-      { value: 'conflictPressure', label: 'Conflict Pressure', hint: 'Indicator-based conflict pressure (low / medium / high)' },
       { value: 'defensePactDensity', label: 'Defense Pacts', hint: 'Active defense-pact density' },
     ],
   },

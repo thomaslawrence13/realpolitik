@@ -17,6 +17,7 @@ import { MAP, STORAGE_KEYS } from '../lib/constants';
 import { clamp, easeInOut, capitalize } from './map/utils';
 import { overlayLabel, overlayColor, MODE_CORE_PX, MODE_DASH_PX, MODE_MIN_OPACITY, overlayKeys, RELATIONSHIP_HOVER_RGB, computeBoundaryPoint, drawRelationshipArcs } from './map/relationshipArcs';
 import { fillModeGroups } from './map/fillModeGroups';
+import { CountryLayers } from './map/CountryLayers';
 
 const clampOffset = (offset: { x: number; y: number }, zoom: number): { x: number; y: number } => ({
   x: clamp(offset.x, -(MAP_WIDTH * zoom - PAN_MARGIN), MAP_WIDTH - PAN_MARGIN),
@@ -67,9 +68,6 @@ const RISK_MED = '#f0b429';
 const RISK_HIGH = '#f87171';
 /** Unparameterized / empty land — slightly warmer than pure navy so continents read as land. */
 const NEUTRAL = '#1a2436';
-/** Filtered-out parameterized states (still on map, dimmed). */
-const FILTERED_OPACITY = 0.28;
-const UNTRACKED_OPACITY = 0.42;
 
 // Cache hex-string → [r,g,b] decomposition so lerpColor never re-parses the
 // same constant color string on every country-fill render call.
@@ -410,105 +408,6 @@ const resolveFill = (mode: MapFillMode, args: FillResolverArgs): string => {
   return riskGap > 0 ? lerpColor(NEUTRAL, RISK_HIGH, Math.min(1, riskGap / 30))
     : lerpColor(NEUTRAL, RISK_LOW, Math.min(1, -riskGap / 30));
 };
-
-// ─── Memoized country paths layer ────────────────────────────────────────────
-// Defined outside MapCanvas so React.memo has stable component identity.
-// Only re-renders when alignment data, filters, selection, or overlays change —
-// NOT on hover or zoom/pan.
-type CountryLayersProps = {
-  byName: Map<string, SimulatedCountry>;
-  baselineByName: Map<string, SimulatedCountry>;
-  visibleNames: Set<string>;
-  selectedName: string;
-  relatedNames: Set<string>;
-  overlayMode: OverlayMode;
-  fillMode: MapFillMode;
-  alignmentColor: Record<Alignment, string>;
-  setHoveredName: (name: string | null) => void;
-  setHoveredCountry: (name: string | null) => void;
-  hoveredNameRef: MutableRefObject<string | null>;
-  hoveredIsParamRef: MutableRefObject<boolean>;
-};
-
-const CountryLayers = memo(function CountryLayers({
-  byName,
-  baselineByName,
-  visibleNames,
-  selectedName,
-  relatedNames,
-  overlayMode,
-  fillMode,
-  alignmentColor,
-  setHoveredName,
-  setHoveredCountry,
-  hoveredNameRef,
-  hoveredIsParamRef,
-}: CountryLayersProps) {
-  return (
-    <>
-      {countries.map((country) => {
-        const name = country.properties.name;
-        const simulated = byName.get(name);
-        const baseline = baselineByName.get(name);
-        const isParameterized = Boolean(simulated);
-        const isVisible = isParameterized && visibleNames.has(name);
-        const isSelected = selectedName === name;
-        const isRelated = relatedNames.has(name);
-
-        const fill = simulated
-          ? resolveFill(fillMode, { simulated, baseline, alignmentColor })
-          : NEUTRAL;
-        // Selection is always full opacity so the focus country never looks filtered out.
-        const opacity = isSelected
-          ? 1
-          : !isParameterized
-            ? UNTRACKED_OPACITY
-            : isVisible
-              ? 1
-              : FILTERED_OPACITY;
-
-        // Base hairline borders; related/selected chrome is drawn in overlay layers
-        // so it never fights choropleth fills.
-        let stroke = 'rgba(186, 200, 222, 0.14)';
-        let strokeWidth = 0.35;
-        if (isRelated && overlayMode !== 'none') {
-          stroke = overlayColor[overlayMode];
-          strokeWidth = 1.15;
-        }
-        if (isSelected) {
-          stroke = 'transparent';
-          strokeWidth = 0;
-        }
-
-        return (
-          <path
-            key={`${country.id ?? name}-${name}`}
-            d={countryPathStrings.get(name) ?? undefined}
-            fill={fill}
-            fillOpacity={opacity}
-            stroke={stroke}
-            strokeWidth={strokeWidth}
-            strokeLinejoin="round"
-            vectorEffect="non-scaling-stroke"
-            className={`country-path${isSelected ? ' country-path-selected' : ''}${isRelated ? ' country-path-related' : ''}`}
-            onPointerEnter={() => {
-              hoveredNameRef.current = name;
-              hoveredIsParamRef.current = isParameterized;
-              setHoveredName(name);
-              setHoveredCountry(name);
-            }}
-            onPointerLeave={() => {
-              hoveredNameRef.current = null;
-              hoveredIsParamRef.current = false;
-              setHoveredName(null);
-              setHoveredCountry(null);
-            }}
-          />
-        );
-      })}
-    </>
-  );
-});
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type OverlayConnection = {
@@ -854,8 +753,9 @@ export const MapCanvas = memo(function MapCanvas({
   const [overlayMode, setOverlayMode] = useState<OverlayMode>(
     persistedMapUiState?.overlayMode ?? initialOverlayMode ?? 'none',
   );
+  // Live-tracker default: risk choropleth (stats-first). Alignment remains available.
   const [fillMode, setFillMode] = useState<MapFillMode>(
-    persistedMapUiState?.fillMode ?? initialFillMode ?? 'alignment',
+    persistedMapUiState?.fillMode ?? initialFillMode ?? 'risk',
   );
   const handleOverlayModeChange = useCallback((mode: OverlayMode) => setOverlayMode(mode), []);
   const handleFillModeChange = useCallback((mode: MapFillMode) => setFillMode(mode), []);
@@ -917,6 +817,23 @@ export const MapCanvas = memo(function MapCanvas({
   const [hoveredName, setHoveredName] = useState<string | null>(null);
   const hoveredCountry = useMapStore((state) => state.hoveredCountry);
   const setHoveredCountry = useMapStore((state) => state.setHoveredCountry);
+  // Coalesce rapid border-crossing hover updates so RightInspector bilateral
+  // strip does not re-render more than once per frame.
+  const hoverRafRef = useRef<number | null>(null);
+  const pendingHoverRef = useRef<string | null | undefined>(undefined);
+  const setHoveredCountryCoalesced = useCallback(
+    (name: string | null) => {
+      pendingHoverRef.current = name;
+      if (hoverRafRef.current != null) return;
+      hoverRafRef.current = requestAnimationFrame(() => {
+        hoverRafRef.current = null;
+        if (pendingHoverRef.current === undefined) return;
+        setHoveredCountry(pendingHoverRef.current);
+        pendingHoverRef.current = undefined;
+      });
+    },
+    [setHoveredCountry],
+  );
   // Refs so pointer handlers always see the latest value without stale closures
   const hoveredNameRef = useRef<string | null>(null);
   const hoveredIsParamRef = useRef<boolean>(false);
@@ -1272,7 +1189,7 @@ export const MapCanvas = memo(function MapCanvas({
             hoveredNameRef.current = null;
             hoveredIsParamRef.current = false;
             setHoveredName(null);
-              setHoveredCountry(null);
+              setHoveredCountryCoalesced(null);
             hoverPosRef.current = null;
           }}
         >
@@ -1345,7 +1262,7 @@ export const MapCanvas = memo(function MapCanvas({
                 fillMode={fillMode}
                 alignmentColor={alignmentColor}
                 setHoveredName={setHoveredName}
-                setHoveredCountry={setHoveredCountry}
+                setHoveredCountry={setHoveredCountryCoalesced}
                 hoveredNameRef={hoveredNameRef}
                 hoveredIsParamRef={hoveredIsParamRef}
               />

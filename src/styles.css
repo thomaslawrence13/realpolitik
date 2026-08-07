@@ -492,6 +492,39 @@ html {
   text-shadow: 0 0 12px rgba(248, 113, 113, 0.25);
 }
 
+.live-stat-suffix {
+  font-size: 0.68em;
+  font-weight: 650;
+  color: var(--text-4);
+  margin-left: 0.05rem;
+}
+
+.live-stat-clock .live-stat-value {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.scenario-chip-armed {
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+.inspector-asof {
+  margin: 0.15rem 0 0;
+  font-size: 0.62rem;
+  color: var(--text-4);
+  letter-spacing: 0.01em;
+}
+
+.inspector-asof strong {
+  color: var(--text-3);
+  font-weight: 650;
+}
+
+.inspector-kpi-observed {
+  border-color: rgba(110, 176, 255, 0.2);
+  background: rgba(110, 176, 255, 0.06);
+}
+
 /* Legacy timeline styles kept for any residual class names / tests */
 .timeline {
   display: flex;
