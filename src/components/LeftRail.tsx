@@ -239,7 +239,7 @@ export const LeftRail = memo(function LeftRail({
   }, [selectedName]);
 
   return (
-    <aside className="rail" aria-label="Country browser" aria-hidden={!open} {...(!open && { inert: true })}>
+    <aside className="rail rail-dense" aria-label="Country browser" aria-hidden={!open} {...(!open && { inert: true })}>
       <div className="rail-controls">
         <div className="rail-search">
           <span className="rail-search-icon" aria-hidden>
@@ -249,7 +249,7 @@ export const LeftRail = memo(function LeftRail({
             ref={searchInputRef}
             type="search"
             value={search}
-            placeholder="Search country or region…"
+            placeholder="Search…"
             onChange={(event) => onSearchChange(event.target.value)}
             spellCheck={false}
             autoComplete="off"
@@ -265,13 +265,12 @@ export const LeftRail = memo(function LeftRail({
             </button>
           )}
           <span className="rail-search-count" aria-live="polite">
-            {countries.length} / {totalCount}
+            {countries.length}/{totalCount}
           </span>
         </div>
 
-        <div className="rail-organize">
+        <div className="rail-toolbar">
           <label className="rail-organize-field rail-organize-inline">
-            <span aria-hidden>↕</span>
             <select aria-label="Sort countries" value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -281,7 +280,6 @@ export const LeftRail = memo(function LeftRail({
             </select>
           </label>
           <label className="rail-organize-field rail-organize-inline">
-            <span aria-hidden>⊞</span>
             <select aria-label="Group countries" value={groupMode} onChange={(event) => setGroupMode(event.target.value as GroupMode)}>
               {groupOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -290,109 +288,103 @@ export const LeftRail = memo(function LeftRail({
               ))}
             </select>
           </label>
-        </div>
-
-        <div className={`rail-filters ${filtersExpanded ? 'is-open' : 'is-closed'}`}>
           <button
             type="button"
-            className="rail-filters-toggle"
+            className={`rail-filter-chip ${filtersExpanded || activeFilterCount > 0 ? 'is-active' : ''}`}
             onClick={() => setFiltersExpanded((value) => !value)}
+            aria-expanded={filtersExpanded}
           >
-            <span>Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</span>
-            <span className="rail-filters-count">
-              <SvgIcon.Chevron dir={filtersExpanded ? 'up' : 'down'} />
-            </span>
+            Filters{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ''}
           </button>
-          {filtersExpanded && (
-            <div className="rail-filters-body">
-            <div className="filter-row">
-              <label className="filter-row-label" htmlFor="rail-alliance">
-                Alliance
-              </label>
-              <select
-                id="rail-alliance"
-                className="filter-select"
-                value={filters.allianceNetwork}
-                onChange={(event) =>
-                  onFiltersChange({ ...filters, allianceNetwork: event.target.value })
-                }
-              >
-                <option value="all">All networks</option>
-                {alliances.map((alliance) => (
-                  <option key={alliance} value={alliance}>
-                    {alliance}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="filter-row">
-              <label className="filter-row-label">Regime</label>
-              <Segmented
-                value={filters.regimeType}
-                options={regimeOptions}
-                onChange={(value) => onFiltersChange({ ...filters, regimeType: value })}
-              />
-            </div>
-
-            <div className="filter-row">
-              <label className="filter-row-label">Risk</label>
-              <Segmented
-                value={filters.riskLevel}
-                options={tierOptions}
-                onChange={(value) => handleTier('riskLevel', value)}
-              />
-            </div>
-
-            <div className="filter-row">
-              <label className="filter-row-label">Trade exposure</label>
-              <Segmented
-                value={filters.tradeExposure}
-                options={tierOptions}
-                onChange={(value) => handleTier('tradeExposure', value)}
-              />
-            </div>
-
-            <div className="filter-row">
-              <label className="filter-row-label">Treaties</label>
-              <Segmented
-                value={filters.militaryTreatyLevel}
-                options={tierOptions}
-                onChange={(value) => handleTier('militaryTreatyLevel', value)}
-              />
-            </div>
-
-            <div className="filter-row">
-              <label className="filter-row-label">Conflict</label>
-              <Segmented
-                value={filters.conflictPressure}
-                options={tierOptions}
-                onChange={(value) => handleTier('conflictPressure', value)}
-              />
-            </div>
-
-            <div className="filter-row">
-              <label className="filter-row-label">Sanctions</label>
-              <Segmented
-                value={filters.sanctionsExposure}
-                options={tierOptions}
-                onChange={(value) => handleTier('sanctionsExposure', value)}
-              />
-            </div>
-
-            {activeFilterCount > 0 && (
-              <button
-                type="button"
-                className="filter-reset"
-                onClick={onResetFilters}
-              >
-                <SvgIcon.Reset />
-                <span>Reset all filters</span>
-              </button>
-            )}
-            </div>
-          )}
         </div>
+
+        {filtersExpanded && (
+          <div className="rail-filters is-open">
+            <div className="rail-filters-body">
+              <div className="filter-row">
+                <label className="filter-row-label" htmlFor="rail-alliance">
+                  Alliance
+                </label>
+                <select
+                  id="rail-alliance"
+                  className="filter-select"
+                  value={filters.allianceNetwork}
+                  onChange={(event) =>
+                    onFiltersChange({ ...filters, allianceNetwork: event.target.value })
+                  }
+                >
+                  <option value="all">All</option>
+                  {alliances.map((alliance) => (
+                    <option key={alliance} value={alliance}>
+                      {alliance}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="filter-row">
+                <label className="filter-row-label">Regime</label>
+                <Segmented
+                  value={filters.regimeType}
+                  options={regimeOptions}
+                  onChange={(value) => onFiltersChange({ ...filters, regimeType: value })}
+                />
+              </div>
+
+              <div className="filter-row">
+                <label className="filter-row-label">Risk</label>
+                <Segmented
+                  value={filters.riskLevel}
+                  options={tierOptions}
+                  onChange={(value) => handleTier('riskLevel', value)}
+                />
+              </div>
+
+              <div className="filter-row">
+                <label className="filter-row-label">Trade</label>
+                <Segmented
+                  value={filters.tradeExposure}
+                  options={tierOptions}
+                  onChange={(value) => handleTier('tradeExposure', value)}
+                />
+              </div>
+
+              <div className="filter-row">
+                <label className="filter-row-label">Treaties</label>
+                <Segmented
+                  value={filters.militaryTreatyLevel}
+                  options={tierOptions}
+                  onChange={(value) => handleTier('militaryTreatyLevel', value)}
+                />
+              </div>
+
+              <div className="filter-row">
+                <label className="filter-row-label">Conflict</label>
+                <Segmented
+                  value={filters.conflictPressure}
+                  options={tierOptions}
+                  onChange={(value) => handleTier('conflictPressure', value)}
+                />
+              </div>
+
+              <div className="filter-row">
+                <label className="filter-row-label">Sanctions</label>
+                <Segmented
+                  value={filters.sanctionsExposure}
+                  options={tierOptions}
+                  onChange={(value) => handleTier('sanctionsExposure', value)}
+                />
+              </div>
+
+              {activeFilterCount > 0 && (
+                <button type="button" className="filter-reset" onClick={onResetFilters}>
+                  <SvgIcon.Reset />
+                  <span>Reset filters</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {globalWarnings.length > 0 && (
@@ -403,7 +395,7 @@ export const LeftRail = memo(function LeftRail({
                 <strong>{warning.message}</strong>
                 <span className="global-warning-examples">
                   {warning.countryExamples.slice(0, 2).join(', ')}
-                  {warning.countryCount > 2 ? ` +${warning.countryCount - 2} more` : ''}
+                  {warning.countryCount > 2 ? ` +${warning.countryCount - 2}` : ''}
                 </span>
               </div>
               <button
@@ -420,6 +412,13 @@ export const LeftRail = memo(function LeftRail({
         </div>
       )}
 
+      <div className="rail-list-meta" aria-hidden>
+        <span>Country</span>
+        <span>Rsk</span>
+        <span>Conf</span>
+        <span>Cov</span>
+      </div>
+
       <div
         className="rail-list"
         role="listbox"
@@ -430,7 +429,7 @@ export const LeftRail = memo(function LeftRail({
         {allItems.length === 0 ? (
           <div className="rail-empty">
             <strong>No matches</strong>
-            <p>Try clearing a filter or searching for a different country.</p>
+            <p>Clear a filter or try another search.</p>
             {(search.length > 0 || activeFilterCount > 0) && (
               <div className="rail-empty-actions">
                 {search.length > 0 && (
@@ -465,34 +464,49 @@ export const LeftRail = memo(function LeftRail({
                     <span className="country-group-count">{group.items.length}</span>
                   </button>
                 )}
-                {isExpanded && group.items.map((country) => {
-                  const isSelected = country.profile.mapName === selectedName;
-                  const trust = summarizeCountryTrust(country.profile);
-                  return (
-                    <button
-                      key={country.profile.id}
-                      ref={isSelected ? selectedItemRef : null}
-                      type="button"
-                      role="option"
-                      aria-selected={isSelected}
-                      className={`country-item ${isSelected ? 'country-item-active' : ''}`}
-                      onClick={() => onSelect(country.profile.mapName)}
-                    >
-                      <span className="country-text">
+                {isExpanded &&
+                  group.items.map((country) => {
+                    const isSelected = country.profile.mapName === selectedName;
+                    const trust = summarizeCountryTrust(country.profile);
+                    const econ = country.profile.economicStats;
+                    return (
+                      <button
+                        key={country.profile.id}
+                        ref={isSelected ? selectedItemRef : null}
+                        type="button"
+                        role="option"
+                        aria-selected={isSelected}
+                        className={`country-item country-item-dense ${isSelected ? 'country-item-active' : ''}`}
+                        onClick={() => onSelect(country.profile.mapName)}
+                        title={`${country.profile.displayName} · ${alignmentLabel[country.alignment]} · risk ${country.risk}% · conf ${country.confidence}% · cov ${country.profile.sourceCoverage}%`}
+                      >
+                        <span
+                          className="country-align-dot"
+                          style={{ background: alignmentColor[country.alignment] }}
+                          aria-hidden
+                        />
+                        <span className="country-text">
                           <span className="country-name-row">
                             <strong className="country-name">{country.profile.displayName}</strong>
                             {trust.tone !== 'good' && <TrustTag summary={trust} compact />}
                           </span>
-                        <span className="country-sub">
-                          {formatTitle(country.profile.region)} · {alignmentLabel[country.alignment]}
+                          <span className="country-sub">
+                            {formatTitle(country.profile.region)}
+                            {econ
+                              ? ` · $${econ.gdpPerCapitaUsd >= 1000 ? `${(econ.gdpPerCapitaUsd / 1000).toFixed(0)}k` : Math.round(econ.gdpPerCapitaUsd)}`
+                              : ''}
+                          </span>
                         </span>
-                      </span>
-                      <span className={`country-risk risk-${getRiskTier(country.risk)}`}>
-                        {country.risk}%
-                      </span>
-                    </button>
-                  );
-                })}
+                        <span className={`country-metric risk-${getRiskTier(country.risk)}`}>
+                          {country.risk}
+                        </span>
+                        <span className="country-metric country-metric-muted">{country.confidence}</span>
+                        <span className="country-metric country-metric-muted">
+                          {country.profile.sourceCoverage}
+                        </span>
+                      </button>
+                    );
+                  })}
               </section>
             );
           })
