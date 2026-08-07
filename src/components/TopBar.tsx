@@ -34,14 +34,27 @@ const liveStatusCopy = (
   status: LiveDataStatus,
   diagnostics: Props['liveDataDiagnostics'],
 ): string => {
-  if (status === 'live') return 'World Bank indicators live';
+  if (status === 'live') return 'Live';
   if (status === 'partial') {
     const ok = diagnostics?.succeededIndicators ?? 0;
     const total = diagnostics?.totalIndicators ?? 0;
-    return `Partial live data · ${ok}/${total} indicators`;
+    return `Partial · ${ok}/${total}`;
   }
-  if (status === 'error') return 'Live data unavailable · using static dataset';
-  return 'Fetching live indicators…';
+  if (status === 'error') return 'Offline';
+  return 'Syncing…';
+};
+
+const liveStatusDetail = (
+  status: LiveDataStatus,
+  diagnostics: Props['liveDataDiagnostics'],
+): string => {
+  if (status === 'live') return 'World Bank indicators are up to date';
+  if (status === 'partial') {
+    const failed = diagnostics?.failedIndicators ?? 0;
+    return `${failed} indicator${failed === 1 ? '' : 's'} failed · click to retry`;
+  }
+  if (status === 'error') return 'Live data unavailable · using static dataset · click to retry';
+  return 'Fetching World Bank indicators…';
 };
 
 export const TopBar = memo(function TopBar({
@@ -64,6 +77,7 @@ export const TopBar = memo(function TopBar({
   activeEventCount,
 }: Props) {
   const liveLabel = liveStatusCopy(liveDataStatus, liveDataDiagnostics);
+  const liveDetail = liveStatusDetail(liveDataStatus, liveDataDiagnostics);
   const canRetry = liveDataStatus === 'error' || liveDataStatus === 'partial';
 
   return (
@@ -72,14 +86,15 @@ export const TopBar = memo(function TopBar({
         <IconButton label="Toggle countries panel ([)" active={leftOpen} onClick={onToggleLeft}>
           <SvgIcon.PanelLeft />
         </IconButton>
-        <div className="brand">
-          <strong
-            className="brand-name"
-            title={`${datasetVersion} · ${countryCount} parameterized countries`}
-          >
-            Realpolitik
-          </strong>
-          <span className="brand-tagline">Live tracker</span>
+        <div
+          className="brand"
+          title={`${datasetVersion} · ${countryCount} parameterized countries`}
+        >
+          <span className="brand-mark" aria-hidden />
+          <div className="brand-text">
+            <strong className="brand-name">Realpolitik</strong>
+            <span className="brand-tagline">Live tracker</span>
+          </div>
         </div>
       </div>
 
@@ -88,25 +103,33 @@ export const TopBar = memo(function TopBar({
           <button
             type="button"
             className={`live-status-chip live-status-${liveDataStatus}`}
-            title={canRetry ? 'Retry live data fetch' : liveLabel}
+            title={liveDetail}
             onClick={() => {
               if (canRetry) onRetryLiveData();
             }}
-            aria-label={liveLabel}
+            aria-label={liveDetail}
           >
             <span className={`live-status-dot live-status-${liveDataStatus}`} aria-hidden />
             <span className="live-status-text">{liveLabel}</span>
           </button>
-          <div className="live-stat" title="Present analysis period (not scrubbable)">
+
+          <span className="live-strip-divider" aria-hidden />
+
+          <div className="live-stat" title="Present analysis period">
             <span className="live-stat-label">As of</span>
             <strong className="live-stat-value">{asOfLabel}</strong>
           </div>
+
           <div className="live-stat" title="Parameterized countries in the active dataset">
-            <span className="live-stat-label">Countries</span>
+            <span className="live-stat-label">States</span>
             <strong className="live-stat-value">{countryCount}</strong>
           </div>
-          <div className="live-stat" title="High or critical risk in the present snapshot">
-            <span className="live-stat-label">Elevated risk</span>
+
+          <div
+            className={`live-stat ${highRiskCount > 0 ? 'live-stat-risk' : ''}`}
+            title="High or critical risk in the present snapshot"
+          >
+            <span className="live-stat-label">Elevated</span>
             <strong className="live-stat-value">{highRiskCount}</strong>
           </div>
         </div>
@@ -117,23 +140,28 @@ export const TopBar = memo(function TopBar({
           type="button"
           className={`scenario-chip ${drawerOpen ? 'scenario-chip-active' : ''}`}
           onClick={onToggleDrawer}
-          title="Open analysis tools (scenarios are optional what-ifs on the live snapshot)"
+          title="Open analysis tools (what-if shocks on the live snapshot)"
         >
+          <span className="scenario-chip-kicker">What-if</span>
           <em className="scenario-chip-name">
-            What-if · {scenarioName}
-            {activeEventCount > 0 ? ` · ${activeEventCount}` : ''}
+            {scenarioName}
+            {activeEventCount > 0 ? (
+              <span className="scenario-chip-badge">{activeEventCount}</span>
+            ) : null}
           </em>
           <SvgIcon.Chevron dir="down" />
         </button>
-        <IconButton label="Toggle analysis drawer (\)" active={drawerOpen} onClick={onToggleDrawer}>
-          <SvgIcon.PanelBottom />
-        </IconButton>
-        <IconButton label="Toggle inspector (])" active={rightOpen} onClick={onToggleRight}>
-          <SvgIcon.PanelRight />
-        </IconButton>
-        <IconButton label="Keyboard shortcuts (?)" active={helpOpen} onClick={onToggleHelp}>
-          <SvgIcon.Info />
-        </IconButton>
+        <div className="topbar-actions">
+          <IconButton label="Toggle analysis drawer (\)" active={drawerOpen} onClick={onToggleDrawer}>
+            <SvgIcon.PanelBottom />
+          </IconButton>
+          <IconButton label="Toggle inspector (])" active={rightOpen} onClick={onToggleRight}>
+            <SvgIcon.PanelRight />
+          </IconButton>
+          <IconButton label="Keyboard shortcuts (?)" active={helpOpen} onClick={onToggleHelp}>
+            <SvgIcon.Info />
+          </IconButton>
+        </div>
       </div>
     </header>
   );

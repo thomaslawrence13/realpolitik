@@ -1258,13 +1258,14 @@ export const MapCanvas = memo(function MapCanvas({
           }}
         >
           <defs>
-            {/* Navy ocean — saturated blue at the focus, deepening toward the edges. */}
-            <radialGradient id="map-glow" cx="50%" cy="40%" r="60%">
-              <stop offset="0%" stopColor="#1e3a8a" stopOpacity="1" />
-              <stop offset="100%" stopColor="#0a1f4a" stopOpacity="1" />
+            {/* Deep navy ocean — soft vignette under the HUD glass chrome. */}
+            <radialGradient id="map-glow" cx="50%" cy="42%" r="68%">
+              <stop offset="0%" stopColor="#1a356f" stopOpacity="1" />
+              <stop offset="55%" stopColor="#0c1a3a" stopOpacity="1" />
+              <stop offset="100%" stopColor="#060912" stopOpacity="1" />
             </radialGradient>
             <pattern id="map-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148,163,184,0.05)" strokeWidth="0.5" />
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148,163,184,0.04)" strokeWidth="0.5" />
             </pattern>
             {/* stdDeviation divided by zoom → constant visual blur size at any zoom level */}
             <filter id="selected-glow" x="-30%" y="-30%" width="160%" height="160%">
