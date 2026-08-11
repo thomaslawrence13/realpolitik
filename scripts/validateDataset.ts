@@ -8,6 +8,7 @@ import {
 } from '../src/data/countryData.js';
 import ingestManifest from '../src/data/datasets/ingest_manifest.json';
 import ingestedSnapshot from '../src/data/datasets/ingested_snapshot.json';
+import imfWeoSnapshot from '../src/data/datasets/imf_weo_snapshot.json';
 import rawWorldBankLatest from '../src/data/datasets/raw/world_bank_latest.json';
 
 const errors: string[] = [];
@@ -146,10 +147,20 @@ type ManifestIndicator = {
   newestObservation: string | null;
 };
 
+type ManifestSource = {
+  sourceId: string;
+  provider: string;
+  requestedCountryCount: number;
+  indicators: ManifestIndicator[];
+};
+
 type IngestManifest = {
   generatedAt: string;
   requestedCountryCount: number;
+  /** Flat union of every source's indicators, retained for v1 readers. */
   indicators: ManifestIndicator[];
+  /** Per-source breakdown. Absent on manifests written before v2. */
+  sources?: ManifestSource[];
 };
 
 type IngestedSnapshot = Record<string, unknown> & {
@@ -185,40 +196,116 @@ const validateIngestArtifacts = () => {
 
   const rawIndicators = raw.indicators ?? {};
   const rawCodeSet = new Set(Object.keys(rawIndicators));
+  const weo = imfWeoSnapshot as IngestedSnapshot;
+  const observationDates = (snapshot.observation_dates ?? {}) as Record<
+    string,
+    Record<string, string> | undefined
+  >;
 
-  for (const indicator of manifest.indicators) {
-    const snapshotBucket = snapshot[indicator.snapshotKey];
+  ensure(
+    Object.keys(observationDates).length > 0,
+    'ingested_snapshot.observation_dates is missing — re-run `npm run ingest`',
+  );
+
+  ensure(isIsoDate(weo.timestamp.slice(0, 10)), 'imf_weo_snapshot.timestamp must be ISO timestamp');
+
+  /**
+   * Each source is checked against its own artifacts: World Bank indicators must
+   * appear in the normalized snapshot *and* the raw audit payload, while IMF WEO
+   * indicators live in their own snapshot and have no raw audit (the DataMapper
+   * API returns whole series, not per-observation rows).
+   */
+  const sources: ManifestSource[] = manifest.sources ?? [
+    {
+      sourceId: 'world-bank-wdi',
+      provider: 'world-bank-open-data',
+      requestedCountryCount: manifest.requestedCountryCount,
+      indicators: manifest.indicators,
+    },
+  ];
+
+  for (const source of sources) {
+    const isWorldBank = source.sourceId === 'world-bank-wdi';
+    const sourceSnapshot = isWorldBank ? snapshot : weo;
+    const snapshotName = isWorldBank ? 'ingested_snapshot' : 'imf_weo_snapshot';
+
     ensure(
-      Boolean(snapshotBucket && typeof snapshotBucket === 'object'),
-      `ingested_snapshot is missing indicator bucket "${indicator.snapshotKey}"`,
+      source.requestedCountryCount > 0,
+      `ingest_manifest source "${source.sourceId}" must request at least one country`,
     );
-    if (snapshotBucket && typeof snapshotBucket === 'object') {
-      const coverage = Object.keys(snapshotBucket as Record<string, unknown>).length;
+
+    for (const indicator of source.indicators) {
+      const snapshotBucket = sourceSnapshot[indicator.snapshotKey];
       ensure(
-        coverage === indicator.coverageCount,
-        `ingest coverage mismatch for "${indicator.snapshotKey}" (snapshot=${coverage}, manifest=${indicator.coverageCount})`,
+        Boolean(snapshotBucket && typeof snapshotBucket === 'object'),
+        `${snapshotName} is missing indicator bucket "${indicator.snapshotKey}"`,
       );
-      ensure(
-        indicator.coverageCount + indicator.missingCountryCount === manifest.requestedCountryCount,
-        `manifest coverage + missing mismatch for "${indicator.snapshotKey}"`,
-      );
-    }
-    if (indicator.newestObservation !== null) {
-      ensure(
-        /^\d{4}$/.test(indicator.newestObservation),
-        `manifest newestObservation for "${indicator.snapshotKey}" must be YYYY or null`,
-      );
-      if (/^\d{4}$/.test(indicator.newestObservation)) {
-        const year = Number.parseInt(indicator.newestObservation, 10);
-        // Some provider feeds can roll over annual labels slightly ahead of
-        // calendar year-end publication, so allow a one-year future tolerance.
-        ensureWarn(
-          year <= currentYear + 1,
-          `manifest newestObservation for "${indicator.snapshotKey}" appears in the future (${year})`,
+      if (snapshotBucket && typeof snapshotBucket === 'object') {
+        const coverage = Object.keys(snapshotBucket as Record<string, unknown>).length;
+        ensure(
+          coverage === indicator.coverageCount,
+          `ingest coverage mismatch for "${indicator.snapshotKey}" (snapshot=${coverage}, manifest=${indicator.coverageCount})`,
+        );
+        ensure(
+          indicator.coverageCount + indicator.missingCountryCount === source.requestedCountryCount,
+          `manifest coverage + missing mismatch for "${indicator.snapshotKey}"`,
         );
       }
+      if (indicator.newestObservation !== null) {
+        ensure(
+          /^\d{4}$/.test(indicator.newestObservation),
+          `manifest newestObservation for "${indicator.snapshotKey}" must be YYYY or null`,
+        );
+        if (/^\d{4}$/.test(indicator.newestObservation)) {
+          const year = Number.parseInt(indicator.newestObservation, 10);
+          // Some provider feeds can roll over annual labels slightly ahead of
+          // calendar year-end publication, so allow a one-year future tolerance.
+          ensureWarn(
+            year <= currentYear + 1,
+            `manifest newestObservation for "${indicator.snapshotKey}" appears in the future (${year})`,
+          );
+        }
+      }
+      if (isWorldBank) {
+        ensure(rawCodeSet.has(indicator.code), `raw ingest payload missing indicator code "${indicator.code}"`);
+
+        // The app reads observation dates from here rather than importing the
+        // multi-megabyte raw payload, so a missing bucket silently dates every
+        // value to the ingest run instead of its real reference year.
+        const dates = observationDates[indicator.snapshotKey];
+        ensure(
+          Boolean(dates && typeof dates === 'object'),
+          `ingested_snapshot.observation_dates is missing "${indicator.snapshotKey}"`,
+        );
+        if (dates) {
+          const values = snapshot[indicator.snapshotKey] as Record<string, unknown> | undefined;
+          for (const countryId of Object.keys(values ?? {})) {
+            const date = dates[countryId];
+            ensure(
+              typeof date === 'string' && isIsoDate(date),
+              `ingested_snapshot.observation_dates."${indicator.snapshotKey}.${countryId}" must be YYYY-MM-DD`,
+            );
+          }
+        }
+      }
     }
-    ensure(rawCodeSet.has(indicator.code), `raw ingest payload missing indicator code "${indicator.code}"`);
+  }
+
+  // Every WEO entry must carry the year it describes — a bare value would strip
+  // the provenance the snapshot exists to preserve.
+  for (const [key, bucket] of Object.entries(weo)) {
+    if (!key.startsWith('imf_') || !bucket || typeof bucket !== 'object') continue;
+    for (const [countryId, entry] of Object.entries(bucket as Record<string, unknown>)) {
+      const observation = entry as { value?: unknown; year?: unknown };
+      ensure(
+        typeof observation?.value === 'number' && Number.isFinite(observation.value),
+        `imf_weo_snapshot "${key}.${countryId}" must carry a finite value`,
+      );
+      ensure(
+        typeof observation?.year === 'string' && /^\d{4}$/.test(observation.year),
+        `imf_weo_snapshot "${key}.${countryId}" must carry a YYYY year`,
+      );
+    }
   }
 
   for (const [code, points] of Object.entries(rawIndicators)) {
@@ -237,7 +324,17 @@ const validateIngestArtifacts = () => {
 };
 
 const validateEnhancementRelease = () => {
-  ensure(datasetVersion === '0.14.0', `datasetVersion must be 0.14.0 for this release (found ${datasetVersion})`);
+  // Check the version against the release telemetry rather than a literal: a
+  // hardcoded pin goes stale on every dataset bump and then blocks the whole
+  // validator, which is how this drifted to 0.15.0 while still asserting 0.14.0.
+  ensure(
+    /^\d+\.\d+\.\d+$/.test(datasetVersion),
+    `datasetVersion must be semver (found ${datasetVersion})`,
+  );
+  ensure(
+    datasetVersion === enhancementReleaseTelemetry.datasetVersion,
+    `datasetVersion (${datasetVersion}) must match enhancementReleaseTelemetry.datasetVersion (${enhancementReleaseTelemetry.datasetVersion})`,
+  );
 
   const v10CoveragePct = Math.round((datasetTelemetry.v10Coverage / countryProfiles.length) * 1000) / 10;
   const v11CoveragePct = Math.round((datasetTelemetry.v11Coverage / countryProfiles.length) * 1000) / 10;

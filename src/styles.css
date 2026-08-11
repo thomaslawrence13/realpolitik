@@ -1314,6 +1314,16 @@ input[type='range']::-moz-range-thumb {
   color: var(--text-4);
 }
 
+/* Citation for the stat the active fill mode encodes. */
+.hover-card-source {
+  font-size: 0.58rem;
+  color: var(--text-4);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .trust-tag {
   display: inline-flex;
   align-items: center;
@@ -1511,6 +1521,13 @@ input[type='range']::-moz-range-thumb {
   display: block;
   touch-action: none;
   user-select: none;
+}
+
+/* The map takes keyboard focus for pan/zoom, so show where focus landed —
+   inset because an outline on a full-bleed element would sit off-screen. */
+.world-map:focus-visible {
+  outline: 2px solid rgba(110, 176, 255, 0.9);
+  outline-offset: -2px;
 }
 
 .country-path {

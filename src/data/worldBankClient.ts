@@ -168,6 +168,9 @@ export const iso2ToCountryId: Record<string, string> = Object.fromEntries(
 /** A map of ISO alpha-2 code → latest numeric value (null = no data). */
 export type IndicatorValues = Record<string, number | null>;
 
+/** A map of ISO alpha-2 code → the four-digit year that value describes. */
+export type IndicatorYears = Record<string, string>;
+
 export type WbIndicator =
   | 'MS.MIL.XPND.GD.ZS' // Military expenditure (% of GDP)
   | 'TG.VAL.TOTL.GD.ZS' // Trade (% of GDP)
@@ -199,35 +202,66 @@ interface WbDataPoint {
   value: number | null;
 }
 
+/** First element of a World Bank response — pagination plus series metadata. */
+interface WbResponseEnvelope {
+  /** ISO date the World Bank last refreshed this series. */
+  lastupdated?: string;
+}
+
 /** Bump prefix when the fetch shape changes so stale caches are ignored. */
-const CACHE_PREFIX = 'rp_wb3_';
+const CACHE_PREFIX = 'rp_wb4_';
 /** Short TTL so the tracker stays current without thrashing the API. */
 const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
 /** How many most-recent annual observations to request (prefer newest non-null). */
 const MRV_YEARS = 6;
 
+/** One indicator's values plus the reference year behind each of them. */
+export interface IndicatorResult {
+  values: IndicatorValues;
+  /** ISO-2 → four-digit reference year, so the UI can cite each number's vintage. */
+  years: IndicatorYears;
+  /** Newest reference year across all countries in this result. */
+  latestYear?: string;
+  /** When the World Bank last refreshed the series, from the response envelope. */
+  seriesUpdatedAt?: string;
+}
+
 type CacheEnvelope = {
   fetchedAt: number;
   data: IndicatorValues;
+  years?: IndicatorYears;
   /** ISO year of the newest observation kept in this cache entry (diagnostics). */
   latestYear?: string;
+  seriesUpdatedAt?: string;
 };
 
-const readCache = (key: string): IndicatorValues | null => {
+const readCache = (key: string): IndicatorResult | null => {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as CacheEnvelope;
     if (!parsed?.data || typeof parsed.fetchedAt !== 'number') return null;
-    return Date.now() - parsed.fetchedAt < CACHE_TTL_MS ? parsed.data : null;
+    if (Date.now() - parsed.fetchedAt >= CACHE_TTL_MS) return null;
+    return {
+      values: parsed.data,
+      years: parsed.years ?? {},
+      latestYear: parsed.latestYear,
+      seriesUpdatedAt: parsed.seriesUpdatedAt,
+    };
   } catch {
     return null;
   }
 };
 
-const writeCache = (key: string, data: IndicatorValues, latestYear?: string): void => {
+const writeCache = (key: string, result: IndicatorResult): void => {
   try {
-    const envelope: CacheEnvelope = { fetchedAt: Date.now(), data, latestYear };
+    const envelope: CacheEnvelope = {
+      fetchedAt: Date.now(),
+      data: result.values,
+      years: result.years,
+      latestYear: result.latestYear,
+      seriesUpdatedAt: result.seriesUpdatedAt,
+    };
     localStorage.setItem(key, JSON.stringify(envelope));
   } catch {
     // Ignore — localStorage may be unavailable (private mode, quota exceeded, etc.)
@@ -244,7 +278,7 @@ const writeCache = (key: string, data: IndicatorValues, latestYear?: string): vo
 export const fetchIndicator = async (
   indicator: WbIndicator,
   signal?: AbortSignal,
-): Promise<IndicatorValues> => {
+): Promise<IndicatorResult> => {
   const cacheKey = `${CACHE_PREFIX}${indicator}`;
   const cached = readCache(cacheKey);
   if (cached) {
@@ -269,7 +303,7 @@ export const fetchIndicator = async (
       throw new Error(`World Bank API (${indicator}): HTTP ${response.status}`);
     }
 
-    const json = (await response.json()) as [unknown, WbDataPoint[] | null];
+    const json = (await response.json()) as [WbResponseEnvelope | undefined, WbDataPoint[] | null];
     const points = json[1] ?? [];
 
     // Newest non-null observation per ISO, by calendar year.
@@ -285,16 +319,28 @@ export const fetchIndicator = async (
       }
     }
 
-    const result: IndicatorValues = {};
+    const values: IndicatorValues = {};
+    const years: IndicatorYears = {};
     let latestYear = '';
     for (const [iso, row] of best) {
-      result[iso] = row.value;
+      values[iso] = row.value;
+      years[iso] = row.year;
       if (row.year > latestYear) latestYear = row.year;
     }
 
-    writeCache(cacheKey, result, latestYear || undefined);
+    const result: IndicatorResult = {
+      values,
+      years,
+      latestYear: latestYear || undefined,
+      // The World Bank stamps every response with the date it last refreshed the
+      // series — worth keeping, since it distinguishes "old data" from "data we
+      // fetched a while ago".
+      seriesUpdatedAt: json[0]?.lastupdated,
+    };
+
+    writeCache(cacheKey, result);
     logger.debug(
-      `World Bank fetch succeeded for ${indicator}, cached ${Object.keys(result).length} values` +
+      `World Bank fetch succeeded for ${indicator}, cached ${Object.keys(values).length} values` +
         (latestYear ? ` (newest year ${latestYear})` : ''),
     );
     return result;
@@ -319,6 +365,14 @@ export interface LiveData {
   ruleOfLaw: IndicatorValues;
   /** SL.UEM.TOTL.ZS — Unemployment, total (% of labour force) */
   unemployment: IndicatorValues;
+  /**
+   * Reference year of each live value, keyed by indicator code then ISO-2, so
+   * the UI can state what period a displayed number covers instead of implying
+   * it is current as of the fetch.
+   */
+  vintages: Partial<Record<WbIndicator, IndicatorYears>>;
+  /** Indicator code → the date the World Bank last refreshed that series. */
+  seriesUpdatedAt: Partial<Record<WbIndicator, string>>;
   /** Per-fetch diagnostics so the UI can distinguish partial from full failure. */
   diagnostics: {
     totalIndicators: number;
@@ -338,7 +392,7 @@ export interface LiveData {
 export const fetchLiveData = async (signal?: AbortSignal): Promise<LiveData> => {
   logger.info('Starting World Bank data fetch');
   const empty: IndicatorValues = {};
-  const requests: Array<[WbIndicator, Promise<IndicatorValues>]> = [
+  const requests: Array<[WbIndicator, Promise<IndicatorResult>]> = [
     ['MS.MIL.XPND.GD.ZS', fetchIndicator('MS.MIL.XPND.GD.ZS', signal)],
     ['TG.VAL.TOTL.GD.ZS', fetchIndicator('TG.VAL.TOTL.GD.ZS', signal)],
     ['NY.GDP.MKTP.KD.ZG', fetchIndicator('NY.GDP.MKTP.KD.ZG', signal)],
@@ -349,12 +403,16 @@ export const fetchLiveData = async (signal?: AbortSignal): Promise<LiveData> => 
   ];
   const settled = await Promise.allSettled(requests.map(([, promise]) => promise));
   const valueByCode = new Map<WbIndicator, IndicatorValues>();
+  const vintages: Partial<Record<WbIndicator, IndicatorYears>> = {};
+  const seriesUpdatedAt: Partial<Record<WbIndicator, string>> = {};
   const failedCodes: WbIndicator[] = [];
 
   settled.forEach((result, index) => {
     const code = requests[index]![0];
     if (result.status === 'fulfilled') {
-      valueByCode.set(code, result.value);
+      valueByCode.set(code, result.value.values);
+      vintages[code] = result.value.years;
+      if (result.value.seriesUpdatedAt) seriesUpdatedAt[code] = result.value.seriesUpdatedAt;
       return;
     }
     if (result.reason instanceof Error) {
@@ -387,6 +445,8 @@ export const fetchLiveData = async (signal?: AbortSignal): Promise<LiveData> => 
     politicalStability: valueByCode.get('PV.EST') ?? empty,
     ruleOfLaw: valueByCode.get('RL.EST') ?? empty,
     unemployment: valueByCode.get('SL.UEM.TOTL.ZS') ?? empty,
+    vintages,
+    seriesUpdatedAt,
     diagnostics,
   };
 };

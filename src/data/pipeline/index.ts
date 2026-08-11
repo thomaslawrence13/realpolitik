@@ -18,10 +18,10 @@ import {
 } from './relationshipProviders';
 import { enrichCountryWithObservations } from './reconcile';
 import { enrichRelationshipWithObservations } from './reconcileRelationships';
-import { buildIngestedObservations } from './externalProviders';
-import type { IngestedSnapshot, RawWorldBankAuditPayload } from './externalProviders';
+import { buildImfWeoObservations, buildIngestedObservations, buildObservedAtIndex } from './externalProviders';
+import type { ImfWeoSnapshot, IngestedSnapshot } from './externalProviders';
 import ingestedSnapshot from '../datasets/ingested_snapshot.json';
-import rawWorldBankLatest from '../datasets/raw/world_bank_latest.json';
+import imfWeoSnapshot from '../datasets/imf_weo_snapshot.json';
 import type { RelationshipObservation } from './types';
 import { applyStatsCoverageEnrichment } from './statsEnrichment';
 
@@ -63,6 +63,8 @@ export const emptyLiveData = (): LiveData => ({
   politicalStability: {},
   ruleOfLaw: {},
   unemployment: {},
+  vintages: {},
+  seriesUpdatedAt: {},
   diagnostics: {
     totalIndicators: 0,
     succeededIndicators: 0,
@@ -76,18 +78,23 @@ export const enrichProfilesWithSourcePipeline = (
   live: LiveData,
   options?: {
     ingest?: IngestedSnapshot;
-    rawAudit?: RawWorldBankAuditPayload;
+    weo?: ImfWeoSnapshot;
   },
 ): CountryProfile[] => {
   const ingest = options?.ingest ?? (ingestedSnapshot as IngestedSnapshot);
-  const rawAudit = options?.rawAudit ?? (rawWorldBankLatest as RawWorldBankAuditPayload);
-
+  const weo = options?.weo ?? (imfWeoSnapshot as ImfWeoSnapshot);
   // --- Country-level indicator enrichment ---
-  // Order: live API → ingest snapshot → curated reaffirmations → stats fallbacks.
-  // Reconcile ranks by source priority + confidence, so fallbacks only fill gaps.
+  // Order: live API → IMF WEO → ingest snapshot → curated reaffirmations →
+  // stats fallbacks. Reconcile ranks by source priority + confidence, so
+  // fallbacks only fill gaps.
+  // Built once and shared: the observation-date index is needed by both the
+  // ingest observations and the stats merge.
+  const observedAtIndex = buildObservedAtIndex(ingest);
+
   const indicatorObservations = [
     ...buildWorldBankObservations(profiles, live),
-    ...buildIngestedObservations(profiles, ingest, rawAudit),
+    ...buildImfWeoObservations(profiles, weo),
+    ...buildIngestedObservations(profiles, ingest, observedAtIndex),
     ...buildConflictSnapshotObservations(profiles),
     ...buildSanctionsSnapshotObservations(profiles),
     ...buildTradeDependenceObservations(profiles),
@@ -101,7 +108,7 @@ export const enrichProfilesWithSourcePipeline = (
 
   const enrichedProfiles = profiles.map((profile) => {
     const enriched = enrichCountryWithObservations(profile, byCountry.get(profile.id) ?? []);
-    const stats = applyStatsCoverageEnrichment(profile, live, ingest);
+    const stats = applyStatsCoverageEnrichment(profile, live, ingest, weo, observedAtIndex);
     return {
       ...profile,
       indicators: enriched.indicators,
@@ -110,6 +117,8 @@ export const enrichProfilesWithSourcePipeline = (
       dataQuality: enriched.dataQuality,
       economicStats: stats.economicStats ?? profile.economicStats,
       militaryStats: stats.militaryStats ?? profile.militaryStats,
+      demographics: stats.demographics ?? profile.demographics,
+      statsProvenance: stats.statsProvenance,
     };
   });
 

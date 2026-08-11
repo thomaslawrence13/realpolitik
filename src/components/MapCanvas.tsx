@@ -12,7 +12,7 @@ import { IconButton, SvgIcon } from './ui';
 import { summarizeCountryTrust, TrustTag } from './provenance';
 import { useMapStore } from '../store/useMapStore';
 import { MAP, STORAGE_KEYS } from '../lib/constants';
-import { clamp, easeInOut, capitalize } from './map/utils';
+import { clamp, easeInOut } from './map/utils';
 import {
   overlayLabel,
   overlayColor,
@@ -28,13 +28,8 @@ import {
 import { fillModeGroups } from './map/fillModeGroups';
 import { CountryLayers } from './map/CountryLayers';
 import { MapLegendControls } from './map/MapLegendControls';
-import {
-  criticalMineralIntensityScore,
-  debtVulnerabilityScore,
-  demographicPressureScore,
-  formatGrowthPct,
-  parseHex,
-} from './map/countryColors';
+import { fillModeReadout, formatStatProvenance } from './map/fillModeReadout';
+import { parseHex } from './map/countryColors';
 
 const clampOffset = (offset: { x: number; y: number }, zoom: number): { x: number; y: number } => ({
   x: clamp(offset.x, -(MAP_WIDTH * zoom - PAN_MARGIN), MAP_WIDTH - PAN_MARGIN),
@@ -52,6 +47,10 @@ const LABELS_ZOOM_THRESHOLD = MAP.labelsZoomThreshold;
 const LABEL_BASE_FONT_SIZE = MAP.labelBaseFontSize;
 const LABEL_STROKE_WIDTH = MAP.labelStrokeWidth;
 const MAP_UI_STATE_KEY = STORAGE_KEYS.mapUiState;
+/** Viewport units panned per arrow-key press, before the zoom-level divisor. */
+const KEYBOARD_PAN_PX = 60;
+/** Multiplier applied per double-click; roughly one "step in" toward a country. */
+const DOUBLE_CLICK_ZOOM_FACTOR = 1.8;
 
 type MapUiState = {
   overlayMode: OverlayMode;
@@ -250,6 +249,37 @@ export const MapCanvas = memo(function MapCanvas({
   // Skip centering on the very first render (initial country is already visible).
   const isFirstSelectRef = useRef(true);
 
+  /**
+   * Zoom about a fixed point in viewBox coordinates, keeping the world point
+   * under that anchor stationary. Shared by the wheel handler, pinch gesture and
+   * keyboard zoom so they cannot drift apart.
+   */
+  const zoomAbout = useCallback(
+    (nextZoomRaw: number, anchorX: number, anchorY: number) => {
+      const { zoom, offset } = transformRef.current;
+      const nextZoom = clamp(nextZoomRaw, MIN_ZOOM, MAX_ZOOM);
+      if (nextZoom === zoom) return;
+      const ratio = nextZoom / zoom;
+      const nextOffset = clampOffset(
+        {
+          x: anchorX - (anchorX - offset.x) * ratio,
+          y: anchorY - (anchorY - offset.y) * ratio,
+        },
+        nextZoom,
+      );
+      applyTransform({ zoom: nextZoom, offset: nextOffset });
+    },
+    [applyTransform],
+  );
+
+  /** Convert a client-space point into SVG viewBox coordinates. */
+  const toViewBoxPoint = useCallback((clientX: number, clientY: number): DOMPoint | null => {
+    const svg = svgRef.current;
+    const ctm = svg?.getScreenCTM();
+    if (!ctm) return null;
+    return new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
+  }, []);
+
   // ── Non-passive wheel handler for zoom-toward-cursor ──────────────────────────
   useEffect(() => {
     const svg = svgRef.current;
@@ -262,46 +292,55 @@ export const MapCanvas = memo(function MapCanvas({
         autoCenterAnimRef.current = null;
       }
 
-      const ctm = svg.getScreenCTM();
-      if (!ctm) return;
-
-      const { zoom, offset } = transformRef.current;
+      const { zoom } = transformRef.current;
 
       // Normalize delta across deltaMode values (pixels / lines / pages)
       let raw = event.deltaY;
       if (event.deltaMode === 1) raw *= WHEEL_LINE_PX;
       if (event.deltaMode === 2) raw *= WHEEL_PAGE_PX;
 
-      // Exponential scaling gives the same relative change regardless of current zoom level
-      const nextZoom = clamp(zoom * Math.pow(1.001, -raw), MIN_ZOOM, MAX_ZOOM);
-      const ratio = nextZoom / zoom;
-
       // Convert cursor to SVG viewBox coordinates
-      const cursor = new DOMPoint(event.clientX, event.clientY).matrixTransform(ctm.inverse());
+      const cursor = toViewBoxPoint(event.clientX, event.clientY);
+      if (!cursor) return;
 
-      // Zoom toward cursor: keep the world point under the cursor fixed
-      const nextOffset = clampOffset(
-        {
-          x: cursor.x - (cursor.x - offset.x) * ratio,
-          y: cursor.y - (cursor.y - offset.y) * ratio,
-        },
-        nextZoom,
-      );
-
-      applyTransform({ zoom: nextZoom, offset: nextOffset });
+      // Exponential scaling gives the same relative change regardless of current zoom level
+      zoomAbout(zoom * Math.pow(1.001, -raw), cursor.x, cursor.y);
     };
 
     svg.addEventListener('wheel', onWheel, { passive: false });
     return () => svg.removeEventListener('wheel', onWheel);
-  }, [applyTransform]);
+  }, [toViewBoxPoint, zoomAbout]);
 
   // ── Pointer handlers ──────────────────────────────────────────────────────────
-  const handlePointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
-    // Cancel any running auto-center animation so the drag takes immediate control.
+  // Active pointers, so two fingers can be tracked for pinch-zoom. A plain drag
+  // keeps using dragPrevRef; pinch takes over as soon as a second finger lands.
+  const activePointersRef = useRef(new Map<number, { x: number; y: number }>());
+  const pinchRef = useRef<{ distance: number; zoom: number } | null>(null);
+
+  const cancelAutoCenter = () => {
     if (autoCenterAnimRef.current != null) {
       cancelAnimationFrame(autoCenterAnimRef.current);
       autoCenterAnimRef.current = null;
     }
+  };
+
+  const handlePointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
+    // Cancel any running auto-center animation so the drag takes immediate control.
+    cancelAutoCenter();
+    activePointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (activePointersRef.current.size === 2) {
+      // Second finger down: start a pinch and stop treating this as a drag or tap.
+      const [first, second] = Array.from(activePointersRef.current.values());
+      pinchRef.current = {
+        distance: Math.hypot(second!.x - first!.x, second!.y - first!.y),
+        zoom: transformRef.current.zoom,
+      };
+      dragPrevRef.current = null;
+      didDragRef.current = true;
+      return;
+    }
+
     dragPrevRef.current = { x: event.clientX, y: event.clientY };
     didDragRef.current = false;
     // Capture on the SVG so all pointer events route here during the drag
@@ -327,6 +366,23 @@ export const MapCanvas = memo(function MapCanvas({
         hoverCardMutedRef.current.style.left = `${cx}px`;
         hoverCardMutedRef.current.style.top = `${clamp(y + 16, 12, h - 60)}px`;
       }
+    }
+
+    if (activePointersRef.current.has(event.pointerId)) {
+      activePointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    }
+
+    // Pinch-zoom: scale relative to the gesture's starting span, anchored at the
+    // midpoint between the fingers so the map grows around what is being pinched.
+    const pinch = pinchRef.current;
+    if (pinch && activePointersRef.current.size === 2) {
+      const [first, second] = Array.from(activePointersRef.current.values());
+      const distance = Math.hypot(second!.x - first!.x, second!.y - first!.y);
+      if (distance > 0 && pinch.distance > 0) {
+        const anchor = toViewBoxPoint((first!.x + second!.x) / 2, (first!.y + second!.y) / 2);
+        if (anchor) zoomAbout(pinch.zoom * (distance / pinch.distance), anchor.x, anchor.y);
+      }
+      return;
     }
 
     const prev = dragPrevRef.current;
@@ -356,6 +412,9 @@ export const MapCanvas = memo(function MapCanvas({
   };
 
   const handlePointerUp = (event: ReactPointerEvent<SVGSVGElement>) => {
+    activePointersRef.current.delete(event.pointerId);
+    if (activePointersRef.current.size < 2) pinchRef.current = null;
+
     // If pointer was released without dragging, treat it as a click on the country
     // that was under the pointer at press-down time (pointer capture prevents path
     // onClick from firing, so we handle selection here instead).
@@ -367,27 +426,42 @@ export const MapCanvas = memo(function MapCanvas({
     svgRef.current?.releasePointerCapture(event.pointerId);
   };
 
-  const resetView = () => applyTransform({ zoom: 1, offset: { x: 0, y: 0 } });
+  const resetView = useCallback(
+    () => applyTransform({ zoom: 1, offset: { x: 0, y: 0 } }),
+    [applyTransform],
+  );
+
+  /**
+   * Double-click / double-tap: zoom in a step toward the country under the
+   * cursor, or back out to the world view once already close in. The threshold
+   * gives the gesture a predictable toggle feel rather than zooming forever.
+   */
+  const handleDoubleClick = (event: ReactPointerEvent<SVGSVGElement> | React.MouseEvent<SVGSVGElement>) => {
+    cancelAutoCenter();
+    const anchor = toViewBoxPoint(event.clientX, event.clientY);
+    if (!anchor) return;
+    const { zoom } = transformRef.current;
+    if (zoom >= MAX_ZOOM - 0.01) {
+      resetView();
+      return;
+    }
+    zoomAbout(zoom * DOUBLE_CLICK_ZOOM_FACTOR, anchor.x, anchor.y);
+  };
 
   // ── Convenience zoom buttons ──────────────────────────────────────────────────
-  const zoomBy = (delta: number) => {
-    const { zoom, offset } = transformRef.current;
-    // Zoom toward the center of the visible SVG area
-    const cx = MAP_WIDTH / 2;
-    const cy = MAP_HEIGHT / 2;
-    const nextZoom = clamp(zoom + delta, MIN_ZOOM, MAX_ZOOM);
-    const ratio = nextZoom / zoom;
-    const nextOffset = clampOffset(
-      { x: cx - (cx - offset.x) * ratio, y: cy - (cy - offset.y) * ratio },
-      nextZoom,
-    );
-    applyTransform({ zoom: nextZoom, offset: nextOffset });
-  };
+  // Anchored at the centre of the visible SVG area.
+  const zoomBy = (delta: number) =>
+    zoomAbout(transformRef.current.zoom + delta, MAP_WIDTH / 2, MAP_HEIGHT / 2);
 
   // ── Derived values ────────────────────────────────────────────────────────────
   const { zoom, offset } = transform;
   const hovered = hoveredName ? byName.get(hoveredName) : undefined;
   const hoverPos = hoverPosRef.current;
+  // The stat the current fill mode encodes, plus who published it and when.
+  const hoveredReadout = hovered ? fillModeReadout(fillMode, hovered.profile) : null;
+  const hoveredReadoutSource = hovered
+    ? formatStatProvenance(hovered.profile, hoveredReadout?.statField)
+    : null;
 
   // invZoom is used by the SVG layer (glow filter, labels) to keep sizes constant.
   const invZoom = 1 / zoom;
@@ -483,6 +557,53 @@ export const MapCanvas = memo(function MapCanvas({
     return () => observer.disconnect();
   }, []);
 
+  /**
+   * Keyboard control, so the map is usable without a pointer: arrows pan, +/-
+   * zoom about the centre, 0 fits the world. Only fires while the map itself
+   * holds focus, so arrow keys still scroll the page everywhere else.
+   */
+  const handleKeyDown = (event: React.KeyboardEvent<SVGSVGElement>) => {
+    const panStep = KEYBOARD_PAN_PX / transformRef.current.zoom;
+    const { zoom, offset } = transformRef.current;
+    const panBy = (dx: number, dy: number) => {
+      cancelAutoCenter();
+      applyTransform({ zoom, offset: clampOffset({ x: offset.x + dx, y: offset.y + dy }, zoom) });
+    };
+
+    switch (event.key) {
+      case 'ArrowLeft':
+        panBy(panStep, 0);
+        break;
+      case 'ArrowRight':
+        panBy(-panStep, 0);
+        break;
+      case 'ArrowUp':
+        panBy(0, panStep);
+        break;
+      case 'ArrowDown':
+        panBy(0, -panStep);
+        break;
+      case '+':
+      case '=':
+        cancelAutoCenter();
+        zoomAbout(zoom + ZOOM_STEP, MAP_WIDTH / 2, MAP_HEIGHT / 2);
+        break;
+      case '-':
+      case '_':
+        cancelAutoCenter();
+        zoomAbout(zoom - ZOOM_STEP, MAP_WIDTH / 2, MAP_HEIGHT / 2);
+        break;
+      case '0':
+        cancelAutoCenter();
+        resetView();
+        break;
+      default:
+        return;
+    }
+    // Only reached when a key was handled, so unrelated shortcuts still bubble.
+    event.preventDefault();
+  };
+
   // ── Auto-center on external selection (sidebar, URL state, auto-play, etc.) ──
   useEffect(() => {
     // Skip the first render — the default country is already in view.
@@ -559,9 +680,16 @@ export const MapCanvas = memo(function MapCanvas({
           viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
           className="world-map"
           preserveAspectRatio="xMidYMid slice"
+          // Focusable so keyboard users can reach the pan/zoom controls.
+          tabIndex={0}
+          role="application"
+          aria-label="World map — arrow keys pan, plus and minus zoom, 0 fits the world"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          onDoubleClick={handleDoubleClick}
+          onKeyDown={handleKeyDown}
           onPointerLeave={() => {
             // Moving off the map without dragging: clear state but do NOT select a country.
             dragPrevRef.current = null;
@@ -769,169 +897,28 @@ export const MapCanvas = memo(function MapCanvas({
                 <em>Conf</em>
                 {hovered.confidence}%
               </span>
-              {fillMode === 'gdpPerCapita' && hovered.profile.economicStats?.gdpPerCapitaUsd != null && (
+              {hoveredReadout && (
                 <span>
-                  <em>GDP/cap</em>
-                  ${hovered.profile.economicStats.gdpPerCapitaUsd.toLocaleString()}
+                  <em>{hoveredReadout.label}</em>
+                  {hoveredReadout.value}
                 </span>
               )}
-              {fillMode === 'gdpGrowth' && hovered.profile.economicStats?.gdpGrowthPct != null && (
-                <span>
-                  <em>Growth</em>
-                  {formatGrowthPct(hovered.profile.economicStats.gdpGrowthPct)}
-                </span>
-              )}
-              {fillMode === 'inflation' && hovered.profile.economicStats?.inflationPct != null && (
-                <span>
-                  <em>Inflation</em>
-                  {hovered.profile.economicStats.inflationPct.toFixed(1)}%
-                </span>
-              )}
-              {fillMode === 'tradeOpenness' && hovered.profile.economicStats?.tradeGdpPct != null && (
-                <span>
-                  <em>Trade/GDP</em>
-                  {Math.round(hovered.profile.economicStats.tradeGdpPct)}%
-                </span>
-              )}
-              {fillMode === 'nuclearArmed' && hovered.profile.militaryStats && (
-                <span>
-                  <em>Nuclear</em>
-                  {hovered.profile.militaryStats.nuclearArmed ? 'Armed' : 'No'}
-                </span>
-              )}
-              {fillMode === 'militaryBurden' && hovered.profile.militaryStats?.militaryExpGdpPct != null && (
-                <span>
-                  <em>Mil.%GDP</em>
-                  {hovered.profile.militaryStats.militaryExpGdpPct.toFixed(1)}%
-                </span>
-              )}
-              {fillMode === 'regime' && (
-                <span>
-                  <em>Regime</em>
-                  {capitalize(hovered.profile.regimeType)}
-                </span>
-              )}
-              {fillMode === 'conflictPressure' && (
-                <span>
-                  <em>Conflict</em>
-                  {capitalize(hovered.profile.indicators.conflictPressure)}
-                </span>
-              )}
-              {fillMode === 'population' && hovered.profile.demographics?.populationMillions != null && (
-                <span>
-                  <em>Pop</em>
-                  {hovered.profile.demographics.populationMillions >= 1000
-                    ? `${(hovered.profile.demographics.populationMillions / 1000).toFixed(2)}B`
-                    : `${hovered.profile.demographics.populationMillions.toFixed(0)}M`}
-                </span>
-              )}
-              {fillMode === 'medianAge' && hovered.profile.demographics?.medianAge != null && (
-                <span>
-                  <em>Median age</em>
-                  {hovered.profile.demographics.medianAge.toFixed(1)}y
-                </span>
-              )}
-              {fillMode === 'energyExports' && hovered.profile.energy != null && (
-                <span>
-                  <em>Energy</em>
-                  {hovered.profile.energy.energyImportDependencePct > 0
-                    ? `${Math.round(hovered.profile.energy.energyImportDependencePct)}% imports`
-                    : `${Math.round(-hovered.profile.energy.energyImportDependencePct)}% exporter`}
-                </span>
-              )}
-              {fillMode === 'demographicPressure' && hovered.profile.demographics != null && (
-                <span>
-                  <em>Demo pressure</em>
-                  {(() => {
-                    const score = demographicPressureScore(hovered.profile);
-                    return score == null ? '—' : `${score}`;
-                  })()}
-                </span>
-              )}
-              {fillMode === 'cyberCapability' && hovered.profile.cyber != null && (
-                <span>
-                  <em>Cyber</em>
-                  {`${capitalize(hovered.profile.cyber.offensiveTier)}/${capitalize(hovered.profile.cyber.defensiveTier)}`}
-                </span>
-              )}
-              {fillMode === 'internetFreedom' && hovered.profile.cyber?.internetFreedomScore != null && (
-                <span>
-                  <em>Net free</em>
-                  {hovered.profile.cyber.internetFreedomScore}/100
-                </span>
-              )}
-              {fillMode === 'foodImportDependence' && hovered.profile.foodWater?.foodImportDependencePct != null && (
-                <span>
-                  <em>Food</em>
-                  {hovered.profile.foodWater.foodImportDependencePct >= 0
-                    ? `${Math.round(hovered.profile.foodWater.foodImportDependencePct)}% imports`
-                    : `${Math.round(-hovered.profile.foodWater.foodImportDependencePct)}% exporter`}
-                </span>
-              )}
-              {fillMode === 'waterStress' && hovered.profile.foodWater?.waterStressIndex != null && (
-                <span>
-                  <em>Water</em>
-                  {hovered.profile.foodWater.waterStressIndex}/5
-                </span>
-              )}
-              {fillMode === 'debtVulnerability' && hovered.profile.fiscal != null && (
-                <span>
-                  <em>Debt</em>
-                  {(() => {
-                    const score = debtVulnerabilityScore(hovered.profile);
-                    return score == null ? '—' : `${score}/100`;
-                  })()}
-                </span>
-              )}
-              {fillMode === 'sovereignRating' && hovered.profile.fiscal != null && (
-                <span>
-                  <em>Rating</em>
-                  {capitalize(hovered.profile.fiscal.sovereignRatingTier)}
-                </span>
-              )}
-              {fillMode === 'unVotingBlocA' && hovered.profile.diplomatic?.unVotingAlignmentBlocA != null && (
-                <span>
-                  <em>UN-A</em>
-                  {hovered.profile.diplomatic.unVotingAlignmentBlocA}%
-                </span>
-              )}
-              {fillMode === 'unVotingBlocB' && hovered.profile.diplomatic?.unVotingAlignmentBlocB != null && (
-                <span>
-                  <em>UN-B</em>
-                  {hovered.profile.diplomatic.unVotingAlignmentBlocB}%
-                </span>
-              )}
-              {fillMode === 'criticalMineralIntensity' && hovered.profile.criticalMinerals != null && (
-                <span>
-                  <em>Minerals</em>
-                  {(() => {
-                    const score = criticalMineralIntensityScore(hovered.profile);
-                    return score == null ? '—' : `${score}/100`;
-                  })()}
-                </span>
-              )}
-              {fillMode === 'softPower' && hovered.profile.softPower?.reachScore != null && (
-                <span>
-                  <em>Soft</em>
-                  {hovered.profile.softPower.reachScore}/100
-                </span>
-              )}
-              {fillMode === 'defensePactDensity' && hovered.profile.diplomatic != null && (
-                <span>
-                  <em>Pacts</em>
-                  {hovered.profile.diplomatic.defensePacts.length}
-                </span>
-              )}
-              <span>
-                <em>Quality</em>
-                {(() => {
-                  const indicators = hovered.profile.dataQuality?.indicators ?? [];
-                  const fallbackCount = indicators.filter((indicator) => indicator.evidenceClass === 'fallback').length;
-                  const staleCount = indicators.filter((indicator) => indicator.stale).length;
-                  return `${hovered.profile.sourceCoverage}% cov · ${fallbackCount} fallback · ${staleCount} stale`;
-                })()}
-              </span>
             </div>
+            {/* Cite the number the reader is actually looking at, not the dataset. */}
+            {hoveredReadoutSource && (
+              <span className="hover-card-source">
+                {hoveredReadout?.label} source: {hoveredReadoutSource}
+              </span>
+            )}
+            {/* Quality is a sentence, not a stat — it wraps badly inside the grid. */}
+            <span className="hover-card-source">
+              {(() => {
+                const indicators = hovered.profile.dataQuality?.indicators ?? [];
+                const fallbackCount = indicators.filter((indicator) => indicator.evidenceClass === 'fallback').length;
+                const staleCount = indicators.filter((indicator) => indicator.stale).length;
+                return `${hovered.profile.sourceCoverage}% coverage · ${fallbackCount} fallback · ${staleCount} stale`;
+              })()}
+            </span>
           </div>
         )}
 

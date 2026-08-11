@@ -1,9 +1,73 @@
 {
-  "version": "1.1.0",
-  "generatedAt": "2026-08-07T11:21:03.513Z",
+  "version": "2.0.0",
+  "generatedAt": "2026-08-11T19:49:44.959Z",
   "provider": "world-bank-open-data",
   "requestedCountryCount": 134,
   "indicators": [
+    {
+      "snapshotKey": "imf_gdp_growth",
+      "code": "NGDP_RPCH",
+      "label": "Real GDP growth",
+      "coverageCount": 132,
+      "missingCountryCount": 0,
+      "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "imf_inflation",
+      "code": "PCPIPCH",
+      "label": "Inflation, average consumer prices",
+      "coverageCount": 132,
+      "missingCountryCount": 0,
+      "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "imf_gdp_usd_billions",
+      "code": "NGDPD",
+      "label": "GDP, current prices",
+      "coverageCount": 132,
+      "missingCountryCount": 0,
+      "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "imf_gdp_per_capita_usd",
+      "code": "NGDPDPC",
+      "label": "GDP per capita, current prices",
+      "coverageCount": 132,
+      "missingCountryCount": 0,
+      "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "imf_unemployment",
+      "code": "LUR",
+      "label": "Unemployment rate",
+      "coverageCount": 94,
+      "missingCountryCount": 38,
+      "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "imf_government_debt_pct_gdp",
+      "code": "GGXWDG_NGDP",
+      "label": "General government gross debt",
+      "coverageCount": 129,
+      "missingCountryCount": 3,
+      "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "imf_current_account_pct_gdp",
+      "code": "BCA_NGDPD",
+      "label": "Current account balance",
+      "coverageCount": 132,
+      "missingCountryCount": 0,
+      "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "imf_population_millions",
+      "code": "LP",
+      "label": "Population",
+      "coverageCount": 132,
+      "missingCountryCount": 0,
+      "newestObservation": "2025"
+    },
     {
       "snapshotKey": "world_bank_military_expenditure_pct",
       "code": "MS.MIL.XPND.GD.ZS",
@@ -59,6 +123,222 @@
       "coverageCount": 132,
       "missingCountryCount": 2,
       "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "world_bank_population",
+      "code": "SP.POP.TOTL",
+      "label": "Population, total",
+      "coverageCount": 133,
+      "missingCountryCount": 1,
+      "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "world_bank_urban_pct",
+      "code": "SP.URB.TOTL.IN.ZS",
+      "label": "Urban population (% of total)",
+      "coverageCount": 133,
+      "missingCountryCount": 1,
+      "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "world_bank_gdp_usd",
+      "code": "NY.GDP.MKTP.CD",
+      "label": "GDP, current US$",
+      "coverageCount": 130,
+      "missingCountryCount": 4,
+      "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "world_bank_gdp_per_capita_usd",
+      "code": "NY.GDP.PCAP.CD",
+      "label": "GDP per capita, current US$",
+      "coverageCount": 130,
+      "missingCountryCount": 4,
+      "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "world_bank_energy_import_pct",
+      "code": "EG.IMP.CONS.ZS",
+      "label": "Energy imports, net (% of energy use)",
+      "coverageCount": 125,
+      "missingCountryCount": 9,
+      "newestObservation": "2023"
+    }
+  ],
+  "sources": [
+    {
+      "sourceId": "imf-weo",
+      "provider": "imf-datamapper-weo",
+      "requestedCountryCount": 132,
+      "indicators": [
+        {
+          "snapshotKey": "imf_gdp_growth",
+          "code": "NGDP_RPCH",
+          "label": "Real GDP growth",
+          "coverageCount": 132,
+          "missingCountryCount": 0,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "imf_inflation",
+          "code": "PCPIPCH",
+          "label": "Inflation, average consumer prices",
+          "coverageCount": 132,
+          "missingCountryCount": 0,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "imf_gdp_usd_billions",
+          "code": "NGDPD",
+          "label": "GDP, current prices",
+          "coverageCount": 132,
+          "missingCountryCount": 0,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "imf_gdp_per_capita_usd",
+          "code": "NGDPDPC",
+          "label": "GDP per capita, current prices",
+          "coverageCount": 132,
+          "missingCountryCount": 0,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "imf_unemployment",
+          "code": "LUR",
+          "label": "Unemployment rate",
+          "coverageCount": 94,
+          "missingCountryCount": 38,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "imf_government_debt_pct_gdp",
+          "code": "GGXWDG_NGDP",
+          "label": "General government gross debt",
+          "coverageCount": 129,
+          "missingCountryCount": 3,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "imf_current_account_pct_gdp",
+          "code": "BCA_NGDPD",
+          "label": "Current account balance",
+          "coverageCount": 132,
+          "missingCountryCount": 0,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "imf_population_millions",
+          "code": "LP",
+          "label": "Population",
+          "coverageCount": 132,
+          "missingCountryCount": 0,
+          "newestObservation": "2025"
+        }
+      ]
+    },
+    {
+      "sourceId": "world-bank-wdi",
+      "provider": "world-bank-open-data",
+      "requestedCountryCount": 134,
+      "indicators": [
+        {
+          "snapshotKey": "world_bank_military_expenditure_pct",
+          "code": "MS.MIL.XPND.GD.ZS",
+          "label": "Military expenditure (% of GDP)",
+          "coverageCount": 121,
+          "missingCountryCount": 13,
+          "newestObservation": "2024"
+        },
+        {
+          "snapshotKey": "world_bank_trade_pct",
+          "code": "TG.VAL.TOTL.GD.ZS",
+          "label": "Trade (% of GDP)",
+          "coverageCount": 131,
+          "missingCountryCount": 3,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "world_bank_gdp_growth",
+          "code": "NY.GDP.MKTP.KD.ZG",
+          "label": "GDP growth (annual %)",
+          "coverageCount": 130,
+          "missingCountryCount": 4,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "world_bank_inflation",
+          "code": "FP.CPI.TOTL.ZG",
+          "label": "Inflation, consumer prices (annual %)",
+          "coverageCount": 123,
+          "missingCountryCount": 11,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "world_bank_political_stability",
+          "code": "GOV_WGI_PV.EST",
+          "label": "Political stability and absence of violence",
+          "coverageCount": 133,
+          "missingCountryCount": 1,
+          "newestObservation": "2024"
+        },
+        {
+          "snapshotKey": "world_bank_rule_of_law",
+          "code": "GOV_WGI_RL.EST",
+          "label": "Rule of law",
+          "coverageCount": 133,
+          "missingCountryCount": 1,
+          "newestObservation": "2024"
+        },
+        {
+          "snapshotKey": "world_bank_unemployment",
+          "code": "SL.UEM.TOTL.ZS",
+          "label": "Unemployment, total (% of labour force)",
+          "coverageCount": 132,
+          "missingCountryCount": 2,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "world_bank_population",
+          "code": "SP.POP.TOTL",
+          "label": "Population, total",
+          "coverageCount": 133,
+          "missingCountryCount": 1,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "world_bank_urban_pct",
+          "code": "SP.URB.TOTL.IN.ZS",
+          "label": "Urban population (% of total)",
+          "coverageCount": 133,
+          "missingCountryCount": 1,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "world_bank_gdp_usd",
+          "code": "NY.GDP.MKTP.CD",
+          "label": "GDP, current US$",
+          "coverageCount": 130,
+          "missingCountryCount": 4,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "world_bank_gdp_per_capita_usd",
+          "code": "NY.GDP.PCAP.CD",
+          "label": "GDP per capita, current US$",
+          "coverageCount": 130,
+          "missingCountryCount": 4,
+          "newestObservation": "2025"
+        },
+        {
+          "snapshotKey": "world_bank_energy_import_pct",
+          "code": "EG.IMP.CONS.ZS",
+          "label": "Energy imports, net (% of energy use)",
+          "coverageCount": 125,
+          "missingCountryCount": 9,
+          "newestObservation": "2023"
+        }
+      ]
     }
   ]
 }

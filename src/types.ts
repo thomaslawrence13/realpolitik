@@ -296,6 +296,12 @@ export interface CountryRecord {
   softPower?: SoftPowerProfile;
   /** Historical observed indicator series with provenance metadata. */
   historicalSeries?: HistoricalMetricSeries[];
+  /**
+   * Which source each displayed statistic came from, and what period it covers.
+   * Populated by the enrichment pipeline; absent fields fall back to the curated
+   * dataset stamp.
+   */
+  statsProvenance?: StatsProvenance;
 }
 
 export interface RelationshipEdge {
@@ -360,12 +366,46 @@ export interface CountryProfile extends CountryRecord {
 export interface IndicatorTelemetry {
   indicator: keyof CountryIndicators;
   sourceId: string;
+  /** Pipeline affirmation timestamp — when the value was last re-emitted, not its age. */
   observedAt: string;
   confidence: number;
   stale: boolean;
   method: 'api' | 'snapshot' | 'expert-curated' | 'derived';
   evidenceClass: 'observed' | 'estimated' | 'fallback' | 'derived';
+  /** Reference period the number actually describes (year or ISO date), when known. */
+  vintage?: string;
+  /** When the publisher last refreshed the underlying series. */
+  seriesUpdatedAt?: string;
+  /** True when the value is a forecast or staff estimate rather than a reported outturn. */
+  projection?: boolean;
 }
+
+/**
+ * Provenance for a single displayed statistic (GDP growth, population, …), as
+ * opposed to a model indicator. Lets the map and inspector cite the number the
+ * reader is actually looking at.
+ */
+export interface StatProvenance {
+  sourceId: string;
+  /** Reference period the value describes — a year or ISO date. */
+  vintage?: string;
+  /** True when the value is an IMF/agency estimate or projection. */
+  projection?: boolean;
+}
+
+/** Per-field provenance for the numbers surfaced in the UI, keyed by stat field. */
+export type StatsProvenance = Partial<Record<StatField, StatProvenance>>;
+
+export type StatField =
+  | 'gdpBillionUsd'
+  | 'gdpGrowthPct'
+  | 'gdpPerCapitaUsd'
+  | 'inflationPct'
+  | 'tradeGdpPct'
+  | 'militaryExpGdpPct'
+  | 'militaryExpBillionUsd'
+  | 'populationMillions'
+  | 'urbanizationPct';
 
 export interface CountryDataQuality {
   computedSourceCoverage: number;

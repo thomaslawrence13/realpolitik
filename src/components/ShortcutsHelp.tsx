@@ -23,6 +23,16 @@ const SHORTCUTS: ReadonlyArray<{ group: string; entries: Shortcut[] }> = [
     ],
   },
   {
+    group: 'Map (when focused)',
+    entries: [
+      { keys: ['←', '→', '↑', '↓'], description: 'Pan the map' },
+      { keys: ['+', '−'], description: 'Zoom in / out' },
+      { keys: ['0'], description: 'Fit the world' },
+      { keys: ['Double-click'], description: 'Zoom toward a country' },
+      { keys: ['Pinch'], description: 'Zoom on touch and trackpad' },
+    ],
+  },
+  {
     group: 'Drawer',
     entries: [
       { keys: ['↑', '↓'], description: 'Resize drawer (when handle focused)' },
