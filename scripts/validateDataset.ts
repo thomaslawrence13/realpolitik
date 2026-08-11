@@ -197,6 +197,15 @@ const validateIngestArtifacts = () => {
   const rawIndicators = raw.indicators ?? {};
   const rawCodeSet = new Set(Object.keys(rawIndicators));
   const weo = imfWeoSnapshot as IngestedSnapshot;
+  const observationDates = (snapshot.observation_dates ?? {}) as Record<
+    string,
+    Record<string, string> | undefined
+  >;
+
+  ensure(
+    Object.keys(observationDates).length > 0,
+    'ingested_snapshot.observation_dates is missing — re-run `npm run ingest`',
+  );
 
   ensure(isIsoDate(weo.timestamp.slice(0, 10)), 'imf_weo_snapshot.timestamp must be ISO timestamp');
 
@@ -259,6 +268,25 @@ const validateIngestArtifacts = () => {
       }
       if (isWorldBank) {
         ensure(rawCodeSet.has(indicator.code), `raw ingest payload missing indicator code "${indicator.code}"`);
+
+        // The app reads observation dates from here rather than importing the
+        // multi-megabyte raw payload, so a missing bucket silently dates every
+        // value to the ingest run instead of its real reference year.
+        const dates = observationDates[indicator.snapshotKey];
+        ensure(
+          Boolean(dates && typeof dates === 'object'),
+          `ingested_snapshot.observation_dates is missing "${indicator.snapshotKey}"`,
+        );
+        if (dates) {
+          const values = snapshot[indicator.snapshotKey] as Record<string, unknown> | undefined;
+          for (const countryId of Object.keys(values ?? {})) {
+            const date = dates[countryId];
+            ensure(
+              typeof date === 'string' && isIsoDate(date),
+              `ingested_snapshot.observation_dates."${indicator.snapshotKey}.${countryId}" must be YYYY-MM-DD`,
+            );
+          }
+        }
       }
     }
   }

@@ -49,6 +49,8 @@ type WorldBankPoint = {
 
 type IndicatorFetchResult = {
   values: Record<string, number>;
+  /** countryId → ISO date of that country's newest observation. */
+  observedAt: Record<string, string>;
   rawPoints: WorldBankPoint[];
   newestObservation: string | null;
   coverageCount: number;
@@ -59,6 +61,14 @@ type IngestSnapshot = {
   version: string;
   timestamp: string;
   countryCountRequested: number;
+  /**
+   * Reference date of each country's newest observation, per series.
+   *
+   * Precomputed here so the app never has to parse the raw audit payload: that
+   * file is several megabytes of per-year API rows, and importing it to recover
+   * ~1,600 dates put all of it into the client bundle.
+   */
+  observation_dates: Partial<Record<SnapshotKey, Record<string, string>>>;
 } & Record<SnapshotKey, Record<string, number>>;
 
 type ManifestIndicator = {
@@ -166,7 +176,11 @@ const minAcceptedYear = () => String(new Date().getUTCFullYear() - MAX_OBSERVATI
 /** Prefer newest non-null annual observation per country (not API row order). */
 const pickNewestValues = (
   points: WorldBankPoint[],
-): { values: Record<string, number>; newestObservation: string | null } => {
+): {
+  values: Record<string, number>;
+  observedAt: Record<string, string>;
+  newestObservation: string | null;
+} => {
   const floorYear = minAcceptedYear();
   const best = new Map<string, { year: string; value: number }>();
   for (const point of points) {
@@ -183,14 +197,18 @@ const pickNewestValues = (
   }
 
   const values: Record<string, number> = {};
+  const observedAt: Record<string, string> = {};
   let newestObservation: string | null = null;
   for (const [countryId, row] of best) {
     values[countryId] = row.value;
+    // WDI series are annual; date them to the year end so staleness maths and
+    // vintage comparisons have a real date to work with.
+    observedAt[countryId] = `${row.year}-12-31`;
     if (!newestObservation || row.year > newestObservation) {
       newestObservation = row.year;
     }
   }
-  return { values, newestObservation };
+  return { values, observedAt, newestObservation };
 };
 
 async function fetchWbIndicator(
@@ -209,10 +227,11 @@ async function fetchWbIndicator(
 
   const json = (await response.json()) as [unknown, WorldBankPoint[] | null];
   const points = json[1] ?? [];
-  const { values, newestObservation } = pickNewestValues(points);
+  const { values, observedAt, newestObservation } = pickNewestValues(points);
 
   return {
     values,
+    observedAt,
     rawPoints: points,
     newestObservation,
     coverageCount: Object.keys(values).length,
@@ -304,9 +323,10 @@ async function main() {
     const weo = await fetchWeoSnapshot(fetchedAt);
 
     const dataset: IngestSnapshot = {
-      version: '1.5.0-ingested',
+      version: '1.6.0-ingested',
       timestamp: fetchedAt,
       countryCountRequested: Object.keys(countryIso2).length,
+      observation_dates: {},
       ...emptySnapshotValues(),
     };
 
@@ -315,6 +335,7 @@ async function main() {
 
     for (const [indicator, result] of results) {
       dataset[indicator.snapshotKey] = result.values;
+      dataset.observation_dates[indicator.snapshotKey] = result.observedAt;
       rawAudit[indicator.code] = result.rawPoints;
       worldBankIndicators.push({
         snapshotKey: indicator.snapshotKey,

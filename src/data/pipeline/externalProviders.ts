@@ -20,6 +20,15 @@ export interface IngestedSnapshot {
   world_bank_gdp_usd?: Record<string, number>;
   world_bank_gdp_per_capita_usd?: Record<string, number>;
   world_bank_energy_import_pct?: Record<string, number>;
+  /**
+   * Reference date of each country's newest observation, per series, computed by
+   * `npm run ingest`.
+   *
+   * This exists so the app never imports `raw/world_bank_latest.json`. That file
+   * holds every per-year API row — several megabytes — and pulling it in to
+   * recover ~1,600 dates shipped all of it to every browser.
+   */
+  observation_dates?: Partial<Record<SnapshotIndicatorKey, Record<string, string>>>;
 }
 
 /**
@@ -84,33 +93,47 @@ const normalizeObservedAt = (date: string): string => {
 /** countryId → ISO date of that country's newest observation, per snapshot key. */
 export type ObservedAtIndex = Record<SnapshotIndicatorKey, Record<string, string>>;
 
-/**
- * Recover the true reference date of each World Bank observation from the raw
- * audit payload.
- *
- * The normalized snapshot stores only values, so without this the best a caller
- * could do is date everything to the ingest run — which would report a 2024
- * military-spending figure as current. Picking the newest date per country
- * mirrors the ingest script's own `pickNewestValues`, rather than trusting the
- * API's row ordering.
- */
-export const buildObservedAtIndex = (rawAudit?: RawWorldBankAuditPayload): ObservedAtIndex => {
-  const index: ObservedAtIndex = {
-    world_bank_military_expenditure_pct: {},
-    world_bank_trade_pct: {},
-    world_bank_gdp_growth: {},
-    world_bank_inflation: {},
-    world_bank_political_stability: {},
-    world_bank_rule_of_law: {},
-    world_bank_unemployment: {},
-    world_bank_population: {},
-    world_bank_urban_pct: {},
-    world_bank_gdp_usd: {},
-    world_bank_gdp_per_capita_usd: {},
-    world_bank_energy_import_pct: {},
-  };
-  if (!rawAudit?.indicators) return index;
+const emptyObservedAtIndex = (): ObservedAtIndex => ({
+  world_bank_military_expenditure_pct: {},
+  world_bank_trade_pct: {},
+  world_bank_gdp_growth: {},
+  world_bank_inflation: {},
+  world_bank_political_stability: {},
+  world_bank_rule_of_law: {},
+  world_bank_unemployment: {},
+  world_bank_population: {},
+  world_bank_urban_pct: {},
+  world_bank_gdp_usd: {},
+  world_bank_gdp_per_capita_usd: {},
+  world_bank_energy_import_pct: {},
+});
 
+/**
+ * The true reference date of each World Bank observation.
+ *
+ * Without this the best a caller could do is date everything to the ingest run,
+ * which would report a 2024 military-spending figure as current. The dates are
+ * precomputed by the ingest script; the raw-audit path below is only a fallback
+ * for snapshots written before `observation_dates` existed, and is never taken
+ * by the app (which no longer imports the raw payload at all).
+ */
+export const buildObservedAtIndex = (
+  snapshot?: IngestedSnapshot,
+  rawAudit?: RawWorldBankAuditPayload,
+): ObservedAtIndex => {
+  const index = emptyObservedAtIndex();
+
+  const precomputed = snapshot?.observation_dates;
+  if (precomputed) {
+    for (const [key, dates] of Object.entries(precomputed)) {
+      const snapshotKey = key as SnapshotIndicatorKey;
+      if (!(snapshotKey in index) || !dates) continue;
+      index[snapshotKey] = { ...dates };
+    }
+    return index;
+  }
+
+  if (!rawAudit?.indicators) return index;
   for (const [code, points] of Object.entries(rawAudit.indicators)) {
     const snapshotKey = mapIndicatorCodeToSnapshotKey[code as keyof typeof mapIndicatorCodeToSnapshotKey];
     if (!snapshotKey) continue;
@@ -192,11 +215,10 @@ export const buildImfWeoObservations = (
 export const buildIngestedObservations = (
   profiles: CountryProfile[],
   snapshot: IngestedSnapshot,
-  rawAudit?: RawWorldBankAuditPayload,
+  observedAtByIndicator: ObservedAtIndex = buildObservedAtIndex(snapshot),
 ): IndicatorObservation[] => {
   const observations: IndicatorObservation[] = [];
   const fallbackObservedAt = snapshot.timestamp.slice(0, 10);
-  const observedAtByIndicator = buildObservedAtIndex(rawAudit);
   const seriesUpdatedAt = snapshot.timestamp.slice(0, 10);
   /** WDI observations are annual, so the vintage is the reference year. */
   const vintageOf = (observedAt: string) => observedAt.slice(0, 4);

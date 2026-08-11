@@ -132,10 +132,16 @@ The project includes an off-main-thread data ingestion and backtesting pipeline 
 
 The ingestion workflow executes locally and writes four auditable artifacts under `src/data/datasets`:
 
-- `ingested_snapshot.json` — normalized World Bank indicator snapshot used by the pipeline
+- `ingested_snapshot.json` — normalized World Bank indicator snapshot used by the pipeline, including
+  an `observation_dates` map giving each country's newest reference date per series
 - `imf_weo_snapshot.json` — IMF World Economic Outlook snapshot, each value carrying its reference year
 - `ingest_manifest.json` — per-source coverage, missingness, and newest-observation metadata per indicator
 - `raw/world_bank_latest.json` — raw provider payload preserved for audit/debugging
+
+The raw payload is **not** imported by application code. It holds every per-year API row (~6 MB), so
+importing it to recover observation dates pulled all of it into the client bundle and into the
+TypeScript program. Those dates are precomputed into `observation_dates` at ingest time instead; the
+validator fails the build if that map goes missing.
 
 #### Sources
 

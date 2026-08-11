@@ -19,10 +19,9 @@ import {
 import { enrichCountryWithObservations } from './reconcile';
 import { enrichRelationshipWithObservations } from './reconcileRelationships';
 import { buildImfWeoObservations, buildIngestedObservations, buildObservedAtIndex } from './externalProviders';
-import type { ImfWeoSnapshot, IngestedSnapshot, RawWorldBankAuditPayload } from './externalProviders';
+import type { ImfWeoSnapshot, IngestedSnapshot } from './externalProviders';
 import ingestedSnapshot from '../datasets/ingested_snapshot.json';
 import imfWeoSnapshot from '../datasets/imf_weo_snapshot.json';
-import rawWorldBankLatest from '../datasets/raw/world_bank_latest.json';
 import type { RelationshipObservation } from './types';
 import { applyStatsCoverageEnrichment } from './statsEnrichment';
 
@@ -80,21 +79,22 @@ export const enrichProfilesWithSourcePipeline = (
   options?: {
     ingest?: IngestedSnapshot;
     weo?: ImfWeoSnapshot;
-    rawAudit?: RawWorldBankAuditPayload;
   },
 ): CountryProfile[] => {
   const ingest = options?.ingest ?? (ingestedSnapshot as IngestedSnapshot);
   const weo = options?.weo ?? (imfWeoSnapshot as ImfWeoSnapshot);
-  const rawAudit = options?.rawAudit ?? (rawWorldBankLatest as RawWorldBankAuditPayload);
-
   // --- Country-level indicator enrichment ---
   // Order: live API → IMF WEO → ingest snapshot → curated reaffirmations →
   // stats fallbacks. Reconcile ranks by source priority + confidence, so
   // fallbacks only fill gaps.
+  // Built once and shared: the observation-date index is needed by both the
+  // ingest observations and the stats merge.
+  const observedAtIndex = buildObservedAtIndex(ingest);
+
   const indicatorObservations = [
     ...buildWorldBankObservations(profiles, live),
     ...buildImfWeoObservations(profiles, weo),
-    ...buildIngestedObservations(profiles, ingest, rawAudit),
+    ...buildIngestedObservations(profiles, ingest, observedAtIndex),
     ...buildConflictSnapshotObservations(profiles),
     ...buildSanctionsSnapshotObservations(profiles),
     ...buildTradeDependenceObservations(profiles),
@@ -105,9 +105,6 @@ export const enrichProfilesWithSourcePipeline = (
   ];
 
   const byCountry = groupByCountry(indicatorObservations);
-  // Built once and shared: recovering true World Bank observation years means
-  // walking the whole raw audit payload, which is wasteful to redo per country.
-  const observedAtIndex = buildObservedAtIndex(rawAudit);
 
   const enrichedProfiles = profiles.map((profile) => {
     const enriched = enrichCountryWithObservations(profile, byCountry.get(profile.id) ?? []);
