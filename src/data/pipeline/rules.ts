@@ -34,7 +34,10 @@ export const indicatorSourcePriority: Record<IndicatorKey, string[]> = {
   militaryTreatyLevel: ['world-bank-wdi', 'iiss-military-balance', 'sipri-milex', 'world-factbook'],
   tradeExposure: ['world-bank-wdi', 'un-comtrade', 'imf-direction-of-trade', 'wto-profile'],
   regimeStability: ['world-bank-wdi', 'transparency-intl', 'freedom-house', 'vdem'],
-  cohesion: ['world-bank-wdi', 'imf-direction-of-trade', 'un-comtrade'],
+  // IMF WEO outranks the WDI here: both are authoritative, but the WEO carries
+  // current-year figures where the WDI trails the reference year by 1–2 years,
+  // and cohesion is the indicator most sensitive to that lag.
+  cohesion: ['imf-weo', 'world-bank-wdi', 'imf-direction-of-trade', 'un-comtrade'],
   conflictPressure: ['acled', 'ucdp', 'icg-crisiswatch', 'iiss-military-balance'],
   conflictHistory: ['acled', 'ucdp', 'icg-crisiswatch', 'iiss-military-balance'],
   sanctionsExposure: ['csis-sanctions', 'imf-direction-of-trade'],

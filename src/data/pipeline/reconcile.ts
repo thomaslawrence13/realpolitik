@@ -1,4 +1,5 @@
 import type { CountryDataQuality, CountryIndicators, CountryProfile, IndicatorTelemetry } from '../../types';
+import { sourceAuthorityRank } from '../sourceRegistry';
 import { indicatorQualityRules, indicatorSourcePriority, modelIndicatorKeys } from './rules';
 import { isValidIndicatorValue } from './transformers';
 import type { IndicatorKey, IndicatorObservation } from './types';
@@ -30,6 +31,15 @@ const sourceRankFor = (indicator: IndicatorKey, sourceId: string): number => {
   return index === -1 ? ranking.length + 1 : index;
 };
 
+/**
+ * The period an observation describes, for recency comparison. Prefers the
+ * declared vintage over `observedAt`: curated providers re-affirm at load time,
+ * so `observedAt` is "today" for all of them and cannot separate fresh from old.
+ * A bare year is widened to its year-end so `"2025"` sorts after `"2025-01-01"`.
+ */
+const recencyKeyOf = (observation: { vintage?: string; observedAt: string }): string =>
+  /^\d{4}$/.test(observation.vintage ?? '') ? `${observation.vintage}-12-31` : observation.vintage ?? observation.observedAt;
+
 const sortCandidates = <K extends IndicatorKey>(indicator: K, candidates: IndicatorObservation<K>[]) => {
   return candidates
     .slice()
@@ -40,8 +50,21 @@ const sortCandidates = <K extends IndicatorKey>(indicator: K, candidates: Indica
       const confidenceDiff = normalizeConfidence(right.confidence) - normalizeConfidence(left.confidence);
       if (confidenceDiff !== 0) return confidenceDiff;
 
+      // Freshest reference period wins among equally-ranked, equally-confident sources.
+      const vintageDiff = compareDateDesc(recencyKeyOf(left), recencyKeyOf(right));
+      if (vintageDiff !== 0) return vintageDiff;
+
       const dateDiff = compareDateDesc(left.observedAt, right.observedAt);
       if (dateDiff !== 0) return dateDiff;
+
+      // Prefer a reported outturn over a projection when everything else ties.
+      if (Boolean(left.projection) !== Boolean(right.projection)) {
+        return left.projection ? 1 : -1;
+      }
+
+      // Last resort: the more authoritative publisher.
+      const authorityDiff = sourceAuthorityRank(left.sourceId) - sourceAuthorityRank(right.sourceId);
+      if (authorityDiff !== 0) return authorityDiff;
 
       return left.providerId.localeCompare(right.providerId);
     });
@@ -132,6 +155,9 @@ export const enrichCountryWithObservations = (
       stale,
       method: selected.method,
       evidenceClass: classifyEvidence(selected.method, stale, confidence, rule.minimumConfidence),
+      ...(selected.vintage ? { vintage: selected.vintage } : {}),
+      ...(selected.seriesUpdatedAt ? { seriesUpdatedAt: selected.seriesUpdatedAt } : {}),
+      ...(selected.projection ? { projection: true } : {}),
     });
 
     if (rule.includeInCoverage) coveragePresent += 1;

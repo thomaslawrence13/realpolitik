@@ -130,13 +130,41 @@ The project includes an off-main-thread data ingestion and backtesting pipeline 
 
 ### Ingestion
 
-The ingestion workflow now executes locally and writes three auditable artifacts under `src/data/datasets`:
+The ingestion workflow executes locally and writes four auditable artifacts under `src/data/datasets`:
 
 - `ingested_snapshot.json` — normalized World Bank indicator snapshot used by the pipeline
-- `ingest_manifest.json` — coverage, missingness, and newest-observation metadata per indicator
+- `imf_weo_snapshot.json` — IMF World Economic Outlook snapshot, each value carrying its reference year
+- `ingest_manifest.json` — per-source coverage, missingness, and newest-observation metadata per indicator
 - `raw/world_bank_latest.json` — raw provider payload preserved for audit/debugging
 
-Current automated coverage is focused on World Bank series already used by the app: military expenditure, trade openness, GDP growth, inflation, political stability, rule of law, and unemployment.
+#### Sources
+
+**IMF World Economic Outlook** (`imf-weo`) is the freshest authoritative macro series reachable without
+a licence. It publishes every April and October with current-year estimates and forward projections,
+where reported-outturn series trail the reference year by 1–2 years, and it covers 132 of the 134
+tracked economies — including Taiwan, which the World Bank omits. The DataMapper API sends no CORS
+header, so it is fetched at ingest time rather than in the browser.
+
+**World Bank** (`world-bank-wdi`) supplies reported outturns: military expenditure, trade openness,
+GDP growth, inflation, political stability, rule of law, and unemployment are fetched live in the
+browser (CORS-enabled, cached 4h). Slower-moving structural series — population, urbanisation,
+nominal GDP, GDP per capita, and energy-import dependence — are ingested instead, so page load does
+not pay for data that changes once a year.
+
+Where both cover a field, the WEO wins on recency and the World Bank fills the gaps. Every merged
+value records which source it came from and what period it describes, surfaced in the map hover card
+and the methodology drawer.
+
+#### Reading the vintages
+
+Two dates are tracked per value and must not be confused:
+
+- **vintage** — the period the number describes (`2025`), which is what a reader wants
+- **observedAt** — when the pipeline last affirmed the value, an internal SLA timestamp
+
+Forward projections are never presented as observations. The WEO's current-year figure is kept
+separately as an `outlook` and is only promoted to the headline value — flagged as a projection —
+when an economy has no completed year at all.
 
 ```bash
 npm run ingest

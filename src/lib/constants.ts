@@ -39,7 +39,8 @@ export const MAP = {
   maxZoom: 8,
   zoomStep: 0.3,
   panMargin: 80,
-  hoverCardHeight: 115,
+  /** Includes the per-stat source citation and data-quality footer lines. */
+  hoverCardHeight: 150,
   /** Labels start appearing for selected/related; full labels after +0.55 */
   labelsZoomThreshold: 2.2,
   labelBaseFontSize: 4.2,
