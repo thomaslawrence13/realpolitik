@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-11T19:55:12.820Z",
+  "generatedAt": "2026-08-15T18:38:33.902Z",
   "contract": {
     "contractVersion": "iq-contract-v1.0.0",
     "scoringVersion": "iq-score-v2.0.0",
@@ -48,7 +48,7 @@
     "lowQualityCount": 0,
     "staleCountryCount": 5,
     "highQualityCount": 134,
-    "ingestAverageCoveragePct": 95.9,
+    "ingestAverageCoveragePct": 95.7,
     "ingestMissingCountriesByWeakestIndicator": [
       {
         "snapshotKey": "imf_unemployment",
@@ -66,9 +66,9 @@
         "newestObservation": "2025"
       },
       {
-        "snapshotKey": "world_bank_energy_import_pct",
-        "missingCountryCount": 9,
-        "newestObservation": "2023"
+        "snapshotKey": "world_bank_military_expenditure_usd",
+        "missingCountryCount": 10,
+        "newestObservation": "2024"
       }
     ]
   },
@@ -81,6 +81,32 @@
     {
       "countryId": "syria",
       "displayName": "Syria",
+      "informationScore": 85,
+      "staleIndicatorCount": 1,
+      "fallbackIndicatorCount": 1,
+      "lowConfidenceIndicatorCount": 0,
+      "remediationDrivers": [
+        "Refresh 1 stale indicator exceeding freshness SLA.",
+        "Replace 1 fallback indicator with observed or higher-confidence evidence.",
+        "cohesion from imf-weo is stale (5706d old, SLA 1200d)."
+      ]
+    },
+    {
+      "countryId": "cuba",
+      "displayName": "Cuba",
+      "informationScore": 86,
+      "staleIndicatorCount": 1,
+      "fallbackIndicatorCount": 1,
+      "lowConfidenceIndicatorCount": 0,
+      "remediationDrivers": [
+        "Refresh 1 stale indicator exceeding freshness SLA.",
+        "Replace 1 fallback indicator with observed or higher-confidence evidence.",
+        "tradeExposure from world-bank-wdi is stale (2053d old, SLA 1200d)."
+      ]
+    },
+    {
+      "countryId": "sudan",
+      "displayName": "Sudan",
       "informationScore": 88,
       "staleIndicatorCount": 1,
       "fallbackIndicatorCount": 1,
@@ -88,74 +114,39 @@
       "remediationDrivers": [
         "Refresh 1 stale indicator exceeding freshness SLA.",
         "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "cohesion from imf-weo is stale (5702d old, SLA 1200d)."
+        "militaryTreatyLevel from world-bank-wdi is stale (1688d old, SLA 1200d)."
       ]
     },
     {
-      "countryId": "cuba",
-      "displayName": "Cuba",
-      "informationScore": 89,
+      "countryId": "qatar",
+      "displayName": "Qatar",
+      "informationScore": 88,
       "staleIndicatorCount": 1,
       "fallbackIndicatorCount": 1,
       "lowConfidenceIndicatorCount": 0,
       "remediationDrivers": [
         "Refresh 1 stale indicator exceeding freshness SLA.",
         "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "tradeExposure from world-bank-wdi is stale (2049d old, SLA 1200d)."
+        "militaryTreatyLevel from world-bank-wdi is stale (1323d old, SLA 1200d)."
+      ]
+    },
+    {
+      "countryId": "afghanistan",
+      "displayName": "Afghanistan",
+      "informationScore": 88,
+      "staleIndicatorCount": 1,
+      "fallbackIndicatorCount": 1,
+      "lowConfidenceIndicatorCount": 0,
+      "remediationDrivers": [
+        "Refresh 1 stale indicator exceeding freshness SLA.",
+        "Replace 1 fallback indicator with observed or higher-confidence evidence.",
+        "militaryTreatyLevel from world-bank-wdi is stale (1688d old, SLA 1200d)."
       ]
     },
     {
       "countryId": "taiwan",
       "displayName": "Taiwan",
       "informationScore": 91,
-      "staleIndicatorCount": 0,
-      "fallbackIndicatorCount": 0,
-      "lowConfidenceIndicatorCount": 0,
-      "remediationDrivers": []
-    },
-    {
-      "countryId": "sudan",
-      "displayName": "Sudan",
-      "informationScore": 91,
-      "staleIndicatorCount": 1,
-      "fallbackIndicatorCount": 1,
-      "lowConfidenceIndicatorCount": 0,
-      "remediationDrivers": [
-        "Refresh 1 stale indicator exceeding freshness SLA.",
-        "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "militaryTreatyLevel from world-bank-wdi is stale (1684d old, SLA 1200d)."
-      ]
-    },
-    {
-      "countryId": "qatar",
-      "displayName": "Qatar",
-      "informationScore": 91,
-      "staleIndicatorCount": 1,
-      "fallbackIndicatorCount": 1,
-      "lowConfidenceIndicatorCount": 0,
-      "remediationDrivers": [
-        "Refresh 1 stale indicator exceeding freshness SLA.",
-        "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "militaryTreatyLevel from world-bank-wdi is stale (1319d old, SLA 1200d)."
-      ]
-    },
-    {
-      "countryId": "afghanistan",
-      "displayName": "Afghanistan",
-      "informationScore": 91,
-      "staleIndicatorCount": 1,
-      "fallbackIndicatorCount": 1,
-      "lowConfidenceIndicatorCount": 0,
-      "remediationDrivers": [
-        "Refresh 1 stale indicator exceeding freshness SLA.",
-        "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "militaryTreatyLevel from world-bank-wdi is stale (1684d old, SLA 1200d)."
-      ]
-    },
-    {
-      "countryId": "yemen",
-      "displayName": "Yemen",
-      "informationScore": 92,
       "staleIndicatorCount": 0,
       "fallbackIndicatorCount": 0,
       "lowConfidenceIndicatorCount": 0,
@@ -182,6 +173,15 @@
     {
       "countryId": "kosovo",
       "displayName": "Kosovo",
+      "informationScore": 92,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 0,
+      "remediationDrivers": []
+    },
+    {
+      "countryId": "iceland",
+      "displayName": "Iceland",
       "informationScore": 92,
       "staleIndicatorCount": 0,
       "fallbackIndicatorCount": 0,

@@ -1,31 +1,20 @@
 import { useSyncExternalStore } from 'react';
-import type { CountryProfile, EventTemplate, Filters, ScenarioInputs, SimulatedCountry, WeightSetKey } from '../types';
+import type { Filters, MapFillMode, OverlayMode } from '../types';
 
 type MapState = {
   selectedCountry: string;
   hoveredCountry: string | null;
-  currentYear: number;
   activeFilters: Filters;
-  simulationSnapshot: {
-    simulated: SimulatedCountry[];
-    baselineSimulated: SimulatedCountry[];
-    requestId: number;
-  } | null;
-};
-
-type SimulationPayload = {
-  profiles: CountryProfile[];
-  scenarioInputs: ScenarioInputs;
-  activeEvents: EventTemplate[];
-  weightSetKey: WeightSetKey;
+  overlayMode: OverlayMode;
+  fillMode: MapFillMode;
 };
 
 type Actions = {
   setSelectedCountry: (country: string) => void;
   setHoveredCountry: (country: string | null) => void;
-  setCurrentYear: (year: number) => void;
   setActiveFilters: (filters: Filters) => void;
-  setSimulationPayload: (payload: SimulationPayload) => void;
+  setOverlayMode: (mode: OverlayMode) => void;
+  setFillMode: (mode: MapFillMode) => void;
 };
 
 type StoreShape = MapState & Actions;
@@ -42,7 +31,6 @@ const listeners = new Set<() => void>();
 let state: MapState = {
   selectedCountry: 'United States of America',
   hoveredCountry: null,
-  currentYear: 0,
   activeFilters: {
     allianceNetwork: 'all',
     tradeExposure: 'all',
@@ -52,55 +40,8 @@ let state: MapState = {
     regimeType: 'all',
     riskLevel: 'all',
   },
-  simulationSnapshot: null,
-};
-
-let simulationWorker: Worker | null = null;
-let latestRequestId = 0;
-let simulationPayload: SimulationPayload | null = null;
-/** Coalesce bursts of setSimulationPayload into one worker post per microtask. */
-let simulationFlushScheduled = false;
-
-const ensureWorker = () => {
-  if (simulationWorker || typeof window === 'undefined') return;
-  simulationWorker = new Worker(new URL('../workers/simulation.worker.ts', import.meta.url), {
-    type: 'module',
-  });
-  simulationWorker.onmessage = (event: MessageEvent<MapState['simulationSnapshot'] & { type: string }>) => {
-    if (!event.data || event.data.type !== 'simulated') return;
-    if (event.data.requestId !== latestRequestId) return;
-    setState({
-      simulationSnapshot: {
-        simulated: event.data.simulated,
-        baselineSimulated: event.data.baselineSimulated,
-        requestId: event.data.requestId,
-      },
-    });
-  };
-};
-
-const postSimulation = () => {
-  if (!simulationPayload) return;
-  ensureWorker();
-  if (!simulationWorker) return;
-  latestRequestId += 1;
-  simulationWorker.postMessage({
-    type: 'simulate',
-    requestId: latestRequestId,
-    timelineIndex: state.currentYear,
-    // Bulk map sims never need history or per-country explanation (inspector
-    // re-sims the selected country on the main thread with explanation).
-    ...simulationPayload,
-  });
-};
-
-const scheduleSimulation = () => {
-  if (simulationFlushScheduled) return;
-  simulationFlushScheduled = true;
-  queueMicrotask(() => {
-    simulationFlushScheduled = false;
-    postSimulation();
-  });
+  overlayMode: 'none',
+  fillMode: 'risk',
 };
 
 const actions: Actions = {
@@ -112,16 +53,9 @@ const actions: Actions = {
     if (state.hoveredCountry === hoveredCountry) return;
     setState({ hoveredCountry });
   },
-  setCurrentYear: (currentYear) => {
-    if (state.currentYear === currentYear) return;
-    setState({ currentYear });
-    scheduleSimulation();
-  },
   setActiveFilters: (activeFilters) => setState({ activeFilters }),
-  setSimulationPayload: (payload) => {
-    simulationPayload = payload;
-    scheduleSimulation();
-  },
+  setOverlayMode: (overlayMode) => setState({ overlayMode }),
+  setFillMode: (fillMode) => setState({ fillMode }),
 };
 
 /** Stable snapshot for useSyncExternalStore — rebuilt only when state mutates. */
@@ -136,12 +70,7 @@ const setState = (partial: Partial<MapState>) => {
 };
 
 const destroy = (): void => {
-  if (simulationWorker) {
-    simulationWorker.terminate();
-    simulationWorker = null;
-  }
-  simulationFlushScheduled = false;
-  simulationPayload = null;
+  listeners.clear();
 };
 
 export const useMapStore = ((selector) =>

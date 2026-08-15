@@ -57,6 +57,8 @@ build/
 # Environment variables
 .env*
 !.env.example
+.dev.vars
+.dev.vars.*
 
 # IDE
 .vscode/

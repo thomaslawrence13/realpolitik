@@ -18,7 +18,6 @@ export const fillModeGroups: ReadonlyArray<FillModeGroup> = [
       { value: 'risk', label: 'Risk', hint: 'Default live view — teal → red as escalation risk rises' },
       { value: 'confidence', label: 'Confidence', hint: 'Brighter = higher model confidence' },
       { value: 'conflictPressure', label: 'Conflict Pressure', hint: 'Indicator-based conflict pressure (low / medium / high)' },
-      { value: 'shift', label: 'Shift', hint: 'Highlights countries that diverge from baseline' },
     ],
   },
   {

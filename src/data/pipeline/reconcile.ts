@@ -1,4 +1,4 @@
-import type { CountryDataQuality, CountryIndicators, CountryProfile, IndicatorTelemetry } from '../../types';
+import type { CountryDataQuality, CountryIndicators, CountryProfile, IndicatorTelemetry, CoverageMetrics } from '../../types';
 import { sourceAuthorityRank } from '../sourceRegistry';
 import { indicatorQualityRules, indicatorSourcePriority, modelIndicatorKeys } from './rules';
 import { isValidIndicatorValue } from './transformers';
@@ -31,14 +31,10 @@ const sourceRankFor = (indicator: IndicatorKey, sourceId: string): number => {
   return index === -1 ? ranking.length + 1 : index;
 };
 
-/**
- * The period an observation describes, for recency comparison. Prefers the
- * declared vintage over `observedAt`: curated providers re-affirm at load time,
- * so `observedAt` is "today" for all of them and cannot separate fresh from old.
- * A bare year is widened to its year-end so `"2025"` sorts after `"2025-01-01"`.
- */
 const recencyKeyOf = (observation: { vintage?: string; observedAt: string }): string =>
-  /^\d{4}$/.test(observation.vintage ?? '') ? `${observation.vintage}-12-31` : observation.vintage ?? observation.observedAt;
+  /^\d{4}$/.test(observation.vintage ?? '')
+    ? `${observation.vintage}-12-31`
+    : observation.vintage ?? observation.observedAt;
 
 const sortCandidates = <K extends IndicatorKey>(indicator: K, candidates: IndicatorObservation<K>[]) => {
   return candidates
@@ -50,19 +46,16 @@ const sortCandidates = <K extends IndicatorKey>(indicator: K, candidates: Indica
       const confidenceDiff = normalizeConfidence(right.confidence) - normalizeConfidence(left.confidence);
       if (confidenceDiff !== 0) return confidenceDiff;
 
-      // Freshest reference period wins among equally-ranked, equally-confident sources.
       const vintageDiff = compareDateDesc(recencyKeyOf(left), recencyKeyOf(right));
       if (vintageDiff !== 0) return vintageDiff;
 
       const dateDiff = compareDateDesc(left.observedAt, right.observedAt);
       if (dateDiff !== 0) return dateDiff;
 
-      // Prefer a reported outturn over a projection when everything else ties.
       if (Boolean(left.projection) !== Boolean(right.projection)) {
         return left.projection ? 1 : -1;
       }
 
-      // Last resort: the more authoritative publisher.
       const authorityDiff = sourceAuthorityRank(left.sourceId) - sourceAuthorityRank(right.sourceId);
       if (authorityDiff !== 0) return authorityDiff;
 
@@ -109,9 +102,14 @@ export const enrichCountryWithObservations = (
   const telemetry: IndicatorTelemetry[] = [];
   const degradedReasons: string[] = [];
 
-  let latestTimestamp = toDate(profile.lastUpdated)?.getTime() ?? Date.now();
+  let latestTimestamp = -Infinity;
   let coverageTotal = 0;
   let coveragePresent = 0;
+  let observedCoverage = 0;
+  let freshCoverage = 0;
+  let fallbackCoverage = 0;
+  let staleCoverage = 0;
+  let lowConfidenceCoverage = 0;
 
   for (const indicator of modelIndicatorKeys) {
     const rule = indicatorQualityRules[indicator];
@@ -135,6 +133,7 @@ export const enrichCountryWithObservations = (
     const confidence = normalizeConfidence(selected.confidence);
     const ageDays = daysOld(selected.observedAt);
     const stale = ageDays != null && ageDays > rule.staleAfterDays;
+    const evidenceClass = classifyEvidence(selected.method, stale, confidence, rule.minimumConfidence);
 
     if (stale) {
       degradedReasons.push(
@@ -151,29 +150,50 @@ export const enrichCountryWithObservations = (
       indicator,
       sourceId: selected.sourceId,
       observedAt: selected.observedAt,
+      retrievedAt: selected.retrievedAt,
       confidence,
       stale,
       method: selected.method,
-      evidenceClass: classifyEvidence(selected.method, stale, confidence, rule.minimumConfidence),
+      evidenceClass,
       ...(selected.vintage ? { vintage: selected.vintage } : {}),
       ...(selected.seriesUpdatedAt ? { seriesUpdatedAt: selected.seriesUpdatedAt } : {}),
       ...(selected.projection ? { projection: true } : {}),
     });
 
-    if (rule.includeInCoverage) coveragePresent += 1;
+    if (rule.includeInCoverage) {
+      coveragePresent += 1;
+      if (!stale) freshCoverage += 1;
+      if (evidenceClass === 'observed') observedCoverage += 1;
+      if (evidenceClass === 'fallback') fallbackCoverage += 1;
+      if (stale) staleCoverage += 1;
+      if (confidence < rule.minimumConfidence) lowConfidenceCoverage += 1;
+    }
 
     const ts = toDate(selected.observedAt)?.getTime();
     if (ts != null && ts > latestTimestamp) latestTimestamp = ts;
   }
 
   const computedSourceCoverage = coverageTotal === 0 ? 0 : Math.round((coveragePresent / coverageTotal) * 100);
-  const computedLastUpdated = new Date(latestTimestamp).toISOString().slice(0, 10);
+  const fallbackTimestamp = toDate(profile.lastUpdated)?.getTime() ?? Date.now();
+  const computedLastUpdated = new Date(Number.isFinite(latestTimestamp) ? latestTimestamp : fallbackTimestamp)
+    .toISOString()
+    .slice(0, 10);
+  const toPct = (count: number) => coverageTotal === 0 ? 0 : Math.round((count / coverageTotal) * 100);
+  const coverage: CoverageMetrics = {
+    valuePct: computedSourceCoverage,
+    observedPct: toPct(observedCoverage),
+    freshPct: toPct(freshCoverage),
+    fallbackPct: toPct(fallbackCoverage),
+    stalePct: toPct(staleCoverage),
+    lowConfidencePct: toPct(lowConfidenceCoverage),
+  };
 
   const dataQuality: CountryDataQuality = {
     computedSourceCoverage,
     computedLastUpdated,
     degradedReasons: dedupeReasons(degradedReasons),
     indicators: telemetry.sort((left, right) => left.indicator.localeCompare(right.indicator)),
+    coverage,
   };
 
   return {

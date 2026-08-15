@@ -1,15 +1,15 @@
 import { useMemo } from 'react';
-import type { SimulatedCountry, Filters } from '../types';
+import type { CountryAssessment, Filters } from '../types';
 import { filterCountries, searchCountries, buildVisibleNames } from '../state/selectors';
 
 interface UseFilteredCountriesReturn {
-  filtered: SimulatedCountry[];
+  filtered: CountryAssessment[];
   visibleNames: Set<string>;
-  railCountries: SimulatedCountry[];
+  railCountries: CountryAssessment[];
 }
 
 export function useFilteredCountries(
-  simulated: SimulatedCountry[],
+  simulated: CountryAssessment[],
   filters: Filters,
   search: string,
 ): UseFilteredCountriesReturn {

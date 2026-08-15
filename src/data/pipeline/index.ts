@@ -9,6 +9,7 @@ import {
   buildGovernanceCrossCheckObservations,
   buildSanctionsSnapshotObservations,
   buildTradeDependenceObservations,
+  buildUcdpConflictObservations,
   buildWorldBankObservations,
 } from './providers';
 import {
@@ -18,8 +19,13 @@ import {
 } from './relationshipProviders';
 import { enrichCountryWithObservations } from './reconcile';
 import { enrichRelationshipWithObservations } from './reconcileRelationships';
-import { buildImfWeoObservations, buildIngestedObservations, buildObservedAtIndex } from './externalProviders';
-import type { ImfWeoSnapshot, IngestedSnapshot } from './externalProviders';
+import { buildImfWeoObservations, buildIngestedObservations } from './externalProviders';
+import {
+  buildObservedAtIndex,
+  type ImfWeoSnapshot,
+  type IngestedSnapshot,
+  type RawWorldBankAuditPayload,
+} from './externalProviders';
 import ingestedSnapshot from '../datasets/ingested_snapshot.json';
 import imfWeoSnapshot from '../datasets/imf_weo_snapshot.json';
 import type { RelationshipObservation } from './types';
@@ -57,14 +63,16 @@ const indexRelationshipObservations = (
 /** Empty live payload used for offline / bootstrap enrichment (ingest-only). */
 export const emptyLiveData = (): LiveData => ({
   militaryExpPct: {},
+  militaryExpUsd: {},
   tradePct: {},
   gdpGrowth: {},
+  gdpNominalUsd: {},
+  gdpPerCapitaUsd: {},
   inflation: {},
   politicalStability: {},
   ruleOfLaw: {},
   unemployment: {},
-  vintages: {},
-  seriesUpdatedAt: {},
+  indicatorMetadata: {},
   diagnostics: {
     totalIndicators: 0,
     succeededIndicators: 0,
@@ -79,22 +87,25 @@ export const enrichProfilesWithSourcePipeline = (
   options?: {
     ingest?: IngestedSnapshot;
     weo?: ImfWeoSnapshot;
+    rawAudit?: RawWorldBankAuditPayload;
   },
 ): CountryProfile[] => {
   const ingest = options?.ingest ?? (ingestedSnapshot as IngestedSnapshot);
   const weo = options?.weo ?? (imfWeoSnapshot as ImfWeoSnapshot);
-  // --- Country-level indicator enrichment ---
-  // Order: live API → IMF WEO → ingest snapshot → curated reaffirmations →
-  // stats fallbacks. Reconcile ranks by source priority + confidence, so
-  // fallbacks only fill gaps.
-  // Built once and shared: the observation-date index is needed by both the
-  // ingest observations and the stats merge.
-  const observedAtIndex = buildObservedAtIndex(ingest);
+  // The normalized snapshot already persists per-country observation years.
+  // Keep raw-audit support injectable for validation/tests, but do not ship the
+  // multi-megabyte audit payload in the browser bundle.
+  const rawAudit = options?.rawAudit;
+  const observedAtByIndicator = buildObservedAtIndex(ingest, rawAudit);
 
+  // --- Country-level indicator enrichment ---
+  // Order: live API → ingest snapshot → curated reaffirmations → stats fallbacks.
+  // Reconcile ranks by source priority + confidence, so fallbacks only fill gaps.
   const indicatorObservations = [
     ...buildWorldBankObservations(profiles, live),
     ...buildImfWeoObservations(profiles, weo),
-    ...buildIngestedObservations(profiles, ingest, observedAtIndex),
+    ...buildIngestedObservations(profiles, ingest, observedAtByIndicator),
+    ...buildUcdpConflictObservations(profiles),
     ...buildConflictSnapshotObservations(profiles),
     ...buildSanctionsSnapshotObservations(profiles),
     ...buildTradeDependenceObservations(profiles),
@@ -108,7 +119,7 @@ export const enrichProfilesWithSourcePipeline = (
 
   const enrichedProfiles = profiles.map((profile) => {
     const enriched = enrichCountryWithObservations(profile, byCountry.get(profile.id) ?? []);
-    const stats = applyStatsCoverageEnrichment(profile, live, ingest, weo, observedAtIndex);
+    const stats = applyStatsCoverageEnrichment(profile, live, ingest, weo, observedAtByIndicator);
     return {
       ...profile,
       indicators: enriched.indicators,

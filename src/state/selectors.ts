@@ -1,12 +1,10 @@
-import { getRiskTier } from '../simulation';
-import type { Alignment, Filters, SimulatedCountry } from '../types';
+import { getRiskTier } from '../assessment';
+import type { Filters, CountryAssessment } from '../types';
 
-const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
-
-export const buildByNameIndex = (rows: SimulatedCountry[]) =>
-  new Map(rows.map((entry) => [entry.profile.mapName, entry]));
-
-export const filterCountries = (rows: SimulatedCountry[], filters: Filters): SimulatedCountry[] =>
+export const filterCountries = (
+  rows: CountryAssessment[],
+  filters: Filters,
+): CountryAssessment[] =>
   rows.filter((entry) => {
     const riskTier = getRiskTier(entry.risk);
     return (
@@ -21,7 +19,10 @@ export const filterCountries = (rows: SimulatedCountry[], filters: Filters): Sim
     );
   });
 
-export const searchCountries = (rows: SimulatedCountry[], search: string): SimulatedCountry[] => {
+export const searchCountries = (
+  rows: CountryAssessment[],
+  search: string,
+): CountryAssessment[] => {
   const query = search.trim().toLowerCase();
   if (!query) return rows;
   return rows.filter((entry) => {
@@ -35,46 +36,4 @@ export const searchCountries = (rows: SimulatedCountry[], search: string): Simul
   });
 };
 
-export const buildVisibleNames = (rows: SimulatedCountry[]) => new Set(rows.map((entry) => entry.profile.mapName));
-
-export const selectCountryOrFallback = (
-  byName: Map<string, SimulatedCountry>,
-  rows: SimulatedCountry[],
-  mapName: string,
-): SimulatedCountry | null => byName.get(mapName) ?? rows[0] ?? null;
-
-export const buildEventFeed = ({
-  filtered,
-  baselineByName,
-  scenarioTimeline,
-  timelineIndex,
-  alignmentLabel,
-}: {
-  filtered: SimulatedCountry[];
-  baselineByName: Map<string, SimulatedCountry>;
-  scenarioTimeline: string[];
-  timelineIndex: number;
-  alignmentLabel: Record<Alignment, string>;
-}): Array<{ title: string; detail: string; tone: 'low' | 'medium' | 'high' }> =>
-  filtered
-    .slice()
-    .sort((a, b) => b.risk - a.risk)
-    .slice(0, 5)
-    .map((entry) => {
-      const topPressure = entry.profile.relationships.reduce<
-        typeof entry.profile.relationships[number] | null
-      >(
-        (best, rel) => (!best || rel.tension > best.tension ? rel : best),
-        null,
-      );
-      const baselineEntry = baselineByName.get(entry.profile.mapName);
-      const riskDelta = baselineEntry ? Math.round(entry.risk - baselineEntry.risk) : 0;
-      const tone = getRiskTier(entry.risk);
-      return {
-        title: `${scenarioTimeline[timelineIndex]} · ${entry.profile.displayName}`,
-        detail: `${alignmentLabel[entry.alignment]} at ${entry.confidence}% confidence and ${entry.risk}% modeled escalation risk (${formatSignedPercent(
-          riskDelta,
-        )} vs baseline)${topPressure ? `. Top pressure: ${topPressure.displayName}.` : '.'}`,
-        tone,
-      };
-    });
+export const buildVisibleNames = (rows: CountryAssessment[]) => new Set(rows.map((entry) => entry.profile.mapName));

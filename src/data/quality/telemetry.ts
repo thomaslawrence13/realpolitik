@@ -6,6 +6,7 @@ import type {
   InformationQualityTelemetry,
 } from '../../types';
 import { INFORMATION_QUALITY_CONTRACT } from './contract';
+import { getCoverageMetrics } from '../../lib/coverage';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const nowIso = () => new Date().toISOString();
@@ -53,6 +54,7 @@ const summarizeEvidence = (dataQuality?: CountryDataQuality) => {
 
 export const deriveQualityRemediationDrivers = (country: CountryProfile): string[] => {
   const indicators = country.dataQuality?.indicators ?? [];
+  const coverage = getCoverageMetrics(country);
   const staleCount = indicators.filter((indicator) => indicator.stale).length;
   const fallbackCount = indicators.filter((indicator) => indicator.evidenceClass === 'fallback').length;
   const lowConfidenceCount = indicators.filter(
@@ -60,10 +62,10 @@ export const deriveQualityRemediationDrivers = (country: CountryProfile): string
   ).length;
   const drivers: Array<{ label: string; severity: number }> = [];
 
-  if (country.sourceCoverage < INFORMATION_QUALITY_CONTRACT.lowCoverageThresholdPct) {
+  if (coverage.freshPct < INFORMATION_QUALITY_CONTRACT.lowCoverageThresholdPct) {
     drivers.push({
-      label: `Raise source coverage from ${country.sourceCoverage}% toward ${INFORMATION_QUALITY_CONTRACT.lowCoverageThresholdPct}%+ baseline.`,
-      severity: INFORMATION_QUALITY_CONTRACT.lowCoverageThresholdPct - country.sourceCoverage,
+      label: `Raise source coverage (fresh ${coverage.freshPct}%) toward ${INFORMATION_QUALITY_CONTRACT.lowCoverageThresholdPct}%+ baseline.`,
+      severity: INFORMATION_QUALITY_CONTRACT.lowCoverageThresholdPct - coverage.freshPct,
     });
   }
   if (staleCount > 0) {
@@ -98,6 +100,7 @@ const toCountryInformationScore = (country: CountryProfile): CountryInformationS
   const weights = INFORMATION_QUALITY_CONTRACT.scoreWeights;
   const indicators = country.dataQuality?.indicators ?? [];
   const evidenceSummary = summarizeEvidence(country.dataQuality);
+  const coverage = getCoverageMetrics(country);
   const totalIndicators = indicators.length;
   const staleIndicatorCount = indicators.filter((indicator) => indicator.stale).length;
   const fallbackIndicatorCount = indicators.filter((indicator) => indicator.evidenceClass === 'fallback').length;
@@ -118,7 +121,7 @@ const toCountryInformationScore = (country: CountryProfile): CountryInformationS
           evidenceSummary.fallback * 0.2
         ) / totalIndicators;
 
-  const coverageScore = bounded(country.sourceCoverage);
+  const coverageScore = bounded(coverage.freshPct);
   const completenessScore = bounded(completeness * 100);
   const recencyScore = bounded((1 - staleRatio) * 100);
   const evidenceScore = bounded(evidenceRatio * 100);
@@ -150,7 +153,7 @@ const toCountryInformationScore = (country: CountryProfile): CountryInformationS
     staleIndicatorCount,
     fallbackIndicatorCount,
     lowConfidenceIndicatorCount,
-    sourceCoverage: country.sourceCoverage,
+    sourceCoverage: coverage.freshPct,
     completeness: Number(completeness.toFixed(2)),
     stale,
     gaps,
@@ -159,6 +162,9 @@ const toCountryInformationScore = (country: CountryProfile): CountryInformationS
     evidenceSummary,
   };
 };
+
+export const scoreCountryInformation = (country: CountryProfile): CountryInformationScore =>
+  toCountryInformationScore(country);
 
 const toKpiStatus = (
   telemetry: Omit<InformationQualityTelemetry, 'kpiStatus'>,

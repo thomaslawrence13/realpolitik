@@ -57,9 +57,10 @@ export function useAppChrome(persisted: PersistedChrome | null | undefined) {
   const [drawerOpen, setDrawerOpen] = useState<boolean>(persisted?.drawerOpen ?? false);
   const [drawerTab, setDrawerTab] = useState<DrawerTab>(() => {
     const raw = persisted?.drawerTab as string | undefined;
-    if (raw === 'scenario') return 'analysis';
-    if (raw === 'feed') return 'events';
-    const valid: DrawerTab[] = ['index', 'movers', 'methodology', 'analysis', 'events', 'history'];
+    if (raw === 'analysis' || raw === 'events' || raw === 'history' || raw === 'scenario' || raw === 'feed') {
+      return 'methodology';
+    }
+    const valid: DrawerTab[] = ['index', 'movers', 'methodology'];
     return valid.includes(raw as DrawerTab) ? (raw as DrawerTab) : 'index';
   });
   const [inspectorTab, setInspectorTab] = useState<InspectorTab>(() =>
@@ -70,6 +71,7 @@ export function useAppChrome(persisted: PersistedChrome | null | undefined) {
   const [welcomeOpen, setWelcomeOpen] = useState<boolean>(() => !isWelcomeDismissed());
   const [search, setSearch] = useState('');
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const mobileRef = useRef(isMobile());
 
   const handleDrawerResizeStart = useCallback(
     (startClientY: number) => {
@@ -99,9 +101,27 @@ export function useAppChrome(persisted: PersistedChrome | null | undefined) {
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (isInteractiveShortcutTarget(event.target)) return;
-      if (event.key === '[') setLeftOpen((value) => !value);
-      if (event.key === ']') setRightOpen((value) => !value);
-      if (event.key === '\\') setDrawerOpen((value) => !value);
+      if (event.key === '[') {
+        if (isMobile()) {
+          setRightOpen(false);
+          setDrawerOpen(false);
+        }
+        setLeftOpen((value) => !value);
+      }
+      if (event.key === ']') {
+        if (isMobile()) {
+          setLeftOpen(false);
+          setDrawerOpen(false);
+        }
+        setRightOpen((value) => !value);
+      }
+      if (event.key === '\\') {
+        if (isMobile()) {
+          setLeftOpen(false);
+          setRightOpen(false);
+        }
+        setDrawerOpen((value) => !value);
+      }
       if (event.key === '/') {
         event.preventDefault();
         searchInputRef.current?.focus();
@@ -114,6 +134,25 @@ export function useAppChrome(persisted: PersistedChrome | null | undefined) {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  // Keep the shell coherent when a device rotates or a responsive viewport is
+  // resized. Side panels and the drawer are mutually exclusive on mobile so
+  // the map never gets trapped behind two full-screen surfaces.
+  useEffect(() => {
+    const handleResize = () => {
+      const nextMobile = isMobile();
+      setDrawerHeight((height) => Math.min(height, maxDrawerHeight()));
+      if (nextMobile !== mobileRef.current) {
+        mobileRef.current = nextMobile;
+        setLeftOpen(!nextMobile);
+        setRightOpen(!nextMobile);
+        if (nextMobile) setDrawerOpen(false);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const shellStyle = useMemo(
@@ -133,9 +172,9 @@ export function useAppChrome(persisted: PersistedChrome | null | undefined) {
     searchInputRef.current?.select();
   }, [closeWelcome]);
 
-  const handleWelcomeOpenScenario = useCallback(() => {
+  const handleWelcomeOpenMethodology = useCallback(() => {
     setDrawerOpen(true);
-    setDrawerTab('analysis');
+    setDrawerTab('methodology');
     closeWelcome();
   }, [closeWelcome]);
 
@@ -144,9 +183,27 @@ export function useAppChrome(persisted: PersistedChrome | null | undefined) {
     closeWelcome();
   }, [closeWelcome]);
 
-  const handleToggleLeft = useCallback(() => setLeftOpen((v) => !v), []);
-  const handleToggleRight = useCallback(() => setRightOpen((v) => !v), []);
-  const handleToggleDrawer = useCallback(() => setDrawerOpen((v) => !v), []);
+  const handleToggleLeft = useCallback(() => {
+    if (isMobile()) {
+      setRightOpen(false);
+      setDrawerOpen(false);
+    }
+    setLeftOpen((v) => !v);
+  }, []);
+  const handleToggleRight = useCallback(() => {
+    if (isMobile()) {
+      setLeftOpen(false);
+      setDrawerOpen(false);
+    }
+    setRightOpen((v) => !v);
+  }, []);
+  const handleToggleDrawer = useCallback(() => {
+    if (isMobile()) {
+      setLeftOpen(false);
+      setRightOpen(false);
+    }
+    setDrawerOpen((v) => !v);
+  }, []);
   const handleCloseDrawer = useCallback(() => setDrawerOpen(false), []);
   const handleToggleHelp = useCallback(() => setHelpOpen((v) => !v), []);
   const handleCloseHelp = useCallback(() => setHelpOpen(false), []);
@@ -183,7 +240,7 @@ export function useAppChrome(persisted: PersistedChrome | null | undefined) {
     handleClearSearch,
     closeWelcome,
     handleWelcomeFocusSearch,
-    handleWelcomeOpenScenario,
+    handleWelcomeOpenMethodology,
     handleWelcomeOpenShortcuts,
   };
 }

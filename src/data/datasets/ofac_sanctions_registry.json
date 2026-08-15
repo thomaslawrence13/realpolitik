@@ -1,0 +1,376 @@
+{
+  "fetchedAt": "2026-08-08T18:52:18.465Z",
+  "sourceTitle": "US Treasury OFAC Specially Designated Nationals (SDN) list",
+  "sourceUrl": "https://ofac.treasury.gov/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists",
+  "entryTotal": 19199,
+  "perCountry": {
+    "CU": {
+      "entryCount": 143,
+      "programCount": 3,
+      "topPrograms": [
+        {
+          "program": "CUBA",
+          "count": 77
+        },
+        {
+          "program": "CUBA-EO14404",
+          "count": 68
+        },
+        {
+          "program": "GLOMAG",
+          "count": 6
+        }
+      ]
+    },
+    "IR": {
+      "entryCount": 2469,
+      "programCount": 23,
+      "topPrograms": [
+        {
+          "program": "IRAN-EO13902",
+          "count": 914
+        },
+        {
+          "program": "IRAN",
+          "count": 674
+        },
+        {
+          "program": "IRAN-EO13846",
+          "count": 470
+        },
+        {
+          "program": "IRAN-HR",
+          "count": 222
+        },
+        {
+          "program": "IFSR",
+          "count": 215
+        },
+        {
+          "program": "NPWMD",
+          "count": 163
+        },
+        {
+          "program": "IRAN-EO13876",
+          "count": 115
+        },
+        {
+          "program": "IRGC",
+          "count": 66
+        }
+      ]
+    },
+    "SO": {
+      "entryCount": 30,
+      "programCount": 3,
+      "topPrograms": [
+        {
+          "program": "SOMALIA",
+          "count": 30
+        },
+        {
+          "program": "SDGT",
+          "count": 4
+        },
+        {
+          "program": "FTO",
+          "count": 1
+        }
+      ]
+    },
+    "KP": {
+      "entryCount": 544,
+      "programCount": 11,
+      "topPrograms": [
+        {
+          "program": "DPRK4",
+          "count": 196
+        },
+        {
+          "program": "DPRK3",
+          "count": 160
+        },
+        {
+          "program": "DPRK2",
+          "count": 124
+        },
+        {
+          "program": "DPRK",
+          "count": 69
+        },
+        {
+          "program": "RUSSIA-EO14024",
+          "count": 9
+        },
+        {
+          "program": "NPWMD",
+          "count": 4
+        },
+        {
+          "program": "BURMA-EO14014",
+          "count": 4
+        },
+        {
+          "program": "CYBER2",
+          "count": 3
+        }
+      ]
+    },
+    "BY": {
+      "entryCount": 258,
+      "programCount": 4,
+      "topPrograms": [
+        {
+          "program": "BELARUS-EO14038",
+          "count": 186
+        },
+        {
+          "program": "BELARUS",
+          "count": 73
+        },
+        {
+          "program": "RUSSIA-EO14024",
+          "count": 6
+        },
+        {
+          "program": "NPWMD",
+          "count": 1
+        }
+      ]
+    },
+    "RU": {
+      "entryCount": 6357,
+      "programCount": 29,
+      "topPrograms": [
+        {
+          "program": "RUSSIA-EO14024",
+          "count": 6349
+        },
+        {
+          "program": "UKRAINE-EO13662",
+          "count": 518
+        },
+        {
+          "program": "UKRAINE-EO13661",
+          "count": 57
+        },
+        {
+          "program": "PEESA-EO14039",
+          "count": 26
+        },
+        {
+          "program": "UKRAINE-EO13660",
+          "count": 18
+        },
+        {
+          "program": "NPWMD",
+          "count": 17
+        },
+        {
+          "program": "CYBER2",
+          "count": 13
+        },
+        {
+          "program": "SDGT",
+          "count": 10
+        }
+      ]
+    },
+    "LB": {
+      "entryCount": 16,
+      "programCount": 2,
+      "topPrograms": [
+        {
+          "program": "LEBANON",
+          "count": 16
+        },
+        {
+          "program": "SDGT",
+          "count": 1
+        }
+      ]
+    },
+    "CF": {
+      "entryCount": 29,
+      "programCount": 5,
+      "topPrograms": [
+        {
+          "program": "CAR",
+          "count": 29
+        },
+        {
+          "program": "RUSSIA-EO14024",
+          "count": 3
+        },
+        {
+          "program": "SDGT",
+          "count": 1
+        },
+        {
+          "program": "TCO",
+          "count": 1
+        },
+        {
+          "program": "UKRAINE-EO13660",
+          "count": 1
+        }
+      ]
+    },
+    "VE": {
+      "entryCount": 408,
+      "programCount": 7,
+      "topPrograms": [
+        {
+          "program": "VENEZUELA-EO13850",
+          "count": 175
+        },
+        {
+          "program": "VENEZUELA",
+          "count": 166
+        },
+        {
+          "program": "VENEZUELA-EO13884",
+          "count": 67
+        },
+        {
+          "program": "UKRAINE-EO13662",
+          "count": 2
+        },
+        {
+          "program": "IRAN-CON-ARMS-EO",
+          "count": 1
+        },
+        {
+          "program": "RUSSIA-EO14024",
+          "count": 1
+        },
+        {
+          "program": "SDGT",
+          "count": 1
+        }
+      ]
+    },
+    "LY": {
+      "entryCount": 69,
+      "programCount": 3,
+      "topPrograms": [
+        {
+          "program": "LIBYA3",
+          "count": 51
+        },
+        {
+          "program": "LIBYA2",
+          "count": 18
+        },
+        {
+          "program": "SDGT",
+          "count": 1
+        }
+      ]
+    },
+    "UA": {
+      "entryCount": 976,
+      "programCount": 17,
+      "topPrograms": [
+        {
+          "program": "RUSSIA-EO14024",
+          "count": 595
+        },
+        {
+          "program": "UKRAINE-EO13662",
+          "count": 536
+        },
+        {
+          "program": "UKRAINE-EO13661",
+          "count": 196
+        },
+        {
+          "program": "UKRAINE-EO13660",
+          "count": 154
+        },
+        {
+          "program": "UKRAINE-EO13685",
+          "count": 101
+        },
+        {
+          "program": "ELECTION-EO13848",
+          "count": 38
+        },
+        {
+          "program": "CYBER2",
+          "count": 38
+        },
+        {
+          "program": "IRAN-EO13846",
+          "count": 5
+        }
+      ]
+    },
+    "YE": {
+      "entryCount": 10,
+      "programCount": 2,
+      "topPrograms": [
+        {
+          "program": "YEMEN",
+          "count": 10
+        },
+        {
+          "program": "GLOMAG",
+          "count": 1
+        }
+      ]
+    },
+    "NI": {
+      "entryCount": 80,
+      "programCount": 2,
+      "topPrograms": [
+        {
+          "program": "NICARAGUA",
+          "count": 80
+        },
+        {
+          "program": "NICARAGUA-NHRAA",
+          "count": 8
+        }
+      ]
+    },
+    "ML": {
+      "entryCount": 4,
+      "programCount": 1,
+      "topPrograms": [
+        {
+          "program": "MALI-EO13882",
+          "count": 4
+        }
+      ]
+    },
+    "ET": {
+      "entryCount": 6,
+      "programCount": 1,
+      "topPrograms": [
+        {
+          "program": "ETHIOPIA-EO14046",
+          "count": 6
+        }
+      ]
+    },
+    "SD": {
+      "entryCount": 57,
+      "programCount": 3,
+      "topPrograms": [
+        {
+          "program": "SUDAN-EO14098",
+          "count": 57
+        },
+        {
+          "program": "FTO",
+          "count": 1
+        },
+        {
+          "program": "SDGT",
+          "count": 1
+        }
+      ]
+    }
+  }
+}

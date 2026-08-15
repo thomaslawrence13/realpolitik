@@ -1,4 +1,5 @@
 import type { CountryProfile } from '../../types';
+import { WB_INDICATOR_BY_KEY, type WbIndicatorKey } from '../../lib/worldBankFetch';
 import { iso2ToCountryId } from '../worldBankClient';
 import type { WeoObservation } from '../imfWeoClient';
 import type { IndicatorObservation } from './types';
@@ -8,37 +9,26 @@ export interface IngestedSnapshot {
   version: string;
   timestamp: string;
   countryCountRequested?: number;
+  /** ISO year selected per country and indicator during ingestion. */
+  observationYears?: Partial<Record<SnapshotIndicatorKey, Record<string, string>>>;
+  /** ISO observation dates emitted by the newer multi-source ingest. */
+  observation_dates?: Partial<Record<SnapshotIndicatorKey, Record<string, string>>>;
   world_bank_military_expenditure_pct?: Record<string, number>;
+  world_bank_military_expenditure_usd?: Record<string, number>;
   world_bank_trade_pct?: Record<string, number>;
   world_bank_gdp_growth?: Record<string, number>;
+  world_bank_gdp_nominal_usd?: Record<string, number>;
+  world_bank_gdp_usd?: Record<string, number>;
+  world_bank_gdp_per_capita_usd?: Record<string, number>;
   world_bank_inflation?: Record<string, number>;
   world_bank_political_stability?: Record<string, number>;
   world_bank_rule_of_law?: Record<string, number>;
   world_bank_unemployment?: Record<string, number>;
   world_bank_population?: Record<string, number>;
   world_bank_urban_pct?: Record<string, number>;
-  world_bank_gdp_usd?: Record<string, number>;
-  world_bank_gdp_per_capita_usd?: Record<string, number>;
   world_bank_energy_import_pct?: Record<string, number>;
-  /**
-   * Reference date of each country's newest observation, per series, computed by
-   * `npm run ingest`.
-   *
-   * This exists so the app never imports `raw/world_bank_latest.json`. That file
-   * holds every per-year API row — several megabytes — and pulling it in to
-   * recover ~1,600 dates shipped all of it to every browser.
-   */
-  observation_dates?: Partial<Record<SnapshotIndicatorKey, Record<string, string>>>;
 }
 
-/**
- * IMF World Economic Outlook snapshot, written by `npm run ingest`.
- *
- * Each entry keeps its reference year alongside the value — the WEO's whole
- * advantage is currency, and a number is only as useful as the period it
- * describes. See `src/data/imfWeoClient.ts` for why this is ingested rather
- * than fetched live.
- */
 export interface ImfWeoSnapshot {
   version: string;
   timestamp: string;
@@ -69,85 +59,82 @@ export interface RawWorldBankAuditPayload {
 
 const mapIndicatorCodeToSnapshotKey = {
   'MS.MIL.XPND.GD.ZS': 'world_bank_military_expenditure_pct',
+  'MS.MIL.XPND.CD': 'world_bank_military_expenditure_usd',
   'TG.VAL.TOTL.GD.ZS': 'world_bank_trade_pct',
   'NY.GDP.MKTP.KD.ZG': 'world_bank_gdp_growth',
+  'NY.GDP.MKTP.CD': 'world_bank_gdp_nominal_usd',
+  'NY.GDP.PCAP.CD': 'world_bank_gdp_per_capita_usd',
   'FP.CPI.TOTL.ZG': 'world_bank_inflation',
+  // Accept both the canonical indicator code and the WGI wire code used by
+  // older raw audit artifacts.
+  'PV.EST': 'world_bank_political_stability',
   'GOV_WGI_PV.EST': 'world_bank_political_stability',
+  'RL.EST': 'world_bank_rule_of_law',
   'GOV_WGI_RL.EST': 'world_bank_rule_of_law',
   'SL.UEM.TOTL.ZS': 'world_bank_unemployment',
   'SP.POP.TOTL': 'world_bank_population',
   'SP.URB.TOTL.IN.ZS': 'world_bank_urban_pct',
-  'NY.GDP.MKTP.CD': 'world_bank_gdp_usd',
-  'NY.GDP.PCAP.CD': 'world_bank_gdp_per_capita_usd',
   'EG.IMP.CONS.ZS': 'world_bank_energy_import_pct',
 } as const satisfies Record<string, keyof IngestedSnapshot>;
 
 export type SnapshotIndicatorKey =
-  (typeof mapIndicatorCodeToSnapshotKey)[keyof typeof mapIndicatorCodeToSnapshotKey];
+  | (typeof mapIndicatorCodeToSnapshotKey)[keyof typeof mapIndicatorCodeToSnapshotKey]
+  | 'world_bank_gdp_usd';
+export type ObservedAtIndex = Record<SnapshotIndicatorKey, Record<string, string>>;
 
 const normalizeObservedAt = (date: string): string => {
   if (/^\d{4}$/.test(date)) return `${date}-12-31`;
   return date.slice(0, 10);
 };
 
-/** countryId → ISO date of that country's newest observation, per snapshot key. */
-export type ObservedAtIndex = Record<SnapshotIndicatorKey, Record<string, string>>;
-
-const emptyObservedAtIndex = (): ObservedAtIndex => ({
-  world_bank_military_expenditure_pct: {},
-  world_bank_trade_pct: {},
-  world_bank_gdp_growth: {},
-  world_bank_inflation: {},
-  world_bank_political_stability: {},
-  world_bank_rule_of_law: {},
-  world_bank_unemployment: {},
-  world_bank_population: {},
-  world_bank_urban_pct: {},
-  world_bank_gdp_usd: {},
-  world_bank_gdp_per_capita_usd: {},
-  world_bank_energy_import_pct: {},
-});
-
-/**
- * The true reference date of each World Bank observation.
- *
- * Without this the best a caller could do is date everything to the ingest run,
- * which would report a 2024 military-spending figure as current. The dates are
- * precomputed by the ingest script; the raw-audit path below is only a fallback
- * for snapshots written before `observation_dates` existed, and is never taken
- * by the app (which no longer imports the raw payload at all).
- */
 export const buildObservedAtIndex = (
-  snapshot?: IngestedSnapshot,
+  snapshot: IngestedSnapshot,
   rawAudit?: RawWorldBankAuditPayload,
 ): ObservedAtIndex => {
-  const index = emptyObservedAtIndex();
-
-  const precomputed = snapshot?.observation_dates;
-  if (precomputed) {
-    for (const [key, dates] of Object.entries(precomputed)) {
-      const snapshotKey = key as SnapshotIndicatorKey;
-      if (!(snapshotKey in index) || !dates) continue;
-      index[snapshotKey] = { ...dates };
-    }
-    return index;
+  const empty: ObservedAtIndex = {
+    world_bank_military_expenditure_pct: {},
+    world_bank_military_expenditure_usd: {},
+    world_bank_trade_pct: {},
+    world_bank_gdp_growth: {},
+    world_bank_gdp_nominal_usd: {},
+    world_bank_gdp_per_capita_usd: {},
+    world_bank_inflation: {},
+    world_bank_political_stability: {},
+    world_bank_rule_of_law: {},
+    world_bank_unemployment: {},
+    world_bank_population: {},
+    world_bank_urban_pct: {},
+    world_bank_gdp_usd: {},
+    world_bank_energy_import_pct: {},
+  };
+  for (const indicator of Object.keys(empty) as SnapshotIndicatorKey[]) {
+    Object.assign(
+      empty[indicator],
+      snapshot.observation_dates?.[indicator] ?? snapshot.observationYears?.[indicator] ?? {},
+    );
   }
 
-  if (!rawAudit?.indicators) return index;
+  // The older snapshot called this series `gdp_nominal`; retain date parity in
+  // both directions while artifacts roll forward.
+  if (Object.keys(empty.world_bank_gdp_usd).length === 0) {
+    Object.assign(empty.world_bank_gdp_usd, empty.world_bank_gdp_nominal_usd);
+  }
+  if (Object.keys(empty.world_bank_gdp_nominal_usd).length === 0) {
+    Object.assign(empty.world_bank_gdp_nominal_usd, empty.world_bank_gdp_usd);
+  }
+
+  if (!rawAudit?.indicators) return empty;
+
   for (const [code, points] of Object.entries(rawAudit.indicators)) {
     const snapshotKey = mapIndicatorCodeToSnapshotKey[code as keyof typeof mapIndicatorCodeToSnapshotKey];
     if (!snapshotKey) continue;
     for (const point of points) {
       const countryId = iso2ToCountryId[point.country.id.toUpperCase()];
-      if (!countryId || point.value == null) continue;
-      const observedAt = normalizeObservedAt(point.date);
-      const existing = index[snapshotKey][countryId];
-      if (!existing || observedAt > existing) {
-        index[snapshotKey][countryId] = observedAt;
-      }
+      if (!countryId || point.value == null || empty[snapshotKey][countryId]) continue;
+      empty[snapshotKey][countryId] = normalizeObservedAt(point.date);
     }
   }
-  return index;
+  return empty;
 };
 
 /** Skip WDI rows older than this so curated fallbacks can fill sparse reporters. */
@@ -159,15 +146,9 @@ const isObservationTooOld = (observedAt: string): boolean => {
   return Date.now() - ts > MAX_INGEST_OBSERVATION_AGE_DAYS * 24 * 60 * 60 * 1000;
 };
 
-/**
- * IMF WEO → indicator observations.
- *
- * The WEO is the freshest authoritative macro series we can reach, so it is
- * ranked ahead of the World Bank for `cohesion` in `rules.ts`. Confidence sits
- * just above the WDI ingest: the data is more current, and the tradeoff — recent
- * years being staff estimates — is carried explicitly on `projection` rather
- * than hidden in a confidence haircut.
- */
+const worldBankSourceId = (key: WbIndicatorKey) =>
+  WB_INDICATOR_BY_KEY.get(key)?.provenanceSourceId ?? 'world-bank-wdi';
+
 export const buildImfWeoObservations = (
   profiles: CountryProfile[],
   weo: ImfWeoSnapshot,
@@ -179,15 +160,11 @@ export const buildImfWeoObservations = (
     const growth = weo.imf_gdp_growth?.[profile.id];
     const inflation = weo.imf_inflation?.[profile.id];
     const unemployment = weo.imf_unemployment?.[profile.id];
-    if (!growth && !inflation && !unemployment) continue;
-
-    // Cohesion blends three series; attribute it to the newest year among the
-    // ones that were actually present, and treat it as an estimate if any input is.
     const present = [growth, inflation, unemployment].filter(
       (entry): entry is WeoObservation => entry != null,
     );
+    if (present.length === 0) continue;
     const vintage = present.map((entry) => entry.year).sort().at(-1);
-    const projection = present.some((entry) => entry.projection);
 
     observations.push({
       providerId: 'imf-weo-ingest',
@@ -205,7 +182,7 @@ export const buildImfWeoObservations = (
       confidence: 0.78,
       ...(vintage ? { vintage } : {}),
       seriesUpdatedAt,
-      ...(projection ? { projection: true } : {}),
+      ...(present.some((entry) => entry.projection) ? { projection: true } : {}),
     });
   }
 
@@ -215,13 +192,13 @@ export const buildImfWeoObservations = (
 export const buildIngestedObservations = (
   profiles: CountryProfile[],
   snapshot: IngestedSnapshot,
-  observedAtByIndicator: ObservedAtIndex = buildObservedAtIndex(snapshot),
+  rawAuditOrIndex?: RawWorldBankAuditPayload | ObservedAtIndex,
 ): IndicatorObservation[] => {
   const observations: IndicatorObservation[] = [];
   const fallbackObservedAt = snapshot.timestamp.slice(0, 10);
-  const seriesUpdatedAt = snapshot.timestamp.slice(0, 10);
-  /** WDI observations are annual, so the vintage is the reference year. */
-  const vintageOf = (observedAt: string) => observedAt.slice(0, 4);
+  const observedAtByIndicator = rawAuditOrIndex && 'world_bank_trade_pct' in rawAuditOrIndex
+    ? rawAuditOrIndex as ObservedAtIndex
+    : buildObservedAtIndex(snapshot, rawAuditOrIndex as RawWorldBankAuditPayload | undefined);
 
   for (const profile of profiles) {
     const geo = profile.id;
@@ -235,15 +212,14 @@ export const buildIngestedObservations = (
       if (military !== null && !isObservationTooOld(observedAt)) {
         observations.push({
           providerId: 'wb-military-ingest',
-          sourceId: 'world-bank-wdi',
+          sourceId: worldBankSourceId('militaryExpPct'),
           countryId: profile.id,
           indicator: 'militaryTreatyLevel', // Fallback proxy for treaty level for now
           value: military,
           observedAt,
+          retrievedAt: snapshot.timestamp,
           method: 'snapshot',
           confidence: 0.90, // High confidence for official data
-          vintage: vintageOf(observedAt),
-          seriesUpdatedAt,
         });
       }
     }
@@ -255,15 +231,14 @@ export const buildIngestedObservations = (
       if (trade !== null && !isObservationTooOld(observedAt)) {
         observations.push({
           providerId: 'wb-trade-ingest',
-          sourceId: 'world-bank-wdi',
+          sourceId: worldBankSourceId('tradePct'),
           countryId: profile.id,
           indicator: 'tradeExposure',
           value: trade,
           observedAt,
+          retrievedAt: snapshot.timestamp,
           method: 'snapshot',
           confidence: 0.88,
-          vintage: vintageOf(observedAt),
-          seriesUpdatedAt,
         });
       }
     }
@@ -274,15 +249,14 @@ export const buildIngestedObservations = (
     if (stability !== null && !isObservationTooOld(stabilityObservedAt)) {
       observations.push({
         providerId: 'wb-governance-ingest',
-        sourceId: 'world-bank-wdi',
+        sourceId: worldBankSourceId('politicalStability'),
         countryId: profile.id,
         indicator: 'regimeStability',
         value: stability,
         observedAt: stabilityObservedAt,
+        retrievedAt: snapshot.timestamp,
         method: 'snapshot',
         confidence: 0.8,
-        vintage: vintageOf(stabilityObservedAt),
-        seriesUpdatedAt,
       });
     }
 
@@ -292,15 +266,14 @@ export const buildIngestedObservations = (
     if (ruleOfLawTier !== null && !isObservationTooOld(ruleObservedAt)) {
       observations.push({
         providerId: 'wb-governance-ingest',
-        sourceId: 'world-bank-wdi',
+        sourceId: worldBankSourceId('ruleOfLaw'),
         countryId: profile.id,
         indicator: 'regimeStability',
         value: ruleOfLawTier,
         observedAt: ruleObservedAt,
+        retrievedAt: snapshot.timestamp,
         method: 'snapshot',
         confidence: 0.84,
-        vintage: vintageOf(ruleObservedAt),
-        seriesUpdatedAt,
       });
     }
 
@@ -319,15 +292,14 @@ export const buildIngestedObservations = (
       if (!isObservationTooOld(observedAt)) {
         observations.push({
           providerId: 'wb-cohesion-ingest',
-          sourceId: 'world-bank-wdi',
+          sourceId: worldBankSourceId('gdpGrowth'),
           countryId: profile.id,
           indicator: 'cohesion',
           value: toCohesionValue(profile.indicators.cohesion, gdpGrowth, inflation, unemployment),
           observedAt,
+          retrievedAt: snapshot.timestamp,
           method: 'snapshot',
           confidence: 0.74,
-          vintage: vintageOf(observedAt),
-          seriesUpdatedAt,
         });
       }
     }

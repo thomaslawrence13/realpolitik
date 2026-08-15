@@ -110,26 +110,6 @@ export const MapLegendControls = memo(function MapLegendControls({
             </span>
           </span>
         )}
-        {fillMode === 'shift' && (
-          <>
-            <span className="legend-chip">
-              <i style={{ background: NEUTRAL }} aria-hidden />
-              Tracks baseline
-            </span>
-            <span className="legend-chip">
-              <i style={{ background: RISK_LOW }} aria-hidden />
-              Risk down
-            </span>
-            <span className="legend-chip">
-              <i style={{ background: RISK_HIGH }} aria-hidden />
-              Risk up
-            </span>
-            <span className="legend-chip">
-              <i style={{ background: '#c77dff' }} aria-hidden />
-              Alignment shifted
-            </span>
-          </>
-        )}
         {fillMode === 'gdpPerCapita' && (
           <span className="legend-gradient-bar">
             <span className="legend-gradient-swatch" style={{ background: `linear-gradient(to right, ${GDP_POOR}, ${GDP_MID}, ${GDP_RICH})` }} />

@@ -17,6 +17,11 @@ export default defineConfig({
               priority: 30,
             },
             {
+              name: 'history-data',
+              test: /src[\/]data[\/]datasets[\/]historical_indicator_series\.json$/,
+              priority: 28,
+            },
+            {
               name: 'dataset',
               test: /src[\\/]data[\\/]datasets[\\/]/,
               priority: 25,

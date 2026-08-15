@@ -1,54 +1,39 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { RegimeType, SimulatedCountry, Tier } from '../../types';
+import type { RegimeType, CountryAssessment, Tier } from '../../types';
 import { summarizeCountryTrust, TrustTag } from '../provenance';
-import { getRiskTier } from '../../simulation';
+import { getRiskTier } from '../../assessment';
 import { SvgIcon } from '../ui';
+import { getFreshCoverage } from '../../lib/coverage';
+import {
+  downloadTextFile,
+  snapshotRowsToCsv,
+  snapshotRowsToMarkdown,
+  type SnapshotExportRow,
+} from '../../lib/exportSnapshot';
 
 type IndexMetric = 'coverage' | 'confidence' | 'risk';
 const maxComparisonCountries = 4;
 
-const CSV_COLUMNS = ['Country', 'Region', 'Regime', 'Coverage%', 'Confidence%', 'Risk%', 'Relationships', 'Trust'] as const;
-
-const exportIndexCsv = (rows: SimulatedCountry[]) => {
-  // Prevent CSV formula injection by prefixing dangerous characters with a single quote
-  const escape = (value: string) => {
-    // If value starts with formula-inducing characters (=, +, -, @), prefix with single quote
-    if (/^[=+\-@]/.test(value)) {
-      value = `'${value}`;
-    }
-    return `"${value.replace(/"/g, '""')}"`;
-  };
-  const header = CSV_COLUMNS.join(',');
-  const body = rows.map((country) => {
+const toExportRows = (rows: CountryAssessment[]): SnapshotExportRow[] =>
+  rows.map((country) => {
     const trust = summarizeCountryTrust(country.profile);
-    return [
-      escape(country.profile.displayName),
-      escape(country.profile.region),
-      escape(country.profile.regimeType),
-      String(country.profile.sourceCoverage),
-      String(country.confidence),
-      String(country.risk),
-      String(country.profile.relationships.length),
-      escape(trust.label),
-    ].join(',');
+    return {
+      country: country.profile.displayName,
+      region: country.profile.region,
+      regime: country.profile.regimeType,
+      freshCoveragePct: getFreshCoverage(country.profile),
+      confidencePct: country.confidence,
+      riskPct: country.risk,
+      relationships: country.profile.relationships.length,
+      trust: trust.label,
+    };
   });
-  const csv = [header, ...body].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `realpolitik-index-${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-};
 
 export function IndexPanel({
   countries,
   onSelectCountry,
 }: {
-  countries: SimulatedCountry[];
+  countries: CountryAssessment[];
   onSelectCountry: (mapName: string) => void;
 }) {
   const [metric, setMetric] = useState<IndexMetric>('coverage');
@@ -86,7 +71,7 @@ export function IndexPanel({
     const next = filtered.slice();
     next.sort((left, right) => {
       if (metric === 'coverage') {
-        return right.profile.sourceCoverage - left.profile.sourceCoverage || left.profile.displayName.localeCompare(right.profile.displayName);
+        return getFreshCoverage(right.profile) - getFreshCoverage(left.profile) || left.profile.displayName.localeCompare(right.profile.displayName);
       }
       if (metric === 'confidence') {
         return right.confidence - left.confidence || left.profile.displayName.localeCompare(right.profile.displayName);
@@ -104,11 +89,13 @@ export function IndexPanel({
       [...selectedIdSet]
         .filter((id) => rankedIdSet.has(id))
         .map((countryId) => ranked.find((country) => country.profile.id === countryId))
-        .filter((country): country is SimulatedCountry => Boolean(country)),
+        .filter((country): country is CountryAssessment => Boolean(country)),
     [ranked, rankedIdSet, selectedIdSet],
   );
 
   const activeFilterCount = [regionFilter, trustFilter, riskFilter, regimeFilter].filter((value) => value !== 'all').length;
+  const exportRows = toExportRows(ranked);
+  const exportDate = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     // Prune selection when the ranked list changes.
@@ -147,11 +134,11 @@ export function IndexPanel({
   };
 
   const matrixRows = [
-    { label: 'Coverage', value: (country: SimulatedCountry) => `${country.profile.sourceCoverage}%` },
-    { label: 'Confidence', value: (country: SimulatedCountry) => `${country.confidence}%` },
-    { label: 'Risk', value: (country: SimulatedCountry) => `${country.risk}%` },
-    { label: 'Relationships', value: (country: SimulatedCountry) => String(country.profile.relationships.length) },
-    { label: 'Trust', value: (country: SimulatedCountry) => summarizeCountryTrust(country.profile).label },
+    { label: 'Fresh coverage', value: (country: CountryAssessment) => `${getFreshCoverage(country.profile)}%` },
+    { label: 'Confidence', value: (country: CountryAssessment) => `${country.confidence}%` },
+    { label: 'Risk', value: (country: CountryAssessment) => `${country.risk}%` },
+    { label: 'Relationships', value: (country: CountryAssessment) => String(country.profile.relationships.length) },
+    { label: 'Trust', value: (country: CountryAssessment) => summarizeCountryTrust(country.profile).label },
   ];
 
   return (
@@ -165,19 +152,29 @@ export function IndexPanel({
           <label className="index-toolbar-field">
             <span>Rank by</span>
             <select value={metric} onChange={(event) => setMetric(event.target.value as IndexMetric)}>
-              <option value="coverage">Coverage</option>
+              <option value="coverage">Fresh coverage</option>
               <option value="confidence">Confidence</option>
               <option value="risk">Risk</option>
             </select>
           </label>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={() => exportIndexCsv(ranked)}
-            title="Export visible countries as CSV"
-          >
-            Export CSV
-          </button>
+          <div className="index-export-actions" aria-label="Export visible index">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => downloadTextFile(`realpolitik-index-${exportDate}.csv`, snapshotRowsToCsv(exportRows), 'text/csv;charset=utf-8')}
+              title="Export visible countries as CSV"
+            >
+              CSV
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => downloadTextFile(`realpolitik-index-${exportDate}.md`, snapshotRowsToMarkdown(exportRows, exportDate), 'text/markdown;charset=utf-8')}
+              title="Export visible countries as Markdown"
+            >
+              Markdown
+            </button>
+          </div>
         </div>
       </div>
 
@@ -284,7 +281,7 @@ export function IndexPanel({
                       <span className="index-sub">{trust.detail}</span>
                     </span>
                     <span className="index-score">
-                      {metric === 'coverage' ? `${country.profile.sourceCoverage}%` : metric === 'confidence' ? `${country.confidence}%` : `${country.risk}%`}
+                      {metric === 'coverage' ? `${getFreshCoverage(country.profile)}%` : metric === 'confidence' ? `${country.confidence}%` : `${country.risk}%`}
                     </span>
                   </button>
                 );
@@ -309,7 +306,7 @@ export function IndexPanel({
                         <TrustTag summary={trust} />
                       </header>
                       <p>{country.profile.region} · {country.profile.regimeType} · updated {country.profile.lastUpdated}</p>
-                      <p>Coverage {country.profile.sourceCoverage}% · Confidence {country.confidence}% · Risk {country.risk}%</p>
+                      <p>Fresh {getFreshCoverage(country.profile)}% · Confidence {country.confidence}% · Risk {country.risk}%</p>
                       <p>Relationships {country.profile.relationships.length} · {trust.detail}</p>
                       <div className="index-compare-actions">
                         <button type="button" className="btn btn-ghost btn-sm" onClick={() => onSelectCountry(country.profile.mapName)}>

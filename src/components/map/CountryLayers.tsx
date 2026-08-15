@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import type { MutableRefObject } from 'react';
-import type { Alignment, MapFillMode, OverlayMode, SimulatedCountry } from '../../types';
+import type { Alignment, MapFillMode, OverlayMode, CountryAssessment } from '../../types';
 import { countries, countryPathStrings } from '../../lib/map';
 import { resolveFill, NEUTRAL } from './countryColors';
 import { overlayColor } from './relationshipArcs';
@@ -9,15 +9,13 @@ const FILTERED_OPACITY = 0.28;
 const UNTRACKED_OPACITY = 0.42;
 
 type CountryLayersProps = {
-  byName: Map<string, SimulatedCountry>;
-  baselineByName: Map<string, SimulatedCountry>;
+  byName: Map<string, CountryAssessment>;
   visibleNames: Set<string>;
   selectedName: string;
   relatedNames: Set<string>;
   overlayMode: OverlayMode;
   fillMode: MapFillMode;
   alignmentColor: Record<Alignment, string>;
-  setHoveredName: (name: string | null) => void;
   setHoveredCountry: (name: string | null) => void;
   hoveredNameRef: MutableRefObject<string | null>;
   hoveredIsParamRef: MutableRefObject<boolean>;
@@ -29,14 +27,12 @@ type CountryLayersProps = {
  */
 export const CountryLayers = memo(function CountryLayers({
   byName,
-  baselineByName,
   visibleNames,
   selectedName,
   relatedNames,
   overlayMode,
   fillMode,
   alignmentColor,
-  setHoveredName,
   setHoveredCountry,
   hoveredNameRef,
   hoveredIsParamRef,
@@ -46,15 +42,12 @@ export const CountryLayers = memo(function CountryLayers({
       {countries.map((country) => {
         const name = country.properties.name;
         const simulated = byName.get(name);
-        const baseline = baselineByName.get(name);
         const isParameterized = Boolean(simulated);
         const isVisible = isParameterized && visibleNames.has(name);
         const isSelected = selectedName === name;
         const isRelated = relatedNames.has(name);
 
-        const fill = simulated
-          ? resolveFill(fillMode, { simulated, baseline, alignmentColor })
-          : NEUTRAL;
+        const fill = simulated ? resolveFill(fillMode, { simulated, alignmentColor }) : NEUTRAL;
         const opacity = isSelected
           ? 1
           : !isParameterized
@@ -88,13 +81,11 @@ export const CountryLayers = memo(function CountryLayers({
             onPointerEnter={() => {
               hoveredNameRef.current = name;
               hoveredIsParamRef.current = isParameterized;
-              setHoveredName(name);
               setHoveredCountry(name);
             }}
             onPointerLeave={() => {
               hoveredNameRef.current = null;
               hoveredIsParamRef.current = false;
-              setHoveredName(null);
               setHoveredCountry(null);
             }}
           />

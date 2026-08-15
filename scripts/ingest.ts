@@ -10,6 +10,8 @@ import {
   type WeoSnapshotKey,
 } from '../src/data/imfWeoClient.js';
 import type { ImfWeoSnapshot } from '../src/data/pipeline/externalProviders.js';
+import { buildHistoricalSeriesArtifact } from '../src/lib/historicalSeriesArtifact.js';
+import type { WbDataPoint, WbIndicatorCode } from '../src/lib/worldBankFetch.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,6 +24,7 @@ const isoToCountryId = new Map(Object.entries(countryIso2).map(([countryId, iso]
 
 type SnapshotKey =
   | 'world_bank_military_expenditure_pct'
+  | 'world_bank_military_expenditure_usd'
   | 'world_bank_trade_pct'
   | 'world_bank_gdp_growth'
   | 'world_bank_inflation'
@@ -38,7 +41,8 @@ type IndicatorConfig = {
   snapshotKey: SnapshotKey;
   code: string;
   label: string;
-  sourceId?: string;
+  apiSourceId?: string;
+  provenanceSourceId?: 'world-bank-wdi' | 'world-bank-wgi';
 };
 
 type WorldBankPoint = {
@@ -74,6 +78,7 @@ type IngestSnapshot = {
 type ManifestIndicator = {
   snapshotKey: string;
   code: string;
+  sourceId: string;
   label: string;
   coverageCount: number;
   missingCountryCount: number;
@@ -103,6 +108,11 @@ const indicators: IndicatorConfig[] = [
     label: 'Military expenditure (% of GDP)',
   },
   {
+    snapshotKey: 'world_bank_military_expenditure_usd',
+    code: 'MS.MIL.XPND.CD',
+    label: 'Military expenditure (current US$)',
+  },
+  {
     snapshotKey: 'world_bank_trade_pct',
     code: 'TG.VAL.TOTL.GD.ZS',
     label: 'Trade (% of GDP)',
@@ -121,13 +131,15 @@ const indicators: IndicatorConfig[] = [
     snapshotKey: 'world_bank_political_stability',
     code: 'GOV_WGI_PV.EST',
     label: 'Political stability and absence of violence',
-    sourceId: '3',
+    apiSourceId: '3',
+    provenanceSourceId: 'world-bank-wgi',
   },
   {
     snapshotKey: 'world_bank_rule_of_law',
     code: 'GOV_WGI_RL.EST',
     label: 'Rule of law',
-    sourceId: '3',
+    apiSourceId: '3',
+    provenanceSourceId: 'world-bank-wgi',
   },
   {
     snapshotKey: 'world_bank_unemployment',
@@ -214,7 +226,7 @@ const pickNewestValues = (
 async function fetchWbIndicator(
   indicator: IndicatorConfig,
 ): Promise<IndicatorFetchResult> {
-  const sourceParam = indicator.sourceId ? `&source=${indicator.sourceId}` : '';
+  const sourceParam = indicator.apiSourceId ? `&source=${indicator.apiSourceId}` : '';
   // mrv=10 recovers sparse reporters (conflict zones, small states) that lack the
   // latest 1–3 years but still publish older WDI observations.
   const url =
@@ -241,6 +253,7 @@ async function fetchWbIndicator(
 
 const emptySnapshotValues = (): Record<SnapshotKey, Record<string, number>> => ({
   world_bank_military_expenditure_pct: {},
+  world_bank_military_expenditure_usd: {},
   world_bank_trade_pct: {},
   world_bank_gdp_growth: {},
   world_bank_inflation: {},
@@ -286,6 +299,7 @@ async function fetchWeoSnapshot(fetchedAt: string): Promise<{
       manifestIndicators.push({
         snapshotKey: indicator.snapshotKey,
         code: indicator.code,
+        sourceId: 'imf-weo',
         label: indicator.label,
         coverageCount: 0,
         missingCountryCount: Object.keys(countryIso3).length,
@@ -298,6 +312,7 @@ async function fetchWeoSnapshot(fetchedAt: string): Promise<{
     manifestIndicators.push({
       snapshotKey: indicator.snapshotKey,
       code: indicator.code,
+      sourceId: 'imf-weo',
       label: indicator.label,
       coverageCount: result.coverageCount,
       missingCountryCount: result.missingCountryCount,
@@ -340,6 +355,7 @@ async function main() {
       worldBankIndicators.push({
         snapshotKey: indicator.snapshotKey,
         code: indicator.code,
+        sourceId: indicator.provenanceSourceId ?? 'world-bank-wdi',
         label: indicator.label,
         coverageCount: result.coverageCount,
         missingCountryCount: result.missingCountryCount,
@@ -347,6 +363,12 @@ async function main() {
       });
     }
 
+    const worldBankWdiIndicators = worldBankIndicators.filter(
+      (indicator) => indicator.sourceId === 'world-bank-wdi',
+    );
+    const worldBankWgiIndicators = worldBankIndicators.filter(
+      (indicator) => indicator.sourceId === 'world-bank-wgi',
+    );
     const manifest: IngestManifest = {
       version: '2.0.0',
       generatedAt: fetchedAt,
@@ -365,7 +387,13 @@ async function main() {
           sourceId: 'world-bank-wdi',
           provider: 'world-bank-open-data',
           requestedCountryCount: Object.keys(countryIso2).length,
-          indicators: worldBankIndicators,
+          indicators: worldBankWdiIndicators,
+        },
+        {
+          sourceId: 'world-bank-wgi',
+          provider: 'world-bank-worldwide-governance-indicators',
+          requestedCountryCount: Object.keys(countryIso2).length,
+          indicators: worldBankWgiIndicators,
         },
       ],
     };
@@ -374,16 +402,23 @@ async function main() {
     const weoSnapshotPath = path.join(DATA_DIR, 'imf_weo_snapshot.json');
     const manifestPath = path.join(DATA_DIR, 'ingest_manifest.json');
     const rawAuditPath = path.join(RAW_DATA_DIR, 'world_bank_latest.json');
+    const historicalSeriesPath = path.join(DATA_DIR, 'historical_indicator_series.json');
+    const historicalSeries = buildHistoricalSeriesArtifact(
+      fetchedAt,
+      rawAudit as Partial<Record<WbIndicatorCode, WbDataPoint[]>>,
+    );
 
     fs.writeFileSync(snapshotPath, JSON.stringify(dataset, null, 2));
     fs.writeFileSync(weoSnapshotPath, JSON.stringify(weo.snapshot, null, 2));
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     fs.writeFileSync(rawAuditPath, JSON.stringify({ fetchedAt, indicators: rawAudit }, null, 2));
+    fs.writeFileSync(historicalSeriesPath, JSON.stringify(historicalSeries, null, 2));
 
     console.log(`Saved normalized World Bank snapshot to ${snapshotPath}`);
     console.log(`Saved IMF WEO snapshot to ${weoSnapshotPath}`);
     console.log(`Saved ingest manifest to ${manifestPath}`);
     console.log(`Saved raw audit payload to ${rawAuditPath}`);
+    console.log(`Saved compact historical series to ${historicalSeriesPath}`);
   } catch (error) {
     console.error('Data ingestion failed!', error);
     process.exit(1);

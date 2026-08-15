@@ -38,17 +38,6 @@ test.after(() => {
 
 test('encode/decode state through URL hash is lossless', () => {
   const state: ShareableState = {
-    scenarioName: 'Stress test',
-    scenarioInputs: {
-      sanctionShock: 20,
-      treatyShift: -10,
-      electionVolatility: 15,
-      invasionPressure: 30,
-      coupRisk: 5,
-    },
-    weightSetKey: 'baseline',
-    activeEventIds: ['global-recession'],
-    timelineIndex: 2,
     selectedCountry: 'United States of America',
   };
 
@@ -58,31 +47,39 @@ test('encode/decode state through URL hash is lossless', () => {
   assert.deepEqual(decoded, state);
 });
 
+test('share state can preserve the current map reading modes', () => {
+  const state: ShareableState = {
+    selectedCountry: 'China',
+    overlayMode: 'dependency',
+    mapFillMode: 'gdpGrowth',
+  };
+  globalThis.window.location.hash = encodeStateToHash(state);
+  assert.deepEqual(decodeStateFromHash(), state);
+});
+
 test('buildShareableUrl and clearHash update URL state safely', () => {
   const state: ShareableState = {
-    scenarioName: 'Baseline+',
-    scenarioInputs: {
-      sanctionShock: 0,
-      treatyShift: 0,
-      electionVolatility: 0,
-      invasionPressure: 0,
-      coupRisk: 0,
-    },
-    weightSetKey: 'baseline',
-    activeEventIds: [],
-    timelineIndex: 0,
     selectedCountry: 'China',
   };
 
   const url = buildShareableUrl(state);
-  assert.ok(url.startsWith('https://example.com/realpolitik?mode=test#scenario='));
+  assert.ok(url.startsWith('https://example.com/realpolitik?mode=test#state='));
 
   let replaced = '';
   globalThis.history.replaceState = (_state, _title, nextUrl) => {
     replaced = String(nextUrl ?? '');
     globalThis.window.location.hash = '';
   };
-  globalThis.window.location.hash = '#scenario=abc';
+  globalThis.window.location.hash = '#state=abc';
   clearHash();
   assert.equal(replaced, '/realpolitik?mode=test');
+});
+
+test('oversized or unbounded shared state is rejected before decoding', () => {
+  globalThis.window.location.hash = `#state=${'A'.repeat(4096)}`;
+  assert.equal(decodeStateFromHash(), null);
+
+  const oversizedCountry = { selectedCountry: 'A'.repeat(101) };
+  globalThis.window.location.hash = `#state=${btoa(JSON.stringify(oversizedCountry))}`;
+  assert.equal(decodeStateFromHash(), null);
 });

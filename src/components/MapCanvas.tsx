@@ -1,18 +1,18 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import type {
   Alignment,
   MapFillMode,
-  OverlayMode,
-  SimulatedCountry,
+  CountryAssessment,
 } from '../types';
 import { MAP_HEIGHT, MAP_WIDTH, countryCentroids, countryPathStrings, projectLonLat } from '../lib/map';
-import { getRiskTier } from '../simulation';
+import { getRiskTier } from '../assessment';
 import { IconButton, SvgIcon } from './ui';
 import { summarizeCountryTrust, TrustTag } from './provenance';
+import { getCoverageMetrics } from '../lib/coverage';
 import { useMapStore } from '../store/useMapStore';
-import { MAP, STORAGE_KEYS } from '../lib/constants';
-import { clamp, easeInOut } from './map/utils';
+import { MAP } from '../lib/constants';
+import { clamp, capitalize } from './map/utils';
+import { useMapInteraction } from '../hooks/useMapInteraction';
 import {
   overlayLabel,
   overlayColor,
@@ -26,57 +26,22 @@ import {
   getRelationshipMetric,
 } from './map/relationshipArcs';
 import { fillModeGroups } from './map/fillModeGroups';
+import { fillModeReadout, formatStatProvenance } from './map/fillModeReadout';
 import { CountryLayers } from './map/CountryLayers';
 import { MapLegendControls } from './map/MapLegendControls';
-import { fillModeReadout, formatStatProvenance } from './map/fillModeReadout';
-import { parseHex } from './map/countryColors';
+import {
+  criticalMineralIntensityScore,
+  debtVulnerabilityScore,
+  demographicPressureScore,
+  formatGrowthPct,
+  parseHex,
+} from './map/countryColors';
 
-const clampOffset = (offset: { x: number; y: number }, zoom: number): { x: number; y: number } => ({
-  x: clamp(offset.x, -(MAP_WIDTH * zoom - PAN_MARGIN), MAP_WIDTH - PAN_MARGIN),
-  y: clamp(offset.y, -(MAP_HEIGHT * zoom - PAN_MARGIN), MAP_HEIGHT - PAN_MARGIN),
-});
-
-const WHEEL_LINE_PX = MAP.wheelLinePx;
-const WHEEL_PAGE_PX = MAP.wheelPagePx;
-const MIN_ZOOM = MAP.minZoom;
-const MAX_ZOOM = MAP.maxZoom;
 const ZOOM_STEP = MAP.zoomStep;
-const PAN_MARGIN = MAP.panMargin;
 const HOVER_CARD_HEIGHT = MAP.hoverCardHeight;
 const LABELS_ZOOM_THRESHOLD = MAP.labelsZoomThreshold;
 const LABEL_BASE_FONT_SIZE = MAP.labelBaseFontSize;
 const LABEL_STROKE_WIDTH = MAP.labelStrokeWidth;
-const MAP_UI_STATE_KEY = STORAGE_KEYS.mapUiState;
-/** Viewport units panned per arrow-key press, before the zoom-level divisor. */
-const KEYBOARD_PAN_PX = 60;
-/** Multiplier applied per double-click; roughly one "step in" toward a country. */
-const DOUBLE_CLICK_ZOOM_FACTOR = 1.8;
-
-type MapUiState = {
-  overlayMode: OverlayMode;
-  fillMode: MapFillMode;
-};
-
-const loadMapUiState = (): Partial<MapUiState> | null => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = window.localStorage.getItem(MAP_UI_STATE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<MapUiState>;
-    return parsed;
-  } catch {
-    return null;
-  }
-};
-
-const saveMapUiState = (state: MapUiState) => {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(MAP_UI_STATE_KEY, JSON.stringify(state));
-  } catch {
-    // ignore
-  }
-};
 
 export type OverlayConnection = {
   countryId: string;
@@ -92,13 +57,10 @@ export type OverlayConnection = {
 };
 
 type Props = {
-  byName: Map<string, SimulatedCountry>;
-  baselineByName: Map<string, SimulatedCountry>;
+  byName: Map<string, CountryAssessment>;
   visibleNames: Set<string>;
   selectedName: string;
   onSelect: (name: string) => void;
-  initialOverlayMode?: OverlayMode;
-  initialFillMode?: MapFillMode;
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
 };
@@ -118,29 +80,21 @@ const resolveCountryAnchor = (
 // ─── Component ────────────────────────────────────────────────────────────────
 export const MapCanvas = memo(function MapCanvas({
   byName,
-  baselineByName,
   visibleNames,
   selectedName,
   onSelect,
-  initialOverlayMode,
-  initialFillMode,
   alignmentColor,
   alignmentLabel,
 }: Props) {
-  const persistedMapUiState = useMemo(() => loadMapUiState(), []);
-  const [overlayMode, setOverlayMode] = useState<OverlayMode>(
-    persistedMapUiState?.overlayMode ?? initialOverlayMode ?? 'none',
+  const overlayMode = useMapStore((state) => state.overlayMode);
+  const fillMode = useMapStore((state) => state.fillMode);
+  const setOverlayMode = useMapStore((state) => state.setOverlayMode);
+  const setFillMode = useMapStore((state) => state.setFillMode);
+  const handleOverlayModeChange = useCallback(
+    (mode: typeof overlayMode) => setOverlayMode(mode),
+    [setOverlayMode],
   );
-  // Live-tracker default: risk choropleth (stats-first). Alignment remains available.
-  const [fillMode, setFillMode] = useState<MapFillMode>(
-    persistedMapUiState?.fillMode ?? initialFillMode ?? 'risk',
-  );
-  const handleOverlayModeChange = useCallback((mode: OverlayMode) => setOverlayMode(mode), []);
-  const handleFillModeChange = useCallback((mode: MapFillMode) => setFillMode(mode), []);
-
-  useEffect(() => {
-    saveMapUiState({ overlayMode, fillMode });
-  }, [fillMode, overlayMode]);
+  const handleFillModeChange = useCallback((mode: MapFillMode) => setFillMode(mode), [setFillMode]);
 
   // Overlay connections derive entirely from byName + selection + overlay mode,
   // so MapCanvas owns the computation. App.tsx no longer needs lib/map at all,
@@ -191,273 +145,34 @@ export const MapCanvas = memo(function MapCanvas({
   // Memoize once — the centroid map never changes, so converting it outside the
   // JSX here avoids recreating the array on every render when labels are visible.
   const centroidEntries = useMemo(() => Array.from(countryCentroids.entries()), []);
-  // ── Internal hover state (kept here so App.tsx never re-renders on hover) ─────
-  const [hoveredName, setHoveredName] = useState<string | null>(null);
-  const hoveredCountry = useMapStore((state) => state.hoveredCountry);
-  const setHoveredCountry = useMapStore((state) => state.setHoveredCountry);
-  // Coalesce rapid border-crossing hover updates so RightInspector bilateral
-  // strip does not re-render more than once per frame.
-  const hoverRafRef = useRef<number | null>(null);
-  const pendingHoverRef = useRef<string | null | undefined>(undefined);
-  const setHoveredCountryCoalesced = useCallback(
-    (name: string | null) => {
-      pendingHoverRef.current = name;
-      if (hoverRafRef.current != null) return;
-      hoverRafRef.current = requestAnimationFrame(() => {
-        hoverRafRef.current = null;
-        if (pendingHoverRef.current === undefined) return;
-        setHoveredCountry(pendingHoverRef.current);
-        pendingHoverRef.current = undefined;
-      });
-    },
-    [setHoveredCountry],
-  );
-  // Refs so pointer handlers always see the latest value without stale closures
-  const hoveredNameRef = useRef<string | null>(null);
-  const hoveredIsParamRef = useRef<boolean>(false);
-  // ── Transform state + mirrored ref (avoids stale closures in event handlers) ─
-  const [transform, setTransform] = useState({ zoom: 1, offset: { x: 0, y: 0 } });
-  const transformRef = useRef(transform);
-  // Keep the ref always current; this runs synchronously before effects.
-  transformRef.current = transform;
+  const {
+    svgRef,
+    frameRef,
+    hoverCardRef,
+    hoverCardMutedRef,
+    hoverPosRef,
+    hoveredName,
+    hoveredNameRef,
+    hoveredIsParamRef,
+    hoveredCountry,
+    setHoveredCountryCoalesced,
+    transform,
+    resetView,
+    zoomBy,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handlePointerLeave,
+    handleDoubleClick,
+    handleKeyDown,
+  } = useMapInteraction({ selectedName, onSelect });
 
-  const applyTransform = useCallback((next: { zoom: number; offset: { x: number; y: number } }) => {
-    transformRef.current = next; // update ref immediately so the next event sees fresh values
-    setTransform(next);
-  }, []);
-
-  // ── Element refs ──────────────────────────────────────────────────────────────
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const frameRef = useRef<HTMLDivElement | null>(null);
   const relationshipCanvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  // ── Drag tracking (refs to avoid stale closures) ──────────────────────────────
-  const dragPrevRef = useRef<{ x: number; y: number } | null>(null);
-  const didDragRef = useRef(false);
-
-  // ── Hover-card position (ref to avoid 60fps re-renders on mouse move) ──────────
-  const hoverPosRef = useRef<{ x: number; y: number } | null>(null);
-
-  // ── Hover-card DOM refs for imperative positioning ────────────────────────────
-  const hoverCardRef = useRef<HTMLDivElement | null>(null);
-  const hoverCardMutedRef = useRef<HTMLDivElement | null>(null);
-
-  // ── Auto-center animation state ───────────────────────────────────────────────
-  const autoCenterAnimRef = useRef<number | null>(null);
-  // Set to true in handlePointerUp so the auto-center effect skips map clicks.
-  const mapClickRef      = useRef(false);
-  // Skip centering on the very first render (initial country is already visible).
-  const isFirstSelectRef = useRef(true);
-
-  /**
-   * Zoom about a fixed point in viewBox coordinates, keeping the world point
-   * under that anchor stationary. Shared by the wheel handler, pinch gesture and
-   * keyboard zoom so they cannot drift apart.
-   */
-  const zoomAbout = useCallback(
-    (nextZoomRaw: number, anchorX: number, anchorY: number) => {
-      const { zoom, offset } = transformRef.current;
-      const nextZoom = clamp(nextZoomRaw, MIN_ZOOM, MAX_ZOOM);
-      if (nextZoom === zoom) return;
-      const ratio = nextZoom / zoom;
-      const nextOffset = clampOffset(
-        {
-          x: anchorX - (anchorX - offset.x) * ratio,
-          y: anchorY - (anchorY - offset.y) * ratio,
-        },
-        nextZoom,
-      );
-      applyTransform({ zoom: nextZoom, offset: nextOffset });
-    },
-    [applyTransform],
-  );
-
-  /** Convert a client-space point into SVG viewBox coordinates. */
-  const toViewBoxPoint = useCallback((clientX: number, clientY: number): DOMPoint | null => {
-    const svg = svgRef.current;
-    const ctm = svg?.getScreenCTM();
-    if (!ctm) return null;
-    return new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
-  }, []);
-
-  // ── Non-passive wheel handler for zoom-toward-cursor ──────────────────────────
-  useEffect(() => {
-    const svg = svgRef.current;
-    if (!svg) return;
-
-    const onWheel = (event: WheelEvent) => {
-      event.preventDefault();
-      if (autoCenterAnimRef.current != null) {
-        cancelAnimationFrame(autoCenterAnimRef.current);
-        autoCenterAnimRef.current = null;
-      }
-
-      const { zoom } = transformRef.current;
-
-      // Normalize delta across deltaMode values (pixels / lines / pages)
-      let raw = event.deltaY;
-      if (event.deltaMode === 1) raw *= WHEEL_LINE_PX;
-      if (event.deltaMode === 2) raw *= WHEEL_PAGE_PX;
-
-      // Convert cursor to SVG viewBox coordinates
-      const cursor = toViewBoxPoint(event.clientX, event.clientY);
-      if (!cursor) return;
-
-      // Exponential scaling gives the same relative change regardless of current zoom level
-      zoomAbout(zoom * Math.pow(1.001, -raw), cursor.x, cursor.y);
-    };
-
-    svg.addEventListener('wheel', onWheel, { passive: false });
-    return () => svg.removeEventListener('wheel', onWheel);
-  }, [toViewBoxPoint, zoomAbout]);
-
-  // ── Pointer handlers ──────────────────────────────────────────────────────────
-  // Active pointers, so two fingers can be tracked for pinch-zoom. A plain drag
-  // keeps using dragPrevRef; pinch takes over as soon as a second finger lands.
-  const activePointersRef = useRef(new Map<number, { x: number; y: number }>());
-  const pinchRef = useRef<{ distance: number; zoom: number } | null>(null);
-
-  const cancelAutoCenter = () => {
-    if (autoCenterAnimRef.current != null) {
-      cancelAnimationFrame(autoCenterAnimRef.current);
-      autoCenterAnimRef.current = null;
-    }
-  };
-
-  const handlePointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
-    // Cancel any running auto-center animation so the drag takes immediate control.
-    cancelAutoCenter();
-    activePointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
-
-    if (activePointersRef.current.size === 2) {
-      // Second finger down: start a pinch and stop treating this as a drag or tap.
-      const [first, second] = Array.from(activePointersRef.current.values());
-      pinchRef.current = {
-        distance: Math.hypot(second!.x - first!.x, second!.y - first!.y),
-        zoom: transformRef.current.zoom,
-      };
-      dragPrevRef.current = null;
-      didDragRef.current = true;
-      return;
-    }
-
-    dragPrevRef.current = { x: event.clientX, y: event.clientY };
-    didDragRef.current = false;
-    // Capture on the SVG so all pointer events route here during the drag
-    svgRef.current?.setPointerCapture(event.pointerId);
-  };
-
-  const handlePointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
-    // Update hover-card position imperatively — no setState so no React re-render
-    const frame = frameRef.current;
-    if (frame) {
-      const rect = frame.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      hoverPosRef.current = { x, y };
-      const w = frame.clientWidth;
-      const h = frame.clientHeight;
-      const cx = clamp(x + 16, 12, w - 220);
-      if (hoverCardRef.current) {
-        hoverCardRef.current.style.left = `${cx}px`;
-        hoverCardRef.current.style.top = `${clamp(y + 16, 12, h - HOVER_CARD_HEIGHT)}px`;
-      }
-      if (hoverCardMutedRef.current) {
-        hoverCardMutedRef.current.style.left = `${cx}px`;
-        hoverCardMutedRef.current.style.top = `${clamp(y + 16, 12, h - 60)}px`;
-      }
-    }
-
-    if (activePointersRef.current.has(event.pointerId)) {
-      activePointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
-    }
-
-    // Pinch-zoom: scale relative to the gesture's starting span, anchored at the
-    // midpoint between the fingers so the map grows around what is being pinched.
-    const pinch = pinchRef.current;
-    if (pinch && activePointersRef.current.size === 2) {
-      const [first, second] = Array.from(activePointersRef.current.values());
-      const distance = Math.hypot(second!.x - first!.x, second!.y - first!.y);
-      if (distance > 0 && pinch.distance > 0) {
-        const anchor = toViewBoxPoint((first!.x + second!.x) / 2, (first!.y + second!.y) / 2);
-        if (anchor) zoomAbout(pinch.zoom * (distance / pinch.distance), anchor.x, anchor.y);
-      }
-      return;
-    }
-
-    const prev = dragPrevRef.current;
-    if (!prev) return;
-
-    const svg = svgRef.current;
-    if (!svg) return;
-
-    const dx = event.clientX - prev.x;
-    const dy = event.clientY - prev.y;
-    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) didDragRef.current = true;
-
-    const ctm = svg.getScreenCTM();
-    if (!ctm) return;
-
-    const { zoom, offset } = transformRef.current;
-
-    // Convert screen delta to SVG viewBox delta (accounts for SVG viewBox scale)
-    const dx_svg = dx / ctm.a;
-    const dy_svg = dy / ctm.d;
-
-    // Panning: offset = offset + delta (no division by zoom needed)
-    const nextOffset = clampOffset({ x: offset.x + dx_svg, y: offset.y + dy_svg }, zoom);
-    applyTransform({ zoom, offset: nextOffset });
-
-    dragPrevRef.current = { x: event.clientX, y: event.clientY };
-  };
-
-  const handlePointerUp = (event: ReactPointerEvent<SVGSVGElement>) => {
-    activePointersRef.current.delete(event.pointerId);
-    if (activePointersRef.current.size < 2) pinchRef.current = null;
-
-    // If pointer was released without dragging, treat it as a click on the country
-    // that was under the pointer at press-down time (pointer capture prevents path
-    // onClick from firing, so we handle selection here instead).
-    if (!didDragRef.current && hoveredIsParamRef.current && hoveredNameRef.current) {
-      mapClickRef.current = true; // skip auto-center; country is already in view
-      onSelect(hoveredNameRef.current);
-    }
-    dragPrevRef.current = null;
-    svgRef.current?.releasePointerCapture(event.pointerId);
-  };
-
-  const resetView = useCallback(
-    () => applyTransform({ zoom: 1, offset: { x: 0, y: 0 } }),
-    [applyTransform],
-  );
-
-  /**
-   * Double-click / double-tap: zoom in a step toward the country under the
-   * cursor, or back out to the world view once already close in. The threshold
-   * gives the gesture a predictable toggle feel rather than zooming forever.
-   */
-  const handleDoubleClick = (event: ReactPointerEvent<SVGSVGElement> | React.MouseEvent<SVGSVGElement>) => {
-    cancelAutoCenter();
-    const anchor = toViewBoxPoint(event.clientX, event.clientY);
-    if (!anchor) return;
-    const { zoom } = transformRef.current;
-    if (zoom >= MAX_ZOOM - 0.01) {
-      resetView();
-      return;
-    }
-    zoomAbout(zoom * DOUBLE_CLICK_ZOOM_FACTOR, anchor.x, anchor.y);
-  };
-
-  // ── Convenience zoom buttons ──────────────────────────────────────────────────
-  // Anchored at the centre of the visible SVG area.
-  const zoomBy = (delta: number) =>
-    zoomAbout(transformRef.current.zoom + delta, MAP_WIDTH / 2, MAP_HEIGHT / 2);
 
   // ── Derived values ────────────────────────────────────────────────────────────
   const { zoom, offset } = transform;
   const hovered = hoveredName ? byName.get(hoveredName) : undefined;
   const hoverPos = hoverPosRef.current;
-  // The stat the current fill mode encodes, plus who published it and when.
   const hoveredReadout = hovered ? fillModeReadout(fillMode, hovered.profile) : null;
   const hoveredReadoutSource = hovered
     ? formatStatProvenance(hovered.profile, hoveredReadout?.statField)
@@ -557,111 +272,6 @@ export const MapCanvas = memo(function MapCanvas({
     return () => observer.disconnect();
   }, []);
 
-  /**
-   * Keyboard control, so the map is usable without a pointer: arrows pan, +/-
-   * zoom about the centre, 0 fits the world. Only fires while the map itself
-   * holds focus, so arrow keys still scroll the page everywhere else.
-   */
-  const handleKeyDown = (event: React.KeyboardEvent<SVGSVGElement>) => {
-    const panStep = KEYBOARD_PAN_PX / transformRef.current.zoom;
-    const { zoom, offset } = transformRef.current;
-    const panBy = (dx: number, dy: number) => {
-      cancelAutoCenter();
-      applyTransform({ zoom, offset: clampOffset({ x: offset.x + dx, y: offset.y + dy }, zoom) });
-    };
-
-    switch (event.key) {
-      case 'ArrowLeft':
-        panBy(panStep, 0);
-        break;
-      case 'ArrowRight':
-        panBy(-panStep, 0);
-        break;
-      case 'ArrowUp':
-        panBy(0, panStep);
-        break;
-      case 'ArrowDown':
-        panBy(0, -panStep);
-        break;
-      case '+':
-      case '=':
-        cancelAutoCenter();
-        zoomAbout(zoom + ZOOM_STEP, MAP_WIDTH / 2, MAP_HEIGHT / 2);
-        break;
-      case '-':
-      case '_':
-        cancelAutoCenter();
-        zoomAbout(zoom - ZOOM_STEP, MAP_WIDTH / 2, MAP_HEIGHT / 2);
-        break;
-      case '0':
-        cancelAutoCenter();
-        resetView();
-        break;
-      default:
-        return;
-    }
-    // Only reached when a key was handled, so unrelated shortcuts still bubble.
-    event.preventDefault();
-  };
-
-  // ── Auto-center on external selection (sidebar, URL state, auto-play, etc.) ──
-  useEffect(() => {
-    // Skip the first render — the default country is already in view.
-    if (isFirstSelectRef.current) {
-      isFirstSelectRef.current = false;
-      return;
-    }
-    // Skip selections that originated from a direct map click; the country is
-    // already visible and re-centering would feel jarring.
-    if (mapClickRef.current) {
-      mapClickRef.current = false;
-      return;
-    }
-
-    const centroid = countryCentroids.get(selectedName);
-    if (!centroid) return;
-
-    const [wx, wy] = centroid;
-    const { zoom: startZoom, offset: startOffset } = transformRef.current;
-
-    // Center the world point at MAP_WIDTH/2, MAP_HEIGHT/2 (the viewport centre
-    // in viewBox units), then clamp so the map doesn't scroll out of bounds.
-    const targetOffset = clampOffset(
-      { x: MAP_WIDTH / 2 - startZoom * wx, y: MAP_HEIGHT / 2 - startZoom * wy },
-      startZoom,
-    );
-
-    // Don't animate if already essentially centred.
-    if (Math.hypot(targetOffset.x - startOffset.x, targetOffset.y - startOffset.y) < 4) return;
-
-    if (autoCenterAnimRef.current != null) cancelAnimationFrame(autoCenterAnimRef.current);
-
-    const DURATION = 450;
-    const startTime = performance.now();
-    const animate = (now: number) => {
-      const t    = Math.min(1, (now - startTime) / DURATION);
-      const ease = easeInOut(t);
-      applyTransform({
-        zoom: startZoom,
-        offset: {
-          x: startOffset.x + (targetOffset.x - startOffset.x) * ease,
-          y: startOffset.y + (targetOffset.y - startOffset.y) * ease,
-        },
-      });
-      if (t < 1) {
-        autoCenterAnimRef.current = requestAnimationFrame(animate);
-      } else {
-        autoCenterAnimRef.current = null;
-      }
-    };
-    autoCenterAnimRef.current = requestAnimationFrame(animate);
-  }, [selectedName, applyTransform]);
-
-  // Cancel any running animation when the component unmounts.
-  useEffect(() => () => {
-    if (autoCenterAnimRef.current != null) cancelAnimationFrame(autoCenterAnimRef.current);
-  }, []);
-
   return (
     <section className="map" aria-label="World map">
       <div className="map-frame" ref={frameRef}>
@@ -680,7 +290,6 @@ export const MapCanvas = memo(function MapCanvas({
           viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
           className="world-map"
           preserveAspectRatio="xMidYMid slice"
-          // Focusable so keyboard users can reach the pan/zoom controls.
           tabIndex={0}
           role="application"
           aria-label="World map — arrow keys pan, plus and minus zoom, 0 fits the world"
@@ -688,17 +297,9 @@ export const MapCanvas = memo(function MapCanvas({
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
+          onPointerLeave={handlePointerLeave}
           onDoubleClick={handleDoubleClick}
           onKeyDown={handleKeyDown}
-          onPointerLeave={() => {
-            // Moving off the map without dragging: clear state but do NOT select a country.
-            dragPrevRef.current = null;
-            hoveredNameRef.current = null;
-            hoveredIsParamRef.current = false;
-            setHoveredName(null);
-              setHoveredCountryCoalesced(null);
-            hoverPosRef.current = null;
-          }}
         >
           <defs>
             {/* Layered ocean: deep base → cool mid → soft center highlight */}
@@ -761,14 +362,12 @@ export const MapCanvas = memo(function MapCanvas({
             <g filter="url(#land-shadow)" className="map-countries">
               <CountryLayers
                 byName={byName}
-                baselineByName={baselineByName}
                 visibleNames={visibleNames}
                 selectedName={selectedName}
                 relatedNames={relatedNames}
                 overlayMode={overlayMode}
                 fillMode={fillMode}
                 alignmentColor={alignmentColor}
-                setHoveredName={setHoveredName}
                 setHoveredCountry={setHoveredCountryCoalesced}
                 hoveredNameRef={hoveredNameRef}
                 hoveredIsParamRef={hoveredIsParamRef}
@@ -897,28 +496,172 @@ export const MapCanvas = memo(function MapCanvas({
                 <em>Conf</em>
                 {hovered.confidence}%
               </span>
-              {hoveredReadout && (
+              {fillMode === 'gdpPerCapita' && hovered.profile.economicStats?.gdpPerCapitaUsd != null && (
                 <span>
-                  <em>{hoveredReadout.label}</em>
-                  {hoveredReadout.value}
+                  <em>GDP/cap</em>
+                  ${hovered.profile.economicStats.gdpPerCapitaUsd.toLocaleString()}
                 </span>
               )}
+              {fillMode === 'gdpGrowth' && hovered.profile.economicStats?.gdpGrowthPct != null && (
+                <span>
+                  <em>Growth</em>
+                  {formatGrowthPct(hovered.profile.economicStats.gdpGrowthPct)}
+                </span>
+              )}
+              {fillMode === 'inflation' && hovered.profile.economicStats?.inflationPct != null && (
+                <span>
+                  <em>Inflation</em>
+                  {hovered.profile.economicStats.inflationPct.toFixed(1)}%
+                </span>
+              )}
+              {fillMode === 'tradeOpenness' && hovered.profile.economicStats?.tradeGdpPct != null && (
+                <span>
+                  <em>Trade/GDP</em>
+                  {Math.round(hovered.profile.economicStats.tradeGdpPct)}%
+                </span>
+              )}
+              {fillMode === 'nuclearArmed' && hovered.profile.militaryStats && (
+                <span>
+                  <em>Nuclear</em>
+                  {hovered.profile.militaryStats.nuclearArmed ? 'Armed' : 'No'}
+                </span>
+              )}
+              {fillMode === 'militaryBurden' && hovered.profile.militaryStats?.militaryExpGdpPct != null && (
+                <span>
+                  <em>Mil.%GDP</em>
+                  {hovered.profile.militaryStats.militaryExpGdpPct.toFixed(1)}%
+                </span>
+              )}
+              {fillMode === 'regime' && (
+                <span>
+                  <em>Regime</em>
+                  {capitalize(hovered.profile.regimeType)}
+                </span>
+              )}
+              {fillMode === 'conflictPressure' && (
+                <span>
+                  <em>Conflict</em>
+                  {capitalize(hovered.profile.indicators.conflictPressure)}
+                </span>
+              )}
+              {fillMode === 'population' && hovered.profile.demographics?.populationMillions != null && (
+                <span>
+                  <em>Pop</em>
+                  {hovered.profile.demographics.populationMillions >= 1000
+                    ? `${(hovered.profile.demographics.populationMillions / 1000).toFixed(2)}B`
+                    : `${hovered.profile.demographics.populationMillions.toFixed(0)}M`}
+                </span>
+              )}
+              {fillMode === 'medianAge' && hovered.profile.demographics?.medianAge != null && (
+                <span>
+                  <em>Median age</em>
+                  {hovered.profile.demographics.medianAge.toFixed(1)}y
+                </span>
+              )}
+              {fillMode === 'energyExports' && hovered.profile.energy != null && (
+                <span>
+                  <em>Energy</em>
+                  {hovered.profile.energy.energyImportDependencePct > 0
+                    ? `${Math.round(hovered.profile.energy.energyImportDependencePct)}% imports`
+                    : `${Math.round(-hovered.profile.energy.energyImportDependencePct)}% exporter`}
+                </span>
+              )}
+              {fillMode === 'demographicPressure' && hovered.profile.demographics != null && (
+                <span>
+                  <em>Demo pressure</em>
+                  {(() => {
+                    const score = demographicPressureScore(hovered.profile);
+                    return score == null ? '—' : `${score}`;
+                  })()}
+                </span>
+              )}
+              {fillMode === 'cyberCapability' && hovered.profile.cyber != null && (
+                <span>
+                  <em>Cyber</em>
+                  {`${capitalize(hovered.profile.cyber.offensiveTier)}/${capitalize(hovered.profile.cyber.defensiveTier)}`}
+                </span>
+              )}
+              {fillMode === 'internetFreedom' && hovered.profile.cyber?.internetFreedomScore != null && (
+                <span>
+                  <em>Net free</em>
+                  {hovered.profile.cyber.internetFreedomScore}/100
+                </span>
+              )}
+              {fillMode === 'foodImportDependence' && hovered.profile.foodWater?.foodImportDependencePct != null && (
+                <span>
+                  <em>Food</em>
+                  {hovered.profile.foodWater.foodImportDependencePct >= 0
+                    ? `${Math.round(hovered.profile.foodWater.foodImportDependencePct)}% imports`
+                    : `${Math.round(-hovered.profile.foodWater.foodImportDependencePct)}% exporter`}
+                </span>
+              )}
+              {fillMode === 'waterStress' && hovered.profile.foodWater?.waterStressIndex != null && (
+                <span>
+                  <em>Water</em>
+                  {hovered.profile.foodWater.waterStressIndex}/5
+                </span>
+              )}
+              {fillMode === 'debtVulnerability' && hovered.profile.fiscal != null && (
+                <span>
+                  <em>Debt</em>
+                  {(() => {
+                    const score = debtVulnerabilityScore(hovered.profile);
+                    return score == null ? '—' : `${score}/100`;
+                  })()}
+                </span>
+              )}
+              {fillMode === 'sovereignRating' && hovered.profile.fiscal != null && (
+                <span>
+                  <em>Rating</em>
+                  {capitalize(hovered.profile.fiscal.sovereignRatingTier)}
+                </span>
+              )}
+              {fillMode === 'unVotingBlocA' && hovered.profile.diplomatic?.unVotingAlignmentBlocA != null && (
+                <span>
+                  <em>UN-A</em>
+                  {hovered.profile.diplomatic.unVotingAlignmentBlocA}%
+                </span>
+              )}
+              {fillMode === 'unVotingBlocB' && hovered.profile.diplomatic?.unVotingAlignmentBlocB != null && (
+                <span>
+                  <em>UN-B</em>
+                  {hovered.profile.diplomatic.unVotingAlignmentBlocB}%
+                </span>
+              )}
+              {fillMode === 'criticalMineralIntensity' && hovered.profile.criticalMinerals != null && (
+                <span>
+                  <em>Minerals</em>
+                  {(() => {
+                    const score = criticalMineralIntensityScore(hovered.profile);
+                    return score == null ? '—' : `${score}/100`;
+                  })()}
+                </span>
+              )}
+              {fillMode === 'softPower' && hovered.profile.softPower?.reachScore != null && (
+                <span>
+                  <em>Soft</em>
+                  {hovered.profile.softPower.reachScore}/100
+                </span>
+              )}
+              {fillMode === 'defensePactDensity' && hovered.profile.diplomatic != null && (
+                <span>
+                  <em>Pacts</em>
+                  {hovered.profile.diplomatic.defensePacts.length}
+                </span>
+              )}
+              <span>
+                <em>Quality</em>
+                {(() => {
+                  const coverage = getCoverageMetrics(hovered.profile);
+                  return `${coverage.freshPct}% fresh · ${coverage.observedPct}% observed · ${coverage.fallbackPct}% fallback · ${coverage.stalePct}% stale`;
+                })()}
+              </span>
             </div>
-            {/* Cite the number the reader is actually looking at, not the dataset. */}
             {hoveredReadoutSource && (
               <span className="hover-card-source">
-                {hoveredReadout?.label} source: {hoveredReadoutSource}
+                {hoveredReadout?.label}: {hoveredReadoutSource}
               </span>
             )}
-            {/* Quality is a sentence, not a stat — it wraps badly inside the grid. */}
-            <span className="hover-card-source">
-              {(() => {
-                const indicators = hovered.profile.dataQuality?.indicators ?? [];
-                const fallbackCount = indicators.filter((indicator) => indicator.evidenceClass === 'fallback').length;
-                const staleCount = indicators.filter((indicator) => indicator.stale).length;
-                return `${hovered.profile.sourceCoverage}% coverage · ${fallbackCount} fallback · ${staleCount} stale`;
-              })()}
-            </span>
           </div>
         )}
 
@@ -944,36 +687,41 @@ export const MapCanvas = memo(function MapCanvas({
         />
 
         {/* ── Unified bottom toolbar: Fill · Overlay · Zoom ── */}
-        <div className="map-toolbar">
-          <div className="map-toolbar-section">
+        <div className="map-toolbar" role="group" aria-label="Map display controls">
+          <div className="map-toolbar-section map-toolbar-fill" role="group" aria-label="Map fill">
             <span className="map-toolbar-label">Fill</span>
-            <select
-              className="map-toolbar-select"
-              value={fillMode}
-              onChange={(e) => handleFillModeChange(e.target.value as MapFillMode)}
-              title="Select map fill mode"
-            >
-              {fillModeGroups.map((group) => (
-                <optgroup key={group.label} label={group.label}>
-                  {group.options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
+            <span className="map-toolbar-select-shell">
+              <select
+                className="map-toolbar-select"
+                value={fillMode}
+                onChange={(e) => handleFillModeChange(e.target.value as MapFillMode)}
+                title="Select map fill mode"
+                aria-label="Map fill mode"
+              >
+                {fillModeGroups.map((group) => (
+                  <optgroup key={group.label} label={group.label}>
+                    {group.options.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              <SvgIcon.Chevron dir="down" />
+            </span>
           </div>
 
           <div className="map-toolbar-divider" aria-hidden />
 
-          <div className="map-toolbar-section">
+          <div className="map-toolbar-section map-toolbar-overlay" role="group" aria-label="Relationship overlay">
             <span className="map-toolbar-label">Overlay</span>
             <div className="map-toolbar-btn-row">
               <button
                 type="button"
                 className={`map-toolbar-btn${overlayMode === 'none' ? ' map-toolbar-btn-active' : ''}`}
                 onClick={() => handleOverlayModeChange('none')}
+                aria-pressed={overlayMode === 'none'}
               >
                 None
               </button>
@@ -983,6 +731,7 @@ export const MapCanvas = memo(function MapCanvas({
                   type="button"
                   className={`map-toolbar-btn${overlayMode === mode ? ' map-toolbar-btn-active' : ''}`}
                   onClick={() => handleOverlayModeChange(mode)}
+                  aria-pressed={overlayMode === mode}
                   style={
                     overlayMode === mode
                       ? ({ '--toolbar-accent': overlayColor[mode] } as React.CSSProperties)
@@ -998,7 +747,8 @@ export const MapCanvas = memo(function MapCanvas({
 
           <div className="map-toolbar-divider" aria-hidden />
 
-          <div className="map-toolbar-section map-toolbar-zoom">
+          <div className="map-toolbar-section map-toolbar-zoom" role="group" aria-label="Map zoom">
+            <span className="map-toolbar-label">Zoom</span>
             <IconButton label="Zoom out" onClick={() => zoomBy(-ZOOM_STEP)}>
               <SvgIcon.Minus />
             </IconButton>

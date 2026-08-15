@@ -1,11 +1,11 @@
-import type { DatasetSource, MilitaryStats, SimulatedCountry } from '../../types';
+import type { DatasetSource, MilitaryStats, CountryAssessment } from '../../types';
 import { InlineSourceTag } from './EconomicStatsSection';
-import { MetricTelemetryTag, getIndicatorTelemetry } from './shared';
+import { MetricProvenanceTag, MetricTelemetryTag, getIndicatorTelemetry } from './shared';
 
 interface MilitaryStatsSectionProps {
   mil: MilitaryStats;
   sources: DatasetSource[];
-  selected: SimulatedCountry;
+  selected: CountryAssessment;
 }
 
 /**
@@ -30,6 +30,7 @@ export function MilitaryStatsSection({ mil, sources, selected }: MilitaryStatsSe
             <strong className="profile-stat-value">${mil.militaryExpBillionUsd.toLocaleString()}B</strong>
           </div>
           <span className="profile-stat-sub">annual</span>
+          <MetricProvenanceTag entry={mil.provenance?.militaryExpBillionUsd} sources={sources} />
         </div>
         <div className="profile-stat">
           <span className="profile-stat-label">Spending / GDP</span>
@@ -37,6 +38,7 @@ export function MilitaryStatsSection({ mil, sources, selected }: MilitaryStatsSe
             <strong className="profile-stat-value">{mil.militaryExpGdpPct}%</strong>
           </div>
           <span className="profile-stat-sub">burden</span>
+          <MetricProvenanceTag entry={mil.provenance?.militaryExpGdpPct} sources={sources} />
           <MetricTelemetryTag entry={militaryTelemetry} fallbackLabel="Curated military snapshot" />
         </div>
         <div className="profile-stat">
@@ -47,6 +49,7 @@ export function MilitaryStatsSection({ mil, sources, selected }: MilitaryStatsSe
             </strong>
           </div>
           <span className="profile-stat-sub">troops</span>
+          <MetricProvenanceTag entry={mil.provenance?.activePersonnelThousands} sources={sources} />
         </div>
         <div className="profile-stat">
           <span className="profile-stat-label">Nuclear armed</span>
@@ -58,6 +61,7 @@ export function MilitaryStatsSection({ mil, sources, selected }: MilitaryStatsSe
               {mil.nuclearArmed ? 'Yes' : 'No'}
             </strong>
           </div>
+          <MetricProvenanceTag entry={mil.provenance?.nuclearArmed} sources={sources} />
         </div>
       </div>
     </div>
