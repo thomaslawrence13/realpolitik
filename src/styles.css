@@ -3570,6 +3570,27 @@ input[type='range']::-moz-range-thumb {
   color: var(--text-3);
 }
 
+/* Artifact register: status tone rides on the card, not just the chip, so a
+ * stale artifact is legible while scanning the release view. */
+.methodology-priority-card[data-artifact-status='aging'] {
+  border-color: rgba(251, 191, 36, 0.32);
+}
+
+.methodology-priority-card[data-artifact-status='aging'] .methodology-priority-score {
+  border-color: rgba(251, 191, 36, 0.4);
+  color: var(--risk-med);
+}
+
+.methodology-priority-card[data-artifact-status='stale'] {
+  border-color: rgba(248, 113, 113, 0.36);
+  background: rgba(248, 113, 113, 0.05);
+}
+
+.methodology-priority-card[data-artifact-status='stale'] .methodology-priority-score {
+  border-color: rgba(248, 113, 113, 0.44);
+  color: var(--risk-high);
+}
+
 .methodology-priority-gaps {
   margin-top: 0.35rem;
   display: flex;
@@ -6442,6 +6463,31 @@ input[type='range']::-moz-range-thumb {
   font-size: 0.64rem;
   line-height: 1.4;
   color: var(--text-4);
+}
+
+/* Separates the curated model indicator from the artifact it sits beside, so
+ * an official source never reads as the provenance of a curated tier. */
+.registry-caveat {
+  margin: 0;
+  padding: 0.34rem 0.42rem;
+  border: 1px dashed rgba(251, 191, 36, 0.28);
+  border-radius: var(--r-sm);
+  background: rgba(251, 191, 36, 0.04);
+  font-size: 0.62rem;
+  line-height: 1.45;
+  color: var(--text-4);
+}
+
+.registry-curated-chip {
+  display: inline-block;
+  margin-right: 0.3rem;
+  padding: 0.02rem 0.3rem;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: var(--r-pill);
+  color: var(--risk-med);
+  font-size: 0.55rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .registry-programs {

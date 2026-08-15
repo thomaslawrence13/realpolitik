@@ -10,7 +10,10 @@ import {
   type WeoSnapshotKey,
 } from '../src/data/imfWeoClient.js';
 import type { ImfWeoSnapshot } from '../src/data/pipeline/externalProviders.js';
-import { buildHistoricalSeriesArtifact } from '../src/lib/historicalSeriesArtifact.js';
+import {
+  buildHistoricalSeriesArtifact,
+  summarizeHistoricalSeriesArtifact,
+} from '../src/lib/historicalSeriesArtifact.js';
 import type { WbDataPoint, WbIndicatorCode } from '../src/lib/worldBankFetch.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -403,6 +406,7 @@ async function main() {
     const manifestPath = path.join(DATA_DIR, 'ingest_manifest.json');
     const rawAuditPath = path.join(RAW_DATA_DIR, 'world_bank_latest.json');
     const historicalSeriesPath = path.join(DATA_DIR, 'historical_indicator_series.json');
+    const historicalSeriesMetaPath = path.join(DATA_DIR, 'historical_series_meta.json');
     const historicalSeries = buildHistoricalSeriesArtifact(
       fetchedAt,
       rawAudit as Partial<Record<WbIndicatorCode, WbDataPoint[]>>,
@@ -413,12 +417,18 @@ async function main() {
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     fs.writeFileSync(rawAuditPath, JSON.stringify({ fetchedAt, indicators: rawAudit }, null, 2));
     fs.writeFileSync(historicalSeriesPath, JSON.stringify(historicalSeries, null, 2));
+    // Sidecar for the artifact register: age and reach without the payload.
+    fs.writeFileSync(
+      historicalSeriesMetaPath,
+      JSON.stringify(summarizeHistoricalSeriesArtifact(historicalSeries), null, 2),
+    );
 
     console.log(`Saved normalized World Bank snapshot to ${snapshotPath}`);
     console.log(`Saved IMF WEO snapshot to ${weoSnapshotPath}`);
     console.log(`Saved ingest manifest to ${manifestPath}`);
     console.log(`Saved raw audit payload to ${rawAuditPath}`);
     console.log(`Saved compact historical series to ${historicalSeriesPath}`);
+    console.log(`Saved historical series metadata to ${historicalSeriesMetaPath}`);
   } catch (error) {
     console.error('Data ingestion failed!', error);
     process.exit(1);

@@ -103,3 +103,16 @@ The map + country model + live fetch + inspector stats are the durable foundatio
   Violence v26.1 into `ucdp_conflict.json` (134 countries by death-level and type per year).
 - `scripts/validateDataset.ts` guards shape, freshness window and cross-references for the static
   dataset and every live artifact; `freshness:check` guards the blocks on CI.
+- **Operational artifact register**: `src/data/artifactRegistry.ts` is the single description of what
+  this build has actually retrieved — UNGA votes, OFAC SDN, UCDP organized violence and the World
+  Bank history artifact — with per-artifact refresh budgets, boundaries and refresh commands. The
+  runtime overlay gate (`countryData.ts`), the CI freshness gate (`freshness:check`), the release view
+  in the methodology panel and `npm run artifacts:status` all read the same rows, so the age a reader
+  sees is the age CI enforces. It is deliberately separate from `sourceRegistry.ts`: descriptors count
+  publishers, the register counts retrievals, and conflating them is how a 21-descriptor registry gets
+  misread as 21 wired feeds. The history artifact is dated through a committed sidecar
+  (`historical_series_meta.json`) so the register never pulls the ~677 KB payload into the eager bundle;
+  `validateDataset` checks the sidecar against the full artifact.
+- **Provenance gate**: World Bank governance series are fetched from API catalogue source 3 and must be
+  credited to WGI, not WDI. `validateProvenanceRegistryParity` enforces that tagging mechanically, and
+  also enforces parity between the static dataset registry (`v1.ts`) and the runtime `SOURCE_REGISTRY`.

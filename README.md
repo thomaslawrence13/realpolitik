@@ -113,6 +113,10 @@ npm run validate:dataset
 ```bash
 npm run quality:report
 ```
+*To print the operational artifact register — what was retrieved, when, against which refresh budget, and what each artifact does not evidence:*
+```bash
+npm run artifacts:status
+```
 
 ---
 

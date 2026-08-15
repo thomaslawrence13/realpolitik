@@ -17,7 +17,7 @@ export const fillModeGroups: ReadonlyArray<FillModeGroup> = [
     options: [
       { value: 'risk', label: 'Risk', hint: 'Default live view — teal → red as escalation risk rises' },
       { value: 'confidence', label: 'Confidence', hint: 'Brighter = higher model confidence' },
-      { value: 'conflictPressure', label: 'Conflict Pressure', hint: 'Indicator-based conflict pressure (low / medium / high)' },
+      { value: 'conflictPressure', label: 'Conflict Pressure', hint: 'Curated conflict-pressure estimate (low / medium / high) — UCDP evidence is annual history, not this tier' },
     ],
   },
   {

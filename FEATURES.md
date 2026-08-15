@@ -15,6 +15,8 @@ Live-stats product (post scenario-subsystem removal). Shipped in recent sessions
 ### Honest staleness (2026-08)
 - Curated providers carry real `lastUpdated`/`accessedOn` stamps; reconcile ages out per SLA
 - `npm run freshness:check` gate: curated layer ≤ 90d, ingest manifest ≤ 90d (warn 30d), country records ≤ 365d
+- Operational artifact register (`src/data/artifactRegistry.ts`): UNGA ≤ 420d, OFAC ≤ 120d, UCDP ≤ 440d, WB history ≤ 120d — one set of budgets shared by the runtime overlay gate, CI and the release view
+- `npm run artifacts:status` prints what was retrieved, when, against which budget, and what each artifact does not evidence
 
 ### Automated refresh
 - `.github/workflows/ci.yml` — unit, build, validate, freshness on every push/PR

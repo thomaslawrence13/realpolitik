@@ -10,6 +10,7 @@ import ingestManifest from '../src/data/datasets/ingest_manifest.json';
 import ingestedSnapshot from '../src/data/datasets/ingested_snapshot.json';
 import imfWeoSnapshot from '../src/data/datasets/imf_weo_snapshot.json';
 import historicalIndicatorSeries from '../src/data/datasets/historical_indicator_series.json';
+import historicalSeriesMeta from '../src/data/datasets/historical_series_meta.json';
 import rawWorldBankLatest from '../src/data/datasets/raw/world_bank_latest.json';
 import unGaVotes from '../src/data/datasets/un_ga_votes.json';
 import ofacSanctions from '../src/data/datasets/ofac_sanctions_registry.json';
@@ -23,8 +24,15 @@ import {
 } from '../src/lib/worldBankFetch.js';
 import {
   HISTORICAL_SERIES_CODES,
+  summarizeHistoricalSeriesArtifact,
   type HistoricalSeriesArtifact,
+  type HistoricalSeriesMeta,
 } from '../src/lib/historicalSeriesArtifact.js';
+import { SOURCE_REGISTRY } from '../src/data/sourceRegistry.js';
+import { ARTIFACT_IDS, describeArtifacts } from '../src/data/artifactRegistry.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const errors: string[] = [];
 const warnings: string[] = [];
@@ -84,6 +92,156 @@ const validateSourceReferenceParity = () => {
   for (const indicator of WB_INDICATORS) {
     assertRegistered(indicator.provenanceSourceId, `World Bank indicator "${indicator.code}"`);
   }
+};
+
+/**
+ * Provenance parity: the static dataset registry (`v1.ts`), the runtime source
+ * registry (`sourceRegistry.ts`) and the World Bank indicator table must agree
+ * on who published a series.
+ *
+ * The failure this exists to catch is WGI drift. Governance series are fetched
+ * from World Bank API catalogue source 3 under a `GOV_WGI_` wire code, but they
+ * are published as the Worldwide Governance Indicators — not WDI. Tagging them
+ * `world-bank-wdi` credits the wrong compilation to the reader and quietly
+ * changes which cadence and lag the quality contract applies. The rule is
+ * mechanical, so it belongs in the gate rather than in review.
+ */
+const validateProvenanceRegistryParity = () => {
+  const staticSourceIds = new Set(geopoliticalDatasetV1.sources.map((source) => source.id));
+  const runtimeSourceIds = new Set(Object.keys(SOURCE_REGISTRY));
+
+  for (const sourceId of staticSourceIds) {
+    ensure(
+      runtimeSourceIds.has(sourceId),
+      `source "${sourceId}" is in the dataset registry but missing from SOURCE_REGISTRY`,
+    );
+  }
+  for (const sourceId of runtimeSourceIds) {
+    ensure(
+      staticSourceIds.has(sourceId),
+      `source "${sourceId}" is in SOURCE_REGISTRY but missing from the dataset registry`,
+    );
+  }
+  for (const source of geopoliticalDatasetV1.sources) {
+    const descriptor = SOURCE_REGISTRY[source.id];
+    if (!descriptor) continue;
+    ensureWarn(
+      descriptor.publisher === source.publisher,
+      `source "${source.id}" publisher differs between registries ("${source.publisher}" vs "${descriptor.publisher}")`,
+    );
+  }
+
+  for (const indicator of WB_INDICATORS) {
+    const isGovernanceSeries = indicator.apiSourceId === '3' || indicator.requestCode.startsWith('GOV_WGI_');
+    const expectedSourceId = isGovernanceSeries ? 'world-bank-wgi' : 'world-bank-wdi';
+    ensure(
+      indicator.provenanceSourceId === expectedSourceId,
+      `World Bank indicator "${indicator.code}" is tagged "${indicator.provenanceSourceId}" but ` +
+        `${isGovernanceSeries ? 'is fetched from the WGI catalogue (source 3)' : 'is a WDI series'} — ` +
+        `expected "${expectedSourceId}"`,
+    );
+    ensure(
+      SOURCE_REGISTRY[indicator.provenanceSourceId] !== undefined,
+      `World Bank indicator "${indicator.code}" references unregistered runtime source "${indicator.provenanceSourceId}"`,
+    );
+  }
+
+  // Both World Bank compilations must be described, since the two now carry
+  // different cadence and lag in the quality contract.
+  for (const sourceId of ['world-bank-wdi', 'world-bank-wgi'] as const) {
+    ensure(runtimeSourceIds.has(sourceId), `SOURCE_REGISTRY is missing "${sourceId}"`);
+    ensure(staticSourceIds.has(sourceId), `dataset registry is missing "${sourceId}"`);
+  }
+};
+
+/**
+ * Artifact register parity: every committed artifact is described, dated from
+ * its own payload, and pointed at a file that exists. Registry descriptors
+ * count publishers; this register counts retrievals, and a drift between the
+ * two is exactly how "21 sources" gets misread as "21 feeds".
+ */
+const validateArtifactRegister = () => {
+  const registeredSourceIds = new Set(geopoliticalDatasetV1.sources.map((source) => source.id));
+  const repoRoot = path.resolve(fileURLToPath(import.meta.url), '../..');
+
+  const artifactFetchedAt: Record<string, string> = {
+    'unga-votes': unGaVotes.fetchedAt,
+    'ofac-sdn': ofacSanctions.fetchedAt,
+    'ucdp-organized-violence': ucdpConflict.fetchedAt,
+    'world-bank-history': (historicalIndicatorSeries as { fetchedAt: string }).fetchedAt,
+  };
+
+  // The register reads the history sidecar rather than the ~677 KB payload, so
+  // the two must be regenerated together. Everything below compares the sidecar
+  // against the real artifact.
+  const historySummary = summarizeHistoricalSeriesArtifact(
+    historicalIndicatorSeries as unknown as HistoricalSeriesArtifact,
+  );
+  const committedHistoryMeta = historicalSeriesMeta as HistoricalSeriesMeta;
+  ensure(
+    committedHistoryMeta.fetchedAt === historySummary.fetchedAt,
+    `historical_series_meta.json stamp ${committedHistoryMeta.fetchedAt} disagrees with the series artifact ` +
+      `(${historySummary.fetchedAt}) — run npm run history:build`,
+  );
+  ensure(
+    committedHistoryMeta.countryCount === historySummary.countryCount &&
+      committedHistoryMeta.observationCount === historySummary.observationCount,
+    `historical_series_meta.json coverage (${committedHistoryMeta.countryCount} countries / ` +
+      `${committedHistoryMeta.observationCount} observations) disagrees with the series artifact ` +
+      `(${historySummary.countryCount} / ${historySummary.observationCount})`,
+  );
+  ensure(
+    committedHistoryMeta.indicatorCodes.join(',') === historySummary.indicatorCodes.join(','),
+    'historical_series_meta.json indicator list disagrees with the series artifact',
+  );
+
+  ensure(
+    ARTIFACT_IDS.length === Object.keys(artifactFetchedAt).length,
+    `artifact register describes ${ARTIFACT_IDS.length} artifacts but validation knows ${Object.keys(artifactFetchedAt).length}`,
+  );
+
+  for (const row of describeArtifacts()) {
+    ensure(fs.existsSync(path.join(repoRoot, row.path)), `artifact "${row.id}" path missing: ${row.path}`);
+    ensure(
+      row.fetchedAt === artifactFetchedAt[row.id],
+      `artifact "${row.id}" register stamp ${row.fetchedAt} disagrees with the committed payload`,
+    );
+    ensure(isIsoDate(row.retrievedOn), `artifact "${row.id}" fetchedAt must be an ISO timestamp`);
+    ensure(
+      row.warnAfterDays < row.budgetDays,
+      `artifact "${row.id}" warn tip (${row.warnAfterDays}d) must precede its budget (${row.budgetDays}d)`,
+    );
+    ensure(
+      row.status !== 'stale',
+      `artifact "${row.id}" is ${row.ageDays}d old, past its ${row.budgetDays}d budget — run ${row.refreshCommand}`,
+    );
+    ensureWarn(
+      row.status === 'fresh',
+      `artifact "${row.id}" is ${row.ageDays}d old (warn tip ${row.warnAfterDays}d) — schedule ${row.refreshCommand}`,
+    );
+    if (row.sourceId !== null) {
+      ensure(
+        registeredSourceIds.has(row.sourceId),
+        `artifact "${row.id}" credits unregistered source "${row.sourceId}"`,
+      );
+    }
+  }
+
+  // Country coverage claimed by the register must match the payloads, so a
+  // silently truncated refresh cannot keep reporting yesterday's reach.
+  const registerById = new Map(describeArtifacts().map((row) => [row.id, row]));
+  ensure(
+    registerById.get('ucdp-organized-violence')?.countryCount === Object.keys(ucdpConflict.perCountry).length,
+    'artifact register UCDP country count disagrees with the artifact',
+  );
+  ensure(
+    registerById.get('ofac-sdn')?.countryCount === Object.keys(ofacSanctions.perCountry).length,
+    'artifact register OFAC country count disagrees with the artifact',
+  );
+  ensure(
+    registerById.get('unga-votes')?.countryCount === Object.keys(unGaVotes.perCountry).length,
+    'artifact register UNGA country count disagrees with the artifact',
+  );
 };
 
 const validateCountries = () => {
@@ -606,6 +764,8 @@ const validatePoliticalRegistries = () => {
 const main = () => {
   validateSources();
   validateSourceReferenceParity();
+  validateProvenanceRegistryParity();
+  validateArtifactRegister();
   validateCountries();
   validateRelationships();
   validateIngestArtifacts();
