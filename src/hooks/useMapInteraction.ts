@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { MutableRefObject, PointerEvent as ReactPointerEvent } from 'react';
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  MouseEvent as ReactMouseEvent,
+  MutableRefObject,
+  PointerEvent as ReactPointerEvent,
+} from 'react';
 import { MAP_HEIGHT, MAP_WIDTH, countryCentroids } from '../lib/map';
 import { MAP } from '../lib/constants';
 import { useMapStore } from '../store/useMapStore';
@@ -11,6 +16,8 @@ const MIN_ZOOM = MAP.minZoom;
 const MAX_ZOOM = MAP.maxZoom;
 const PAN_MARGIN = MAP.panMargin;
 const HOVER_CARD_HEIGHT = MAP.hoverCardHeight;
+const KEYBOARD_PAN_PX = 60;
+const DOUBLE_CLICK_ZOOM_FACTOR = 1.8;
 
 type Transform = { zoom: number; offset: { x: number; y: number } };
 
@@ -37,6 +44,8 @@ export type MapInteraction = {
   handlePointerMove: (event: ReactPointerEvent<SVGSVGElement>) => void;
   handlePointerUp: (event: ReactPointerEvent<SVGSVGElement>) => void;
   handlePointerLeave: () => void;
+  handleDoubleClick: (event: ReactMouseEvent<SVGSVGElement>) => void;
+  handleKeyDown: (event: ReactKeyboardEvent<SVGSVGElement>) => void;
 };
 
 /**
@@ -65,10 +74,45 @@ export function useMapInteraction({ selectedName, onSelect }: Options): MapInter
   const autoCenterAnimRef = useRef<number | null>(null);
   const mapClickRef = useRef(false);
   const isFirstSelectRef = useRef(true);
+  const activePointersRef = useRef(new Map<number, { x: number; y: number }>());
+  const pinchRef = useRef<{ distance: number; zoom: number } | null>(null);
 
   const applyTransform = useCallback((next: Transform) => {
     transformRef.current = next;
     setTransform(next);
+  }, []);
+
+  const cancelAutoCenter = useCallback(() => {
+    if (autoCenterAnimRef.current == null) return;
+    cancelAnimationFrame(autoCenterAnimRef.current);
+    autoCenterAnimRef.current = null;
+  }, []);
+
+  const zoomAbout = useCallback(
+    (nextZoomRaw: number, anchorX: number, anchorY: number) => {
+      const { zoom, offset } = transformRef.current;
+      const nextZoom = clamp(nextZoomRaw, MIN_ZOOM, MAX_ZOOM);
+      if (nextZoom === zoom) return;
+      const ratio = nextZoom / zoom;
+      const nextOffset = clampOffset(
+        {
+          x: anchorX - (anchorX - offset.x) * ratio,
+          y: anchorY - (anchorY - offset.y) * ratio,
+        },
+        nextZoom,
+        MAP_WIDTH,
+        MAP_HEIGHT,
+        PAN_MARGIN,
+      );
+      applyTransform({ zoom: nextZoom, offset: nextOffset });
+    },
+    [applyTransform],
+  );
+
+  const toViewBoxPoint = useCallback((clientX: number, clientY: number): DOMPoint | null => {
+    const ctm = svgRef.current?.getScreenCTM();
+    if (!ctm) return null;
+    return new DOMPoint(clientX, clientY).matrixTransform(ctm.inverse());
   }, []);
 
   const setHoveredCountryCoalesced = useCallback(
@@ -91,45 +135,37 @@ export function useMapInteraction({ selectedName, onSelect }: Options): MapInter
 
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
-      if (autoCenterAnimRef.current != null) {
-        cancelAnimationFrame(autoCenterAnimRef.current);
-        autoCenterAnimRef.current = null;
-      }
-      const ctm = svg.getScreenCTM();
-      if (!ctm) return;
-      const { zoom, offset } = transformRef.current;
+      cancelAutoCenter();
+      const { zoom } = transformRef.current;
       let raw = event.deltaY;
       if (event.deltaMode === 1) raw *= WHEEL_LINE_PX;
       if (event.deltaMode === 2) raw *= WHEEL_PAGE_PX;
-      const nextZoom = clamp(zoom * Math.pow(1.001, -raw), MIN_ZOOM, MAX_ZOOM);
-      const ratio = nextZoom / zoom;
-      const cursor = new DOMPoint(event.clientX, event.clientY).matrixTransform(ctm.inverse());
-      const nextOffset = clampOffset(
-        {
-          x: cursor.x - (cursor.x - offset.x) * ratio,
-          y: cursor.y - (cursor.y - offset.y) * ratio,
-        },
-        nextZoom,
-        MAP_WIDTH,
-        MAP_HEIGHT,
-        PAN_MARGIN,
-      );
-      applyTransform({ zoom: nextZoom, offset: nextOffset });
+      const cursor = toViewBoxPoint(event.clientX, event.clientY);
+      if (!cursor) return;
+      zoomAbout(zoom * Math.pow(1.001, -raw), cursor.x, cursor.y);
     };
 
     svg.addEventListener('wheel', onWheel, { passive: false });
     return () => svg.removeEventListener('wheel', onWheel);
-  }, [applyTransform]);
+  }, [cancelAutoCenter, toViewBoxPoint, zoomAbout]);
 
   const handlePointerDown = useCallback((event: ReactPointerEvent<SVGSVGElement>) => {
-    if (autoCenterAnimRef.current != null) {
-      cancelAnimationFrame(autoCenterAnimRef.current);
-      autoCenterAnimRef.current = null;
+    cancelAutoCenter();
+    activePointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    svgRef.current?.setPointerCapture(event.pointerId);
+    if (activePointersRef.current.size === 2) {
+      const [first, second] = [...activePointersRef.current.values()];
+      pinchRef.current = {
+        distance: Math.hypot(second!.x - first!.x, second!.y - first!.y),
+        zoom: transformRef.current.zoom,
+      };
+      dragPrevRef.current = null;
+      didDragRef.current = true;
+      return;
     }
     dragPrevRef.current = { x: event.clientX, y: event.clientY };
     didDragRef.current = false;
-    svgRef.current?.setPointerCapture(event.pointerId);
-  }, []);
+  }, [cancelAutoCenter]);
 
   const handlePointerMove = useCallback((event: ReactPointerEvent<SVGSVGElement>) => {
     const frame = frameRef.current;
@@ -145,6 +181,23 @@ export function useMapInteraction({ selectedName, onSelect }: Options): MapInter
       hoverCardRef.current?.style.setProperty('top', `${clamp(y + 16, 12, h - HOVER_CARD_HEIGHT)}px`);
       hoverCardMutedRef.current?.style.setProperty('left', `${left}px`);
       hoverCardMutedRef.current?.style.setProperty('top', `${clamp(y + 16, 12, h - 60)}px`);
+    }
+
+    if (activePointersRef.current.has(event.pointerId)) {
+      activePointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    }
+    const pinch = pinchRef.current;
+    if (pinch && activePointersRef.current.size === 2) {
+      const [first, second] = [...activePointersRef.current.values()];
+      const distance = Math.hypot(second!.x - first!.x, second!.y - first!.y);
+      const anchor = toViewBoxPoint(
+        (first!.x + second!.x) / 2,
+        (first!.y + second!.y) / 2,
+      );
+      if (anchor && distance > 0 && pinch.distance > 0) {
+        zoomAbout(pinch.zoom * (distance / pinch.distance), anchor.x, anchor.y);
+      }
+      return;
     }
 
     const previous = dragPrevRef.current;
@@ -166,22 +219,28 @@ export function useMapInteraction({ selectedName, onSelect }: Options): MapInter
     );
     applyTransform({ zoom, offset: nextOffset });
     dragPrevRef.current = { x: event.clientX, y: event.clientY };
-  }, [applyTransform]);
+  }, [applyTransform, toViewBoxPoint, zoomAbout]);
 
   const handlePointerUp = useCallback(
     (event: ReactPointerEvent<SVGSVGElement>) => {
+      activePointersRef.current.delete(event.pointerId);
+      if (activePointersRef.current.size < 2) pinchRef.current = null;
       if (!didDragRef.current && hoveredIsParamRef.current && hoveredNameRef.current) {
         mapClickRef.current = true;
         onSelect(hoveredNameRef.current);
       }
       dragPrevRef.current = null;
-      svgRef.current?.releasePointerCapture(event.pointerId);
+      if (svgRef.current?.hasPointerCapture(event.pointerId)) {
+        svgRef.current.releasePointerCapture(event.pointerId);
+      }
     },
     [onSelect],
   );
 
   const handlePointerLeave = useCallback(() => {
     dragPrevRef.current = null;
+    activePointersRef.current.clear();
+    pinchRef.current = null;
     hoveredNameRef.current = null;
     hoveredIsParamRef.current = false;
     setHoveredCountryCoalesced(null);
@@ -194,21 +253,55 @@ export function useMapInteraction({ selectedName, onSelect }: Options): MapInter
 
   const zoomBy = useCallback(
     (delta: number) => {
-      const { zoom, offset } = transformRef.current;
-      const cx = MAP_WIDTH / 2;
-      const cy = MAP_HEIGHT / 2;
-      const nextZoom = clamp(zoom + delta, MIN_ZOOM, MAX_ZOOM);
-      const ratio = nextZoom / zoom;
-      const nextOffset = clampOffset(
-        { x: cx - (cx - offset.x) * ratio, y: cy - (cy - offset.y) * ratio },
-        nextZoom,
-        MAP_WIDTH,
-        MAP_HEIGHT,
-        PAN_MARGIN,
-      );
-      applyTransform({ zoom: nextZoom, offset: nextOffset });
+      zoomAbout(transformRef.current.zoom + delta, MAP_WIDTH / 2, MAP_HEIGHT / 2);
     },
-    [applyTransform],
+    [zoomAbout],
+  );
+
+  const handleDoubleClick = useCallback(
+    (event: ReactMouseEvent<SVGSVGElement>) => {
+      cancelAutoCenter();
+      const anchor = toViewBoxPoint(event.clientX, event.clientY);
+      if (!anchor) return;
+      const { zoom } = transformRef.current;
+      if (zoom >= MAX_ZOOM - 0.01) resetView();
+      else zoomAbout(zoom * DOUBLE_CLICK_ZOOM_FACTOR, anchor.x, anchor.y);
+    },
+    [cancelAutoCenter, resetView, toViewBoxPoint, zoomAbout],
+  );
+
+  const handleKeyDown = useCallback(
+    (event: ReactKeyboardEvent<SVGSVGElement>) => {
+      const { zoom, offset } = transformRef.current;
+      const panStep = KEYBOARD_PAN_PX / zoom;
+      const panBy = (dx: number, dy: number) => {
+        cancelAutoCenter();
+        applyTransform({
+          zoom,
+          offset: clampOffset(
+            { x: offset.x + dx, y: offset.y + dy },
+            zoom,
+            MAP_WIDTH,
+            MAP_HEIGHT,
+            PAN_MARGIN,
+          ),
+        });
+      };
+      switch (event.key) {
+        case 'ArrowLeft': panBy(panStep, 0); break;
+        case 'ArrowRight': panBy(-panStep, 0); break;
+        case 'ArrowUp': panBy(0, panStep); break;
+        case 'ArrowDown': panBy(0, -panStep); break;
+        case '+':
+        case '=': cancelAutoCenter(); zoomBy(MAP.zoomStep); break;
+        case '-':
+        case '_': cancelAutoCenter(); zoomBy(-MAP.zoomStep); break;
+        case '0': cancelAutoCenter(); resetView(); break;
+        default: return;
+      }
+      event.preventDefault();
+    },
+    [applyTransform, cancelAutoCenter, resetView, zoomBy],
   );
 
   useEffect(() => {
@@ -277,5 +370,7 @@ export function useMapInteraction({ selectedName, onSelect }: Options): MapInter
     handlePointerMove,
     handlePointerUp,
     handlePointerLeave,
+    handleDoubleClick,
+    handleKeyDown,
   };
 }

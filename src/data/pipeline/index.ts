@@ -19,9 +19,15 @@ import {
 } from './relationshipProviders';
 import { enrichCountryWithObservations } from './reconcile';
 import { enrichRelationshipWithObservations } from './reconcileRelationships';
-import { buildIngestedObservations } from './externalProviders';
-import { buildObservedAtIndex, type IngestedSnapshot, type RawWorldBankAuditPayload } from './externalProviders';
+import { buildImfWeoObservations, buildIngestedObservations } from './externalProviders';
+import {
+  buildObservedAtIndex,
+  type ImfWeoSnapshot,
+  type IngestedSnapshot,
+  type RawWorldBankAuditPayload,
+} from './externalProviders';
 import ingestedSnapshot from '../datasets/ingested_snapshot.json';
+import imfWeoSnapshot from '../datasets/imf_weo_snapshot.json';
 import type { RelationshipObservation } from './types';
 import { applyStatsCoverageEnrichment } from './statsEnrichment';
 
@@ -80,10 +86,12 @@ export const enrichProfilesWithSourcePipeline = (
   live: LiveData,
   options?: {
     ingest?: IngestedSnapshot;
+    weo?: ImfWeoSnapshot;
     rawAudit?: RawWorldBankAuditPayload;
   },
 ): CountryProfile[] => {
   const ingest = options?.ingest ?? (ingestedSnapshot as IngestedSnapshot);
+  const weo = options?.weo ?? (imfWeoSnapshot as ImfWeoSnapshot);
   // The normalized snapshot already persists per-country observation years.
   // Keep raw-audit support injectable for validation/tests, but do not ship the
   // multi-megabyte audit payload in the browser bundle.
@@ -95,7 +103,8 @@ export const enrichProfilesWithSourcePipeline = (
   // Reconcile ranks by source priority + confidence, so fallbacks only fill gaps.
   const indicatorObservations = [
     ...buildWorldBankObservations(profiles, live),
-    ...buildIngestedObservations(profiles, ingest, rawAudit),
+    ...buildImfWeoObservations(profiles, weo),
+    ...buildIngestedObservations(profiles, ingest, observedAtByIndicator),
     ...buildUcdpConflictObservations(profiles),
     ...buildConflictSnapshotObservations(profiles),
     ...buildSanctionsSnapshotObservations(profiles),
@@ -110,7 +119,7 @@ export const enrichProfilesWithSourcePipeline = (
 
   const enrichedProfiles = profiles.map((profile) => {
     const enriched = enrichCountryWithObservations(profile, byCountry.get(profile.id) ?? []);
-    const stats = applyStatsCoverageEnrichment(profile, live, ingest, observedAtByIndicator);
+    const stats = applyStatsCoverageEnrichment(profile, live, ingest, weo, observedAtByIndicator);
     return {
       ...profile,
       indicators: enriched.indicators,
@@ -119,6 +128,8 @@ export const enrichProfilesWithSourcePipeline = (
       dataQuality: enriched.dataQuality,
       economicStats: stats.economicStats ?? profile.economicStats,
       militaryStats: stats.militaryStats ?? profile.militaryStats,
+      demographics: stats.demographics ?? profile.demographics,
+      statsProvenance: stats.statsProvenance,
     };
   });
 

@@ -36,6 +36,100 @@ test('reconciliation respects source priority before confidence', () => {
   assert.equal(telemetry?.sourceId, 'world-bank-wdi');
 });
 
+test('the freshest reference period wins between equally-ranked sources', () => {
+  const profile = countryProfiles[0]!;
+  // Same source and confidence, re-affirmed on the same day — only the period
+  // each figure describes separates them.
+  const observations: IndicatorObservation[] = [
+    {
+      providerId: 'older-vintage',
+      sourceId: 'world-bank-wdi',
+      countryId: profile.id,
+      indicator: 'tradeExposure',
+      value: 'low',
+      observedAt: '2026-01-01',
+      vintage: '2022',
+      method: 'snapshot',
+      confidence: 0.8,
+    },
+    {
+      providerId: 'newer-vintage',
+      sourceId: 'world-bank-wdi',
+      countryId: profile.id,
+      indicator: 'tradeExposure',
+      value: 'high',
+      observedAt: '2026-01-01',
+      vintage: '2025',
+      method: 'snapshot',
+      confidence: 0.8,
+    },
+  ];
+
+  const enriched = enrichCountryWithObservations(profile, observations);
+  assert.equal(enriched.indicators.tradeExposure, 'high');
+  const telemetry = enriched.dataQuality?.indicators.find((entry) => entry.indicator === 'tradeExposure');
+  assert.equal(telemetry?.vintage, '2025');
+});
+
+test('vintage and projection provenance survive onto telemetry', () => {
+  const profile = countryProfiles[0]!;
+  const observations: IndicatorObservation[] = [
+    {
+      providerId: 'imf-weo-ingest',
+      sourceId: 'imf-weo',
+      countryId: profile.id,
+      indicator: 'cohesion',
+      value: 61,
+      observedAt: '2026-06-30',
+      vintage: '2026',
+      seriesUpdatedAt: '2026-08-11',
+      projection: true,
+      method: 'snapshot',
+      confidence: 0.78,
+    },
+  ];
+
+  const enriched = enrichCountryWithObservations(profile, observations);
+  const telemetry = enriched.dataQuality?.indicators.find((entry) => entry.indicator === 'cohesion');
+
+  assert.equal(telemetry?.sourceId, 'imf-weo');
+  assert.equal(telemetry?.vintage, '2026');
+  assert.equal(telemetry?.seriesUpdatedAt, '2026-08-11');
+  assert.equal(telemetry?.projection, true);
+});
+
+test('IMF WEO outranks the World Bank for cohesion', () => {
+  const profile = countryProfiles[0]!;
+  const observations: IndicatorObservation[] = [
+    {
+      providerId: 'wb-cohesion-ingest',
+      sourceId: 'world-bank-wdi',
+      countryId: profile.id,
+      indicator: 'cohesion',
+      value: 40,
+      observedAt: '2026-01-01',
+      vintage: '2025',
+      method: 'snapshot',
+      // Higher confidence than the WEO provider, to prove rank is applied first.
+      confidence: 0.95,
+    },
+    {
+      providerId: 'imf-weo-ingest',
+      sourceId: 'imf-weo',
+      countryId: profile.id,
+      indicator: 'cohesion',
+      value: 70,
+      observedAt: '2026-01-01',
+      vintage: '2025',
+      method: 'snapshot',
+      confidence: 0.78,
+    },
+  ];
+
+  const enriched = enrichCountryWithObservations(profile, observations);
+  assert.equal(enriched.indicators.cohesion, 70);
+});
+
 test('stale or low-confidence observations are marked as fallback evidence', () => {
   const profile = countryProfiles[1]!;
   const observations: IndicatorObservation[] = [

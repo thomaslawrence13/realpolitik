@@ -26,6 +26,7 @@ import {
   getRelationshipMetric,
 } from './map/relationshipArcs';
 import { fillModeGroups } from './map/fillModeGroups';
+import { fillModeReadout, formatStatProvenance } from './map/fillModeReadout';
 import { CountryLayers } from './map/CountryLayers';
 import { MapLegendControls } from './map/MapLegendControls';
 import {
@@ -162,6 +163,8 @@ export const MapCanvas = memo(function MapCanvas({
     handlePointerMove,
     handlePointerUp,
     handlePointerLeave,
+    handleDoubleClick,
+    handleKeyDown,
   } = useMapInteraction({ selectedName, onSelect });
 
   const relationshipCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -170,6 +173,10 @@ export const MapCanvas = memo(function MapCanvas({
   const { zoom, offset } = transform;
   const hovered = hoveredName ? byName.get(hoveredName) : undefined;
   const hoverPos = hoverPosRef.current;
+  const hoveredReadout = hovered ? fillModeReadout(fillMode, hovered.profile) : null;
+  const hoveredReadoutSource = hovered
+    ? formatStatProvenance(hovered.profile, hoveredReadout?.statField)
+    : null;
 
   // invZoom is used by the SVG layer (glow filter, labels) to keep sizes constant.
   const invZoom = 1 / zoom;
@@ -283,10 +290,16 @@ export const MapCanvas = memo(function MapCanvas({
           viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
           className="world-map"
           preserveAspectRatio="xMidYMid slice"
+          tabIndex={0}
+          role="application"
+          aria-label="World map — arrow keys pan, plus and minus zoom, 0 fits the world"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
           onPointerLeave={handlePointerLeave}
+          onDoubleClick={handleDoubleClick}
+          onKeyDown={handleKeyDown}
         >
           <defs>
             {/* Layered ocean: deep base → cool mid → soft center highlight */}
@@ -644,6 +657,11 @@ export const MapCanvas = memo(function MapCanvas({
                 })()}
               </span>
             </div>
+            {hoveredReadoutSource && (
+              <span className="hover-card-source">
+                {hoveredReadout?.label}: {hoveredReadoutSource}
+              </span>
+            )}
           </div>
         )}
 

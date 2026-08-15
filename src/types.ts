@@ -62,7 +62,30 @@ export interface MetricProvenance {
   retrievedAt?: string;
   evidenceClass: EvidenceClass;
   confidence?: number;
+  /** Reference period the value describes, when more precise than observedAt. */
+  vintage?: string;
+  /** True when the value is a forecast or staff estimate. */
+  projection?: boolean;
 }
+
+export type StatField =
+  | 'gdpBillionUsd'
+  | 'gdpGrowthPct'
+  | 'gdpPerCapitaUsd'
+  | 'inflationPct'
+  | 'tradeGdpPct'
+  | 'militaryExpGdpPct'
+  | 'militaryExpBillionUsd'
+  | 'populationMillions'
+  | 'urbanizationPct';
+
+export interface StatProvenance {
+  sourceId: string;
+  vintage?: string;
+  projection?: boolean;
+}
+
+export type StatsProvenance = Partial<Record<StatField, StatProvenance>>;
 
 export type EconomicMetricKey =
   | 'gdpBillionUsd'
@@ -360,6 +383,8 @@ export interface CountryRecord {
     sourceUrl: string;
     retrievedAt: string;
   };
+  /** Source and reference period for each numeric statistic surfaced by the UI. */
+  statsProvenance?: StatsProvenance;
 }
 
 export interface RelationshipEdge {
@@ -429,6 +454,12 @@ export interface IndicatorTelemetry {
   stale: boolean;
   method: 'api' | 'snapshot' | 'expert-curated' | 'derived';
   evidenceClass: 'observed' | 'estimated' | 'fallback' | 'derived';
+  /** Reference period the selected observation describes. */
+  vintage?: string;
+  /** When the publisher refreshed the underlying series. */
+  seriesUpdatedAt?: string;
+  /** True for a forecast or staff estimate rather than a reported outturn. */
+  projection?: boolean;
 }
 
 export interface CountryDataQuality {

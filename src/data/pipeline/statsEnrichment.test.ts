@@ -1,52 +1,111 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import type { CountryProfile } from '../../types';
 import { countryProfiles } from '../countryData';
 import { emptyLiveData } from './index';
 import { applyStatsCoverageEnrichment } from './statsEnrichment';
+import type { ImfWeoSnapshot, IngestedSnapshot } from './externalProviders';
 
-test('economic and military fields carry metric-level World Bank provenance', () => {
-  const profile = countryProfiles.find((candidate) => candidate.id === 'united-states');
-  assert.ok(profile?.economicStats);
-  assert.ok(profile?.militaryStats);
+const profileWithStats = (): CountryProfile => {
+  const profile = countryProfiles.find((entry) => entry.economicStats && entry.demographics);
+  assert.ok(profile, 'expected at least one profile with economic and demographic stats');
+  return profile;
+};
 
-  const live = {
-    ...emptyLiveData(),
-    gdpGrowth: { US: 4.2 },
-    gdpNominalUsd: { US: 29_000_000_000_000 },
-    gdpPerCapitaUsd: { US: 87_000 },
-    militaryExpPct: { US: 3.1 },
-    indicatorMetadata: {
-      gdpGrowth: {
-        latestYear: '2023',
-        observedYears: { US: '2023' },
-        retrievedAt: '2026-08-08T03:17:00.000Z',
-      },
-      gdpNominalUsd: {
-        latestYear: '2025',
-        observedYears: { US: '2025' },
-        retrievedAt: '2026-08-08T03:17:00.000Z',
-      },
-      gdpPerCapitaUsd: {
-        latestYear: '2025',
-        observedYears: { US: '2025' },
-        retrievedAt: '2026-08-08T03:17:00.000Z',
-      },
-      militaryExpPct: {
-        latestYear: '2024',
-        observedYears: { US: '2024' },
-        retrievedAt: '2026-08-08T03:17:00.000Z',
-      },
-    },
+const weoSnapshot = (countryId: string): ImfWeoSnapshot => ({
+  version: 'test',
+  timestamp: '2026-08-11T00:00:00.000Z',
+  imf_gdp_growth: { [countryId]: { value: 3.75, year: '2025', projection: false } },
+  imf_gdp_per_capita_usd: { [countryId]: { value: 51234.5, year: '2025', projection: false } },
+});
+
+const ingestSnapshot = (countryId: string): IngestedSnapshot => ({
+  version: 'test',
+  timestamp: '2026-08-11T00:00:00.000Z',
+  world_bank_gdp_growth: { [countryId]: 1.1 },
+  world_bank_population: { [countryId]: 51_000_000 },
+});
+
+test('IMF WEO takes precedence over the World Bank ingest for overlapping fields', () => {
+  const profile = profileWithStats();
+  const result = applyStatsCoverageEnrichment(
+    profile,
+    emptyLiveData(),
+    ingestSnapshot(profile.id),
+    weoSnapshot(profile.id),
+  );
+
+  assert.equal(result.economicStats?.gdpGrowthPct, 3.8);
+  assert.equal(result.statsProvenance?.gdpGrowthPct?.sourceId, 'imf-weo');
+  assert.equal(result.statsProvenance?.gdpGrowthPct?.vintage, '2025');
+});
+
+test('World Bank fills fields the WEO does not cover', () => {
+  const profile = profileWithStats();
+  const result = applyStatsCoverageEnrichment(
+    profile,
+    emptyLiveData(),
+    ingestSnapshot(profile.id),
+    weoSnapshot(profile.id),
+  );
+
+  // WDI reports headcount; the profile carries millions.
+  assert.equal(result.demographics?.populationMillions, 51);
+  assert.equal(result.statsProvenance?.populationMillions?.sourceId, 'world-bank-wdi');
+});
+
+test('the ingest year is only a vintage fallback when no observation date is known', () => {
+  const profile = profileWithStats();
+  const withoutAudit = applyStatsCoverageEnrichment(
+    profile,
+    emptyLiveData(),
+    ingestSnapshot(profile.id),
+    undefined,
+  );
+  assert.equal(withoutAudit.statsProvenance?.gdpGrowthPct?.vintage, '2026');
+
+  const withAudit = applyStatsCoverageEnrichment(
+    profile,
+    emptyLiveData(),
+    ingestSnapshot(profile.id),
+    undefined,
+    {
+      world_bank_gdp_growth: { [profile.id]: '2024-12-31' },
+    } as never,
+  );
+  assert.equal(withAudit.statsProvenance?.gdpGrowthPct?.vintage, '2024');
+});
+
+test('a projection flag is carried onto the stat it describes', () => {
+  const profile = profileWithStats();
+  const result = applyStatsCoverageEnrichment(profile, emptyLiveData(), undefined, {
+    version: 'test',
+    timestamp: '2026-08-11T00:00:00.000Z',
+    imf_gdp_growth: { [profile.id]: { value: 2.5, year: '2026', projection: true } },
+  });
+
+  assert.equal(result.statsProvenance?.gdpGrowthPct?.projection, true);
+  assert.equal(result.statsProvenance?.gdpGrowthPct?.vintage, '2026');
+});
+
+test('countries without a curated snapshot do not gain one from external data', () => {
+  const bare: CountryProfile = {
+    ...profileWithStats(),
+    id: 'test-bare',
+    economicStats: undefined,
+    demographics: undefined,
+    militaryStats: undefined,
   };
 
-  const enriched = applyStatsCoverageEnrichment(profile, live);
-  assert.equal(enriched.economicStats?.gdpGrowthPct, 4.2);
-  assert.equal(enriched.economicStats?.gdpBillionUsd, 29_000);
-  assert.equal(enriched.economicStats?.gdpPerCapitaUsd, 87_000);
-  assert.equal(enriched.economicStats?.provenance?.gdpBillionUsd?.observedAt, '2025-12-31');
-  assert.equal(enriched.economicStats?.provenance?.gdpGrowthPct?.sourceId, 'world-bank-wdi');
-  assert.equal(enriched.economicStats?.provenance?.gdpGrowthPct?.observedAt, '2023-12-31');
-  assert.equal(enriched.economicStats?.provenance?.gdpGrowthPct?.retrievedAt, '2026-08-08T03:17:00.000Z');
-  assert.equal(enriched.militaryStats?.provenance?.militaryExpGdpPct?.observedAt, '2024-12-31');
-  assert.equal(enriched.militaryStats?.provenance?.militaryExpBillionUsd?.evidenceClass, 'derived');
+  const result = applyStatsCoverageEnrichment(
+    bare,
+    emptyLiveData(),
+    ingestSnapshot('test-bare'),
+    weoSnapshot('test-bare'),
+  );
+
+  assert.equal(result.economicStats, undefined);
+  assert.equal(result.demographics, undefined);
+  // Nothing was surfaced, so nothing should be cited.
+  assert.equal(result.statsProvenance, undefined);
 });

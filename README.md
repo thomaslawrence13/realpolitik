@@ -1,80 +1,123 @@
-# realpolitik
+# Realpolitik
 
-Realpolitik is a browser-based geopolitical statistics dashboard. It tracks 134 states using a versioned, source-attributed dataset of economic, military, diplomatic, and demographic indicators — enriched at runtime with live World Bank series. The UI surfaces observed state (risk stress index, current diplomatic alignment, economic and military snapshots) with **data confidence** (source coverage, recency, evidence class) rather than probabilistic forecasts.
+Realpolitik is a browser-based interactive platform and global tracker for 2D geopolitical analysis and simulation. Moving beyond simple deterministic prediction, the platform offers a **live tracker of global statistics** and a **what-if geopolitical scenario lab** built on a transparent country indicators and relationship-graph model.
 
-## What it is
+It aggregates authoritative macro and developmental statistics, tracks live data-coverage metrics, integrates in-browser World Bank and IMF economic indicators, and models diplomatic/military dependencies.
 
-- Interactive 2D world map rendered in the browser
-- Clickable parameterized countries with a detail panel (economy, military, relationships, indicator telemetry)
-- Versioned country dataset with source attribution, coverage, and last-updated metadata
-- Relationship graph edges for cooperation, hostility, dependency, and deterrence
-- Filters for alliance network, trade exposure, military treaties, conflict pressure, sanctions, regime type, and risk level
-- Risk choropleth built from observed indicators, relationships, and structural vulnerabilities — no model layer
-- Alignment classification read deterministically from current defense pacts, alliance networks, and UN voting records
-- Confidence is the information-quality score (source coverage, completeness, recency, evidence class)
-- Live World Bank enrichment (nominal GDP, GDP per capita, GDP growth, inflation, trade openness, military burden/spend, governance, and unemployment) with diagnostics and staleness surfacing
-- Methodology panel: provenance, ingest telemetry, information-quality scoring, runtime diagnostics
-- Movers panel: observed series deltas when live enrichment updates the static snapshot
+---
 
-## What it intentionally is not
+## 🌟 Core Features
 
-- No probability forecasts, no prediction of future alignment or war, no timeline scrubbing
-- No scenario/shock editors or "what-if" hypotheticals
-- Alignment = observed current posture; confidence = evidence behind the numbers
+### 1. Live Global Tracker Dashboard
+*   **Global KPI HUD Banner:** Real-time visibility into median risk levels, count of countries with elevated risk, mean data coverage, and World Bank API live-connection diagnostics.
+*   **Live observed KPIs:** Explorable country-level profiles displaying primary indicators (GDP Growth, Inflation, Trade Openness, Regime Type, Military Burden, etc.) from World Bank and IMF sources.
+*   **Movers Ranking:** Watchlist featuring the most significant positive or negative risk and economic trajectory shifts dynamically computed across states.
 
-## Development
+### 2. Interactive Geopolitical Map Canvas
+*   **Responsive 2D Visualizer:** Interlocking state boundaries with glass-morphic HUD, interactive hover cards, selection rings, and map legend overlays.
+*   **Multi-mode Heatmaps:** Toggle overlays to view alignment states, escalating risks, confidence tiers, or direct demographic/economic dimensions.
+*   **Visualizing Edges:** Interactive overlays reflecting complex country-to-country linkages, including military alliances (such as NATO), trade, deterrence networks, and derived bloc-probability anchors.
 
+### 3. What-If Scenario Lab
+*   **Scenario Overrides:** Edit specific state shocks (e.g., sanctions, treaty alignment shifts, election volatility, invasion pressure, and coup risk) in real time.
+*   **Simulation Weight Sets:** Dynamically alter the mathematical weights of different dimensions (such as prioritizing diplomatic networks, economic exposure, or military strength) with quick preset configurations.
+*   **Saved Scenarios & Comparisons:** Pin, name, and compare historical/alternative scenarios side-by-side inside the inspector panel to visualize alignment deltas or structural shifts. Export and import scenarios securely as lightweight `.json` files.
+
+### 4. Robust Data Layer & Pipeline
+*   **V15 Data Enrichment:** Dense country metrics populated for ~150 parameterized states, covering 6 core analytical dimensions:
+    *   `Cyber`: Capabilities tier, internet freedom, data localization.
+    *   `Fiscal`: Sovereign rating, external debt % of GDP, FX reserves cushion.
+    *   `Food/Water`: Import dependency, water stress indices, arable land per capita.
+    *   `Diplomatic`: UN voting alignment, defense pacts, IGO memberships.
+    *   `Critical Minerals`: Producer vs. consumer dominance (rare earth/cobalt).
+    *   `Soft Power`: Student mobility, cultural/language reach.
+*   **Off-Main-Thread Pipeline:** Standardized ingest tools normalize data, precompute observation dates, audit dataset completeness, and generate regression budgets.
+
+### 5. Information Quality & Transparency
+*   **Information Quality Score (IQ Score v2.0.0):** Every state profile includes a computed score (0-100) combining source coverage, dimensional completeness across the v10/v11/v15 expansions, and recency penalties.
+*   **Remediation Dashboard Cards:** Surfaced via the methodology panel to highlight low-quality, stale, or incomplete datasets for prioritized data-refresh pipelines.
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+Access these anytime directly from the interface:
+*   `[` : Toggle Left Rail Panel
+*   `]` : Toggle Right Inspector Panel
+*   `\` : Toggle Bottom Drawer (Scenario Lab & Fact Book)
+*   `/` : Focus Search
+*   `Space` : Play/Pause Timeline Playback (where active)
+*   `?` : Open Keyboard Shortcuts Modal
+
+---
+
+## 🛠️ Developer Guide
+
+### Prerequisites
+*   Node.js (v18+)
+*   npm (v9+)
+
+### Installation
 ```bash
 npm install
+```
+
+### Local Development Server
+Launch the local Vite server with hot-reloading:
+```bash
 npm run dev
 ```
 
-## Production build
-
+### Build & Compilation
+Compile TypeScript and bundle code optimized for production (uses Rolldown code-splitting):
 ```bash
-npm run build   # tsc typecheck + vite build
+npm run build
 ```
 
-## Data pipeline
+---
 
-- `src/data/datasets/v1.ts` (plus v10/v11 enhancements): versioned curated dataset
-- `src/data/pipeline/*` — ingest reconciliation + runtime enrichment adapters
-- `src/data/worldBankClient.ts` — browser-side World Bank client (used only as fallback)
-- `src/lib/worldBankFetch.ts` — runtime-agnostic fetch/selection shared by browser, ingest, and worker
-- `npm run ingest` — re-fetch World Bank artifacts from the public API
-- `npm run validate:dataset` — dataset integrity and release-acceptance gates
-- `npm run freshness:check` — staleness gate (curated layer, ingest manifest, country records)
+## 🧪 Testing, Quality & Pipeline Scripts
 
-Observed timestamps are real: API-backed metrics keep the source's selected observation year and
-the separate retrieval timestamp. A 2024/2025 observation retrieved in 2026 is therefore shown as
-2024/2025, not relabeled as current. Curated snapshot providers carry each country record's
-`lastUpdated` stamp rather than re-stamping "today", so staleness telemetry ages honestly.
-
-## Backend runtime (Cloudflare Worker)
-
-A Worker serves the live World Bank state so browsers do not hammer the API directly:
-
-- `GET /api/state` — gzip JSON payload of the latest indicator values (KV-backed), or an empty
-  `refreshedAt: null` payload before the first cron run. The app falls back to a direct fetch then.
-- `GET /api/health` — refresh timestamp + indicator coverage diagnostics.
-- Cron `17 3 * * *` — refreshes all 10 World Bank indicators into KV; on total failure the previous
-  state is kept untouched (never clobbered by empty data).
-
-One-time setup before `npm run deploy`:
-
+### 1. Test Suite
+Run unit tests across the simulation engine, persistence logic, and helper libraries, followed by a compilation dry-run:
 ```bash
-npx wrangler kv namespace create realpolitik-state
-# paste the returned id into wrangler.jsonc → kv_namespaces[0].id
+npm test
+```
+*To run only unit tests:*
+```bash
+npm run test:unit
 ```
 
-Local: `npm run worker:dev` (miniflare serves assets + API + local KV).
-CI: `npm run worker:check` typechecks the worker against `@cloudflare/workers-types`.
+### 2. Data Ingest Pipeline
+Ingest normalized IMF World Economic Outlook and World Bank indicators locally to populate precomputed observation maps:
+```bash
+npm run ingest
+```
 
-## CI
+### 3. Backtesting & Calibration
+Evaluate the simulation engine's historical alignments accuracy and calibrate deterministic risk/confidence weightings:
+```bash
+npm run backtest
+```
+*To regenerate the deterministic historical fixture used by backtesting:*
+```bash
+npm run backtest:fixture
+```
 
-- `.github/workflows/ci.yml` — tests, build, worker typecheck, dataset validation, and freshness gate on every push/PR
-- `.github/workflows/data-refresh.yml` — nightly World Bank re-fetch; opens a refresh PR when artifacts change
+### 4. Dataset Integrity & Quality Reporting
+Perform deep validation checks (geography, timeline, relationship graph edges) and output KPI targets into a machine-readable report:
+```bash
+npm run validate:dataset
+```
+*To output only the quality report (`src/data/datasets/quality_report.json`):*
+```bash
+npm run quality:report
+```
 
-## License
+---
 
-ISC
+## 🏛️ Codebase Architecture & Hygiene
+
+*   **Vite & Rolldown Splitting:** Configured with specific `codeSplitting.groups` in `vite.config.ts`. Splitting decouples the hefty `dataset` chunk (~1.15MB) and the React vendor dependencies from the core client program, preventing heavy initial bundle loads.
+*   **Modular Component Splitting:** Large frontend components are divided cleanly under `src/components/inspector/` (e.g. `EconomicStatsSection.tsx`, `AnalysisPanel.tsx`) and `src/components/drawer/` (e.g. `IndexPanel.tsx`, `ScenarioPanel.tsx`).
+*   **Centralized Constants:** Critical math rules, risk ranges, default weights, and zoom parameters are consolidated in `src/lib/constants.ts` and verified with dedicated test suites.

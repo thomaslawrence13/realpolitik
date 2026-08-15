@@ -6,16 +6,25 @@
 
 import type {
   CountryProfile,
+  DemographicStats,
   EconomicMetricKey,
   EconomicStats,
   MetricProvenance,
   MilitaryMetricKey,
   MilitaryStats,
+  StatField,
+  StatsProvenance,
 } from '../../types';
 import type { LiveData } from '../worldBankClient';
 import { countryIso2 } from '../worldBankClient';
 import { observationDateFromYear, type WbIndicatorKey } from '../../lib/worldBankFetch';
-import type { IngestedSnapshot, ObservedAtIndex, SnapshotIndicatorKey } from './externalProviders';
+import type {
+  ImfWeoSnapshot,
+  IngestedSnapshot,
+  ObservedAtIndex,
+  SnapshotIndicatorKey,
+} from './externalProviders';
+import type { WeoObservation } from '../imfWeoClient';
 
 const hasFinite = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
@@ -60,6 +69,7 @@ const ingestProvenance = (
   observedAtByIndicator?: ObservedAtIndex,
 ): MetricProvenance => {
   const observedAtRaw =
+    ingest.observation_dates?.[snapshotKey]?.[profile.id] ??
     ingest.observationYears?.[snapshotKey]?.[profile.id] ??
     observedAtByIndicator?.[snapshotKey]?.[profile.id] ??
     profile.lastUpdated;
@@ -75,8 +85,22 @@ const ingestProvenance = (
         ? 'observed'
         : 'fallback',
     confidence,
+    vintage: observedAt.slice(0, 4),
   };
 };
+
+const weoProvenance = (
+  weo: ImfWeoSnapshot,
+  entry: WeoObservation,
+): MetricProvenance => ({
+  sourceId: 'imf-weo',
+  observedAt: `${entry.year}-12-31`,
+  retrievedAt: weo.timestamp,
+  evidenceClass: entry.projection ? 'estimated' : 'observed',
+  confidence: entry.projection ? 0.82 : 0.92,
+  vintage: entry.year,
+  ...(entry.projection ? { projection: true } : {}),
+});
 
 const withEconomicProvenance = (
   profile: CountryProfile,
@@ -146,13 +170,40 @@ export const applyStatsCoverageEnrichment = (
   profile: CountryProfile,
   live: LiveData,
   ingest?: IngestedSnapshot,
+  weo?: ImfWeoSnapshot,
   observedAtByIndicator?: ObservedAtIndex,
-): Pick<CountryProfile, 'economicStats' | 'militaryStats'> => {
+): Pick<CountryProfile, 'economicStats' | 'militaryStats' | 'demographics' | 'statsProvenance'> => {
   const iso = countryIso2[profile.id];
   const econPatch: Partial<EconomicStats> = {};
   const milPatch: Partial<MilitaryStats> = {};
+  const demographicPatch: Partial<DemographicStats> = {};
   const econProvenancePatch: Partial<Record<EconomicMetricKey, MetricProvenance>> = {};
   const milProvenancePatch: Partial<Record<MilitaryMetricKey, MetricProvenance>> = {};
+
+  const applyWeoEconomic = (
+    entry: WeoObservation | undefined,
+    field: EconomicMetricKey,
+    value: number | undefined,
+  ) => {
+    if (!weo || !entry || !hasFinite(value)) return;
+    (econPatch as Record<string, number>)[field] = value;
+    econProvenancePatch[field] = weoProvenance(weo, entry);
+  };
+
+  if (weo) {
+    const growth = weo.imf_gdp_growth?.[profile.id];
+    const inflation = weo.imf_inflation?.[profile.id];
+    const gdp = weo.imf_gdp_usd_billions?.[profile.id];
+    const gdpPerCapita = weo.imf_gdp_per_capita_usd?.[profile.id];
+    const population = weo.imf_population_millions?.[profile.id];
+    applyWeoEconomic(growth, 'gdpGrowthPct', growth && Math.round(growth.value * 10) / 10);
+    applyWeoEconomic(inflation, 'inflationPct', inflation && Math.round(inflation.value * 10) / 10);
+    applyWeoEconomic(gdp, 'gdpBillionUsd', gdp && Math.round(gdp.value * 10) / 10);
+    applyWeoEconomic(gdpPerCapita, 'gdpPerCapitaUsd', gdpPerCapita && Math.round(gdpPerCapita.value));
+    if (population && hasFinite(population.value)) {
+      demographicPatch.populationMillions = Math.round(population.value * 10) / 10;
+    }
+  }
 
   if (iso) {
     const growth = live.gdpGrowth[iso];
@@ -169,19 +220,19 @@ export const applyStatsCoverageEnrichment = (
     const tradeProvenance = liveProvenance(live, 'tradePct', iso, 0.88);
     const militaryProvenance = liveProvenance(live, 'militaryExpPct', iso, 0.86);
     const militarySpendProvenance = liveProvenance(live, 'militaryExpUsd', iso, 0.9);
-    if (hasFinite(growth) && growthProvenance) {
+    if (econPatch.gdpGrowthPct == null && hasFinite(growth) && growthProvenance) {
       econPatch.gdpGrowthPct = Math.round(growth * 10) / 10;
       econProvenancePatch.gdpGrowthPct = growthProvenance;
     }
-    if (hasFinite(gdpNominalUsd) && gdpNominalProvenance) {
+    if (econPatch.gdpBillionUsd == null && hasFinite(gdpNominalUsd) && gdpNominalProvenance) {
       econPatch.gdpBillionUsd = Math.round((gdpNominalUsd / 1_000_000_000) * 10) / 10;
       econProvenancePatch.gdpBillionUsd = gdpNominalProvenance;
     }
-    if (hasFinite(gdpPerCapitaUsd) && gdpPerCapitaProvenance) {
+    if (econPatch.gdpPerCapitaUsd == null && hasFinite(gdpPerCapitaUsd) && gdpPerCapitaProvenance) {
       econPatch.gdpPerCapitaUsd = Math.round(gdpPerCapitaUsd);
       econProvenancePatch.gdpPerCapitaUsd = gdpPerCapitaProvenance;
     }
-    if (hasFinite(inflation) && inflationProvenance) {
+    if (econPatch.inflationPct == null && hasFinite(inflation) && inflationProvenance) {
       econPatch.inflationPct = Math.round(inflation * 10) / 10;
       econProvenancePatch.inflationPct = inflationProvenance;
     }
@@ -201,12 +252,15 @@ export const applyStatsCoverageEnrichment = (
 
   if (ingest) {
     const growth = ingest.world_bank_gdp_growth?.[profile.id];
-    const gdpNominalUsd = ingest.world_bank_gdp_nominal_usd?.[profile.id];
+    const gdpNominalUsd =
+      ingest.world_bank_gdp_usd?.[profile.id] ?? ingest.world_bank_gdp_nominal_usd?.[profile.id];
     const gdpPerCapitaUsd = ingest.world_bank_gdp_per_capita_usd?.[profile.id];
     const inflation = ingest.world_bank_inflation?.[profile.id];
     const trade = ingest.world_bank_trade_pct?.[profile.id];
     const milPct = ingest.world_bank_military_expenditure_pct?.[profile.id];
     const milUsd = ingest.world_bank_military_expenditure_usd?.[profile.id];
+    const population = ingest.world_bank_population?.[profile.id];
+    const urbanization = ingest.world_bank_urban_pct?.[profile.id];
     if (econPatch.gdpGrowthPct == null && hasFinite(growth)) {
       econPatch.gdpGrowthPct = Math.round(growth * 10) / 10;
       econProvenancePatch.gdpGrowthPct = ingestProvenance(profile, ingest, 'world_bank_gdp_growth', 0.9, observedAtByIndicator);
@@ -235,6 +289,12 @@ export const applyStatsCoverageEnrichment = (
       milPatch.militaryExpBillionUsd = Math.round((milUsd / 1_000_000_000) * 10) / 10;
       milProvenancePatch.militaryExpBillionUsd = ingestProvenance(profile, ingest, 'world_bank_military_expenditure_usd', 0.9, observedAtByIndicator);
     }
+    if (demographicPatch.populationMillions == null && hasFinite(population)) {
+      demographicPatch.populationMillions = Math.round((population / 1_000_000) * 10) / 10;
+    }
+    if (hasFinite(urbanization)) {
+      demographicPatch.urbanizationPct = Math.round(urbanization * 10) / 10;
+    }
   }
 
   // Re-derive nominal defence spend when we have GDP and an updated burden %.
@@ -243,6 +303,9 @@ export const applyStatsCoverageEnrichment = (
     mergeEconomic(profile.economicStats, econPatch),
     econProvenancePatch,
   );
+  const demographics = profile.demographics
+    ? { ...profile.demographics, ...demographicPatch }
+    : undefined;
   let militaryStats = withMilitaryProvenance(
     profile,
     mergeMilitary(profile.militaryStats, milPatch),
@@ -269,5 +332,51 @@ export const applyStatsCoverageEnrichment = (
     };
   }
 
-  return { economicStats, militaryStats };
+  const statsProvenance: StatsProvenance = {};
+  const addStatProvenance = (field: StatField, entry: MetricProvenance | undefined) => {
+    if (!entry) return;
+    statsProvenance[field] = {
+      sourceId: entry.sourceId,
+      vintage: entry.vintage ?? entry.observedAt.slice(0, 4),
+      ...(entry.projection ? { projection: true } : {}),
+    };
+  };
+  if (economicStats) {
+    for (const [field, entry] of Object.entries(econProvenancePatch)) {
+      addStatProvenance(field as EconomicMetricKey, entry);
+    }
+  }
+  if (militaryStats) {
+    for (const [field, entry] of Object.entries(milProvenancePatch)) {
+      if (field === 'militaryExpGdpPct' || field === 'militaryExpBillionUsd') {
+        addStatProvenance(field, entry);
+      }
+    }
+  }
+  if (demographics && demographicPatch.populationMillions != null) {
+    const entry = weo?.imf_population_millions?.[profile.id];
+    statsProvenance.populationMillions = entry
+      ? { sourceId: 'imf-weo', vintage: entry.year, ...(entry.projection ? { projection: true } : {}) }
+      : {
+          sourceId: 'world-bank-wdi',
+          vintage:
+            observedAtByIndicator?.world_bank_population?.[profile.id]?.slice(0, 4) ??
+            ingest?.timestamp.slice(0, 4),
+        };
+  }
+  if (demographics && demographicPatch.urbanizationPct != null) {
+    statsProvenance.urbanizationPct = {
+      sourceId: 'world-bank-wdi',
+      vintage:
+        observedAtByIndicator?.world_bank_urban_pct?.[profile.id]?.slice(0, 4) ??
+        ingest?.timestamp.slice(0, 4),
+    };
+  }
+
+  return {
+    economicStats,
+    militaryStats,
+    demographics,
+    ...(Object.keys(statsProvenance).length > 0 ? { statsProvenance } : {}),
+  };
 };

@@ -10,6 +10,27 @@ import {
   relationshipDimensionQualityRules,
   relationshipDimensionSourcePriority,
 } from '../../data/pipeline/rules';
+import {
+  AUTHORITY_LABEL,
+  AUTHORITY_RANK,
+  SOURCE_REGISTRY,
+  type SourceAccess,
+} from '../../data/sourceRegistry';
+
+const ACCESS_LABEL: Record<SourceAccess, string> = {
+  'live-api': 'Live API',
+  'build-ingest': 'Ingested snapshot',
+  curated: 'Curated',
+};
+
+/** Most authoritative first, then freshest-publishing, then alphabetical. */
+const REGISTERED_SOURCES = Object.values(SOURCE_REGISTRY).sort((left, right) => {
+  const tierDiff = AUTHORITY_RANK[left.authorityTier] - AUTHORITY_RANK[right.authorityTier];
+  if (tierDiff !== 0) return tierDiff;
+  const lagDiff = left.typicalLagMonths - right.typicalLagMonths;
+  if (lagDiff !== 0) return lagDiff;
+  return left.publisher.localeCompare(right.publisher);
+});
 
 export function MethodologyPanel({
   notes,
@@ -219,9 +240,40 @@ export function MethodologyPanel({
         </div>
       </section>
       <section className="scenario-meta-card">
+        <strong>Data sources</strong>
+        <p className="methodology-telemetry-line">
+          Ranked by publishing authority, then by how quickly each source releases. Lag is the
+          typical gap between the period a figure describes and its publication.
+        </p>
+        <div className="methodology-priority-grid">
+          {REGISTERED_SOURCES.map((source) => (
+            <article key={`source-${source.id}`} className="methodology-priority-card">
+              <header>
+                <strong>
+                  {source.url ? (
+                    <a href={source.url} target="_blank" rel="noreferrer noopener">
+                      {source.title}
+                    </a>
+                  ) : (
+                    source.title
+                  )}
+                </strong>
+                <span className="methodology-priority-score">{ACCESS_LABEL[source.access]}</span>
+              </header>
+              <p>
+                {source.publisher} · {AUTHORITY_LABEL[source.authorityTier]} · {source.cadence} ·{' '}
+                {source.typicalLagMonths === 0 ? 'no lag' : `~${source.typicalLagMonths}mo lag`}
+              </p>
+              {source.note && <p className="methodology-telemetry-line-tight">{source.note}</p>}
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="scenario-meta-card">
         <strong>Source reconciliation priority rules</strong>
         <p className="methodology-telemetry-line">
-          Conflicts are resolved by source rank, then confidence, then recency.
+          Conflicts are resolved by source rank, then confidence, then the period each figure
+          describes, preferring reported outturns over projections.
         </p>
         <div className="methodology-priority-grid">
           {pipelineReconciliation.map((entry) => (

@@ -36,7 +36,7 @@ export const indicatorSourcePriority: Record<IndicatorKey, string[]> = {
   militaryTreatyLevel: ['world-bank-wdi', 'iiss-military-balance', 'sipri-milex', 'world-factbook'],
   tradeExposure: ['world-bank-wdi', 'un-comtrade', 'imf-direction-of-trade', 'wto-profile'],
   regimeStability: ['world-bank-wgi', 'transparency-intl', 'freedom-house', 'vdem'],
-  cohesion: ['world-bank-wdi', 'imf-direction-of-trade', 'un-comtrade'],
+  cohesion: ['imf-weo', 'world-bank-wdi', 'imf-direction-of-trade', 'un-comtrade'],
   conflictPressure: ['acled', 'ucdp', 'icg-crisiswatch', 'iiss-military-balance'],
   conflictHistory: ['ucdp', 'acled', 'icg-crisiswatch', 'iiss-military-balance'],
   sanctionsExposure: ['csis-sanctions', 'imf-direction-of-trade'],

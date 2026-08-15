@@ -1,0 +1,8980 @@
+{
+  "version": "1.0.0-weo",
+  "timestamp": "2026-08-15T18:36:35.420Z",
+  "countryCountRequested": 132,
+  "imf_gdp_growth": {
+    "sudan": {
+      "value": 3.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.7,
+        "year": "2026"
+      }
+    },
+    "afghanistan": {
+      "value": 3,
+      "year": "2025",
+      "projection": false
+    },
+    "albania": {
+      "value": 3.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.4,
+        "year": "2026"
+      }
+    },
+    "algeria": {
+      "value": 3.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.8,
+        "year": "2026"
+      }
+    },
+    "angola": {
+      "value": 3.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.3,
+        "year": "2026"
+      }
+    },
+    "argentina": {
+      "value": 4.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.5,
+        "year": "2026"
+      }
+    },
+    "armenia": {
+      "value": 7.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.3,
+        "year": "2026"
+      }
+    },
+    "australia": {
+      "value": 2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2,
+        "year": "2026"
+      }
+    },
+    "austria": {
+      "value": 0.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.7,
+        "year": "2026"
+      }
+    },
+    "azerbaijan": {
+      "value": 1.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.2,
+        "year": "2026"
+      }
+    },
+    "bahrain": {
+      "value": 3.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.5,
+        "year": "2026"
+      }
+    },
+    "bangladesh": {
+      "value": 3.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.7,
+        "year": "2026"
+      }
+    },
+    "belarus": {
+      "value": 1.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.2,
+        "year": "2026"
+      }
+    },
+    "belgium": {
+      "value": 1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.7,
+        "year": "2026"
+      }
+    },
+    "bolivia": {
+      "value": -1.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -3.3,
+        "year": "2026"
+      }
+    },
+    "bosnia-and-herzegovina": {
+      "value": 2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.2,
+        "year": "2026"
+      }
+    },
+    "botswana": {
+      "value": -0.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.7,
+        "year": "2026"
+      }
+    },
+    "brazil": {
+      "value": 2.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.9,
+        "year": "2026"
+      }
+    },
+    "brunei": {
+      "value": 0.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.6,
+        "year": "2026"
+      }
+    },
+    "bulgaria": {
+      "value": 3.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.8,
+        "year": "2026"
+      }
+    },
+    "burkina-faso": {
+      "value": 5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.9,
+        "year": "2026"
+      }
+    },
+    "cambodia": {
+      "value": 5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4,
+        "year": "2026"
+      }
+    },
+    "cameroon": {
+      "value": 3.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.3,
+        "year": "2026"
+      }
+    },
+    "canada": {
+      "value": 1.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.5,
+        "year": "2026"
+      }
+    },
+    "chile": {
+      "value": 2.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.4,
+        "year": "2026"
+      }
+    },
+    "china": {
+      "value": 5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.4,
+        "year": "2026"
+      }
+    },
+    "colombia": {
+      "value": 2.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.3,
+        "year": "2026"
+      }
+    },
+    "dem-rep-congo": {
+      "value": 5.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.9,
+        "year": "2026"
+      }
+    },
+    "costa-rica": {
+      "value": 4.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.6,
+        "year": "2026"
+      }
+    },
+    "cote-divoire": {
+      "value": 6.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.2,
+        "year": "2026"
+      }
+    },
+    "croatia": {
+      "value": 3.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.6,
+        "year": "2026"
+      }
+    },
+    "cyprus": {
+      "value": 3.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3,
+        "year": "2026"
+      }
+    },
+    "czechia": {
+      "value": 2.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.2,
+        "year": "2026"
+      }
+    },
+    "denmark": {
+      "value": 2.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2,
+        "year": "2026"
+      }
+    },
+    "dominican-republic": {
+      "value": 2.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.7,
+        "year": "2026"
+      }
+    },
+    "ecuador": {
+      "value": 3.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.5,
+        "year": "2026"
+      }
+    },
+    "egypt": {
+      "value": 4.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.2,
+        "year": "2026"
+      }
+    },
+    "estonia": {
+      "value": 0.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.4,
+        "year": "2026"
+      }
+    },
+    "ethiopia": {
+      "value": 9.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9.2,
+        "year": "2026"
+      }
+    },
+    "finland": {
+      "value": 0.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1,
+        "year": "2026"
+      }
+    },
+    "france": {
+      "value": 0.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.9,
+        "year": "2026"
+      }
+    },
+    "georgia": {
+      "value": 7.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.3,
+        "year": "2026"
+      }
+    },
+    "germany": {
+      "value": 0.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.8,
+        "year": "2026"
+      }
+    },
+    "ghana": {
+      "value": 6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.8,
+        "year": "2026"
+      }
+    },
+    "greece": {
+      "value": 2.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.8,
+        "year": "2026"
+      }
+    },
+    "guatemala": {
+      "value": 4.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.9,
+        "year": "2026"
+      }
+    },
+    "hungary": {
+      "value": 0.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.7,
+        "year": "2026"
+      }
+    },
+    "iceland": {
+      "value": 1.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.9,
+        "year": "2026"
+      }
+    },
+    "india": {
+      "value": 7.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.5,
+        "year": "2026"
+      }
+    },
+    "indonesia": {
+      "value": 5.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5,
+        "year": "2026"
+      }
+    },
+    "iran": {
+      "value": -1.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -6.1,
+        "year": "2026"
+      }
+    },
+    "iraq": {
+      "value": -0.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -6.8,
+        "year": "2026"
+      }
+    },
+    "ireland": {
+      "value": 12.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.5,
+        "year": "2026"
+      }
+    },
+    "israel": {
+      "value": 2.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.5,
+        "year": "2026"
+      }
+    },
+    "italy": {
+      "value": 0.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.5,
+        "year": "2026"
+      }
+    },
+    "japan": {
+      "value": 1.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.7,
+        "year": "2026"
+      }
+    },
+    "jordan": {
+      "value": 2.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.7,
+        "year": "2026"
+      }
+    },
+    "kazakhstan": {
+      "value": 6.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.6,
+        "year": "2026"
+      }
+    },
+    "kenya": {
+      "value": 4.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.5,
+        "year": "2026"
+      }
+    },
+    "south-korea": {
+      "value": 1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.9,
+        "year": "2026"
+      }
+    },
+    "kosovo": {
+      "value": 3.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.3,
+        "year": "2026"
+      }
+    },
+    "kuwait": {
+      "value": 3.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.6,
+        "year": "2026"
+      }
+    },
+    "kyrgyzstan": {
+      "value": 11.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.1,
+        "year": "2026"
+      }
+    },
+    "laos": {
+      "value": 4.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4,
+        "year": "2026"
+      }
+    },
+    "latvia": {
+      "value": 2.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.2,
+        "year": "2026"
+      }
+    },
+    "lebanon": {
+      "value": 4,
+      "year": "2025",
+      "projection": false
+    },
+    "libya": {
+      "value": 15.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.7,
+        "year": "2026"
+      }
+    },
+    "lithuania": {
+      "value": 2.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.9,
+        "year": "2026"
+      }
+    },
+    "luxembourg": {
+      "value": 0.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.6,
+        "year": "2026"
+      }
+    },
+    "madagascar": {
+      "value": 2.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.6,
+        "year": "2026"
+      }
+    },
+    "malaysia": {
+      "value": 5.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.7,
+        "year": "2026"
+      }
+    },
+    "mali": {
+      "value": 4.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.5,
+        "year": "2026"
+      }
+    },
+    "mexico": {
+      "value": 0.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.6,
+        "year": "2026"
+      }
+    },
+    "moldova": {
+      "value": 2.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.9,
+        "year": "2026"
+      }
+    },
+    "mongolia": {
+      "value": 6.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.3,
+        "year": "2026"
+      }
+    },
+    "montenegro": {
+      "value": 2.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.8,
+        "year": "2026"
+      }
+    },
+    "morocco": {
+      "value": 4.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.9,
+        "year": "2026"
+      }
+    },
+    "mozambique": {
+      "value": -0.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.5,
+        "year": "2026"
+      }
+    },
+    "myanmar": {
+      "value": -2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3,
+        "year": "2026"
+      }
+    },
+    "nepal": {
+      "value": 4.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3,
+        "year": "2026"
+      }
+    },
+    "netherlands": {
+      "value": 1.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.2,
+        "year": "2026"
+      }
+    },
+    "new-zealand": {
+      "value": 0.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.1,
+        "year": "2026"
+      }
+    },
+    "niger": {
+      "value": 6.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.7,
+        "year": "2026"
+      }
+    },
+    "nigeria": {
+      "value": 4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.1,
+        "year": "2026"
+      }
+    },
+    "north-macedonia": {
+      "value": 3.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.1,
+        "year": "2026"
+      }
+    },
+    "norway": {
+      "value": 1.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.5,
+        "year": "2026"
+      }
+    },
+    "oman": {
+      "value": 2.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.5,
+        "year": "2026"
+      }
+    },
+    "pakistan": {
+      "value": 3.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.6,
+        "year": "2026"
+      }
+    },
+    "panama": {
+      "value": 4.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.8,
+        "year": "2026"
+      }
+    },
+    "papua-new-guinea": {
+      "value": 5.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.8,
+        "year": "2026"
+      }
+    },
+    "paraguay": {
+      "value": 6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.2,
+        "year": "2026"
+      }
+    },
+    "peru": {
+      "value": 3.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.8,
+        "year": "2026"
+      }
+    },
+    "philippines": {
+      "value": 4.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.1,
+        "year": "2026"
+      }
+    },
+    "poland": {
+      "value": 3.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.3,
+        "year": "2026"
+      }
+    },
+    "portugal": {
+      "value": 1.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.9,
+        "year": "2026"
+      }
+    },
+    "qatar": {
+      "value": 2.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -8.6,
+        "year": "2026"
+      }
+    },
+    "romania": {
+      "value": 0.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.7,
+        "year": "2026"
+      }
+    },
+    "russia": {
+      "value": 1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.1,
+        "year": "2026"
+      }
+    },
+    "rwanda": {
+      "value": 7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.2,
+        "year": "2026"
+      }
+    },
+    "saudi-arabia": {
+      "value": 4.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.1,
+        "year": "2026"
+      }
+    },
+    "senegal": {
+      "value": 7.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.2,
+        "year": "2026"
+      }
+    },
+    "serbia": {
+      "value": 2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.8,
+        "year": "2026"
+      }
+    },
+    "singapore": {
+      "value": 5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.5,
+        "year": "2026"
+      }
+    },
+    "slovakia": {
+      "value": 0.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.6,
+        "year": "2026"
+      }
+    },
+    "slovenia": {
+      "value": 1.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2,
+        "year": "2026"
+      }
+    },
+    "somalia": {
+      "value": 3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.6,
+        "year": "2026"
+      }
+    },
+    "south-africa": {
+      "value": 1.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1,
+        "year": "2026"
+      }
+    },
+    "south-sudan": {
+      "value": 46.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.1,
+        "year": "2026"
+      }
+    },
+    "spain": {
+      "value": 2.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.1,
+        "year": "2026"
+      }
+    },
+    "sri-lanka": {
+      "value": 5,
+      "year": "2024",
+      "projection": false
+    },
+    "sweden": {
+      "value": 1.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2,
+        "year": "2026"
+      }
+    },
+    "switzerland": {
+      "value": 1.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.3,
+        "year": "2026"
+      }
+    },
+    "syria": {
+      "value": 3.4,
+      "year": "2010",
+      "projection": false
+    },
+    "taiwan": {
+      "value": 8.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.2,
+        "year": "2026"
+      }
+    },
+    "tajikistan": {
+      "value": 8.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6,
+        "year": "2026"
+      }
+    },
+    "tanzania": {
+      "value": 5.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.9,
+        "year": "2026"
+      }
+    },
+    "thailand": {
+      "value": 2.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.5,
+        "year": "2026"
+      }
+    },
+    "tunisia": {
+      "value": 2.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.1,
+        "year": "2026"
+      }
+    },
+    "turkey": {
+      "value": 3.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.4,
+        "year": "2026"
+      }
+    },
+    "turkmenistan": {
+      "value": 3.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.6,
+        "year": "2026"
+      }
+    },
+    "uganda": {
+      "value": 6.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.5,
+        "year": "2026"
+      }
+    },
+    "ukraine": {
+      "value": 1.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2,
+        "year": "2026"
+      }
+    },
+    "uae": {
+      "value": 5.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.1,
+        "year": "2026"
+      }
+    },
+    "united-kingdom": {
+      "value": 1.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.8,
+        "year": "2026"
+      }
+    },
+    "united-states": {
+      "value": 2.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.3,
+        "year": "2026"
+      }
+    },
+    "uruguay": {
+      "value": 1.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.8,
+        "year": "2026"
+      }
+    },
+    "uzbekistan": {
+      "value": 7.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.5,
+        "year": "2026"
+      }
+    },
+    "venezuela": {
+      "value": 1.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4,
+        "year": "2026"
+      }
+    },
+    "vietnam": {
+      "value": 8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.1,
+        "year": "2026"
+      }
+    },
+    "yemen": {
+      "value": -0.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.5,
+        "year": "2026"
+      }
+    },
+    "zambia": {
+      "value": 3.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.3,
+        "year": "2026"
+      }
+    },
+    "zimbabwe": {
+      "value": 7.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5,
+        "year": "2026"
+      }
+    }
+  },
+  "imf_inflation": {
+    "sudan": {
+      "value": 100.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 75.1,
+        "year": "2026"
+      }
+    },
+    "afghanistan": {
+      "value": 2.9,
+      "year": "2025",
+      "projection": false
+    },
+    "albania": {
+      "value": 2.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.4,
+        "year": "2026"
+      }
+    },
+    "algeria": {
+      "value": 1.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.9,
+        "year": "2026"
+      }
+    },
+    "angola": {
+      "value": 20.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 12.9,
+        "year": "2026"
+      }
+    },
+    "argentina": {
+      "value": 41.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 30.4,
+        "year": "2026"
+      }
+    },
+    "armenia": {
+      "value": 3.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.6,
+        "year": "2026"
+      }
+    },
+    "australia": {
+      "value": 2.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4,
+        "year": "2026"
+      }
+    },
+    "austria": {
+      "value": 3.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.5,
+        "year": "2026"
+      }
+    },
+    "azerbaijan": {
+      "value": 5.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6,
+        "year": "2026"
+      }
+    },
+    "bahrain": {
+      "value": -0.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.4,
+        "year": "2026"
+      }
+    },
+    "bangladesh": {
+      "value": 10,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9.2,
+        "year": "2026"
+      }
+    },
+    "belarus": {
+      "value": 6.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.4,
+        "year": "2026"
+      }
+    },
+    "belgium": {
+      "value": 3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.8,
+        "year": "2026"
+      }
+    },
+    "bolivia": {
+      "value": 19.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 20.7,
+        "year": "2026"
+      }
+    },
+    "bosnia-and-herzegovina": {
+      "value": 4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.5,
+        "year": "2026"
+      }
+    },
+    "botswana": {
+      "value": 2.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.1,
+        "year": "2026"
+      }
+    },
+    "brazil": {
+      "value": 5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4,
+        "year": "2026"
+      }
+    },
+    "brunei": {
+      "value": -0.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.6,
+        "year": "2026"
+      }
+    },
+    "bulgaria": {
+      "value": 3.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.8,
+        "year": "2026"
+      }
+    },
+    "burkina-faso": {
+      "value": -0.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.5,
+        "year": "2026"
+      }
+    },
+    "cambodia": {
+      "value": 2.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3,
+        "year": "2026"
+      }
+    },
+    "cameroon": {
+      "value": 3.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.5,
+        "year": "2026"
+      }
+    },
+    "canada": {
+      "value": 2.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.5,
+        "year": "2026"
+      }
+    },
+    "chile": {
+      "value": 4.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.9,
+        "year": "2026"
+      }
+    },
+    "china": {
+      "value": 0,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.2,
+        "year": "2026"
+      }
+    },
+    "colombia": {
+      "value": 5.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.9,
+        "year": "2026"
+      }
+    },
+    "dem-rep-congo": {
+      "value": 7.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.3,
+        "year": "2026"
+      }
+    },
+    "costa-rica": {
+      "value": -0.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.4,
+        "year": "2026"
+      }
+    },
+    "cote-divoire": {
+      "value": 0.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.8,
+        "year": "2026"
+      }
+    },
+    "croatia": {
+      "value": 4.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.4,
+        "year": "2026"
+      }
+    },
+    "cyprus": {
+      "value": 0.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.6,
+        "year": "2026"
+      }
+    },
+    "czechia": {
+      "value": 2.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.4,
+        "year": "2026"
+      }
+    },
+    "denmark": {
+      "value": 1.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2,
+        "year": "2026"
+      }
+    },
+    "dominican-republic": {
+      "value": 3.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.1,
+        "year": "2026"
+      }
+    },
+    "ecuador": {
+      "value": 0.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.9,
+        "year": "2026"
+      }
+    },
+    "egypt": {
+      "value": 20.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 13.2,
+        "year": "2026"
+      }
+    },
+    "estonia": {
+      "value": 4.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.8,
+        "year": "2026"
+      }
+    },
+    "ethiopia": {
+      "value": 13.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 11.8,
+        "year": "2026"
+      }
+    },
+    "finland": {
+      "value": 1.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.5,
+        "year": "2026"
+      }
+    },
+    "france": {
+      "value": 0.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.8,
+        "year": "2026"
+      }
+    },
+    "georgia": {
+      "value": 3.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.4,
+        "year": "2026"
+      }
+    },
+    "germany": {
+      "value": 2.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.7,
+        "year": "2026"
+      }
+    },
+    "ghana": {
+      "value": 14.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.8,
+        "year": "2026"
+      }
+    },
+    "greece": {
+      "value": 2.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.5,
+        "year": "2026"
+      }
+    },
+    "guatemala": {
+      "value": 1.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.6,
+        "year": "2026"
+      }
+    },
+    "hungary": {
+      "value": 4.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.8,
+        "year": "2026"
+      }
+    },
+    "iceland": {
+      "value": 4.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.8,
+        "year": "2026"
+      }
+    },
+    "india": {
+      "value": 2.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.7,
+        "year": "2026"
+      }
+    },
+    "indonesia": {
+      "value": 1.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3,
+        "year": "2026"
+      }
+    },
+    "iran": {
+      "value": 50.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 68.9,
+        "year": "2026"
+      }
+    },
+    "iraq": {
+      "value": 0.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3,
+        "year": "2026"
+      }
+    },
+    "ireland": {
+      "value": 2.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.1,
+        "year": "2026"
+      }
+    },
+    "israel": {
+      "value": 3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.3,
+        "year": "2026"
+      }
+    },
+    "italy": {
+      "value": 1.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.6,
+        "year": "2026"
+      }
+    },
+    "japan": {
+      "value": 3.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.2,
+        "year": "2026"
+      }
+    },
+    "jordan": {
+      "value": 1.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.3,
+        "year": "2026"
+      }
+    },
+    "kazakhstan": {
+      "value": 11.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.7,
+        "year": "2026"
+      }
+    },
+    "kenya": {
+      "value": 4.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.9,
+        "year": "2026"
+      }
+    },
+    "south-korea": {
+      "value": 2.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.5,
+        "year": "2026"
+      }
+    },
+    "kosovo": {
+      "value": 3.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.9,
+        "year": "2026"
+      }
+    },
+    "kuwait": {
+      "value": 2.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.8,
+        "year": "2026"
+      }
+    },
+    "kyrgyzstan": {
+      "value": 8.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.6,
+        "year": "2026"
+      }
+    },
+    "laos": {
+      "value": 7.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9.6,
+        "year": "2026"
+      }
+    },
+    "latvia": {
+      "value": 3.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3,
+        "year": "2026"
+      }
+    },
+    "lebanon": {
+      "value": 14.6,
+      "year": "2025",
+      "projection": false
+    },
+    "libya": {
+      "value": 1.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.5,
+        "year": "2026"
+      }
+    },
+    "lithuania": {
+      "value": 3.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4,
+        "year": "2026"
+      }
+    },
+    "luxembourg": {
+      "value": 2.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.1,
+        "year": "2026"
+      }
+    },
+    "madagascar": {
+      "value": 8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8.3,
+        "year": "2026"
+      }
+    },
+    "malaysia": {
+      "value": 1.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.9,
+        "year": "2026"
+      }
+    },
+    "mali": {
+      "value": 2.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.2,
+        "year": "2026"
+      }
+    },
+    "mexico": {
+      "value": 3.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.9,
+        "year": "2026"
+      }
+    },
+    "moldova": {
+      "value": 7.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.4,
+        "year": "2026"
+      }
+    },
+    "mongolia": {
+      "value": 8.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.4,
+        "year": "2026"
+      }
+    },
+    "montenegro": {
+      "value": 3.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.2,
+        "year": "2026"
+      }
+    },
+    "morocco": {
+      "value": 0.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.3,
+        "year": "2026"
+      }
+    },
+    "mozambique": {
+      "value": 4.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.4,
+        "year": "2026"
+      }
+    },
+    "myanmar": {
+      "value": 22,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 19,
+        "year": "2026"
+      }
+    },
+    "nepal": {
+      "value": 4.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.1,
+        "year": "2026"
+      }
+    },
+    "netherlands": {
+      "value": 3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.7,
+        "year": "2026"
+      }
+    },
+    "new-zealand": {
+      "value": 2.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.1,
+        "year": "2026"
+      }
+    },
+    "niger": {
+      "value": -4.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.4,
+        "year": "2026"
+      }
+    },
+    "nigeria": {
+      "value": 23,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 16,
+        "year": "2026"
+      }
+    },
+    "north-macedonia": {
+      "value": 4.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.5,
+        "year": "2026"
+      }
+    },
+    "norway": {
+      "value": 3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.3,
+        "year": "2026"
+      }
+    },
+    "oman": {
+      "value": 1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.7,
+        "year": "2026"
+      }
+    },
+    "pakistan": {
+      "value": 4.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.2,
+        "year": "2026"
+      }
+    },
+    "panama": {
+      "value": 0,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.4,
+        "year": "2026"
+      }
+    },
+    "papua-new-guinea": {
+      "value": 4.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5,
+        "year": "2026"
+      }
+    },
+    "paraguay": {
+      "value": 4.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.3,
+        "year": "2026"
+      }
+    },
+    "peru": {
+      "value": 1.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.5,
+        "year": "2026"
+      }
+    },
+    "philippines": {
+      "value": 1.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.3,
+        "year": "2026"
+      }
+    },
+    "poland": {
+      "value": 3.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.3,
+        "year": "2026"
+      }
+    },
+    "portugal": {
+      "value": 2.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.1,
+        "year": "2026"
+      }
+    },
+    "qatar": {
+      "value": 0.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.9,
+        "year": "2026"
+      }
+    },
+    "romania": {
+      "value": 7.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.8,
+        "year": "2026"
+      }
+    },
+    "russia": {
+      "value": 8.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.6,
+        "year": "2026"
+      }
+    },
+    "rwanda": {
+      "value": 7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.6,
+        "year": "2026"
+      }
+    },
+    "saudi-arabia": {
+      "value": 2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.3,
+        "year": "2026"
+      }
+    },
+    "senegal": {
+      "value": 1.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.5,
+        "year": "2026"
+      }
+    },
+    "serbia": {
+      "value": 3.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.2,
+        "year": "2026"
+      }
+    },
+    "singapore": {
+      "value": 0.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.3,
+        "year": "2026"
+      }
+    },
+    "slovakia": {
+      "value": 4.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.2,
+        "year": "2026"
+      }
+    },
+    "slovenia": {
+      "value": 2.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.9,
+        "year": "2026"
+      }
+    },
+    "somalia": {
+      "value": 3.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.9,
+        "year": "2026"
+      }
+    },
+    "south-africa": {
+      "value": 3.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.9,
+        "year": "2026"
+      }
+    },
+    "south-sudan": {
+      "value": 97.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 14,
+        "year": "2026"
+      }
+    },
+    "spain": {
+      "value": 2.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3,
+        "year": "2026"
+      }
+    },
+    "sri-lanka": {
+      "value": 1.2,
+      "year": "2024",
+      "projection": false
+    },
+    "sweden": {
+      "value": 2.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.5,
+        "year": "2026"
+      }
+    },
+    "switzerland": {
+      "value": 0.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.5,
+        "year": "2026"
+      }
+    },
+    "syria": {
+      "value": 4.4,
+      "year": "2010",
+      "projection": false
+    },
+    "taiwan": {
+      "value": 1.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.5,
+        "year": "2026"
+      }
+    },
+    "tajikistan": {
+      "value": 3.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4,
+        "year": "2026"
+      }
+    },
+    "tanzania": {
+      "value": 3.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4,
+        "year": "2026"
+      }
+    },
+    "thailand": {
+      "value": -0.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.9,
+        "year": "2026"
+      }
+    },
+    "tunisia": {
+      "value": 5.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.5,
+        "year": "2026"
+      }
+    },
+    "turkey": {
+      "value": 34.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 28.6,
+        "year": "2026"
+      }
+    },
+    "turkmenistan": {
+      "value": 2.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.9,
+        "year": "2026"
+      }
+    },
+    "uganda": {
+      "value": 3.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4,
+        "year": "2026"
+      }
+    },
+    "ukraine": {
+      "value": 12.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.1,
+        "year": "2026"
+      }
+    },
+    "uae": {
+      "value": 1.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.5,
+        "year": "2026"
+      }
+    },
+    "united-kingdom": {
+      "value": 3.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.2,
+        "year": "2026"
+      }
+    },
+    "united-states": {
+      "value": 2.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.2,
+        "year": "2026"
+      }
+    },
+    "uruguay": {
+      "value": 4.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4,
+        "year": "2026"
+      }
+    },
+    "uzbekistan": {
+      "value": 8.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7,
+        "year": "2026"
+      }
+    },
+    "venezuela": {
+      "value": 252,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 387.4,
+        "year": "2026"
+      }
+    },
+    "vietnam": {
+      "value": 3.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.9,
+        "year": "2026"
+      }
+    },
+    "yemen": {
+      "value": 21.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 26.5,
+        "year": "2026"
+      }
+    },
+    "zambia": {
+      "value": 13.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9,
+        "year": "2026"
+      }
+    },
+    "zimbabwe": {
+      "value": 81.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8,
+        "year": "2026"
+      }
+    }
+  },
+  "imf_gdp_usd_billions": {
+    "sudan": {
+      "value": 39.718,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 44.688,
+        "year": "2026"
+      }
+    },
+    "afghanistan": {
+      "value": 19.662,
+      "year": "2025",
+      "projection": false
+    },
+    "albania": {
+      "value": 30.279,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 33.333,
+        "year": "2026"
+      }
+    },
+    "algeria": {
+      "value": 285.724,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 317.173,
+        "year": "2026"
+      }
+    },
+    "angola": {
+      "value": 141.728,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 152.354,
+        "year": "2026"
+      }
+    },
+    "argentina": {
+      "value": 681.485,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 688.378,
+        "year": "2026"
+      }
+    },
+    "armenia": {
+      "value": 29.243,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 31.873,
+        "year": "2026"
+      }
+    },
+    "australia": {
+      "value": 1839.961,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2123.963,
+        "year": "2026"
+      }
+    },
+    "austria": {
+      "value": 579.928,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 623.719,
+        "year": "2026"
+      }
+    },
+    "azerbaijan": {
+      "value": 75.938,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 78.372,
+        "year": "2026"
+      }
+    },
+    "bahrain": {
+      "value": 47.538,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 48.849,
+        "year": "2026"
+      }
+    },
+    "bangladesh": {
+      "value": 457.904,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 510.705,
+        "year": "2026"
+      }
+    },
+    "belarus": {
+      "value": 92.766,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 102.042,
+        "year": "2026"
+      }
+    },
+    "belgium": {
+      "value": 724.917,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 776.73,
+        "year": "2026"
+      }
+    },
+    "bolivia": {
+      "value": 64.25,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 80.743,
+        "year": "2026"
+      }
+    },
+    "bosnia-and-herzegovina": {
+      "value": 32.962,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 36.771,
+        "year": "2026"
+      }
+    },
+    "botswana": {
+      "value": 19.533,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 21.937,
+        "year": "2026"
+      }
+    },
+    "brazil": {
+      "value": 2279.918,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2635.912,
+        "year": "2026"
+      }
+    },
+    "brunei": {
+      "value": 15.942,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 16.863,
+        "year": "2026"
+      }
+    },
+    "bulgaria": {
+      "value": 131.024,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 148.121,
+        "year": "2026"
+      }
+    },
+    "burkina-faso": {
+      "value": 27.14,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 32.513,
+        "year": "2026"
+      }
+    },
+    "cambodia": {
+      "value": 49.288,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 52.379,
+        "year": "2026"
+      }
+    },
+    "cameroon": {
+      "value": 59.282,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 65.135,
+        "year": "2026"
+      }
+    },
+    "canada": {
+      "value": 2319.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2507.34,
+        "year": "2026"
+      }
+    },
+    "chile": {
+      "value": 355.346,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 407.85,
+        "year": "2026"
+      }
+    },
+    "china": {
+      "value": 19626.247,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 20851.593,
+        "year": "2026"
+      }
+    },
+    "colombia": {
+      "value": 457.41,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 539.53,
+        "year": "2026"
+      }
+    },
+    "dem-rep-congo": {
+      "value": 92.833,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 123.406,
+        "year": "2026"
+      }
+    },
+    "costa-rica": {
+      "value": 102.902,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 109.931,
+        "year": "2026"
+      }
+    },
+    "cote-divoire": {
+      "value": 98.885,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 112.115,
+        "year": "2026"
+      }
+    },
+    "croatia": {
+      "value": 106.055,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 116.574,
+        "year": "2026"
+      }
+    },
+    "cyprus": {
+      "value": 41.019,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 45.171,
+        "year": "2026"
+      }
+    },
+    "czechia": {
+      "value": 389.02,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 432.597,
+        "year": "2026"
+      }
+    },
+    "denmark": {
+      "value": 461.718,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 503.772,
+        "year": "2026"
+      }
+    },
+    "dominican-republic": {
+      "value": 127.895,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 136.148,
+        "year": "2026"
+      }
+    },
+    "ecuador": {
+      "value": 130.321,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 138.194,
+        "year": "2026"
+      }
+    },
+    "egypt": {
+      "value": 364.64,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 429.645,
+        "year": "2026"
+      }
+    },
+    "estonia": {
+      "value": 47.004,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 51.634,
+        "year": "2026"
+      }
+    },
+    "ethiopia": {
+      "value": 109.109,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 121.527,
+        "year": "2026"
+      }
+    },
+    "finland": {
+      "value": 316.86,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 337.669,
+        "year": "2026"
+      }
+    },
+    "france": {
+      "value": 3368.925,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3596.094,
+        "year": "2026"
+      }
+    },
+    "georgia": {
+      "value": 38.216,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 42.716,
+        "year": "2026"
+      }
+    },
+    "germany": {
+      "value": 5048.059,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5452.858,
+        "year": "2026"
+      }
+    },
+    "ghana": {
+      "value": 114.708,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 118.293,
+        "year": "2026"
+      }
+    },
+    "greece": {
+      "value": 280.476,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 307.554,
+        "year": "2026"
+      }
+    },
+    "guatemala": {
+      "value": 121.113,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 128.886,
+        "year": "2026"
+      }
+    },
+    "hungary": {
+      "value": 246.891,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 271.122,
+        "year": "2026"
+      }
+    },
+    "iceland": {
+      "value": 38.583,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 43.8,
+        "year": "2026"
+      }
+    },
+    "india": {
+      "value": 3916.312,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4153.191,
+        "year": "2026"
+      }
+    },
+    "indonesia": {
+      "value": 1445.642,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1539.872,
+        "year": "2026"
+      }
+    },
+    "iran": {
+      "value": 371.196,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 300.293,
+        "year": "2026"
+      }
+    },
+    "iraq": {
+      "value": 264.167,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 264.784,
+        "year": "2026"
+      }
+    },
+    "ireland": {
+      "value": 718.14,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 779.381,
+        "year": "2026"
+      }
+    },
+    "israel": {
+      "value": 610.778,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 719.848,
+        "year": "2026"
+      }
+    },
+    "italy": {
+      "value": 2550.111,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2738.164,
+        "year": "2026"
+      }
+    },
+    "japan": {
+      "value": 4435.163,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4379.253,
+        "year": "2026"
+      }
+    },
+    "jordan": {
+      "value": 61.692,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 64.909,
+        "year": "2026"
+      }
+    },
+    "kazakhstan": {
+      "value": 302.746,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 360.456,
+        "year": "2026"
+      }
+    },
+    "kenya": {
+      "value": 136.455,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 147.265,
+        "year": "2026"
+      }
+    },
+    "south-korea": {
+      "value": 1872.375,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1931.008,
+        "year": "2026"
+      }
+    },
+    "kosovo": {
+      "value": 12.449,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 14.053,
+        "year": "2026"
+      }
+    },
+    "kuwait": {
+      "value": 157.835,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 172.92,
+        "year": "2026"
+      }
+    },
+    "kyrgyzstan": {
+      "value": 21.567,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 23.606,
+        "year": "2026"
+      }
+    },
+    "laos": {
+      "value": 17.822,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 18.959,
+        "year": "2026"
+      }
+    },
+    "latvia": {
+      "value": 48.591,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 53.686,
+        "year": "2026"
+      }
+    },
+    "lebanon": {
+      "value": 34.497,
+      "year": "2025",
+      "projection": false
+    },
+    "libya": {
+      "value": 44.732,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 52.453,
+        "year": "2026"
+      }
+    },
+    "lithuania": {
+      "value": 94.927,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 105.907,
+        "year": "2026"
+      }
+    },
+    "luxembourg": {
+      "value": 101.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 110.417,
+        "year": "2026"
+      }
+    },
+    "madagascar": {
+      "value": 19.556,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 21.185,
+        "year": "2026"
+      }
+    },
+    "malaysia": {
+      "value": 472.193,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 516.428,
+        "year": "2026"
+      }
+    },
+    "mali": {
+      "value": 30.05,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 33.847,
+        "year": "2026"
+      }
+    },
+    "mexico": {
+      "value": 1832.641,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2120.855,
+        "year": "2026"
+      }
+    },
+    "moldova": {
+      "value": 20.342,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 21.889,
+        "year": "2026"
+      }
+    },
+    "mongolia": {
+      "value": 25.37,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 28.45,
+        "year": "2026"
+      }
+    },
+    "montenegro": {
+      "value": 9.228,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.227,
+        "year": "2026"
+      }
+    },
+    "morocco": {
+      "value": 182.587,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 194.333,
+        "year": "2026"
+      }
+    },
+    "mozambique": {
+      "value": 22.338,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 23.275,
+        "year": "2026"
+      }
+    },
+    "myanmar": {
+      "value": 82.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 83.832,
+        "year": "2026"
+      }
+    },
+    "nepal": {
+      "value": 44.81,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 45.844,
+        "year": "2026"
+      }
+    },
+    "netherlands": {
+      "value": 1332.24,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1449.704,
+        "year": "2026"
+      }
+    },
+    "new-zealand": {
+      "value": 258.832,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 278.636,
+        "year": "2026"
+      }
+    },
+    "niger": {
+      "value": 21.836,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 24.813,
+        "year": "2026"
+      }
+    },
+    "nigeria": {
+      "value": 290.491,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 377.365,
+        "year": "2026"
+      }
+    },
+    "north-macedonia": {
+      "value": 19.142,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 21.605,
+        "year": "2026"
+      }
+    },
+    "norway": {
+      "value": 530.756,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 599.406,
+        "year": "2026"
+      }
+    },
+    "oman": {
+      "value": 106.127,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 117.176,
+        "year": "2026"
+      }
+    },
+    "pakistan": {
+      "value": 407.786,
+      "year": "2025",
+      "projection": false
+    },
+    "panama": {
+      "value": 90.463,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 95.024,
+        "year": "2026"
+      }
+    },
+    "papua-new-guinea": {
+      "value": 32.491,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 34.403,
+        "year": "2026"
+      }
+    },
+    "paraguay": {
+      "value": 49.358,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 60.542,
+        "year": "2026"
+      }
+    },
+    "peru": {
+      "value": 341.025,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 380.9,
+        "year": "2026"
+      }
+    },
+    "philippines": {
+      "value": 487.161,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 512.222,
+        "year": "2026"
+      }
+    },
+    "poland": {
+      "value": 1035.586,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1134.248,
+        "year": "2026"
+      }
+    },
+    "portugal": {
+      "value": 346.412,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 380.637,
+        "year": "2026"
+      }
+    },
+    "qatar": {
+      "value": 221.229,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 217.416,
+        "year": "2026"
+      }
+    },
+    "romania": {
+      "value": 427.941,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 480.834,
+        "year": "2026"
+      }
+    },
+    "russia": {
+      "value": 2587.938,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2656.452,
+        "year": "2026"
+      }
+    },
+    "rwanda": {
+      "value": 15.973,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 17.336,
+        "year": "2026"
+      }
+    },
+    "saudi-arabia": {
+      "value": 1276.943,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1388.676,
+        "year": "2026"
+      }
+    },
+    "senegal": {
+      "value": 37.116,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 40.469,
+        "year": "2026"
+      }
+    },
+    "serbia": {
+      "value": 99.953,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 112.025,
+        "year": "2026"
+      }
+    },
+    "singapore": {
+      "value": 603.87,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 659.572,
+        "year": "2026"
+      }
+    },
+    "slovakia": {
+      "value": 154.442,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 168.897,
+        "year": "2026"
+      }
+    },
+    "slovenia": {
+      "value": 79.603,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 86.732,
+        "year": "2026"
+      }
+    },
+    "somalia": {
+      "value": 12.956,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 14.174,
+        "year": "2026"
+      }
+    },
+    "south-africa": {
+      "value": 427.141,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 479.964,
+        "year": "2026"
+      }
+    },
+    "south-sudan": {
+      "value": 5.733,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.069,
+        "year": "2026"
+      }
+    },
+    "spain": {
+      "value": 1903.826,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2091.222,
+        "year": "2026"
+      }
+    },
+    "sri-lanka": {
+      "value": 98.964,
+      "year": "2024",
+      "projection": false
+    },
+    "sweden": {
+      "value": 668.999,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 760.481,
+        "year": "2026"
+      }
+    },
+    "switzerland": {
+      "value": 1043.544,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1146.911,
+        "year": "2026"
+      }
+    },
+    "syria": {
+      "value": 60.043,
+      "year": "2010",
+      "projection": false
+    },
+    "taiwan": {
+      "value": 920.05,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 976.719,
+        "year": "2026"
+      }
+    },
+    "tajikistan": {
+      "value": 17.542,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 20.418,
+        "year": "2026"
+      }
+    },
+    "tanzania": {
+      "value": 87.344,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 94.889,
+        "year": "2026"
+      }
+    },
+    "thailand": {
+      "value": 577.01,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 579.996,
+        "year": "2026"
+      }
+    },
+    "tunisia": {
+      "value": 57.589,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 60.745,
+        "year": "2026"
+      }
+    },
+    "turkey": {
+      "value": 1597.301,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1640.223,
+        "year": "2026"
+      }
+    },
+    "turkmenistan": {
+      "value": 77.398,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 83.065,
+        "year": "2026"
+      }
+    },
+    "uganda": {
+      "value": 66.014,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 73.37,
+        "year": "2026"
+      }
+    },
+    "ukraine": {
+      "value": 212.927,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 225.337,
+        "year": "2026"
+      }
+    },
+    "uae": {
+      "value": 571.643,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 621.546,
+        "year": "2026"
+      }
+    },
+    "united-kingdom": {
+      "value": 4003.022,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4264.794,
+        "year": "2026"
+      }
+    },
+    "united-states": {
+      "value": 30767.075,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 32383.92,
+        "year": "2026"
+      }
+    },
+    "uruguay": {
+      "value": 85.575,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 96.092,
+        "year": "2026"
+      }
+    },
+    "uzbekistan": {
+      "value": 147.069,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 181.502,
+        "year": "2026"
+      }
+    },
+    "venezuela": {
+      "value": 99.661,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 111.303,
+        "year": "2026"
+      }
+    },
+    "vietnam": {
+      "value": 494.046,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 527.266,
+        "year": "2026"
+      }
+    },
+    "yemen": {
+      "value": 7.897,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.435,
+        "year": "2026"
+      }
+    },
+    "zambia": {
+      "value": 28.88,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 41.243,
+        "year": "2026"
+      }
+    },
+    "zimbabwe": {
+      "value": 53.474,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 56.713,
+        "year": "2026"
+      }
+    }
+  },
+  "imf_gdp_per_capita_usd": {
+    "sudan": {
+      "value": 787.779,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 863.889,
+        "year": "2026"
+      }
+    },
+    "afghanistan": {
+      "value": 448.457,
+      "year": "2025",
+      "projection": false
+    },
+    "albania": {
+      "value": 11234.556,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 12492.636,
+        "year": "2026"
+      }
+    },
+    "algeria": {
+      "value": 6046.876,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6628.405,
+        "year": "2026"
+      }
+    },
+    "angola": {
+      "value": 3614.423,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3754.028,
+        "year": "2026"
+      }
+    },
+    "argentina": {
+      "value": 14354.988,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 14356.619,
+        "year": "2026"
+      }
+    },
+    "armenia": {
+      "value": 9520.965,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10409.851,
+        "year": "2026"
+      }
+    },
+    "australia": {
+      "value": 66351.856,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 75647.841,
+        "year": "2026"
+      }
+    },
+    "austria": {
+      "value": 63161.353,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 67761.236,
+        "year": "2026"
+      }
+    },
+    "azerbaijan": {
+      "value": 7321.685,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7466.825,
+        "year": "2026"
+      }
+    },
+    "bahrain": {
+      "value": 29343.67,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 29569.16,
+        "year": "2026"
+      }
+    },
+    "bangladesh": {
+      "value": 2635.632,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2911.273,
+        "year": "2026"
+      }
+    },
+    "belarus": {
+      "value": 10208.724,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 11285.878,
+        "year": "2026"
+      }
+    },
+    "belgium": {
+      "value": 61002.007,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 65111.565,
+        "year": "2026"
+      }
+    },
+    "bolivia": {
+      "value": 5106.53,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6333.163,
+        "year": "2026"
+      }
+    },
+    "bosnia-and-herzegovina": {
+      "value": 9567.697,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10701.066,
+        "year": "2026"
+      }
+    },
+    "botswana": {
+      "value": 7662.303,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8489.604,
+        "year": "2026"
+      }
+    },
+    "brazil": {
+      "value": 10685.689,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 12312.57,
+        "year": "2026"
+      }
+    },
+    "brunei": {
+      "value": 34678.414,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 36287.89,
+        "year": "2026"
+      }
+    },
+    "bulgaria": {
+      "value": 20920.692,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 23848.457,
+        "year": "2026"
+      }
+    },
+    "burkina-faso": {
+      "value": 1126.369,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1319.086,
+        "year": "2026"
+      }
+    },
+    "cambodia": {
+      "value": 2761.569,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2901.687,
+        "year": "2026"
+      }
+    },
+    "cameroon": {
+      "value": 1984.036,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2125.437,
+        "year": "2026"
+      }
+    },
+    "canada": {
+      "value": 55764.707,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 60304.564,
+        "year": "2026"
+      }
+    },
+    "chile": {
+      "value": 17734.761,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 20239.757,
+        "year": "2026"
+      }
+    },
+    "china": {
+      "value": 13968.065,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 14873.569,
+        "year": "2026"
+      }
+    },
+    "colombia": {
+      "value": 8622.574,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10103.714,
+        "year": "2026"
+      }
+    },
+    "dem-rep-congo": {
+      "value": 871.246,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1121.671,
+        "year": "2026"
+      }
+    },
+    "costa-rica": {
+      "value": 19161.968,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 20299.194,
+        "year": "2026"
+      }
+    },
+    "cote-divoire": {
+      "value": 3005.85,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3313.286,
+        "year": "2026"
+      }
+    },
+    "croatia": {
+      "value": 27376.486,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 30030.057,
+        "year": "2026"
+      }
+    },
+    "cyprus": {
+      "value": 41730.246,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 45408.768,
+        "year": "2026"
+      }
+    },
+    "czechia": {
+      "value": 35678.377,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 39795.187,
+        "year": "2026"
+      }
+    },
+    "denmark": {
+      "value": 77046.358,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 83445.326,
+        "year": "2026"
+      }
+    },
+    "dominican-republic": {
+      "value": 11749.205,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 12405.587,
+        "year": "2026"
+      }
+    },
+    "ecuador": {
+      "value": 7198.575,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7574.859,
+        "year": "2026"
+      }
+    },
+    "egypt": {
+      "value": 3379.429,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3903.808,
+        "year": "2026"
+      }
+    },
+    "estonia": {
+      "value": 34325.319,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 37717.964,
+        "year": "2026"
+      }
+    },
+    "ethiopia": {
+      "value": 986.516,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1081.49,
+        "year": "2026"
+      }
+    },
+    "finland": {
+      "value": 56464.358,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 60129.688,
+        "year": "2026"
+      }
+    },
+    "france": {
+      "value": 48929.949,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 52083.326,
+        "year": "2026"
+      }
+    },
+    "georgia": {
+      "value": 10346.094,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 11574.009,
+        "year": "2026"
+      }
+    },
+    "germany": {
+      "value": 60438.79,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 65302.893,
+        "year": "2026"
+      }
+    },
+    "ghana": {
+      "value": 3271.351,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3313.769,
+        "year": "2026"
+      }
+    },
+    "greece": {
+      "value": 27040.815,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 29695.96,
+        "year": "2026"
+      }
+    },
+    "guatemala": {
+      "value": 6489.088,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6810.252,
+        "year": "2026"
+      }
+    },
+    "hungary": {
+      "value": 25825.579,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 28430.47,
+        "year": "2026"
+      }
+    },
+    "iceland": {
+      "value": 99070.813,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 110048.2,
+        "year": "2026"
+      }
+    },
+    "india": {
+      "value": 2675.322,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2812.623,
+        "year": "2026"
+      }
+    },
+    "indonesia": {
+      "value": 5082.438,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5361.7,
+        "year": "2026"
+      }
+    },
+    "iran": {
+      "value": 4263.822,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3414.979,
+        "year": "2026"
+      }
+    },
+    "iraq": {
+      "value": 5803.262,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5677.195,
+        "year": "2026"
+      }
+    },
+    "ireland": {
+      "value": 130652.363,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 140185.681,
+        "year": "2026"
+      }
+    },
+    "israel": {
+      "value": 60334.813,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 69803.854,
+        "year": "2026"
+      }
+    },
+    "italy": {
+      "value": 43270.357,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 46505.094,
+        "year": "2026"
+      }
+    },
+    "japan": {
+      "value": 35973.152,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 35703.432,
+        "year": "2026"
+      }
+    },
+    "jordan": {
+      "value": 5354.927,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5600.661,
+        "year": "2026"
+      }
+    },
+    "kazakhstan": {
+      "value": 14854.776,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 17502.645,
+        "year": "2026"
+      }
+    },
+    "kenya": {
+      "value": 2557.539,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2713.604,
+        "year": "2026"
+      }
+    },
+    "south-korea": {
+      "value": 36226.965,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 37412.075,
+        "year": "2026"
+      }
+    },
+    "kosovo": {
+      "value": 7901.548,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8957.717,
+        "year": "2026"
+      }
+    },
+    "kuwait": {
+      "value": 30876.881,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 33164.454,
+        "year": "2026"
+      }
+    },
+    "kyrgyzstan": {
+      "value": 2984.349,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3202.251,
+        "year": "2026"
+      }
+    },
+    "laos": {
+      "value": 2288.444,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2403.286,
+        "year": "2026"
+      }
+    },
+    "latvia": {
+      "value": 26116.424,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 28912.654,
+        "year": "2026"
+      }
+    },
+    "lebanon": {
+      "value": 6443.215,
+      "year": "2025",
+      "projection": false
+    },
+    "libya": {
+      "value": 5998.587,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6962.074,
+        "year": "2026"
+      }
+    },
+    "lithuania": {
+      "value": 32839.049,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 36544.685,
+        "year": "2026"
+      }
+    },
+    "luxembourg": {
+      "value": 148246.975,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 158733.346,
+        "year": "2026"
+      }
+    },
+    "madagascar": {
+      "value": 621.923,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 655.51,
+        "year": "2026"
+      }
+    },
+    "malaysia": {
+      "value": 13948.737,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 15085.379,
+        "year": "2026"
+      }
+    },
+    "mali": {
+      "value": 1190.23,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1300.833,
+        "year": "2026"
+      }
+    },
+    "mexico": {
+      "value": 13741.296,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 15779.319,
+        "year": "2026"
+      }
+    },
+    "moldova": {
+      "value": 8542.376,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9354.073,
+        "year": "2026"
+      }
+    },
+    "mongolia": {
+      "value": 7079.319,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7853.048,
+        "year": "2026"
+      }
+    },
+    "montenegro": {
+      "value": 14784.152,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 16377.088,
+        "year": "2026"
+      }
+    },
+    "morocco": {
+      "value": 4841.625,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5107.302,
+        "year": "2026"
+      }
+    },
+    "mozambique": {
+      "value": 623.378,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 632.042,
+        "year": "2026"
+      }
+    },
+    "myanmar": {
+      "value": 1502.265,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1519.109,
+        "year": "2026"
+      }
+    },
+    "nepal": {
+      "value": 1511.547,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1547.582,
+        "year": "2026"
+      }
+    },
+    "netherlands": {
+      "value": 73832.752,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 79917.5,
+        "year": "2026"
+      }
+    },
+    "new-zealand": {
+      "value": 48620.65,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 52023.009,
+        "year": "2026"
+      }
+    },
+    "niger": {
+      "value": 749.709,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 821.516,
+        "year": "2026"
+      }
+    },
+    "nigeria": {
+      "value": 1222.723,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1555.645,
+        "year": "2026"
+      }
+    },
+    "north-macedonia": {
+      "value": 10545.559,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 11966.551,
+        "year": "2026"
+      }
+    },
+    "norway": {
+      "value": 94468.188,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 105876.853,
+        "year": "2026"
+      }
+    },
+    "oman": {
+      "value": 19996.059,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 21644.873,
+        "year": "2026"
+      }
+    },
+    "pakistan": {
+      "value": 1695.648,
+      "year": "2025",
+      "projection": false
+    },
+    "panama": {
+      "value": 19814.145,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 20563.585,
+        "year": "2026"
+      }
+    },
+    "papua-new-guinea": {
+      "value": 2537.791,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2631.889,
+        "year": "2026"
+      }
+    },
+    "paraguay": {
+      "value": 7691.636,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9371.612,
+        "year": "2026"
+      }
+    },
+    "peru": {
+      "value": 9910.942,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10960.182,
+        "year": "2026"
+      }
+    },
+    "philippines": {
+      "value": 4270.136,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4442.551,
+        "year": "2026"
+      }
+    },
+    "poland": {
+      "value": 28374.167,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 31335.951,
+        "year": "2026"
+      }
+    },
+    "portugal": {
+      "value": 32165.93,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 35433.543,
+        "year": "2026"
+      }
+    },
+    "qatar": {
+      "value": 69680.131,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 68138.302,
+        "year": "2026"
+      }
+    },
+    "romania": {
+      "value": 22724.529,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 25692.974,
+        "year": "2026"
+      }
+    },
+    "russia": {
+      "value": 17972.117,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 18525.487,
+        "year": "2026"
+      }
+    },
+    "rwanda": {
+      "value": 1127.888,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1198.009,
+        "year": "2026"
+      }
+    },
+    "saudi-arabia": {
+      "value": 35464.445,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 37811.372,
+        "year": "2026"
+      }
+    },
+    "senegal": {
+      "value": 1935.868,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2054.311,
+        "year": "2026"
+      }
+    },
+    "serbia": {
+      "value": 15283.926,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 17252.23,
+        "year": "2026"
+      }
+    },
+    "singapore": {
+      "value": 99365.285,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 107758.033,
+        "year": "2026"
+      }
+    },
+    "slovakia": {
+      "value": 28497.802,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 31241.763,
+        "year": "2026"
+      }
+    },
+    "slovenia": {
+      "value": 37357.421,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 40630.055,
+        "year": "2026"
+      }
+    },
+    "somalia": {
+      "value": 763.802,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 812.86,
+        "year": "2026"
+      }
+    },
+    "south-africa": {
+      "value": 6769.156,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7502.97,
+        "year": "2026"
+      }
+    },
+    "south-sudan": {
+      "value": 470.312,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 487.982,
+        "year": "2026"
+      }
+    },
+    "spain": {
+      "value": 38290.386,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 41563.182,
+        "year": "2026"
+      }
+    },
+    "sri-lanka": {
+      "value": 4515.598,
+      "year": "2024",
+      "projection": false
+    },
+    "sweden": {
+      "value": 62661.794,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 70675.657,
+        "year": "2026"
+      }
+    },
+    "switzerland": {
+      "value": 115620.125,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 126176.833,
+        "year": "2026"
+      }
+    },
+    "syria": {
+      "value": 2806.685,
+      "year": "2010",
+      "projection": false
+    },
+    "taiwan": {
+      "value": 39488.575,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 42102.703,
+        "year": "2026"
+      }
+    },
+    "tajikistan": {
+      "value": 1693.155,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1938.922,
+        "year": "2026"
+      }
+    },
+    "tanzania": {
+      "value": 1291.703,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1362.315,
+        "year": "2026"
+      }
+    },
+    "thailand": {
+      "value": 8056.566,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8105.068,
+        "year": "2026"
+      }
+    },
+    "tunisia": {
+      "value": 4663.596,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4892.839,
+        "year": "2026"
+      }
+    },
+    "turkey": {
+      "value": 18611.136,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 19018.179,
+        "year": "2026"
+      }
+    },
+    "turkmenistan": {
+      "value": 11586.537,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 12300.465,
+        "year": "2026"
+      }
+    },
+    "uganda": {
+      "value": 1374.676,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1476.078,
+        "year": "2026"
+      }
+    },
+    "ukraine": {
+      "value": 6499.262,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6980.118,
+        "year": "2026"
+      }
+    },
+    "uae": {
+      "value": 50231.644,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 54214.399,
+        "year": "2026"
+      }
+    },
+    "united-kingdom": {
+      "value": 57608.214,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 61056.098,
+        "year": "2026"
+      }
+    },
+    "united-states": {
+      "value": 89991.152,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 94429.753,
+        "year": "2026"
+      }
+    },
+    "uruguay": {
+      "value": 24548.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 27608.009,
+        "year": "2026"
+      }
+    },
+    "uzbekistan": {
+      "value": 3846.279,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4660.696,
+        "year": "2026"
+      }
+    },
+    "venezuela": {
+      "value": 3736.309,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4139.656,
+        "year": "2026"
+      }
+    },
+    "vietnam": {
+      "value": 4829.379,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5115.236,
+        "year": "2026"
+      }
+    },
+    "yemen": {
+      "value": 419.803,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 383.749,
+        "year": "2026"
+      }
+    },
+    "zambia": {
+      "value": 1317.878,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1831.232,
+        "year": "2026"
+      }
+    },
+    "zimbabwe": {
+      "value": 3080.36,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3198.994,
+        "year": "2026"
+      }
+    }
+  },
+  "imf_unemployment": {
+    "sudan": {
+      "value": 60.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 61.3,
+        "year": "2026"
+      }
+    },
+    "albania": {
+      "value": 8.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8.7,
+        "year": "2026"
+      }
+    },
+    "algeria": {
+      "value": 11.4,
+      "year": "2019",
+      "projection": false
+    },
+    "argentina": {
+      "value": 7.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.2,
+        "year": "2026"
+      }
+    },
+    "armenia": {
+      "value": 13,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 12.8,
+        "year": "2026"
+      }
+    },
+    "australia": {
+      "value": 4.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.2,
+        "year": "2026"
+      }
+    },
+    "austria": {
+      "value": 5.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.7,
+        "year": "2026"
+      }
+    },
+    "azerbaijan": {
+      "value": 5.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.3,
+        "year": "2026"
+      }
+    },
+    "bahrain": {
+      "value": 6.2,
+      "year": "2024",
+      "projection": false
+    },
+    "belarus": {
+      "value": 2.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.9,
+        "year": "2026"
+      }
+    },
+    "belgium": {
+      "value": 6.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.2,
+        "year": "2026"
+      }
+    },
+    "bolivia": {
+      "value": 3.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.5,
+        "year": "2026"
+      }
+    },
+    "bosnia-and-herzegovina": {
+      "value": 12.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 12.6,
+        "year": "2026"
+      }
+    },
+    "brazil": {
+      "value": 6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.8,
+        "year": "2026"
+      }
+    },
+    "brunei": {
+      "value": 4.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.7,
+        "year": "2026"
+      }
+    },
+    "bulgaria": {
+      "value": 3.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.4,
+        "year": "2026"
+      }
+    },
+    "canada": {
+      "value": 6.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.5,
+        "year": "2026"
+      }
+    },
+    "chile": {
+      "value": 8.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8.1,
+        "year": "2026"
+      }
+    },
+    "china": {
+      "value": 5.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.1,
+        "year": "2026"
+      }
+    },
+    "colombia": {
+      "value": 8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9,
+        "year": "2026"
+      }
+    },
+    "costa-rica": {
+      "value": 6.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7,
+        "year": "2026"
+      }
+    },
+    "croatia": {
+      "value": 4.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.6,
+        "year": "2026"
+      }
+    },
+    "cyprus": {
+      "value": 4.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.6,
+        "year": "2026"
+      }
+    },
+    "czechia": {
+      "value": 2.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3,
+        "year": "2026"
+      }
+    },
+    "denmark": {
+      "value": 2.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.9,
+        "year": "2026"
+      }
+    },
+    "dominican-republic": {
+      "value": 5.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.3,
+        "year": "2026"
+      }
+    },
+    "ecuador": {
+      "value": 3.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.1,
+        "year": "2026"
+      }
+    },
+    "egypt": {
+      "value": 7.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.4,
+        "year": "2026"
+      }
+    },
+    "estonia": {
+      "value": 7.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.3,
+        "year": "2026"
+      }
+    },
+    "finland": {
+      "value": 9.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9.6,
+        "year": "2026"
+      }
+    },
+    "france": {
+      "value": 7.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.9,
+        "year": "2026"
+      }
+    },
+    "georgia": {
+      "value": 13.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 13.9,
+        "year": "2026"
+      }
+    },
+    "germany": {
+      "value": 3.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.9,
+        "year": "2026"
+      }
+    },
+    "greece": {
+      "value": 8.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.4,
+        "year": "2026"
+      }
+    },
+    "hungary": {
+      "value": 4.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.2,
+        "year": "2026"
+      }
+    },
+    "iceland": {
+      "value": 4.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.2,
+        "year": "2026"
+      }
+    },
+    "india": {
+      "value": 4.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.9,
+        "year": "2026"
+      }
+    },
+    "indonesia": {
+      "value": 4.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.9,
+        "year": "2026"
+      }
+    },
+    "iran": {
+      "value": 8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9.2,
+        "year": "2026"
+      }
+    },
+    "ireland": {
+      "value": 4.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.8,
+        "year": "2026"
+      }
+    },
+    "israel": {
+      "value": 3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.2,
+        "year": "2026"
+      }
+    },
+    "italy": {
+      "value": 6.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6,
+        "year": "2026"
+      }
+    },
+    "japan": {
+      "value": 2.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.5,
+        "year": "2026"
+      }
+    },
+    "jordan": {
+      "value": 21.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 21.3,
+        "year": "2026"
+      }
+    },
+    "kazakhstan": {
+      "value": 4.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.6,
+        "year": "2026"
+      }
+    },
+    "south-korea": {
+      "value": 2.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.8,
+        "year": "2026"
+      }
+    },
+    "kosovo": {
+      "value": 10.9,
+      "year": "2023",
+      "projection": false
+    },
+    "kyrgyzstan": {
+      "value": 4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4,
+        "year": "2026"
+      }
+    },
+    "latvia": {
+      "value": 6.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.7,
+        "year": "2026"
+      }
+    },
+    "lebanon": {
+      "value": 11.5,
+      "year": "2023",
+      "projection": false
+    },
+    "lithuania": {
+      "value": 6.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.5,
+        "year": "2026"
+      }
+    },
+    "luxembourg": {
+      "value": 6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.9,
+        "year": "2026"
+      }
+    },
+    "malaysia": {
+      "value": 3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3,
+        "year": "2026"
+      }
+    },
+    "mexico": {
+      "value": 2.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.7,
+        "year": "2026"
+      }
+    },
+    "moldova": {
+      "value": 3.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.8,
+        "year": "2026"
+      }
+    },
+    "mongolia": {
+      "value": 5.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5,
+        "year": "2026"
+      }
+    },
+    "morocco": {
+      "value": 13,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 12.2,
+        "year": "2026"
+      }
+    },
+    "netherlands": {
+      "value": 3.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.1,
+        "year": "2026"
+      }
+    },
+    "new-zealand": {
+      "value": 5.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.4,
+        "year": "2026"
+      }
+    },
+    "nigeria": {
+      "value": 22.6,
+      "year": "2018",
+      "projection": false
+    },
+    "north-macedonia": {
+      "value": 11.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 11.5,
+        "year": "2026"
+      }
+    },
+    "norway": {
+      "value": 4.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.2,
+        "year": "2026"
+      }
+    },
+    "pakistan": {
+      "value": 7.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.9,
+        "year": "2026"
+      }
+    },
+    "panama": {
+      "value": 10.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.4,
+        "year": "2026"
+      }
+    },
+    "paraguay": {
+      "value": 5.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.2,
+        "year": "2026"
+      }
+    },
+    "peru": {
+      "value": 5.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.3,
+        "year": "2026"
+      }
+    },
+    "philippines": {
+      "value": 4.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.7,
+        "year": "2026"
+      }
+    },
+    "poland": {
+      "value": 3.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.4,
+        "year": "2026"
+      }
+    },
+    "portugal": {
+      "value": 6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.9,
+        "year": "2026"
+      }
+    },
+    "romania": {
+      "value": 6.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6,
+        "year": "2026"
+      }
+    },
+    "russia": {
+      "value": 2.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.4,
+        "year": "2026"
+      }
+    },
+    "saudi-arabia": {
+      "value": 3.5,
+      "year": "2024",
+      "projection": false
+    },
+    "serbia": {
+      "value": 8.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8.8,
+        "year": "2026"
+      }
+    },
+    "singapore": {
+      "value": 2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2,
+        "year": "2026"
+      }
+    },
+    "slovakia": {
+      "value": 5.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.8,
+        "year": "2026"
+      }
+    },
+    "slovenia": {
+      "value": 3.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.9,
+        "year": "2026"
+      }
+    },
+    "south-africa": {
+      "value": 32.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 32.5,
+        "year": "2026"
+      }
+    },
+    "spain": {
+      "value": 10.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9.8,
+        "year": "2026"
+      }
+    },
+    "sri-lanka": {
+      "value": 4.4,
+      "year": "2024",
+      "projection": false
+    },
+    "sweden": {
+      "value": 8.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8.6,
+        "year": "2026"
+      }
+    },
+    "switzerland": {
+      "value": 2.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3,
+        "year": "2026"
+      }
+    },
+    "syria": {
+      "value": 8.6,
+      "year": "2010",
+      "projection": false
+    },
+    "taiwan": {
+      "value": 3.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.4,
+        "year": "2026"
+      }
+    },
+    "tajikistan": {
+      "value": 2.5,
+      "year": "2011",
+      "projection": false
+    },
+    "thailand": {
+      "value": 1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1,
+        "year": "2026"
+      }
+    },
+    "tunisia": {
+      "value": 15.2,
+      "year": "2025",
+      "projection": false
+    },
+    "turkey": {
+      "value": 8.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8.3,
+        "year": "2026"
+      }
+    },
+    "ukraine": {
+      "value": 11.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.2,
+        "year": "2026"
+      }
+    },
+    "united-kingdom": {
+      "value": 4.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.6,
+        "year": "2026"
+      }
+    },
+    "united-states": {
+      "value": 4.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.4,
+        "year": "2026"
+      }
+    },
+    "uruguay": {
+      "value": 7.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8,
+        "year": "2026"
+      }
+    },
+    "uzbekistan": {
+      "value": 4.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.3,
+        "year": "2026"
+      }
+    },
+    "venezuela": {
+      "value": 35.6,
+      "year": "2018",
+      "projection": false
+    },
+    "vietnam": {
+      "value": 2.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.1,
+        "year": "2026"
+      }
+    }
+  },
+  "imf_government_debt_pct_gdp": {
+    "sudan": {
+      "value": 187.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 169.1,
+        "year": "2026"
+      }
+    },
+    "afghanistan": {
+      "value": 8,
+      "year": "2025",
+      "projection": false
+    },
+    "albania": {
+      "value": 52.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 51.5,
+        "year": "2026"
+      }
+    },
+    "algeria": {
+      "value": 54.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 59.2,
+        "year": "2026"
+      }
+    },
+    "angola": {
+      "value": 51.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 51.6,
+        "year": "2026"
+      }
+    },
+    "argentina": {
+      "value": 80.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 70.4,
+        "year": "2026"
+      }
+    },
+    "armenia": {
+      "value": 49,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 50.6,
+        "year": "2026"
+      }
+    },
+    "australia": {
+      "value": 51,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 50.6,
+        "year": "2026"
+      }
+    },
+    "austria": {
+      "value": 80.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 82.1,
+        "year": "2026"
+      }
+    },
+    "azerbaijan": {
+      "value": 20.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 20,
+        "year": "2026"
+      }
+    },
+    "bahrain": {
+      "value": 147.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 152.4,
+        "year": "2026"
+      }
+    },
+    "bangladesh": {
+      "value": 42,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 41.8,
+        "year": "2026"
+      }
+    },
+    "belarus": {
+      "value": 33.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 33.1,
+        "year": "2026"
+      }
+    },
+    "belgium": {
+      "value": 106.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 109.2,
+        "year": "2026"
+      }
+    },
+    "bolivia": {
+      "value": 84.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 102.7,
+        "year": "2026"
+      }
+    },
+    "bosnia-and-herzegovina": {
+      "value": 29.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 30.8,
+        "year": "2026"
+      }
+    },
+    "botswana": {
+      "value": 38.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 47,
+        "year": "2026"
+      }
+    },
+    "brazil": {
+      "value": 93.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 96.5,
+        "year": "2026"
+      }
+    },
+    "brunei": {
+      "value": 1.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.5,
+        "year": "2026"
+      }
+    },
+    "bulgaria": {
+      "value": 27.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 28.2,
+        "year": "2026"
+      }
+    },
+    "burkina-faso": {
+      "value": 52,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 48.8,
+        "year": "2026"
+      }
+    },
+    "cambodia": {
+      "value": 26.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 27.1,
+        "year": "2026"
+      }
+    },
+    "cameroon": {
+      "value": 40.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 39.3,
+        "year": "2026"
+      }
+    },
+    "canada": {
+      "value": 113.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 110.7,
+        "year": "2026"
+      }
+    },
+    "chile": {
+      "value": 41.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 42.5,
+        "year": "2026"
+      }
+    },
+    "china": {
+      "value": 99.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 106.9,
+        "year": "2026"
+      }
+    },
+    "colombia": {
+      "value": 59.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 60.9,
+        "year": "2026"
+      }
+    },
+    "dem-rep-congo": {
+      "value": 20.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 24.6,
+        "year": "2026"
+      }
+    },
+    "costa-rica": {
+      "value": 60.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 61.1,
+        "year": "2026"
+      }
+    },
+    "cote-divoire": {
+      "value": 56.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 55.1,
+        "year": "2026"
+      }
+    },
+    "croatia": {
+      "value": 55.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 56.5,
+        "year": "2026"
+      }
+    },
+    "cyprus": {
+      "value": 55.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 50.9,
+        "year": "2026"
+      }
+    },
+    "czechia": {
+      "value": 44.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 46.4,
+        "year": "2026"
+      }
+    },
+    "denmark": {
+      "value": 27.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 27.4,
+        "year": "2026"
+      }
+    },
+    "dominican-republic": {
+      "value": 59,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 58.3,
+        "year": "2026"
+      }
+    },
+    "ecuador": {
+      "value": 54.4,
+      "year": "2025",
+      "projection": false
+    },
+    "egypt": {
+      "value": 86.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 87,
+        "year": "2026"
+      }
+    },
+    "estonia": {
+      "value": 24.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 27.8,
+        "year": "2026"
+      }
+    },
+    "ethiopia": {
+      "value": 43.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 40.4,
+        "year": "2026"
+      }
+    },
+    "finland": {
+      "value": 89.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 93.1,
+        "year": "2026"
+      }
+    },
+    "france": {
+      "value": 116,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 118.4,
+        "year": "2026"
+      }
+    },
+    "georgia": {
+      "value": 34.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 35.1,
+        "year": "2026"
+      }
+    },
+    "germany": {
+      "value": 62.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 64.6,
+        "year": "2026"
+      }
+    },
+    "ghana": {
+      "value": 48.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 53,
+        "year": "2026"
+      }
+    },
+    "greece": {
+      "value": 145.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 136.9,
+        "year": "2026"
+      }
+    },
+    "guatemala": {
+      "value": 27.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 27.6,
+        "year": "2026"
+      }
+    },
+    "hungary": {
+      "value": 75.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 77.9,
+        "year": "2026"
+      }
+    },
+    "iceland": {
+      "value": 56.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 53.6,
+        "year": "2026"
+      }
+    },
+    "india": {
+      "value": 84.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 83.4,
+        "year": "2026"
+      }
+    },
+    "indonesia": {
+      "value": 41,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 41.5,
+        "year": "2026"
+      }
+    },
+    "iran": {
+      "value": 37.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 37.3,
+        "year": "2026"
+      }
+    },
+    "iraq": {
+      "value": 53.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 61.7,
+        "year": "2026"
+      }
+    },
+    "ireland": {
+      "value": 32.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 31.6,
+        "year": "2026"
+      }
+    },
+    "israel": {
+      "value": 68.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 69.8,
+        "year": "2026"
+      }
+    },
+    "italy": {
+      "value": 137.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 138.4,
+        "year": "2026"
+      }
+    },
+    "japan": {
+      "value": 206.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 204.4,
+        "year": "2026"
+      }
+    },
+    "jordan": {
+      "value": 82.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 81.8,
+        "year": "2026"
+      }
+    },
+    "kazakhstan": {
+      "value": 24.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 24.9,
+        "year": "2026"
+      }
+    },
+    "kenya": {
+      "value": 69.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 71.6,
+        "year": "2026"
+      }
+    },
+    "south-korea": {
+      "value": 52.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 54.4,
+        "year": "2026"
+      }
+    },
+    "kosovo": {
+      "value": 17.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 18.7,
+        "year": "2026"
+      }
+    },
+    "kuwait": {
+      "value": 14.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 22.3,
+        "year": "2026"
+      }
+    },
+    "kyrgyzstan": {
+      "value": 36,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 37.4,
+        "year": "2026"
+      }
+    },
+    "laos": {
+      "value": 80.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 74.6,
+        "year": "2026"
+      }
+    },
+    "latvia": {
+      "value": 46.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 47.4,
+        "year": "2026"
+      }
+    },
+    "lebanon": {
+      "value": 139.4,
+      "year": "2025",
+      "projection": false
+    },
+    "lithuania": {
+      "value": 39.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 45.1,
+        "year": "2026"
+      }
+    },
+    "luxembourg": {
+      "value": 27,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 28,
+        "year": "2026"
+      }
+    },
+    "madagascar": {
+      "value": 48.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 49.3,
+        "year": "2026"
+      }
+    },
+    "malaysia": {
+      "value": 70.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 69.5,
+        "year": "2026"
+      }
+    },
+    "mali": {
+      "value": 41.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 40.8,
+        "year": "2026"
+      }
+    },
+    "mexico": {
+      "value": 61.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 62.7,
+        "year": "2026"
+      }
+    },
+    "moldova": {
+      "value": 36.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 39.3,
+        "year": "2026"
+      }
+    },
+    "mongolia": {
+      "value": 45.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 43.7,
+        "year": "2026"
+      }
+    },
+    "montenegro": {
+      "value": 67.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 62.4,
+        "year": "2026"
+      }
+    },
+    "morocco": {
+      "value": 67.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 65.8,
+        "year": "2026"
+      }
+    },
+    "mozambique": {
+      "value": 102.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 106.1,
+        "year": "2026"
+      }
+    },
+    "myanmar": {
+      "value": 51.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 51.9,
+        "year": "2026"
+      }
+    },
+    "nepal": {
+      "value": 48.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 49.6,
+        "year": "2026"
+      }
+    },
+    "netherlands": {
+      "value": 43.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 44.1,
+        "year": "2026"
+      }
+    },
+    "new-zealand": {
+      "value": 54.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 56.7,
+        "year": "2026"
+      }
+    },
+    "niger": {
+      "value": 45.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 45.5,
+        "year": "2026"
+      }
+    },
+    "nigeria": {
+      "value": 35.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 32.3,
+        "year": "2026"
+      }
+    },
+    "north-macedonia": {
+      "value": 52.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 53.1,
+        "year": "2026"
+      }
+    },
+    "norway": {
+      "value": 45,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 42.9,
+        "year": "2026"
+      }
+    },
+    "oman": {
+      "value": 35.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 32.7,
+        "year": "2026"
+      }
+    },
+    "pakistan": {
+      "value": 72.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 70.1,
+        "year": "2026"
+      }
+    },
+    "panama": {
+      "value": 56.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 57.7,
+        "year": "2026"
+      }
+    },
+    "papua-new-guinea": {
+      "value": 52.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 49.2,
+        "year": "2026"
+      }
+    },
+    "paraguay": {
+      "value": 38.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 37.8,
+        "year": "2026"
+      }
+    },
+    "peru": {
+      "value": 30.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 30,
+        "year": "2026"
+      }
+    },
+    "philippines": {
+      "value": 59.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 60.2,
+        "year": "2026"
+      }
+    },
+    "poland": {
+      "value": 58.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 65.7,
+        "year": "2026"
+      }
+    },
+    "portugal": {
+      "value": 89.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 85.6,
+        "year": "2026"
+      }
+    },
+    "qatar": {
+      "value": 41.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 43.3,
+        "year": "2026"
+      }
+    },
+    "romania": {
+      "value": 60.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 61.9,
+        "year": "2026"
+      }
+    },
+    "russia": {
+      "value": 17.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 19.1,
+        "year": "2026"
+      }
+    },
+    "rwanda": {
+      "value": 64.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 66.8,
+        "year": "2026"
+      }
+    },
+    "saudi-arabia": {
+      "value": 31.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 32.1,
+        "year": "2026"
+      }
+    },
+    "senegal": {
+      "value": 130.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 132.3,
+        "year": "2026"
+      }
+    },
+    "serbia": {
+      "value": 42.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 42.6,
+        "year": "2026"
+      }
+    },
+    "singapore": {
+      "value": 171.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 171.9,
+        "year": "2026"
+      }
+    },
+    "slovakia": {
+      "value": 61.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 63,
+        "year": "2026"
+      }
+    },
+    "slovenia": {
+      "value": 65.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 65.2,
+        "year": "2026"
+      }
+    },
+    "south-africa": {
+      "value": 78.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 78.9,
+        "year": "2026"
+      }
+    },
+    "south-sudan": {
+      "value": 62.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 57.3,
+        "year": "2026"
+      }
+    },
+    "spain": {
+      "value": 100.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 98.2,
+        "year": "2026"
+      }
+    },
+    "sri-lanka": {
+      "value": 100.8,
+      "year": "2024",
+      "projection": false
+    },
+    "sweden": {
+      "value": 34.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 36.7,
+        "year": "2026"
+      }
+    },
+    "switzerland": {
+      "value": 39.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 38.5,
+        "year": "2026"
+      }
+    },
+    "syria": {
+      "value": 30,
+      "year": "2010",
+      "projection": false
+    },
+    "taiwan": {
+      "value": 22.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 27.6,
+        "year": "2026"
+      }
+    },
+    "tajikistan": {
+      "value": 21.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 21.9,
+        "year": "2026"
+      }
+    },
+    "tanzania": {
+      "value": 49.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 48.7,
+        "year": "2026"
+      }
+    },
+    "thailand": {
+      "value": 64.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 66.8,
+        "year": "2026"
+      }
+    },
+    "tunisia": {
+      "value": 81.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 84.9,
+        "year": "2026"
+      }
+    },
+    "turkey": {
+      "value": 23.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 25.5,
+        "year": "2026"
+      }
+    },
+    "turkmenistan": {
+      "value": 3.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.7,
+        "year": "2026"
+      }
+    },
+    "uganda": {
+      "value": 54.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 55,
+        "year": "2026"
+      }
+    },
+    "ukraine": {
+      "value": 108.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 122.6,
+        "year": "2026"
+      }
+    },
+    "uae": {
+      "value": 34.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 31.4,
+        "year": "2026"
+      }
+    },
+    "united-kingdom": {
+      "value": 102.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 103.6,
+        "year": "2026"
+      }
+    },
+    "united-states": {
+      "value": 123.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 125.8,
+        "year": "2026"
+      }
+    },
+    "uruguay": {
+      "value": 65.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 66.8,
+        "year": "2026"
+      }
+    },
+    "uzbekistan": {
+      "value": 28.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 27.5,
+        "year": "2026"
+      }
+    },
+    "venezuela": {
+      "value": 308.7,
+      "year": "2025",
+      "projection": false
+    },
+    "vietnam": {
+      "value": 30.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 29.8,
+        "year": "2026"
+      }
+    },
+    "zambia": {
+      "value": 86,
+      "year": "2025",
+      "projection": false
+    },
+    "zimbabwe": {
+      "value": 43.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 42.3,
+        "year": "2026"
+      }
+    }
+  },
+  "imf_current_account_pct_gdp": {
+    "sudan": {
+      "value": -8.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -4.5,
+        "year": "2026"
+      }
+    },
+    "afghanistan": {
+      "value": -40.2,
+      "year": "2025",
+      "projection": false
+    },
+    "albania": {
+      "value": -2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -2.8,
+        "year": "2026"
+      }
+    },
+    "algeria": {
+      "value": -7.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.2,
+        "year": "2026"
+      }
+    },
+    "angola": {
+      "value": 0.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.2,
+        "year": "2026"
+      }
+    },
+    "argentina": {
+      "value": -1.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.8,
+        "year": "2026"
+      }
+    },
+    "armenia": {
+      "value": -6.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -6,
+        "year": "2026"
+      }
+    },
+    "australia": {
+      "value": -2.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -2.3,
+        "year": "2026"
+      }
+    },
+    "austria": {
+      "value": 1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.4,
+        "year": "2026"
+      }
+    },
+    "azerbaijan": {
+      "value": 5.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9.7,
+        "year": "2026"
+      }
+    },
+    "bahrain": {
+      "value": 5.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.9,
+        "year": "2026"
+      }
+    },
+    "bangladesh": {
+      "value": 0,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.6,
+        "year": "2026"
+      }
+    },
+    "belarus": {
+      "value": -2.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -2.7,
+        "year": "2026"
+      }
+    },
+    "belgium": {
+      "value": -2.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -2,
+        "year": "2026"
+      }
+    },
+    "bolivia": {
+      "value": -1.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.2,
+        "year": "2026"
+      }
+    },
+    "bosnia-and-herzegovina": {
+      "value": -3.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -4.6,
+        "year": "2026"
+      }
+    },
+    "botswana": {
+      "value": 3.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.9,
+        "year": "2026"
+      }
+    },
+    "brazil": {
+      "value": -3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -2.7,
+        "year": "2026"
+      }
+    },
+    "brunei": {
+      "value": 13.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 14.5,
+        "year": "2026"
+      }
+    },
+    "bulgaria": {
+      "value": -5.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -4,
+        "year": "2026"
+      }
+    },
+    "burkina-faso": {
+      "value": 6.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8.6,
+        "year": "2026"
+      }
+    },
+    "cambodia": {
+      "value": -2.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -6.3,
+        "year": "2026"
+      }
+    },
+    "cameroon": {
+      "value": -3.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -5.1,
+        "year": "2026"
+      }
+    },
+    "canada": {
+      "value": -0.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.2,
+        "year": "2026"
+      }
+    },
+    "chile": {
+      "value": -2.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.8,
+        "year": "2026"
+      }
+    },
+    "china": {
+      "value": 3.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.5,
+        "year": "2026"
+      }
+    },
+    "colombia": {
+      "value": -2.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -2.5,
+        "year": "2026"
+      }
+    },
+    "dem-rep-congo": {
+      "value": -3.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -2,
+        "year": "2026"
+      }
+    },
+    "costa-rica": {
+      "value": -0.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.5,
+        "year": "2026"
+      }
+    },
+    "cote-divoire": {
+      "value": -1.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.1,
+        "year": "2026"
+      }
+    },
+    "croatia": {
+      "value": -3.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -3.8,
+        "year": "2026"
+      }
+    },
+    "cyprus": {
+      "value": -8.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -9.3,
+        "year": "2026"
+      }
+    },
+    "czechia": {
+      "value": 0.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.5,
+        "year": "2026"
+      }
+    },
+    "denmark": {
+      "value": 12.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 12.3,
+        "year": "2026"
+      }
+    },
+    "dominican-republic": {
+      "value": -1.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.5,
+        "year": "2026"
+      }
+    },
+    "ecuador": {
+      "value": 5.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.2,
+        "year": "2026"
+      }
+    },
+    "egypt": {
+      "value": -4.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -4.2,
+        "year": "2026"
+      }
+    },
+    "estonia": {
+      "value": -0.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.1,
+        "year": "2026"
+      }
+    },
+    "ethiopia": {
+      "value": -0.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -2.4,
+        "year": "2026"
+      }
+    },
+    "finland": {
+      "value": 1.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.1,
+        "year": "2026"
+      }
+    },
+    "france": {
+      "value": -0.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.3,
+        "year": "2026"
+      }
+    },
+    "georgia": {
+      "value": -2.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -5,
+        "year": "2026"
+      }
+    },
+    "germany": {
+      "value": 4.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.9,
+        "year": "2026"
+      }
+    },
+    "ghana": {
+      "value": 7.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.1,
+        "year": "2026"
+      }
+    },
+    "greece": {
+      "value": -5.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -6.4,
+        "year": "2026"
+      }
+    },
+    "guatemala": {
+      "value": 4.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.2,
+        "year": "2026"
+      }
+    },
+    "hungary": {
+      "value": 1.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.4,
+        "year": "2026"
+      }
+    },
+    "iceland": {
+      "value": -3.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.7,
+        "year": "2026"
+      }
+    },
+    "india": {
+      "value": -0.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -2,
+        "year": "2026"
+      }
+    },
+    "indonesia": {
+      "value": -0.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.1,
+        "year": "2026"
+      }
+    },
+    "iran": {
+      "value": 0.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.8,
+        "year": "2026"
+      }
+    },
+    "iraq": {
+      "value": -1.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -5.3,
+        "year": "2026"
+      }
+    },
+    "ireland": {
+      "value": 8.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8.1,
+        "year": "2026"
+      }
+    },
+    "israel": {
+      "value": 1.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.9,
+        "year": "2026"
+      }
+    },
+    "italy": {
+      "value": 1.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.6,
+        "year": "2026"
+      }
+    },
+    "japan": {
+      "value": 4.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.8,
+        "year": "2026"
+      }
+    },
+    "jordan": {
+      "value": -5.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -6.2,
+        "year": "2026"
+      }
+    },
+    "kazakhstan": {
+      "value": -3.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1,
+        "year": "2026"
+      }
+    },
+    "kenya": {
+      "value": -2.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -4.1,
+        "year": "2026"
+      }
+    },
+    "south-korea": {
+      "value": 6.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.6,
+        "year": "2026"
+      }
+    },
+    "kosovo": {
+      "value": -9.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -10.5,
+        "year": "2026"
+      }
+    },
+    "kuwait": {
+      "value": 23.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 26,
+        "year": "2026"
+      }
+    },
+    "kyrgyzstan": {
+      "value": -23.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -7.1,
+        "year": "2026"
+      }
+    },
+    "laos": {
+      "value": 11.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.2,
+        "year": "2026"
+      }
+    },
+    "latvia": {
+      "value": -3.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -3.6,
+        "year": "2026"
+      }
+    },
+    "lebanon": {
+      "value": -22.5,
+      "year": "2025",
+      "projection": false
+    },
+    "libya": {
+      "value": -3.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.2,
+        "year": "2026"
+      }
+    },
+    "lithuania": {
+      "value": 1.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.2,
+        "year": "2026"
+      }
+    },
+    "luxembourg": {
+      "value": 4.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.5,
+        "year": "2026"
+      }
+    },
+    "madagascar": {
+      "value": -5.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -8,
+        "year": "2026"
+      }
+    },
+    "malaysia": {
+      "value": 1.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.4,
+        "year": "2026"
+      }
+    },
+    "mali": {
+      "value": -0.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.5,
+        "year": "2026"
+      }
+    },
+    "mexico": {
+      "value": -0.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.4,
+        "year": "2026"
+      }
+    },
+    "moldova": {
+      "value": -19.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -21.9,
+        "year": "2026"
+      }
+    },
+    "mongolia": {
+      "value": -8.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -7.9,
+        "year": "2026"
+      }
+    },
+    "montenegro": {
+      "value": -20.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -19.4,
+        "year": "2026"
+      }
+    },
+    "morocco": {
+      "value": -2.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -3.1,
+        "year": "2026"
+      }
+    },
+    "mozambique": {
+      "value": -14.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -43,
+        "year": "2026"
+      }
+    },
+    "myanmar": {
+      "value": 0.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.1,
+        "year": "2026"
+      }
+    },
+    "nepal": {
+      "value": 6.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.9,
+        "year": "2026"
+      }
+    },
+    "netherlands": {
+      "value": 8.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 8.8,
+        "year": "2026"
+      }
+    },
+    "new-zealand": {
+      "value": -3.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -4,
+        "year": "2026"
+      }
+    },
+    "niger": {
+      "value": -5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -6.1,
+        "year": "2026"
+      }
+    },
+    "nigeria": {
+      "value": 5.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.8,
+        "year": "2026"
+      }
+    },
+    "north-macedonia": {
+      "value": -4.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -5,
+        "year": "2026"
+      }
+    },
+    "norway": {
+      "value": 14.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 14.3,
+        "year": "2026"
+      }
+    },
+    "oman": {
+      "value": 1.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.5,
+        "year": "2026"
+      }
+    },
+    "pakistan": {
+      "value": 0.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.4,
+        "year": "2026"
+      }
+    },
+    "panama": {
+      "value": 0.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.5,
+        "year": "2026"
+      }
+    },
+    "papua-new-guinea": {
+      "value": 14.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 13.7,
+        "year": "2026"
+      }
+    },
+    "paraguay": {
+      "value": -3.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -3,
+        "year": "2026"
+      }
+    },
+    "peru": {
+      "value": 3.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.4,
+        "year": "2026"
+      }
+    },
+    "philippines": {
+      "value": -3.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -4.4,
+        "year": "2026"
+      }
+    },
+    "poland": {
+      "value": -0.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.1,
+        "year": "2026"
+      }
+    },
+    "portugal": {
+      "value": 1.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.5,
+        "year": "2026"
+      }
+    },
+    "qatar": {
+      "value": 14.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 11,
+        "year": "2026"
+      }
+    },
+    "romania": {
+      "value": -8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -6.8,
+        "year": "2026"
+      }
+    },
+    "russia": {
+      "value": 1.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.9,
+        "year": "2026"
+      }
+    },
+    "rwanda": {
+      "value": -13,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -13.4,
+        "year": "2026"
+      }
+    },
+    "saudi-arabia": {
+      "value": -3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.6,
+        "year": "2026"
+      }
+    },
+    "senegal": {
+      "value": -5.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -6.2,
+        "year": "2026"
+      }
+    },
+    "serbia": {
+      "value": -4.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -5.7,
+        "year": "2026"
+      }
+    },
+    "singapore": {
+      "value": 16.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 16.6,
+        "year": "2026"
+      }
+    },
+    "slovakia": {
+      "value": -3.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -3,
+        "year": "2026"
+      }
+    },
+    "slovenia": {
+      "value": 3.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.2,
+        "year": "2026"
+      }
+    },
+    "somalia": {
+      "value": -9.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -8.7,
+        "year": "2026"
+      }
+    },
+    "south-africa": {
+      "value": -0.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.9,
+        "year": "2026"
+      }
+    },
+    "south-sudan": {
+      "value": -4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.2,
+        "year": "2026"
+      }
+    },
+    "spain": {
+      "value": 2.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.2,
+        "year": "2026"
+      }
+    },
+    "sri-lanka": {
+      "value": 1.2,
+      "year": "2024",
+      "projection": false
+    },
+    "sweden": {
+      "value": 6.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.3,
+        "year": "2026"
+      }
+    },
+    "switzerland": {
+      "value": 7.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.8,
+        "year": "2026"
+      }
+    },
+    "syria": {
+      "value": -2.8,
+      "year": "2010",
+      "projection": false
+    },
+    "taiwan": {
+      "value": 17.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 18.1,
+        "year": "2026"
+      }
+    },
+    "tajikistan": {
+      "value": 16.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.3,
+        "year": "2026"
+      }
+    },
+    "tanzania": {
+      "value": -2.4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -2.3,
+        "year": "2026"
+      }
+    },
+    "thailand": {
+      "value": 3.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.7,
+        "year": "2026"
+      }
+    },
+    "tunisia": {
+      "value": -2.8,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -4.2,
+        "year": "2026"
+      }
+    },
+    "turkey": {
+      "value": -1.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -2.8,
+        "year": "2026"
+      }
+    },
+    "turkmenistan": {
+      "value": 3.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.7,
+        "year": "2026"
+      }
+    },
+    "uganda": {
+      "value": -6.2,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -3.9,
+        "year": "2026"
+      }
+    },
+    "ukraine": {
+      "value": -15,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -18.9,
+        "year": "2026"
+      }
+    },
+    "uae": {
+      "value": 15.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 11.4,
+        "year": "2026"
+      }
+    },
+    "united-kingdom": {
+      "value": -3.1,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -3.4,
+        "year": "2026"
+      }
+    },
+    "united-states": {
+      "value": -3.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -3.7,
+        "year": "2026"
+      }
+    },
+    "uruguay": {
+      "value": -0.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -0.8,
+        "year": "2026"
+      }
+    },
+    "uzbekistan": {
+      "value": -3.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -1.3,
+        "year": "2026"
+      }
+    },
+    "venezuela": {
+      "value": 2.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.1,
+        "year": "2026"
+      }
+    },
+    "vietnam": {
+      "value": 6.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.3,
+        "year": "2026"
+      }
+    },
+    "yemen": {
+      "value": -6.7,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": -8.1,
+        "year": "2026"
+      }
+    },
+    "zambia": {
+      "value": -3.5,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.9,
+        "year": "2026"
+      }
+    },
+    "zimbabwe": {
+      "value": 4,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.7,
+        "year": "2026"
+      }
+    }
+  },
+  "imf_population_millions": {
+    "sudan": {
+      "value": 50.418,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 51.729,
+        "year": "2026"
+      }
+    },
+    "afghanistan": {
+      "value": 43.844,
+      "year": "2025",
+      "projection": false
+    },
+    "albania": {
+      "value": 2.695,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.668,
+        "year": "2026"
+      }
+    },
+    "algeria": {
+      "value": 47.251,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 47.851,
+        "year": "2026"
+      }
+    },
+    "angola": {
+      "value": 39.212,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 40.584,
+        "year": "2026"
+      }
+    },
+    "argentina": {
+      "value": 47.474,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 47.948,
+        "year": "2026"
+      }
+    },
+    "armenia": {
+      "value": 3.071,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.062,
+        "year": "2026"
+      }
+    },
+    "australia": {
+      "value": 27.73,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 28.077,
+        "year": "2026"
+      }
+    },
+    "austria": {
+      "value": 9.182,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9.205,
+        "year": "2026"
+      }
+    },
+    "azerbaijan": {
+      "value": 10.372,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.496,
+        "year": "2026"
+      }
+    },
+    "bahrain": {
+      "value": 1.62,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.652,
+        "year": "2026"
+      }
+    },
+    "bangladesh": {
+      "value": 173.736,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 175.423,
+        "year": "2026"
+      }
+    },
+    "belarus": {
+      "value": 9.087,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9.042,
+        "year": "2026"
+      }
+    },
+    "belgium": {
+      "value": 11.883,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 11.929,
+        "year": "2026"
+      }
+    },
+    "bolivia": {
+      "value": 12.582,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 12.749,
+        "year": "2026"
+      }
+    },
+    "bosnia-and-herzegovina": {
+      "value": 3.445,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.436,
+        "year": "2026"
+      }
+    },
+    "botswana": {
+      "value": 2.549,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.584,
+        "year": "2026"
+      }
+    },
+    "brazil": {
+      "value": 213.362,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 214.083,
+        "year": "2026"
+      }
+    },
+    "brunei": {
+      "value": 0.46,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.465,
+        "year": "2026"
+      }
+    },
+    "bulgaria": {
+      "value": 6.263,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.211,
+        "year": "2026"
+      }
+    },
+    "burkina-faso": {
+      "value": 24.095,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 24.648,
+        "year": "2026"
+      }
+    },
+    "cambodia": {
+      "value": 17.848,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 18.051,
+        "year": "2026"
+      }
+    },
+    "cameroon": {
+      "value": 29.879,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 30.646,
+        "year": "2026"
+      }
+    },
+    "canada": {
+      "value": 41.602,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 41.578,
+        "year": "2026"
+      }
+    },
+    "chile": {
+      "value": 20.037,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 20.151,
+        "year": "2026"
+      }
+    },
+    "china": {
+      "value": 1405.08,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1401.923,
+        "year": "2026"
+      }
+    },
+    "colombia": {
+      "value": 53.048,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 53.399,
+        "year": "2026"
+      }
+    },
+    "dem-rep-congo": {
+      "value": 106.552,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 110.02,
+        "year": "2026"
+      }
+    },
+    "costa-rica": {
+      "value": 5.37,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.416,
+        "year": "2026"
+      }
+    },
+    "cote-divoire": {
+      "value": 32.897,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 33.838,
+        "year": "2026"
+      }
+    },
+    "croatia": {
+      "value": 3.874,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.882,
+        "year": "2026"
+      }
+    },
+    "cyprus": {
+      "value": 0.983,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.995,
+        "year": "2026"
+      }
+    },
+    "czechia": {
+      "value": 10.904,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.871,
+        "year": "2026"
+      }
+    },
+    "denmark": {
+      "value": 5.993,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.037,
+        "year": "2026"
+      }
+    },
+    "dominican-republic": {
+      "value": 10.885,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.975,
+        "year": "2026"
+      }
+    },
+    "ecuador": {
+      "value": 18.104,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 18.244,
+        "year": "2026"
+      }
+    },
+    "egypt": {
+      "value": 107.9,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 110.058,
+        "year": "2026"
+      }
+    },
+    "estonia": {
+      "value": 1.369,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.369,
+        "year": "2026"
+      }
+    },
+    "ethiopia": {
+      "value": 110.6,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 112.37,
+        "year": "2026"
+      }
+    },
+    "finland": {
+      "value": 5.612,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.616,
+        "year": "2026"
+      }
+    },
+    "france": {
+      "value": 68.852,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 69.045,
+        "year": "2026"
+      }
+    },
+    "georgia": {
+      "value": 3.694,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.691,
+        "year": "2026"
+      }
+    },
+    "germany": {
+      "value": 83.524,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 83.501,
+        "year": "2026"
+      }
+    },
+    "ghana": {
+      "value": 35.064,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 35.698,
+        "year": "2026"
+      }
+    },
+    "greece": {
+      "value": 10.372,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.357,
+        "year": "2026"
+      }
+    },
+    "guatemala": {
+      "value": 18.664,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 18.925,
+        "year": "2026"
+      }
+    },
+    "hungary": {
+      "value": 9.56,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9.536,
+        "year": "2026"
+      }
+    },
+    "iceland": {
+      "value": 0.389,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.398,
+        "year": "2026"
+      }
+    },
+    "india": {
+      "value": 1463.866,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1476.626,
+        "year": "2026"
+      }
+    },
+    "indonesia": {
+      "value": 284.439,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 287.198,
+        "year": "2026"
+      }
+    },
+    "iran": {
+      "value": 87.057,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 87.934,
+        "year": "2026"
+      }
+    },
+    "iraq": {
+      "value": 45.521,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 46.64,
+        "year": "2026"
+      }
+    },
+    "ireland": {
+      "value": 5.497,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.56,
+        "year": "2026"
+      }
+    },
+    "israel": {
+      "value": 10.123,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.312,
+        "year": "2026"
+      }
+    },
+    "italy": {
+      "value": 58.934,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 58.879,
+        "year": "2026"
+      }
+    },
+    "japan": {
+      "value": 123.291,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 122.656,
+        "year": "2026"
+      }
+    },
+    "jordan": {
+      "value": 11.521,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 11.59,
+        "year": "2026"
+      }
+    },
+    "kazakhstan": {
+      "value": 20.38,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 20.594,
+        "year": "2026"
+      }
+    },
+    "kenya": {
+      "value": 53.354,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 54.269,
+        "year": "2026"
+      }
+    },
+    "south-korea": {
+      "value": 51.685,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 51.615,
+        "year": "2026"
+      }
+    },
+    "kosovo": {
+      "value": 1.576,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.569,
+        "year": "2026"
+      }
+    },
+    "kuwait": {
+      "value": 5.112,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.214,
+        "year": "2026"
+      }
+    },
+    "kyrgyzstan": {
+      "value": 7.227,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.372,
+        "year": "2026"
+      }
+    },
+    "laos": {
+      "value": 7.788,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.889,
+        "year": "2026"
+      }
+    },
+    "latvia": {
+      "value": 1.861,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.857,
+        "year": "2026"
+      }
+    },
+    "lebanon": {
+      "value": 5.354,
+      "year": "2025",
+      "projection": false
+    },
+    "libya": {
+      "value": 7.457,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 7.534,
+        "year": "2026"
+      }
+    },
+    "lithuania": {
+      "value": 2.891,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.898,
+        "year": "2026"
+      }
+    },
+    "luxembourg": {
+      "value": 0.682,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.696,
+        "year": "2026"
+      }
+    },
+    "madagascar": {
+      "value": 31.444,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 32.319,
+        "year": "2026"
+      }
+    },
+    "malaysia": {
+      "value": 33.852,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 34.234,
+        "year": "2026"
+      }
+    },
+    "mali": {
+      "value": 25.247,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 26.02,
+        "year": "2026"
+      }
+    },
+    "mexico": {
+      "value": 133.367,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 134.407,
+        "year": "2026"
+      }
+    },
+    "moldova": {
+      "value": 2.381,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.34,
+        "year": "2026"
+      }
+    },
+    "mongolia": {
+      "value": 3.584,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.623,
+        "year": "2026"
+      }
+    },
+    "montenegro": {
+      "value": 0.624,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 0.624,
+        "year": "2026"
+      }
+    },
+    "morocco": {
+      "value": 37.712,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 38.05,
+        "year": "2026"
+      }
+    },
+    "mozambique": {
+      "value": 35.835,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 36.826,
+        "year": "2026"
+      }
+    },
+    "myanmar": {
+      "value": 54.851,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 55.185,
+        "year": "2026"
+      }
+    },
+    "nepal": {
+      "value": 29.645,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 29.623,
+        "year": "2026"
+      }
+    },
+    "netherlands": {
+      "value": 18.044,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 18.14,
+        "year": "2026"
+      }
+    },
+    "new-zealand": {
+      "value": 5.324,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.356,
+        "year": "2026"
+      }
+    },
+    "niger": {
+      "value": 29.126,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 30.204,
+        "year": "2026"
+      }
+    },
+    "nigeria": {
+      "value": 237.577,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 242.578,
+        "year": "2026"
+      }
+    },
+    "north-macedonia": {
+      "value": 1.815,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 1.805,
+        "year": "2026"
+      }
+    },
+    "norway": {
+      "value": 5.618,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.661,
+        "year": "2026"
+      }
+    },
+    "oman": {
+      "value": 5.307,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.414,
+        "year": "2026"
+      }
+    },
+    "pakistan": {
+      "value": 240.49,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 245.117,
+        "year": "2026"
+      }
+    },
+    "panama": {
+      "value": 4.566,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 4.621,
+        "year": "2026"
+      }
+    },
+    "papua-new-guinea": {
+      "value": 12.803,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 13.072,
+        "year": "2026"
+      }
+    },
+    "paraguay": {
+      "value": 6.417,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.46,
+        "year": "2026"
+      }
+    },
+    "peru": {
+      "value": 34.409,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 34.753,
+        "year": "2026"
+      }
+    },
+    "philippines": {
+      "value": 114.086,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 115.299,
+        "year": "2026"
+      }
+    },
+    "poland": {
+      "value": 36.497,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 36.196,
+        "year": "2026"
+      }
+    },
+    "portugal": {
+      "value": 10.77,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.742,
+        "year": "2026"
+      }
+    },
+    "qatar": {
+      "value": 3.175,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.191,
+        "year": "2026"
+      }
+    },
+    "romania": {
+      "value": 18.832,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 18.715,
+        "year": "2026"
+      }
+    },
+    "russia": {
+      "value": 143.997,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 143.394,
+        "year": "2026"
+      }
+    },
+    "rwanda": {
+      "value": 14.162,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 14.471,
+        "year": "2026"
+      }
+    },
+    "saudi-arabia": {
+      "value": 36.006,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 36.726,
+        "year": "2026"
+      }
+    },
+    "senegal": {
+      "value": 19.173,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 19.7,
+        "year": "2026"
+      }
+    },
+    "serbia": {
+      "value": 6.54,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.493,
+        "year": "2026"
+      }
+    },
+    "singapore": {
+      "value": 6.077,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.121,
+        "year": "2026"
+      }
+    },
+    "slovakia": {
+      "value": 5.419,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 5.406,
+        "year": "2026"
+      }
+    },
+    "slovenia": {
+      "value": 2.131,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 2.135,
+        "year": "2026"
+      }
+    },
+    "somalia": {
+      "value": 16.963,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 17.438,
+        "year": "2026"
+      }
+    },
+    "south-africa": {
+      "value": 63.101,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 63.97,
+        "year": "2026"
+      }
+    },
+    "south-sudan": {
+      "value": 12.189,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 12.436,
+        "year": "2026"
+      }
+    },
+    "spain": {
+      "value": 49.721,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 50.314,
+        "year": "2026"
+      }
+    },
+    "sri-lanka": {
+      "value": 21.916,
+      "year": "2024",
+      "projection": false
+    },
+    "sweden": {
+      "value": 10.676,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.76,
+        "year": "2026"
+      }
+    },
+    "switzerland": {
+      "value": 9.026,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 9.09,
+        "year": "2026"
+      }
+    },
+    "syria": {
+      "value": 21.393,
+      "year": "2010",
+      "projection": false
+    },
+    "taiwan": {
+      "value": 23.299,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 23.198,
+        "year": "2026"
+      }
+    },
+    "tajikistan": {
+      "value": 10.36,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 10.53,
+        "year": "2026"
+      }
+    },
+    "tanzania": {
+      "value": 67.619,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 69.653,
+        "year": "2026"
+      }
+    },
+    "thailand": {
+      "value": 71.62,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 71.56,
+        "year": "2026"
+      }
+    },
+    "tunisia": {
+      "value": 12.349,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 12.415,
+        "year": "2026"
+      }
+    },
+    "turkey": {
+      "value": 85.825,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 86.245,
+        "year": "2026"
+      }
+    },
+    "turkmenistan": {
+      "value": 6.68,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 6.753,
+        "year": "2026"
+      }
+    },
+    "uganda": {
+      "value": 48.022,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 49.706,
+        "year": "2026"
+      }
+    },
+    "ukraine": {
+      "value": 32.762,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 32.283,
+        "year": "2026"
+      }
+    },
+    "uae": {
+      "value": 11.38,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 11.465,
+        "year": "2026"
+      }
+    },
+    "united-kingdom": {
+      "value": 69.487,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 69.85,
+        "year": "2026"
+      }
+    },
+    "united-states": {
+      "value": 341.89,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 342.942,
+        "year": "2026"
+      }
+    },
+    "uruguay": {
+      "value": 3.486,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 3.481,
+        "year": "2026"
+      }
+    },
+    "uzbekistan": {
+      "value": 38.237,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 38.943,
+        "year": "2026"
+      }
+    },
+    "venezuela": {
+      "value": 26.674,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 26.887,
+        "year": "2026"
+      }
+    },
+    "vietnam": {
+      "value": 102.3,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 103.077,
+        "year": "2026"
+      }
+    },
+    "yemen": {
+      "value": 18.81,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 19.375,
+        "year": "2026"
+      }
+    },
+    "zambia": {
+      "value": 21.914,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 22.522,
+        "year": "2026"
+      }
+    },
+    "zimbabwe": {
+      "value": 17.36,
+      "year": "2025",
+      "projection": false,
+      "outlook": {
+        "value": 17.728,
+        "year": "2026"
+      }
+    }
+  }
+}

@@ -8,6 +8,7 @@ import {
 } from '../src/data/countryData.js';
 import ingestManifest from '../src/data/datasets/ingest_manifest.json';
 import ingestedSnapshot from '../src/data/datasets/ingested_snapshot.json';
+import imfWeoSnapshot from '../src/data/datasets/imf_weo_snapshot.json';
 import historicalIndicatorSeries from '../src/data/datasets/historical_indicator_series.json';
 import rawWorldBankLatest from '../src/data/datasets/raw/world_bank_latest.json';
 import unGaVotes from '../src/data/datasets/un_ga_votes.json';
@@ -163,17 +164,25 @@ const validateRelationships = () => {
 type ManifestIndicator = {
   snapshotKey: string;
   code: string;
-  sourceId: string;
+  sourceId?: string;
   label: string;
   coverageCount: number;
   missingCountryCount: number;
   newestObservation: string | null;
 };
 
+type ManifestSource = {
+  sourceId: string;
+  provider: string;
+  requestedCountryCount: number;
+  indicators: ManifestIndicator[];
+};
+
 type IngestManifest = {
   generatedAt: string;
   requestedCountryCount: number;
   indicators: ManifestIndicator[];
+  sources?: ManifestSource[];
 };
 
 type IngestedSnapshot = Record<string, unknown> & {
@@ -195,6 +204,7 @@ type RawWorldBankAudit = {
 const validateIngestArtifacts = () => {
   const manifest = ingestManifest as IngestManifest;
   const snapshot = ingestedSnapshot as IngestedSnapshot;
+  const weo = imfWeoSnapshot as IngestedSnapshot;
   const raw = rawWorldBankLatest as RawWorldBankAudit;
 
   ensure(isIsoDate(manifest.generatedAt.slice(0, 10)), 'ingest_manifest.generatedAt must be ISO timestamp');
@@ -209,48 +219,130 @@ const validateIngestArtifacts = () => {
 
   const rawIndicators = raw.indicators ?? {};
   const rawCodeSet = new Set(Object.keys(rawIndicators));
+  const observationDates = (snapshot.observation_dates ?? {}) as Record<
+    string,
+    Record<string, string> | undefined
+  >;
+  ensure(
+    Object.keys(observationDates).length > 0,
+    'ingested_snapshot.observation_dates is missing — re-run `npm run ingest`',
+  );
+  ensure(isIsoDate(weo.timestamp.slice(0, 10)), 'imf_weo_snapshot.timestamp must be ISO timestamp');
 
-  for (const indicator of manifest.indicators) {
-    const definition = WB_INDICATOR_BY_CODE.get(indicator.code as WbIndicatorCode);
-    ensure(Boolean(definition), `ingest manifest references unknown World Bank indicator code "${indicator.code}"`);
-    if (definition) {
-      ensure(
-        indicator.sourceId === definition.provenanceSourceId,
-        `ingest manifest source mismatch for "${indicator.code}" (${indicator.sourceId} != ${definition.provenanceSourceId})`,
-      );
-    }
-    const snapshotBucket = snapshot[indicator.snapshotKey];
+  const sources: ManifestSource[] = manifest.sources ?? [
+    {
+      sourceId: 'world-bank-wdi',
+      provider: 'world-bank-open-data',
+      requestedCountryCount: manifest.requestedCountryCount,
+      indicators: manifest.indicators,
+    },
+  ];
+  const structuralWorldBankCodes = new Set([
+    'SP.POP.TOTL',
+    'SP.URB.TOTL.IN.ZS',
+    'EG.IMP.CONS.ZS',
+  ]);
+  const worldBankDefinitionFor = (code: string) =>
+    WB_INDICATOR_BY_CODE.get(code as WbIndicatorCode) ??
+    WB_INDICATORS.find((definition) => definition.requestCode === code);
+
+  for (const source of sources) {
+    const isWorldBank = source.sourceId.startsWith('world-bank-');
+    const sourceSnapshot = isWorldBank ? snapshot : weo;
+    const snapshotName = isWorldBank ? 'ingested_snapshot' : 'imf_weo_snapshot';
     ensure(
-      Boolean(snapshotBucket && typeof snapshotBucket === 'object'),
-      `ingested_snapshot is missing indicator bucket "${indicator.snapshotKey}"`,
+      source.requestedCountryCount > 0,
+      `ingest_manifest source "${source.sourceId}" must request at least one country`,
     );
-    if (snapshotBucket && typeof snapshotBucket === 'object') {
-      const coverage = Object.keys(snapshotBucket as Record<string, unknown>).length;
-      ensure(
-        coverage === indicator.coverageCount,
-        `ingest coverage mismatch for "${indicator.snapshotKey}" (snapshot=${coverage}, manifest=${indicator.coverageCount})`,
-      );
-      ensure(
-        indicator.coverageCount + indicator.missingCountryCount === manifest.requestedCountryCount,
-        `manifest coverage + missing mismatch for "${indicator.snapshotKey}"`,
-      );
-    }
-    if (indicator.newestObservation !== null) {
-      ensure(
-        /^\d{4}$/.test(indicator.newestObservation),
-        `manifest newestObservation for "${indicator.snapshotKey}" must be YYYY or null`,
-      );
-      if (/^\d{4}$/.test(indicator.newestObservation)) {
-        const year = Number.parseInt(indicator.newestObservation, 10);
-        // Some provider feeds can roll over annual labels slightly ahead of
-        // calendar year-end publication, so allow a one-year future tolerance.
-        ensureWarn(
-          year <= currentYear + 1,
-          `manifest newestObservation for "${indicator.snapshotKey}" appears in the future (${year})`,
+
+    for (const indicator of source.indicators) {
+      const effectiveSourceId = indicator.sourceId ?? source.sourceId;
+      if (isWorldBank) {
+        const definition = worldBankDefinitionFor(indicator.code);
+        ensure(
+          Boolean(definition) || structuralWorldBankCodes.has(indicator.code),
+          `ingest manifest references unknown World Bank indicator code "${indicator.code}"`,
+        );
+        if (definition) {
+          ensure(
+            effectiveSourceId === definition.provenanceSourceId,
+            `ingest manifest source mismatch for "${indicator.code}" (${effectiveSourceId} != ${definition.provenanceSourceId})`,
+          );
+        } else {
+          ensure(
+            effectiveSourceId === 'world-bank-wdi',
+            `structural World Bank indicator "${indicator.code}" must cite world-bank-wdi`,
+          );
+        }
+      } else {
+        ensure(
+          effectiveSourceId === 'imf-weo',
+          `non-World-Bank ingest indicator "${indicator.code}" must cite imf-weo`,
         );
       }
+
+      const snapshotBucket = sourceSnapshot[indicator.snapshotKey];
+      ensure(
+        Boolean(snapshotBucket && typeof snapshotBucket === 'object'),
+        `${snapshotName} is missing indicator bucket "${indicator.snapshotKey}"`,
+      );
+      if (snapshotBucket && typeof snapshotBucket === 'object') {
+        const coverage = Object.keys(snapshotBucket as Record<string, unknown>).length;
+        ensure(
+          coverage === indicator.coverageCount,
+          `ingest coverage mismatch for "${indicator.snapshotKey}" (snapshot=${coverage}, manifest=${indicator.coverageCount})`,
+        );
+        ensure(
+          indicator.coverageCount + indicator.missingCountryCount === source.requestedCountryCount,
+          `manifest coverage + missing mismatch for "${indicator.snapshotKey}"`,
+        );
+      }
+      if (indicator.newestObservation !== null) {
+        ensure(
+          /^\d{4}$/.test(indicator.newestObservation),
+          `manifest newestObservation for "${indicator.snapshotKey}" must be YYYY or null`,
+        );
+        if (/^\d{4}$/.test(indicator.newestObservation)) {
+          const year = Number.parseInt(indicator.newestObservation, 10);
+          ensureWarn(
+            year <= currentYear + 1,
+            `manifest newestObservation for "${indicator.snapshotKey}" appears in the future (${year})`,
+          );
+        }
+      }
+      if (isWorldBank) {
+        ensure(rawCodeSet.has(indicator.code), `raw ingest payload missing indicator code "${indicator.code}"`);
+        const dates = observationDates[indicator.snapshotKey];
+        ensure(
+          Boolean(dates && typeof dates === 'object'),
+          `ingested_snapshot.observation_dates is missing "${indicator.snapshotKey}"`,
+        );
+        if (dates) {
+          const values = snapshot[indicator.snapshotKey] as Record<string, unknown> | undefined;
+          for (const countryId of Object.keys(values ?? {})) {
+            ensure(
+              typeof dates[countryId] === 'string' && isIsoDate(dates[countryId]),
+              `ingested_snapshot.observation_dates."${indicator.snapshotKey}.${countryId}" must be YYYY-MM-DD`,
+            );
+          }
+        }
+      }
     }
-    ensure(rawCodeSet.has(indicator.code), `raw ingest payload missing indicator code "${indicator.code}"`);
+  }
+
+  for (const [key, bucket] of Object.entries(weo)) {
+    if (!key.startsWith('imf_') || !bucket || typeof bucket !== 'object') continue;
+    for (const [countryId, entry] of Object.entries(bucket as Record<string, unknown>)) {
+      const observation = entry as { value?: unknown; year?: unknown };
+      ensure(
+        typeof observation.value === 'number' && Number.isFinite(observation.value),
+        `imf_weo_snapshot "${key}.${countryId}" must carry a finite value`,
+      );
+      ensure(
+        typeof observation.year === 'string' && /^\d{4}$/.test(observation.year),
+        `imf_weo_snapshot "${key}.${countryId}" must carry a YYYY year`,
+      );
+    }
   }
 
   for (const [code, points] of Object.entries(rawIndicators)) {
@@ -303,7 +395,11 @@ const validateHistoricalSeriesArtifact = () => {
 };
 
 const validateEnhancementRelease = () => {
-  ensure(datasetVersion === '0.15.0', `datasetVersion must be 0.15.0 for this release (found ${datasetVersion})`);
+  ensure(/^\d+\.\d+\.\d+$/.test(datasetVersion), `datasetVersion must be semver (found ${datasetVersion})`);
+  ensure(
+    datasetVersion === enhancementReleaseTelemetry.datasetVersion,
+    `datasetVersion (${datasetVersion}) must match enhancementReleaseTelemetry.datasetVersion (${enhancementReleaseTelemetry.datasetVersion})`,
+  );
 
   const v10CoveragePct = Math.round((datasetTelemetry.v10Coverage / countryProfiles.length) * 1000) / 10;
   const v11CoveragePct = Math.round((datasetTelemetry.v11Coverage / countryProfiles.length) * 1000) / 10;

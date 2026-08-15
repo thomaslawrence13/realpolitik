@@ -1,4 +1,5 @@
 import type { CountryDataQuality, CountryIndicators, CountryProfile, IndicatorTelemetry, CoverageMetrics } from '../../types';
+import { sourceAuthorityRank } from '../sourceRegistry';
 import { indicatorQualityRules, indicatorSourcePriority, modelIndicatorKeys } from './rules';
 import { isValidIndicatorValue } from './transformers';
 import type { IndicatorKey, IndicatorObservation } from './types';
@@ -30,6 +31,11 @@ const sourceRankFor = (indicator: IndicatorKey, sourceId: string): number => {
   return index === -1 ? ranking.length + 1 : index;
 };
 
+const recencyKeyOf = (observation: { vintage?: string; observedAt: string }): string =>
+  /^\d{4}$/.test(observation.vintage ?? '')
+    ? `${observation.vintage}-12-31`
+    : observation.vintage ?? observation.observedAt;
+
 const sortCandidates = <K extends IndicatorKey>(indicator: K, candidates: IndicatorObservation<K>[]) => {
   return candidates
     .slice()
@@ -40,8 +46,18 @@ const sortCandidates = <K extends IndicatorKey>(indicator: K, candidates: Indica
       const confidenceDiff = normalizeConfidence(right.confidence) - normalizeConfidence(left.confidence);
       if (confidenceDiff !== 0) return confidenceDiff;
 
+      const vintageDiff = compareDateDesc(recencyKeyOf(left), recencyKeyOf(right));
+      if (vintageDiff !== 0) return vintageDiff;
+
       const dateDiff = compareDateDesc(left.observedAt, right.observedAt);
       if (dateDiff !== 0) return dateDiff;
+
+      if (Boolean(left.projection) !== Boolean(right.projection)) {
+        return left.projection ? 1 : -1;
+      }
+
+      const authorityDiff = sourceAuthorityRank(left.sourceId) - sourceAuthorityRank(right.sourceId);
+      if (authorityDiff !== 0) return authorityDiff;
 
       return left.providerId.localeCompare(right.providerId);
     });
@@ -139,6 +155,9 @@ export const enrichCountryWithObservations = (
       stale,
       method: selected.method,
       evidenceClass,
+      ...(selected.vintage ? { vintage: selected.vintage } : {}),
+      ...(selected.seriesUpdatedAt ? { seriesUpdatedAt: selected.seriesUpdatedAt } : {}),
+      ...(selected.projection ? { projection: true } : {}),
     });
 
     if (rule.includeInCoverage) {

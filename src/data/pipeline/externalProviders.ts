@@ -1,6 +1,7 @@
 import type { CountryProfile } from '../../types';
 import { WB_INDICATOR_BY_KEY, type WbIndicatorKey } from '../../lib/worldBankFetch';
 import { iso2ToCountryId } from '../worldBankClient';
+import type { WeoObservation } from '../imfWeoClient';
 import type { IndicatorObservation } from './types';
 import { toCohesionValue, toMilitaryTier, toRuleOfLawTier, toStabilityTier, toTradeTier } from './transformers';
 
@@ -10,16 +11,36 @@ export interface IngestedSnapshot {
   countryCountRequested?: number;
   /** ISO year selected per country and indicator during ingestion. */
   observationYears?: Partial<Record<SnapshotIndicatorKey, Record<string, string>>>;
+  /** ISO observation dates emitted by the newer multi-source ingest. */
+  observation_dates?: Partial<Record<SnapshotIndicatorKey, Record<string, string>>>;
   world_bank_military_expenditure_pct?: Record<string, number>;
   world_bank_military_expenditure_usd?: Record<string, number>;
   world_bank_trade_pct?: Record<string, number>;
   world_bank_gdp_growth?: Record<string, number>;
   world_bank_gdp_nominal_usd?: Record<string, number>;
+  world_bank_gdp_usd?: Record<string, number>;
   world_bank_gdp_per_capita_usd?: Record<string, number>;
   world_bank_inflation?: Record<string, number>;
   world_bank_political_stability?: Record<string, number>;
   world_bank_rule_of_law?: Record<string, number>;
   world_bank_unemployment?: Record<string, number>;
+  world_bank_population?: Record<string, number>;
+  world_bank_urban_pct?: Record<string, number>;
+  world_bank_energy_import_pct?: Record<string, number>;
+}
+
+export interface ImfWeoSnapshot {
+  version: string;
+  timestamp: string;
+  countryCountRequested?: number;
+  imf_gdp_growth?: Record<string, WeoObservation>;
+  imf_inflation?: Record<string, WeoObservation>;
+  imf_gdp_usd_billions?: Record<string, WeoObservation>;
+  imf_gdp_per_capita_usd?: Record<string, WeoObservation>;
+  imf_unemployment?: Record<string, WeoObservation>;
+  imf_government_debt_pct_gdp?: Record<string, WeoObservation>;
+  imf_current_account_pct_gdp?: Record<string, WeoObservation>;
+  imf_population_millions?: Record<string, WeoObservation>;
 }
 
 interface RawWorldBankPoint {
@@ -51,9 +72,14 @@ const mapIndicatorCodeToSnapshotKey = {
   'RL.EST': 'world_bank_rule_of_law',
   'GOV_WGI_RL.EST': 'world_bank_rule_of_law',
   'SL.UEM.TOTL.ZS': 'world_bank_unemployment',
+  'SP.POP.TOTL': 'world_bank_population',
+  'SP.URB.TOTL.IN.ZS': 'world_bank_urban_pct',
+  'EG.IMP.CONS.ZS': 'world_bank_energy_import_pct',
 } as const satisfies Record<string, keyof IngestedSnapshot>;
 
-export type SnapshotIndicatorKey = (typeof mapIndicatorCodeToSnapshotKey)[keyof typeof mapIndicatorCodeToSnapshotKey];
+export type SnapshotIndicatorKey =
+  | (typeof mapIndicatorCodeToSnapshotKey)[keyof typeof mapIndicatorCodeToSnapshotKey]
+  | 'world_bank_gdp_usd';
 export type ObservedAtIndex = Record<SnapshotIndicatorKey, Record<string, string>>;
 
 const normalizeObservedAt = (date: string): string => {
@@ -76,9 +102,25 @@ export const buildObservedAtIndex = (
     world_bank_political_stability: {},
     world_bank_rule_of_law: {},
     world_bank_unemployment: {},
+    world_bank_population: {},
+    world_bank_urban_pct: {},
+    world_bank_gdp_usd: {},
+    world_bank_energy_import_pct: {},
   };
   for (const indicator of Object.keys(empty) as SnapshotIndicatorKey[]) {
-    Object.assign(empty[indicator], snapshot.observationYears?.[indicator] ?? {});
+    Object.assign(
+      empty[indicator],
+      snapshot.observation_dates?.[indicator] ?? snapshot.observationYears?.[indicator] ?? {},
+    );
+  }
+
+  // The older snapshot called this series `gdp_nominal`; retain date parity in
+  // both directions while artifacts roll forward.
+  if (Object.keys(empty.world_bank_gdp_usd).length === 0) {
+    Object.assign(empty.world_bank_gdp_usd, empty.world_bank_gdp_nominal_usd);
+  }
+  if (Object.keys(empty.world_bank_gdp_nominal_usd).length === 0) {
+    Object.assign(empty.world_bank_gdp_nominal_usd, empty.world_bank_gdp_usd);
   }
 
   if (!rawAudit?.indicators) return empty;
@@ -107,14 +149,56 @@ const isObservationTooOld = (observedAt: string): boolean => {
 const worldBankSourceId = (key: WbIndicatorKey) =>
   WB_INDICATOR_BY_KEY.get(key)?.provenanceSourceId ?? 'world-bank-wdi';
 
+export const buildImfWeoObservations = (
+  profiles: CountryProfile[],
+  weo: ImfWeoSnapshot,
+): IndicatorObservation[] => {
+  const observations: IndicatorObservation[] = [];
+  const seriesUpdatedAt = weo.timestamp.slice(0, 10);
+
+  for (const profile of profiles) {
+    const growth = weo.imf_gdp_growth?.[profile.id];
+    const inflation = weo.imf_inflation?.[profile.id];
+    const unemployment = weo.imf_unemployment?.[profile.id];
+    const present = [growth, inflation, unemployment].filter(
+      (entry): entry is WeoObservation => entry != null,
+    );
+    if (present.length === 0) continue;
+    const vintage = present.map((entry) => entry.year).sort().at(-1);
+
+    observations.push({
+      providerId: 'imf-weo-ingest',
+      sourceId: 'imf-weo',
+      countryId: profile.id,
+      indicator: 'cohesion',
+      value: toCohesionValue(
+        profile.indicators.cohesion,
+        growth?.value ?? null,
+        inflation?.value ?? null,
+        unemployment?.value ?? null,
+      ),
+      observedAt: vintage ? `${vintage}-12-31` : seriesUpdatedAt,
+      method: 'snapshot',
+      confidence: 0.78,
+      ...(vintage ? { vintage } : {}),
+      seriesUpdatedAt,
+      ...(present.some((entry) => entry.projection) ? { projection: true } : {}),
+    });
+  }
+
+  return observations;
+};
+
 export const buildIngestedObservations = (
   profiles: CountryProfile[],
   snapshot: IngestedSnapshot,
-  rawAudit?: RawWorldBankAuditPayload,
+  rawAuditOrIndex?: RawWorldBankAuditPayload | ObservedAtIndex,
 ): IndicatorObservation[] => {
   const observations: IndicatorObservation[] = [];
   const fallbackObservedAt = snapshot.timestamp.slice(0, 10);
-  const observedAtByIndicator = buildObservedAtIndex(snapshot, rawAudit);
+  const observedAtByIndicator = rawAuditOrIndex && 'world_bank_trade_pct' in rawAuditOrIndex
+    ? rawAuditOrIndex as ObservedAtIndex
+    : buildObservedAtIndex(snapshot, rawAuditOrIndex as RawWorldBankAuditPayload | undefined);
 
   for (const profile of profiles) {
     const geo = profile.id;
