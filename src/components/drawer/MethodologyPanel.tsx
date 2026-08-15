@@ -16,6 +16,10 @@ import {
   SOURCE_REGISTRY,
   type SourceAccess,
 } from '../../data/sourceRegistry';
+import {
+  ARTIFACT_STATUS_LABEL,
+  buildArtifactRegisterTelemetry,
+} from '../../data/artifactRegistry';
 
 const ACCESS_LABEL: Record<SourceAccess, string> = {
   'live-api': 'Live API',
@@ -106,6 +110,9 @@ export function MethodologyPanel({
     'Some relationship edges are derived rather than directly observed and are tagged lower confidence.',
     'Assessment outputs describe the observed present; they are not forecasts of future alignment or conflict.',
   ];
+  // Four committed artifacts; recomputing per render keeps the displayed age
+  // honest across a long-lived session rather than freezing it at module load.
+  const artifactRegister = buildArtifactRegisterTelemetry();
   const staticRuntimeScoreDelta =
     Math.round(
       Math.abs(informationQuality.averageInformationScore - baselineInformationQuality.averageInformationScore) * 10,
@@ -154,6 +161,44 @@ export function MethodologyPanel({
         <p className="methodology-telemetry-line methodology-telemetry-line-tight">
           Confidence floor breaches {enhancementReleaseTelemetry.status.indicatorConfidenceFloorBreaches} ({enhancementReleaseTelemetry.status.meetsIndicatorConfidenceFloor ? '✓' : '✕'}) · avg relationships {enhancementReleaseTelemetry.status.averageRelationshipsPerCountry} ({enhancementReleaseTelemetry.status.meetsRelationshipCompleteness ? '✓' : '✕'})
         </p>
+      </section>
+      <section className="scenario-meta-card">
+        <strong>Operational artifact register</strong>
+        <p className="methodology-telemetry-line">
+          The files this build actually retrieved and committed — distinct from the source registry
+          below, which describes publishers rather than wired feeds. An artifact past its refresh
+          budget is withheld from the overlay instead of being served stale.
+        </p>
+        <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+          {artifactRegister.artifacts.length} artifacts · fresh {artifactRegister.freshCount} · ageing{' '}
+          {artifactRegister.agingCount} · stale {artifactRegister.staleCount} ·{' '}
+          {artifactRegister.allWithinBudget ? 'all within budget ✓' : 'refresh required ✕'}
+        </p>
+        <div className="methodology-priority-grid">
+          {artifactRegister.artifacts.map((artifact) => (
+            <article
+              key={`artifact-${artifact.id}`}
+              className="methodology-priority-card"
+              data-artifact-status={artifact.status}
+            >
+              <header>
+                <strong>{artifact.title}</strong>
+                <span className="methodology-priority-score">
+                  {ARTIFACT_STATUS_LABEL[artifact.status]}
+                </span>
+              </header>
+              <p>
+                Retrieved {artifact.retrievedOn} · {artifact.ageDays}d of {artifact.budgetDays}d budget
+                {artifact.vintage ? ` · ${artifact.vintage}` : ''}
+              </p>
+              <p>
+                {artifact.publisher} · {artifact.coverage}
+              </p>
+              <p>{artifact.boundary}</p>
+              {artifact.status !== 'fresh' && <p>Refresh: {artifact.refreshCommand}</p>}
+            </article>
+          ))}
+        </div>
       </section>
       <section className="scenario-meta-card">
         <strong>Evidence-class legend</strong>

@@ -60,3 +60,43 @@ export const buildHistoricalSeriesArtifact = (
 
   return { schema: 2, fetchedAt, indicators: compact };
 };
+
+/**
+ * Sidecar metadata for the historical series artifact.
+ *
+ * The artifact itself is ~677 KB and is deliberately code-split so it loads
+ * only when a reader opens a history chart. The artifact register needs the
+ * artifact's *age and reach*, not its observations, so it reads this summary
+ * instead — otherwise dating the artifact would drag the whole payload into
+ * the eager bundle. `validateDataset` checks the summary against the full
+ * artifact so the two cannot drift.
+ */
+export interface HistoricalSeriesMeta {
+  schema: 2;
+  fetchedAt: string;
+  indicatorCodes: HistoricalSeriesCode[];
+  countryCount: number;
+  observationCount: number;
+}
+
+export const summarizeHistoricalSeriesArtifact = (
+  artifact: HistoricalSeriesArtifact,
+): HistoricalSeriesMeta => {
+  const countries = new Set<string>();
+  let observationCount = 0;
+
+  for (const series of Object.values(artifact.indicators)) {
+    for (const [iso, points] of Object.entries(series ?? {})) {
+      countries.add(iso);
+      observationCount += points.length;
+    }
+  }
+
+  return {
+    schema: 2,
+    fetchedAt: artifact.fetchedAt,
+    indicatorCodes: Object.keys(artifact.indicators) as HistoricalSeriesCode[],
+    countryCount: countries.size,
+    observationCount,
+  };
+};

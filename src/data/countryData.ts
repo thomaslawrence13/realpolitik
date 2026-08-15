@@ -2,9 +2,11 @@ import { geopoliticalDatasetV1 } from './datasets/v1';
 import { v10Enhancements } from './datasets/v10Enhancements';
 import { v11Enhancements } from './datasets/v11Enhancements';
 import ingestManifest from './datasets/ingest_manifest.json';
-import unVotesArtifact from './datasets/un_ga_votes.json';
-import ofacRegistryArtifact from './datasets/ofac_sanctions_registry.json';
-import ucdpConflictArtifact from './datasets/ucdp_conflict.json';
+import {
+  artifactPayloads,
+  buildArtifactRegisterTelemetry,
+  type ArtifactId,
+} from './artifactRegistry';
 import { countryIso2 } from '../lib/worldBankFetch';
 import type {
   CountryIndicators,
@@ -420,61 +422,27 @@ const deriveCountryDataQuality = (country: CountryRecord) => {
   };
 };
 
-const DAY_MS = 86_400_000;
-const UN_VOTES_FRESH_DAYS = 420;
-const OFAC_FRESH_DAYS = 120;
 const UN_VOTES_MIN_ROLL_CALLS = 24;
-/** UCDP publishes the OV-CY yearly in mid-year; an artifact older than ~14 months is stale. */
-const UCDP_FRESH_DAYS = 440;
 
-const unVotesPayload = unVotesArtifact as {
-  fetchedAt: string;
-  sourceTitle: string;
-  sourceUrl: string;
-  sessions: string[];
-  perCountry: Record<string, { blocA: number; blocB: number; rollCalls: number }>;
-};
+const unVotesPayload = artifactPayloads['unga-votes'];
+const ofacPayload = artifactPayloads['ofac-sdn'];
+const ucdpPayload = artifactPayloads['ucdp-organized-violence'];
 
-const ofacPayload = ofacRegistryArtifact as {
-  fetchedAt: string;
-  sourceTitle: string;
-  sourceUrl: string;
-  perCountry: Record<string, {
-    entryCount: number;
-    programCount: number;
-    topPrograms: Array<{ program: string; count: number }>;
-  }>;
-};
+/**
+ * Artifact age, budgets and status all come from the operational artifact
+ * register, so the freshness gate applied here is the same one the release
+ * view renders and CI enforces. An artifact past budget is withheld rather
+ * than silently served: the curated posture stays, and the register reports
+ * why.
+ */
+export const artifactRegister = buildArtifactRegisterTelemetry();
 
-const ucdpPayload = ucdpConflictArtifact as {
-  fetchedAt: string;
-  sourceTitle: string;
-  sourceUrl: string;
-  version: string;
-  window: { fromYear: number; throughYear: number };
-  perCountry: Record<string, {
-    active: boolean;
-    lastYear: number;
-    lastYearStateBased: boolean;
-    lastYearNonState: boolean;
-    lastYearOneSided: boolean;
-    deathsLastYear: number;
-    deathsPriorYear: number;
-    totalDeathsInWindow: number;
-    stateBased: boolean;
-    nonState: boolean;
-    oneSided: boolean;
-  }>;
-};
+const artifactWithinBudget = (id: ArtifactId): boolean =>
+  artifactRegister.artifacts.find((artifact) => artifact.id === id)?.withinBudget ?? false;
 
-const daysSince = (value: string): number => {
-  const diff = Date.now() - Date.parse(value);
-  return Number.isFinite(diff) ? Math.max(0, diff / DAY_MS) : Number.NaN;
-};
-
-const unVotesFresh = daysSince(unVotesPayload.fetchedAt) <= UN_VOTES_FRESH_DAYS;
-const ofacFresh = daysSince(ofacPayload.fetchedAt) <= OFAC_FRESH_DAYS;
-const ucdpFresh = daysSince(ucdpPayload.fetchedAt) <= UCDP_FRESH_DAYS;
+const unVotesFresh = artifactWithinBudget('unga-votes');
+const ofacFresh = artifactWithinBudget('ofac-sdn');
+const ucdpFresh = artifactWithinBudget('ucdp-organized-violence');
 
 /**
  * Overlay measured political registries onto a profile. Only fresh artifacts
@@ -580,6 +548,7 @@ export const methodologyNotes = [
   'v15 (coverage density): World Bank ingest uses a 10-year MRV window with newest-year selection; curated economic/military stats fill remaining gaps (Taiwan, sparse reporters); conflict/sanctions reaffirmations stay fresh; live + ingest series merge into economic/military snapshots.',
   'v15.1 (API coverage): nominal GDP, GDP per capita, and SIPRI-backed current-USD military expenditure now come from the shared World Bank API catalog in browser, ingest, and Worker paths; history stores the published series and displayed dates distinguish observation year from retrieval time.',
   'v15.2 (conflict evidence): finalized UCDP organized-violence observations feed historical severity through explicit fatality thresholds; current pressure remains separate for future candidate-event data, and zero-event rows do not imply an absence of broader geopolitical tension.',
+  'v15.3 (artifact provenance): an operational artifact register dates UNGA, OFAC, UCDP and World Bank history against per-artifact refresh budgets, and the same rows drive the runtime overlay gate, the release view and the CI freshness check. World Bank governance series are credited to WGI rather than WDI under a validation gate, and conflict pressure and sanctions exposure are labelled curated wherever an official artifact sits beside them.',
 ];
 /**
  * Newest observed data point across all country profiles and dataset sources.

@@ -1,9 +1,7 @@
 import { geopoliticalDatasetV1 } from '../src/data/datasets/v1.js';
 import { datasetAsOf } from '../src/data/countryData.js';
 import ingestManifest from '../src/data/datasets/ingest_manifest.json';
-import unVotesArtifact from '../src/data/datasets/un_ga_votes.json';
-import ofacArtifact from '../src/data/datasets/ofac_sanctions_registry.json';
-import ucdpArtifact from '../src/data/datasets/ucdp_conflict.json';
+import { ARTIFACT_STATUS_LABEL, describeArtifacts } from '../src/data/artifactRegistry.js';
 
 const DAY_MS = 86_400_000;
 
@@ -75,38 +73,28 @@ const main = () => {
     }
   }
 
-  const unVotesFetchedAt = (unVotesArtifact as { fetchedAt: string }).fetchedAt;
-  const unVotesAge = daysOld(unVotesFetchedAt);
-  if (unVotesAge > 420) {
-    errors.push(
-      `UN votes artifact is ${unVotesAge}d old (fetchedAt ${unVotesFetchedAt.slice(0, 10)}, budget 420d) — run npm run refresh:unvotes.`,
+  // Artifact budgets live in the operational artifact register, so the age CI
+  // enforces here is the same number the release view shows and the same one
+  // the runtime overlay gate applies. The table always prints — a refresh run
+  // that changes nothing should still leave proof of what it checked.
+  const artifacts = describeArtifacts();
+  console.log('Operational artifact register:');
+  for (const artifact of artifacts) {
+    console.log(
+      `- ${ARTIFACT_STATUS_LABEL[artifact.status].padEnd(6)} ${artifact.title}: retrieved ` +
+        `${artifact.retrievedOn} · ${artifact.ageDays}d of ${artifact.budgetDays}d · ${artifact.coverage}`,
     );
-  }
-
-  const ofacFetchedAt = (ofacArtifact as { fetchedAt: string }).fetchedAt;
-  const ofacAge = daysOld(ofacFetchedAt);
-  if (ofacAge > 120) {
-    errors.push(
-      `OFAC registry artifact is ${ofacAge}d old (fetchedAt ${ofacFetchedAt.slice(0, 10)}, budget 120d) — run npm run refresh:ofac.`,
-    );
-  } else if (ofacAge > 60) {
-    warnings.push(
-      `OFAC registry artifact is ${ofacAge}d old (fetchedAt ${ofacFetchedAt.slice(0, 10)}, warn tip 60d).`,
-    );
-  }
-
-  const ucdpFetchedAt = (ucdpArtifact as { fetchedAt: string }).fetchedAt;
-  const ucdpAge = daysOld(ucdpFetchedAt);
-  // UCDP publishes the yearly OV-CY each mid-year; ~14 months is the true
-  // staleness point, with a warning tip well before.
-  if (ucdpAge > 420) {
-    errors.push(
-      `UCDP conflict artifact is ${ucdpAge}d old (fetchedAt ${ucdpFetchedAt.slice(0, 10)}, budget 420d) — run npm run refresh:ucdp.`,
-    );
-  } else if (ucdpAge > 240) {
-    warnings.push(
-      `UCDP conflict artifact is ${ucdpAge}d old (fetchedAt ${ucdpFetchedAt.slice(0, 10)}, warn tip 240d).`,
-    );
+    if (artifact.status === 'stale') {
+      errors.push(
+        `${artifact.title} artifact is ${artifact.ageDays}d old (fetchedAt ${artifact.retrievedOn}, ` +
+          `budget ${artifact.budgetDays}d) — run ${artifact.refreshCommand}.`,
+      );
+    } else if (artifact.status === 'aging') {
+      warnings.push(
+        `${artifact.title} artifact is ${artifact.ageDays}d old (fetchedAt ${artifact.retrievedOn}, ` +
+          `warn tip ${artifact.warnAfterDays}d) — schedule ${artifact.refreshCommand}.`,
+      );
+    }
   }
 
   warnings.forEach((warning) => console.warn(`FRESHNESS WARN: ${warning}`));
