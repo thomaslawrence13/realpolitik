@@ -142,7 +142,7 @@ export function HistoricalSeriesSection({ countryId }: HistoricalSeriesSectionPr
       </h3>
       <p className="history-note">Published annual observations only. Missing years are left blank rather than modeled.</p>
 
-      <div className="history-series-picker" role="tablist" aria-label="Historical indicator">
+      <div className="history-series-picker" role="group" aria-label="Historical indicator">
         {series.map((metric) => {
           const metricLatest = metric.points.at(-1);
           const metricPrevious = metric.points.at(-2);
@@ -150,8 +150,7 @@ export function HistoricalSeriesSection({ countryId }: HistoricalSeriesSectionPr
           return (
             <button
               type="button"
-              role="tab"
-              aria-selected={metric.metricId === activeMetric.metricId}
+              aria-pressed={metric.metricId === activeMetric.metricId}
               className={metric.metricId === activeMetric.metricId ? 'history-picker-active' : ''}
               onClick={() => setActiveMetricId(metric.metricId)}
               key={metric.metricId}

@@ -17,6 +17,9 @@ import { RelationshipEvidenceSection } from './inspector/RelationshipEvidenceSec
 import { getCoverageMetrics } from '../lib/coverage';
 import { buildCountryBrief } from './inspector/insights';
 import { StrategicStatsSection } from './inspector/StrategicStatsSection';
+import { buildCountryBenchmarks } from './inspector/benchmarks';
+import { PeerBenchmarkSection } from './inspector/PeerBenchmarkSection';
+import { DataQualitySection } from './inspector/DataQualitySection';
 
 export type InspectorTab = 'snapshot' | 'stats' | 'history';
 
@@ -95,6 +98,7 @@ export const RightInspector = memo(function RightInspector({
   const mil = selected.profile.militaryStats;
   const coverage = useMemo(() => getCoverageMetrics(selected.profile), [selected.profile]);
   const brief = useMemo(() => buildCountryBrief(selected), [selected]);
+  const benchmarks = useMemo(() => buildCountryBenchmarks(selected, allCountries), [allCountries, selected]);
 
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -138,7 +142,7 @@ export const RightInspector = memo(function RightInspector({
           <div className={`inspector-kpi risk-${getRiskTier(selected.risk)}`}>
             <span>Risk</span>
             <strong>{selected.risk}%</strong>
-            <em>{getRiskTier(selected.risk)} stress</em>
+            <em title="Ranked from highest to lowest stress">risk rank #{benchmarks.riskRank}</em>
           </div>
           <div className="inspector-kpi">
             <span>Confidence</span>
@@ -238,6 +242,8 @@ export const RightInspector = memo(function RightInspector({
               </div>
             </section>
 
+            <PeerBenchmarkSection summary={benchmarks} />
+
             <section className="glance-card assessment-drivers">
               <header>
                 <div>
@@ -322,6 +328,7 @@ export const RightInspector = memo(function RightInspector({
               />
             )}
             <StrategicStatsSection profile={selected.profile} />
+            <DataQualitySection selected={selected} />
             <PoliticalRegistrySection selected={selected} />
             {!econ && !mil && (
               <p className="glance-empty">No detailed economic or military snapshot for this profile.</p>
