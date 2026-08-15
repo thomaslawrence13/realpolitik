@@ -23,6 +23,14 @@ test('deriveQualityRemediationDrivers prioritizes coverage and stale/fallback is
       computedSourceCoverage: 45,
       computedLastUpdated: '2015-01-01',
       degradedReasons: ['country snapshot is stale'],
+      coverage: {
+        valuePct: 45,
+        observedPct: 0,
+        freshPct: 0,
+        fallbackPct: 45,
+        stalePct: 45,
+        lowConfidencePct: 45,
+      },
       indicators: (base.dataQuality?.indicators ?? []).map((indicator) => ({
         ...indicator,
         stale: true,

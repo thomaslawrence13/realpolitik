@@ -9,6 +9,7 @@ import {
   buildGovernanceCrossCheckObservations,
   buildSanctionsSnapshotObservations,
   buildTradeDependenceObservations,
+  buildUcdpConflictObservations,
   buildWorldBankObservations,
 } from './providers';
 import {
@@ -19,9 +20,8 @@ import {
 import { enrichCountryWithObservations } from './reconcile';
 import { enrichRelationshipWithObservations } from './reconcileRelationships';
 import { buildIngestedObservations } from './externalProviders';
-import type { IngestedSnapshot, RawWorldBankAuditPayload } from './externalProviders';
+import { buildObservedAtIndex, type IngestedSnapshot, type RawWorldBankAuditPayload } from './externalProviders';
 import ingestedSnapshot from '../datasets/ingested_snapshot.json';
-import rawWorldBankLatest from '../datasets/raw/world_bank_latest.json';
 import type { RelationshipObservation } from './types';
 import { applyStatsCoverageEnrichment } from './statsEnrichment';
 
@@ -57,12 +57,16 @@ const indexRelationshipObservations = (
 /** Empty live payload used for offline / bootstrap enrichment (ingest-only). */
 export const emptyLiveData = (): LiveData => ({
   militaryExpPct: {},
+  militaryExpUsd: {},
   tradePct: {},
   gdpGrowth: {},
+  gdpNominalUsd: {},
+  gdpPerCapitaUsd: {},
   inflation: {},
   politicalStability: {},
   ruleOfLaw: {},
   unemployment: {},
+  indicatorMetadata: {},
   diagnostics: {
     totalIndicators: 0,
     succeededIndicators: 0,
@@ -80,7 +84,11 @@ export const enrichProfilesWithSourcePipeline = (
   },
 ): CountryProfile[] => {
   const ingest = options?.ingest ?? (ingestedSnapshot as IngestedSnapshot);
-  const rawAudit = options?.rawAudit ?? (rawWorldBankLatest as RawWorldBankAuditPayload);
+  // The normalized snapshot already persists per-country observation years.
+  // Keep raw-audit support injectable for validation/tests, but do not ship the
+  // multi-megabyte audit payload in the browser bundle.
+  const rawAudit = options?.rawAudit;
+  const observedAtByIndicator = buildObservedAtIndex(ingest, rawAudit);
 
   // --- Country-level indicator enrichment ---
   // Order: live API → ingest snapshot → curated reaffirmations → stats fallbacks.
@@ -88,6 +96,7 @@ export const enrichProfilesWithSourcePipeline = (
   const indicatorObservations = [
     ...buildWorldBankObservations(profiles, live),
     ...buildIngestedObservations(profiles, ingest, rawAudit),
+    ...buildUcdpConflictObservations(profiles),
     ...buildConflictSnapshotObservations(profiles),
     ...buildSanctionsSnapshotObservations(profiles),
     ...buildTradeDependenceObservations(profiles),
@@ -101,7 +110,7 @@ export const enrichProfilesWithSourcePipeline = (
 
   const enrichedProfiles = profiles.map((profile) => {
     const enriched = enrichCountryWithObservations(profile, byCountry.get(profile.id) ?? []);
-    const stats = applyStatsCoverageEnrichment(profile, live, ingest);
+    const stats = applyStatsCoverageEnrichment(profile, live, ingest, observedAtByIndicator);
     return {
       ...profile,
       indicators: enriched.indicators,

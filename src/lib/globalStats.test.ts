@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { buildGlobalLiveSummary, formatHudAge, formatHudClock } from './globalStats';
-import type { SimulatedCountry } from '../types';
+import type { CountryAssessment } from '../types';
 
-const stub = (risk: number, coverage: number): SimulatedCountry =>
+const stub = (risk: number, coverage: number): CountryAssessment =>
   ({
     risk,
     profile: { sourceCoverage: coverage },
-  }) as SimulatedCountry;
+  }) as CountryAssessment;
 
 test('buildGlobalLiveSummary computes median, means, and risk tiers', () => {
   const summary = buildGlobalLiveSummary([

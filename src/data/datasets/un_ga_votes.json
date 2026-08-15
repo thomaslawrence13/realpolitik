@@ -1,0 +1,973 @@
+{
+  "fetchedAt": "2026-08-08T19:22:13.938Z",
+  "sourceTitle": "United Nations Digital Library: General Assembly voting data (official CSV)",
+  "sourceUrl": "https://digitallibrary.un.org/record/4060887",
+  "anchors": {
+    "blocA": "United States of America",
+    "blocB": "Russian Federation"
+  },
+  "sessions": [
+    "2016",
+    "2017",
+    "2018",
+    "2019",
+    "2020",
+    "2021",
+    "2022",
+    "2023",
+    "2024",
+    "2025"
+  ],
+  "perCountry": {
+    "AF": {
+      "blocA": 19,
+      "blocB": 61,
+      "rollCalls": 1133
+    },
+    "AL": {
+      "blocA": 45,
+      "blocB": 49,
+      "rollCalls": 1899
+    },
+    "DZ": {
+      "blocA": 13,
+      "blocB": 63,
+      "rollCalls": 1913
+    },
+    "AD": {
+      "blocA": 37,
+      "blocB": 46,
+      "rollCalls": 1897
+    },
+    "AO": {
+      "blocA": 15,
+      "blocB": 62,
+      "rollCalls": 1804
+    },
+    "AR": {
+      "blocA": 37,
+      "blocB": 53,
+      "rollCalls": 1839
+    },
+    "AM": {
+      "blocA": 18,
+      "blocB": 65,
+      "rollCalls": 1824
+    },
+    "AU": {
+      "blocA": 51,
+      "blocB": 40,
+      "rollCalls": 1907
+    },
+    "AT": {
+      "blocA": 39,
+      "blocB": 43,
+      "rollCalls": 1911
+    },
+    "AZ": {
+      "blocA": 16,
+      "blocB": 70,
+      "rollCalls": 1635
+    },
+    "BS": {
+      "blocA": 23,
+      "blocB": 61,
+      "rollCalls": 1771
+    },
+    "BH": {
+      "blocA": 18,
+      "blocB": 61,
+      "rollCalls": 1909
+    },
+    "BD": {
+      "blocA": 17,
+      "blocB": 61,
+      "rollCalls": 1899
+    },
+    "BB": {
+      "blocA": 23,
+      "blocB": 61,
+      "rollCalls": 1717
+    },
+    "BY": {
+      "blocA": 12,
+      "blocB": 77,
+      "rollCalls": 1864
+    },
+    "BE": {
+      "blocA": 45,
+      "blocB": 51,
+      "rollCalls": 1907
+    },
+    "BJ": {
+      "blocA": 18,
+      "blocB": 62,
+      "rollCalls": 1285
+    },
+    "BO": {
+      "blocA": 15,
+      "blocB": 65,
+      "rollCalls": 1553
+    },
+    "BA": {
+      "blocA": 36,
+      "blocB": 50,
+      "rollCalls": 1883
+    },
+    "BR": {
+      "blocA": 21,
+      "blocB": 57,
+      "rollCalls": 1897
+    },
+    "BN": {
+      "blocA": 16,
+      "blocB": 62,
+      "rollCalls": 1909
+    },
+    "BG": {
+      "blocA": 45,
+      "blocB": 49,
+      "rollCalls": 1909
+    },
+    "BI": {
+      "blocA": 13,
+      "blocB": 68,
+      "rollCalls": 1650
+    },
+    "CV": {
+      "blocA": 20,
+      "blocB": 61,
+      "rollCalls": 1729
+    },
+    "KH": {
+      "blocA": 16,
+      "blocB": 67,
+      "rollCalls": 1855
+    },
+    "CM": {
+      "blocA": 17,
+      "blocB": 52,
+      "rollCalls": 1716
+    },
+    "CA": {
+      "blocA": 56,
+      "blocB": 37,
+      "rollCalls": 1912
+    },
+    "TD": {
+      "blocA": 18,
+      "blocB": 64,
+      "rollCalls": 1633
+    },
+    "CL": {
+      "blocA": 22,
+      "blocB": 59,
+      "rollCalls": 1905
+    },
+    "CN": {
+      "blocA": 13,
+      "blocB": 74,
+      "rollCalls": 1896
+    },
+    "CO": {
+      "blocA": 21,
+      "blocB": 58,
+      "rollCalls": 1905
+    },
+    "KM": {
+      "blocA": 16,
+      "blocB": 61,
+      "rollCalls": 1388
+    },
+    "CG": {
+      "blocA": 16,
+      "blocB": 62,
+      "rollCalls": 1530
+    },
+    "CR": {
+      "blocA": 23,
+      "blocB": 59,
+      "rollCalls": 1901
+    },
+    "CI": {
+      "blocA": 19,
+      "blocB": 56,
+      "rollCalls": 1849
+    },
+    "HR": {
+      "blocA": 45,
+      "blocB": 50,
+      "rollCalls": 1905
+    },
+    "CU": {
+      "blocA": 12,
+      "blocB": 70,
+      "rollCalls": 1892
+    },
+    "CY": {
+      "blocA": 38,
+      "blocB": 45,
+      "rollCalls": 1909
+    },
+    "CZ": {
+      "blocA": 49,
+      "blocB": 48,
+      "rollCalls": 1911
+    },
+    "DK": {
+      "blocA": 46,
+      "blocB": 50,
+      "rollCalls": 1909
+    },
+    "DJ": {
+      "blocA": 17,
+      "blocB": 61,
+      "rollCalls": 1815
+    },
+    "DO": {
+      "blocA": 22,
+      "blocB": 60,
+      "rollCalls": 1891
+    },
+    "EC": {
+      "blocA": 20,
+      "blocB": 60,
+      "rollCalls": 1887
+    },
+    "EG": {
+      "blocA": 15,
+      "blocB": 63,
+      "rollCalls": 1905
+    },
+    "SV": {
+      "blocA": 19,
+      "blocB": 59,
+      "rollCalls": 1869
+    },
+    "GQ": {
+      "blocA": 15,
+      "blocB": 63,
+      "rollCalls": 1280
+    },
+    "ER": {
+      "blocA": 14,
+      "blocB": 67,
+      "rollCalls": 1819
+    },
+    "EE": {
+      "blocA": 48,
+      "blocB": 52,
+      "rollCalls": 1909
+    },
+    "ET": {
+      "blocA": 15,
+      "blocB": 62,
+      "rollCalls": 1843
+    },
+    "FJ": {
+      "blocA": 19,
+      "blocB": 56,
+      "rollCalls": 1651
+    },
+    "FI": {
+      "blocA": 43,
+      "blocB": 50,
+      "rollCalls": 1911
+    },
+    "FR": {
+      "blocA": 50,
+      "blocB": 53,
+      "rollCalls": 1907
+    },
+    "GE": {
+      "blocA": 37,
+      "blocB": 45,
+      "rollCalls": 1839
+    },
+    "DE": {
+      "blocA": 47,
+      "blocB": 50,
+      "rollCalls": 1911
+    },
+    "GH": {
+      "blocA": 19,
+      "blocB": 60,
+      "rollCalls": 1704
+    },
+    "GR": {
+      "blocA": 44,
+      "blocB": 52,
+      "rollCalls": 1913
+    },
+    "GT": {
+      "blocA": 27,
+      "blocB": 52,
+      "rollCalls": 1907
+    },
+    "GN": {
+      "blocA": 17,
+      "blocB": 63,
+      "rollCalls": 1571
+    },
+    "GY": {
+      "blocA": 21,
+      "blocB": 62,
+      "rollCalls": 1877
+    },
+    "HN": {
+      "blocA": 25,
+      "blocB": 53,
+      "rollCalls": 1853
+    },
+    "HU": {
+      "blocA": 51,
+      "blocB": 47,
+      "rollCalls": 1913
+    },
+    "IS": {
+      "blocA": 42,
+      "blocB": 50,
+      "rollCalls": 1899
+    },
+    "IN": {
+      "blocA": 18,
+      "blocB": 64,
+      "rollCalls": 1907
+    },
+    "ID": {
+      "blocA": 15,
+      "blocB": 63,
+      "rollCalls": 1913
+    },
+    "IQ": {
+      "blocA": 16,
+      "blocB": 62,
+      "rollCalls": 1883
+    },
+    "IE": {
+      "blocA": 37,
+      "blocB": 46,
+      "rollCalls": 1911
+    },
+    "IL": {
+      "blocA": 86,
+      "blocB": 23,
+      "rollCalls": 1771
+    },
+    "IT": {
+      "blocA": 44,
+      "blocB": 50,
+      "rollCalls": 1901
+    },
+    "JM": {
+      "blocA": 21,
+      "blocB": 62,
+      "rollCalls": 1857
+    },
+    "JP": {
+      "blocA": 36,
+      "blocB": 48,
+      "rollCalls": 1907
+    },
+    "JO": {
+      "blocA": 17,
+      "blocB": 60,
+      "rollCalls": 1877
+    },
+    "KZ": {
+      "blocA": 17,
+      "blocB": 64,
+      "rollCalls": 1857
+    },
+    "KE": {
+      "blocA": 15,
+      "blocB": 62,
+      "rollCalls": 1807
+    },
+    "KI": {
+      "blocA": 28,
+      "blocB": 47,
+      "rollCalls": 1318
+    },
+    "KW": {
+      "blocA": 18,
+      "blocB": 62,
+      "rollCalls": 1897
+    },
+    "LA": {
+      "blocA": 14,
+      "blocB": 65,
+      "rollCalls": 1873
+    },
+    "LV": {
+      "blocA": 47,
+      "blocB": 52,
+      "rollCalls": 1907
+    },
+    "LB": {
+      "blocA": 14,
+      "blocB": 62,
+      "rollCalls": 1865
+    },
+    "LS": {
+      "blocA": 17,
+      "blocB": 63,
+      "rollCalls": 1737
+    },
+    "LR": {
+      "blocA": 31,
+      "blocB": 51,
+      "rollCalls": 1302
+    },
+    "LY": {
+      "blocA": 15,
+      "blocB": 61,
+      "rollCalls": 1831
+    },
+    "LI": {
+      "blocA": 37,
+      "blocB": 45,
+      "rollCalls": 1907
+    },
+    "LT": {
+      "blocA": 47,
+      "blocB": 50,
+      "rollCalls": 1911
+    },
+    "LU": {
+      "blocA": 44,
+      "blocB": 51,
+      "rollCalls": 1909
+    },
+    "MG": {
+      "blocA": 19,
+      "blocB": 55,
+      "rollCalls": 1342
+    },
+    "MY": {
+      "blocA": 16,
+      "blocB": 61,
+      "rollCalls": 1901
+    },
+    "MV": {
+      "blocA": 21,
+      "blocB": 61,
+      "rollCalls": 1899
+    },
+    "ML": {
+      "blocA": 14,
+      "blocB": 69,
+      "rollCalls": 1821
+    },
+    "MT": {
+      "blocA": 37,
+      "blocB": 45,
+      "rollCalls": 1911
+    },
+    "MH": {
+      "blocA": 51,
+      "blocB": 36,
+      "rollCalls": 1597
+    },
+    "MR": {
+      "blocA": 15,
+      "blocB": 62,
+      "rollCalls": 1787
+    },
+    "MU": {
+      "blocA": 18,
+      "blocB": 61,
+      "rollCalls": 1841
+    },
+    "MX": {
+      "blocA": 21,
+      "blocB": 58,
+      "rollCalls": 1911
+    },
+    "FM": {
+      "blocA": 65,
+      "blocB": 35,
+      "rollCalls": 1460
+    },
+    "MC": {
+      "blocA": 45,
+      "blocB": 52,
+      "rollCalls": 1878
+    },
+    "MN": {
+      "blocA": 17,
+      "blocB": 63,
+      "rollCalls": 1863
+    },
+    "ME": {
+      "blocA": 44,
+      "blocB": 52,
+      "rollCalls": 1905
+    },
+    "MA": {
+      "blocA": 19,
+      "blocB": 62,
+      "rollCalls": 1835
+    },
+    "MZ": {
+      "blocA": 16,
+      "blocB": 62,
+      "rollCalls": 1824
+    },
+    "MM": {
+      "blocA": 21,
+      "blocB": 63,
+      "rollCalls": 1701
+    },
+    "NA": {
+      "blocA": 16,
+      "blocB": 61,
+      "rollCalls": 1819
+    },
+    "NR": {
+      "blocA": 42,
+      "blocB": 37,
+      "rollCalls": 1088
+    },
+    "NP": {
+      "blocA": 19,
+      "blocB": 63,
+      "rollCalls": 1883
+    },
+    "NL": {
+      "blocA": 45,
+      "blocB": 49,
+      "rollCalls": 1897
+    },
+    "NZ": {
+      "blocA": 39,
+      "blocB": 46,
+      "rollCalls": 1909
+    },
+    "NI": {
+      "blocA": 10,
+      "blocB": 75,
+      "rollCalls": 1852
+    },
+    "NE": {
+      "blocA": 16,
+      "blocB": 64,
+      "rollCalls": 1508
+    },
+    "NO": {
+      "blocA": 42,
+      "blocB": 52,
+      "rollCalls": 1909
+    },
+    "OM": {
+      "blocA": 17,
+      "blocB": 63,
+      "rollCalls": 1895
+    },
+    "PK": {
+      "blocA": 17,
+      "blocB": 66,
+      "rollCalls": 1887
+    },
+    "PW": {
+      "blocA": 41,
+      "blocB": 37,
+      "rollCalls": 1583
+    },
+    "PA": {
+      "blocA": 24,
+      "blocB": 55,
+      "rollCalls": 1895
+    },
+    "PG": {
+      "blocA": 28,
+      "blocB": 47,
+      "rollCalls": 1755
+    },
+    "PY": {
+      "blocA": 25,
+      "blocB": 49,
+      "rollCalls": 1883
+    },
+    "PE": {
+      "blocA": 21,
+      "blocB": 61,
+      "rollCalls": 1895
+    },
+    "PH": {
+      "blocA": 19,
+      "blocB": 64,
+      "rollCalls": 1909
+    },
+    "PL": {
+      "blocA": 47,
+      "blocB": 51,
+      "rollCalls": 1907
+    },
+    "PT": {
+      "blocA": 43,
+      "blocB": 52,
+      "rollCalls": 1909
+    },
+    "QA": {
+      "blocA": 19,
+      "blocB": 61,
+      "rollCalls": 1903
+    },
+    "KR": {
+      "blocA": 43,
+      "blocB": 54,
+      "rollCalls": 1899
+    },
+    "MD": {
+      "blocA": 38,
+      "blocB": 45,
+      "rollCalls": 1861
+    },
+    "RO": {
+      "blocA": 47,
+      "blocB": 51,
+      "rollCalls": 1909
+    },
+    "KN": {
+      "blocA": 20,
+      "blocB": 63,
+      "rollCalls": 1589
+    },
+    "LC": {
+      "blocA": 19,
+      "blocB": 61,
+      "rollCalls": 1769
+    },
+    "SM": {
+      "blocA": 37,
+      "blocB": 45,
+      "rollCalls": 1907
+    },
+    "SA": {
+      "blocA": 19,
+      "blocB": 62,
+      "rollCalls": 1897
+    },
+    "SN": {
+      "blocA": 17,
+      "blocB": 63,
+      "rollCalls": 1816
+    },
+    "RS": {
+      "blocA": 26,
+      "blocB": 59,
+      "rollCalls": 1749
+    },
+    "SL": {
+      "blocA": 19,
+      "blocB": 63,
+      "rollCalls": 1731
+    },
+    "SG": {
+      "blocA": 20,
+      "blocB": 61,
+      "rollCalls": 1913
+    },
+    "SK": {
+      "blocA": 46,
+      "blocB": 50,
+      "rollCalls": 1903
+    },
+    "SI": {
+      "blocA": 44,
+      "blocB": 52,
+      "rollCalls": 1909
+    },
+    "ZA": {
+      "blocA": 17,
+      "blocB": 63,
+      "rollCalls": 1881
+    },
+    "LK": {
+      "blocA": 16,
+      "blocB": 64,
+      "rollCalls": 1889
+    },
+    "SD": {
+      "blocA": 14,
+      "blocB": 66,
+      "rollCalls": 1837
+    },
+    "SR": {
+      "blocA": 18,
+      "blocB": 62,
+      "rollCalls": 1792
+    },
+    "SE": {
+      "blocA": 41,
+      "blocB": 48,
+      "rollCalls": 1913
+    },
+    "CH": {
+      "blocA": 35,
+      "blocB": 46,
+      "rollCalls": 1905
+    },
+    "SY": {
+      "blocA": 9,
+      "blocB": 74,
+      "rollCalls": 1654
+    },
+    "TJ": {
+      "blocA": 15,
+      "blocB": 66,
+      "rollCalls": 1752
+    },
+    "TH": {
+      "blocA": 19,
+      "blocB": 62,
+      "rollCalls": 1913
+    },
+    "MK": {
+      "blocA": 42,
+      "blocB": 49,
+      "rollCalls": 1811
+    },
+    "TL": {
+      "blocA": 20,
+      "blocB": 64,
+      "rollCalls": 1671
+    },
+    "TG": {
+      "blocA": 18,
+      "blocB": 55,
+      "rollCalls": 1857
+    },
+    "TO": {
+      "blocA": 21,
+      "blocB": 45,
+      "rollCalls": 1344
+    },
+    "TT": {
+      "blocA": 19,
+      "blocB": 60,
+      "rollCalls": 1835
+    },
+    "TN": {
+      "blocA": 16,
+      "blocB": 60,
+      "rollCalls": 1857
+    },
+    "TR": {
+      "blocA": 39,
+      "blocB": 56,
+      "rollCalls": 1875
+    },
+    "UG": {
+      "blocA": 15,
+      "blocB": 64,
+      "rollCalls": 1759
+    },
+    "UA": {
+      "blocA": 46,
+      "blocB": 46,
+      "rollCalls": 1862
+    },
+    "AE": {
+      "blocA": 17,
+      "blocB": 61,
+      "rollCalls": 1905
+    },
+    "GB": {
+      "blocA": 54,
+      "blocB": 52,
+      "rollCalls": 1909
+    },
+    "TZ": {
+      "blocA": 16,
+      "blocB": 62,
+      "rollCalls": 1657
+    },
+    "UY": {
+      "blocA": 22,
+      "blocB": 58,
+      "rollCalls": 1901
+    },
+    "VU": {
+      "blocA": 23,
+      "blocB": 54,
+      "rollCalls": 1678
+    },
+    "VE": {
+      "blocA": 11,
+      "blocB": 70,
+      "rollCalls": 1033
+    },
+    "VN": {
+      "blocA": 17,
+      "blocB": 66,
+      "rollCalls": 1869
+    },
+    "YE": {
+      "blocA": 18,
+      "blocB": 61,
+      "rollCalls": 1881
+    },
+    "ZW": {
+      "blocA": 13,
+      "blocB": 73,
+      "rollCalls": 1818
+    },
+    "BZ": {
+      "blocA": 21,
+      "blocB": 61,
+      "rollCalls": 1740
+    },
+    "BT": {
+      "blocA": 17,
+      "blocB": 61,
+      "rollCalls": 1857
+    },
+    "BW": {
+      "blocA": 20,
+      "blocB": 61,
+      "rollCalls": 1717
+    },
+    "BF": {
+      "blocA": 17,
+      "blocB": 66,
+      "rollCalls": 1596
+    },
+    "CF": {
+      "blocA": 17,
+      "blocB": 60,
+      "rollCalls": 1440
+    },
+    "KP": {
+      "blocA": 9,
+      "blocB": 81,
+      "rollCalls": 1706
+    },
+    "CD": {
+      "blocA": 20,
+      "blocB": 56,
+      "rollCalls": 1129
+    },
+    "DM": {
+      "blocA": 22,
+      "blocB": 64,
+      "rollCalls": 677
+    },
+    "GA": {
+      "blocA": 16,
+      "blocB": 62,
+      "rollCalls": 1506
+    },
+    "GW": {
+      "blocA": 15,
+      "blocB": 61,
+      "rollCalls": 1511
+    },
+    "HT": {
+      "blocA": 24,
+      "blocB": 59,
+      "rollCalls": 1437
+    },
+    "IR": {
+      "blocA": 10,
+      "blocB": 70,
+      "rollCalls": 1810
+    },
+    "MW": {
+      "blocA": 22,
+      "blocB": 56,
+      "rollCalls": 1550
+    },
+    "NG": {
+      "blocA": 17,
+      "blocB": 61,
+      "rollCalls": 1793
+    },
+    "VC": {
+      "blocA": 21,
+      "blocB": 58,
+      "rollCalls": 1470
+    },
+    "WS": {
+      "blocA": 22,
+      "blocB": 58,
+      "rollCalls": 1496
+    },
+    "ST": {
+      "blocA": 18,
+      "blocB": 55,
+      "rollCalls": 622
+    },
+    "SC": {
+      "blocA": 20,
+      "blocB": 61,
+      "rollCalls": 1299
+    },
+    "SB": {
+      "blocA": 21,
+      "blocB": 58,
+      "rollCalls": 1548
+    },
+    "SO": {
+      "blocA": 14,
+      "blocB": 71,
+      "rollCalls": 968
+    },
+    "SS": {
+      "blocA": 17,
+      "blocB": 49,
+      "rollCalls": 860
+    },
+    "ES": {
+      "blocA": 44,
+      "blocB": 53,
+      "rollCalls": 1907
+    },
+    "SZ": {
+      "blocA": 18,
+      "blocB": 60,
+      "rollCalls": 1084
+    },
+    "TM": {
+      "blocA": 11,
+      "blocB": 71,
+      "rollCalls": 1289
+    },
+    "TV": {
+      "blocA": 26,
+      "blocB": 50,
+      "rollCalls": 1275
+    },
+    "UZ": {
+      "blocA": 16,
+      "blocB": 69,
+      "rollCalls": 1694
+    },
+    "ZM": {
+      "blocA": 17,
+      "blocB": 62,
+      "rollCalls": 1632
+    },
+    "GD": {
+      "blocA": 19,
+      "blocB": 62,
+      "rollCalls": 1377
+    },
+    "KG": {
+      "blocA": 13,
+      "blocB": 65,
+      "rollCalls": 1768
+    },
+    "GM": {
+      "blocA": 17,
+      "blocB": 64,
+      "rollCalls": 1635
+    },
+    "RW": {
+      "blocA": 16,
+      "blocB": 56,
+      "rollCalls": 1465
+    }
+  }
+}

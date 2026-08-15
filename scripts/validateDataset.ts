@@ -8,7 +8,22 @@ import {
 } from '../src/data/countryData.js';
 import ingestManifest from '../src/data/datasets/ingest_manifest.json';
 import ingestedSnapshot from '../src/data/datasets/ingested_snapshot.json';
+import historicalIndicatorSeries from '../src/data/datasets/historical_indicator_series.json';
 import rawWorldBankLatest from '../src/data/datasets/raw/world_bank_latest.json';
+import unGaVotes from '../src/data/datasets/un_ga_votes.json';
+import ofacSanctions from '../src/data/datasets/ofac_sanctions_registry.json';
+import ucdpConflict from '../src/data/datasets/ucdp_conflict.json';
+import { indicatorSourcePriority, relationshipDimensionSourcePriority } from '../src/data/pipeline/rules.js';
+import {
+  countryIso2,
+  WB_INDICATOR_BY_CODE,
+  WB_INDICATORS,
+  type WbIndicatorCode,
+} from '../src/lib/worldBankFetch.js';
+import {
+  HISTORICAL_SERIES_CODES,
+  type HistoricalSeriesArtifact,
+} from '../src/lib/historicalSeriesArtifact.js';
 
 const errors: string[] = [];
 const warnings: string[] = [];
@@ -39,22 +54,6 @@ const MIN_INDICATOR_CONFIDENCE_FLOOR = 0.35;
 const MIN_AVG_RELATIONSHIPS_PER_COUNTRY = 2;
 const MAX_ISOLATED_COUNTRIES = 0;
 
-const validateTimeline = () => {
-  const timeline = geopoliticalDatasetV1.scenarioTimeline;
-  ensure(timeline.length > 0, 'scenarioTimeline must not be empty');
-  const unique = new Set(timeline);
-  ensure(unique.size === timeline.length, 'scenarioTimeline contains duplicate periods');
-  for (let i = 0; i < timeline.length; i++) {
-    const period = timeline[i]!;
-    ensure(/^\d{4}$/.test(period), `scenarioTimeline period "${period}" must be YYYY`);
-    if (i > 0) {
-      const prev = Number.parseInt(timeline[i - 1]!, 10);
-      const current = Number.parseInt(period, 10);
-      ensure(current > prev, `scenarioTimeline must be strictly increasing (${timeline[i - 1]} -> ${period})`);
-    }
-  }
-};
-
 const validateSources = () => {
   const sources = geopoliticalDatasetV1.sources;
   const ids = new Set<string>();
@@ -66,6 +65,23 @@ const validateSources = () => {
     ensure(isIsoDate(source.accessedOn), `source "${source.id}" accessedOn must be YYYY-MM-DD`);
     if (ids.has(source.id)) addError(`duplicate source id "${source.id}"`);
     ids.add(source.id);
+  }
+};
+
+const validateSourceReferenceParity = () => {
+  const registeredSourceIds = new Set(geopoliticalDatasetV1.sources.map((source) => source.id));
+  const assertRegistered = (sourceId: string, owner: string) => {
+    ensure(registeredSourceIds.has(sourceId), `${owner} references unregistered source "${sourceId}"`);
+  };
+
+  for (const [indicator, sourceIds] of Object.entries(indicatorSourcePriority)) {
+    sourceIds.forEach((sourceId) => assertRegistered(sourceId, `indicator priority "${indicator}"`));
+  }
+  for (const [dimension, sourceIds] of Object.entries(relationshipDimensionSourcePriority)) {
+    sourceIds.forEach((sourceId) => assertRegistered(sourceId, `relationship priority "${dimension}"`));
+  }
+  for (const indicator of WB_INDICATORS) {
+    assertRegistered(indicator.provenanceSourceId, `World Bank indicator "${indicator.code}"`);
   }
 };
 
@@ -119,6 +135,7 @@ const validateCountries = () => {
 
 const validateRelationships = () => {
   const countries = new Set(geopoliticalDatasetV1.countries.map((country) => country.id));
+  const sourceIds = new Set(geopoliticalDatasetV1.sources.map((source) => source.id));
   const pairKeys = new Set<string>();
   const canonicalPairKey = (left: string, right: string) =>
     left < right ? `${left}::${right}` : `${right}::${left}`;
@@ -128,6 +145,12 @@ const validateRelationships = () => {
     ensure(edge.sourceCountryId !== edge.targetCountryId, `relationship cannot self-reference "${edge.sourceCountryId}"`);
     ensure(isIsoDate(edge.lastUpdated), `relationship "${edge.sourceCountryId}::${edge.targetCountryId}" lastUpdated must be YYYY-MM-DD`);
     ensure(edge.sourceIds.length > 0, `relationship "${edge.sourceCountryId}::${edge.targetCountryId}" must reference at least one source`);
+    for (const sourceId of edge.sourceIds) {
+      ensure(
+        sourceIds.has(sourceId),
+        `relationship "${edge.sourceCountryId}::${edge.targetCountryId}" references unknown source "${sourceId}"`,
+      );
+    }
     for (const value of [edge.cooperation, edge.hostility, edge.dependency, edge.deterrence]) {
       ensure(value >= 0 && value <= 100, `relationship "${edge.sourceCountryId}::${edge.targetCountryId}" has dimension outside [0,100]`);
     }
@@ -140,6 +163,7 @@ const validateRelationships = () => {
 type ManifestIndicator = {
   snapshotKey: string;
   code: string;
+  sourceId: string;
   label: string;
   coverageCount: number;
   missingCountryCount: number;
@@ -187,6 +211,14 @@ const validateIngestArtifacts = () => {
   const rawCodeSet = new Set(Object.keys(rawIndicators));
 
   for (const indicator of manifest.indicators) {
+    const definition = WB_INDICATOR_BY_CODE.get(indicator.code as WbIndicatorCode);
+    ensure(Boolean(definition), `ingest manifest references unknown World Bank indicator code "${indicator.code}"`);
+    if (definition) {
+      ensure(
+        indicator.sourceId === definition.provenanceSourceId,
+        `ingest manifest source mismatch for "${indicator.code}" (${indicator.sourceId} != ${definition.provenanceSourceId})`,
+      );
+    }
     const snapshotBucket = snapshot[indicator.snapshotKey];
     ensure(
       Boolean(snapshotBucket && typeof snapshotBucket === 'object'),
@@ -236,8 +268,42 @@ const validateIngestArtifacts = () => {
   }
 };
 
+const validateHistoricalSeriesArtifact = () => {
+  const artifact = historicalIndicatorSeries as unknown as HistoricalSeriesArtifact;
+  const expectedCodes = new Set<string>(HISTORICAL_SERIES_CODES);
+  const knownIsos = new Set(Object.values(countryIso2));
+
+  ensure(artifact.schema === 2, `historical series schema must be 2 (got ${artifact.schema})`);
+  ensure(isIsoDate(artifact.fetchedAt.slice(0, 10)), 'historical series fetchedAt must be ISO timestamp');
+  for (const code of Object.keys(artifact.indicators)) {
+    ensure(expectedCodes.has(code), `historical series contains unexpected indicator "${code}"`);
+  }
+
+  for (const code of HISTORICAL_SERIES_CODES) {
+    const byIso = artifact.indicators[code];
+    ensure(Boolean(byIso), `historical series missing indicator "${code}"`);
+    if (!byIso) continue;
+    ensure(
+      Object.keys(byIso).length >= 100,
+      `historical series coverage too low for "${code}" (${Object.keys(byIso).length} < 100)`,
+    );
+
+    for (const [iso, points] of Object.entries(byIso)) {
+      ensure(knownIsos.has(iso), `historical series "${code}" references untracked iso "${iso}"`);
+      let previousYear = '';
+      for (const point of points) {
+        const [year, value] = point;
+        ensure(/^\d{4}$/.test(year), `historical series "${code}" ${iso} has invalid year "${year}"`);
+        ensure(year > previousYear, `historical series "${code}" ${iso} years must be unique and ascending`);
+        ensure(Number.isFinite(value), `historical series "${code}" ${iso} ${year} value must be finite`);
+        previousYear = year;
+      }
+    }
+  }
+};
+
 const validateEnhancementRelease = () => {
-  ensure(datasetVersion === '0.14.0', `datasetVersion must be 0.14.0 for this release (found ${datasetVersion})`);
+  ensure(datasetVersion === '0.15.0', `datasetVersion must be 0.15.0 for this release (found ${datasetVersion})`);
 
   const v10CoveragePct = Math.round((datasetTelemetry.v10Coverage / countryProfiles.length) * 1000) / 10;
   const v11CoveragePct = Math.round((datasetTelemetry.v11Coverage / countryProfiles.length) * 1000) / 10;
@@ -281,13 +347,175 @@ const validateEnhancementRelease = () => {
   );
 };
 
+type UnGaVotesArtifact = {
+  fetchedAt: string;
+  sourceTitle: string;
+  sourceUrl: string;
+  anchors: { blocA: string; blocB: string };
+  sessions: string[];
+  perCountry: Record<string, { blocA: number; blocB: number; rollCalls: number }>;
+};
+
+type OfacRegistryArtifact = {
+  fetchedAt: string;
+  sourceTitle: string;
+  sourceUrl: string;
+  entryTotal: number;
+  perCountry: Record<
+    string,
+    { entryCount: number; programCount: number; topPrograms: Array<{ program: string; count: number }> }
+  >;
+};
+
+type UcdpConflictArtifact = {
+  fetchedAt: string;
+  sourceTitle: string;
+  sourceUrl: string;
+  version: string;
+  window: { fromYear: number; throughYear: number };
+  perCountry: Record<
+    string,
+    {
+      active: boolean;
+      lastYear: number;
+      lastYearStateBased: boolean;
+      lastYearNonState: boolean;
+      lastYearOneSided: boolean;
+      deathsLastYear: number;
+      deathsPriorYear: number;
+      totalDeathsInWindow: number;
+      stateBased: boolean;
+      nonState: boolean;
+      oneSided: boolean;
+    }
+  >;
+};
+
+const validatePoliticalRegistries = () => {
+  const votes = unGaVotes as UnGaVotesArtifact;
+  const registry = ofacSanctions as OfacRegistryArtifact;
+  const conflict = ucdpConflict as UcdpConflictArtifact;
+  const knownIsos = new Set(Object.values(countryIso2));
+
+  ensure(isIsoDate(votes.fetchedAt.slice(0, 10)), 'un_ga_votes.fetchedAt must be ISO timestamp');
+  ensure(votes.sourceTitle.length > 0 && votes.sourceUrl.length > 0, 'un_ga_votes source metadata must be non-empty');
+  ensure(/^https?:\/\//.test(votes.sourceUrl), 'un_ga_votes.sourceUrl must be absolute');
+  ensure(votes.anchors.blocA.length > 0 && votes.anchors.blocB.length > 0, 'un_ga_votes anchors must be non-empty');
+  ensure(votes.sessions.length >= 4, `un_ga_votes sessions too few (${votes.sessions.length} < 4)`);
+  for (const session of votes.sessions) {
+    ensure(/^\d{4}$/.test(session), `un_ga_votes session "${session}" must be YYYY`);
+  }
+  const recentYear = Math.max(...votes.sessions.map((session) => Number(session)));
+  ensureWarn(
+    currentYear - recentYear <= 4,
+    `un_ga_votes latest session is stale (${recentYear} < ${currentYear - 4})`,
+  );
+  ensure(
+    Object.keys(votes.perCountry).length >= 100,
+    `un_ga_votes country coverage too low (${Object.keys(votes.perCountry).length} < 100)`,
+  );
+  const untrackedVoteIsos: string[] = [];
+  for (const [iso, entry] of Object.entries(votes.perCountry)) {
+    // The official CSV covers all UN members; only a subset is in our map.
+    if (!knownIsos.has(iso)) untrackedVoteIsos.push(iso);
+    ensure(/^[A-Z]{2}$/.test(iso), `un_ga_votes iso "${iso}" must be uppercase ISO-2`);
+    ensure(entry.blocA >= 0 && entry.blocA <= 100, `un_ga_votes "${iso}" blocA out of [0,100]`);
+    ensure(entry.blocB >= 0 && entry.blocB <= 100, `un_ga_votes "${iso}" blocB out of [0,100]`);
+    ensure(entry.rollCalls >= 12, `un_ga_votes "${iso}" rollCalls below floor (${entry.rollCalls})`);
+  }
+  ensureWarn(
+    untrackedVoteIsos.length === 0,
+    `un_ga_votes includes ${untrackedVoteIsos.length} valid UN members outside the ${knownIsos.size}-country map ` +
+      `(expected full-UN coverage; sample: ${untrackedVoteIsos.slice(0, 8).join(', ')})`,
+  );
+
+  ensure(isIsoDate(registry.fetchedAt.slice(0, 10)), 'ofac_sanctions_registry.fetchedAt must be ISO timestamp');
+  ensure(registry.sourceTitle.length > 0 && registry.sourceUrl.length > 0, 'ofac registry source metadata must be non-empty');
+  ensure(/^https?:\/\//.test(registry.sourceUrl), 'ofac registry sourceUrl must be absolute');
+  ensure(registry.entryTotal > 0, `ofac registry entryTotal must be > 0 (got ${registry.entryTotal})`);
+  ensure(
+    Object.keys(registry.perCountry).length >= 10,
+    `ofac registry country coverage too low (${Object.keys(registry.perCountry).length} < 10)`,
+  );
+  const untrackedOfacIsos: string[] = [];
+  for (const [iso, entry] of Object.entries(registry.perCountry)) {
+    // A country can be sanctioned without being part of our coverage map
+    // (e.g. Nicaragua); the window just won't surface it.
+    if (!knownIsos.has(iso)) untrackedOfacIsos.push(iso);
+    ensure(/^[A-Z]{2}$/.test(iso), `ofac registry iso "${iso}" must be uppercase ISO-2`);
+    ensure(entry.entryCount > 0, `ofac registry "${iso}" entryCount must be > 0`);
+    ensure(entry.programCount > 0, `ofac registry "${iso}" programCount must be > 0`);
+    ensure(entry.topPrograms.length >= 1, `ofac registry "${iso}" topPrograms must be non-empty`);
+    ensure(
+      entry.programCount >= entry.topPrograms.length,
+      `ofac registry "${iso}" programCount (${entry.programCount}) below topPrograms length (${entry.topPrograms.length})`,
+    );
+    const programNames = new Set<string>();
+    for (const top of entry.topPrograms) {
+      ensure(top.program.length > 0, `ofac registry "${iso}" topProgram name must be non-empty`);
+      ensure(top.count > 0, `ofac registry "${iso}" topProgram "${top.program}" count must be > 0`);
+      ensure(
+        top.count <= registry.entryTotal,
+        `ofac registry "${iso}" topProgram "${top.program}" count (${top.count}) exceeds artifact entryTotal (${registry.entryTotal})`,
+      );
+      ensure(!programNames.has(top.program), `ofac registry "${iso}" duplicate topProgram "${top.program}"`);
+      programNames.add(top.program);
+    }
+  }
+  ensureWarn(
+    untrackedOfacIsos.length === 0,
+    `ofac registry includes ${untrackedOfacIsos.length} valid countries outside the ${knownIsos.size}-country map ` +
+      `(sample: ${untrackedOfacIsos.slice(0, 8).join(', ')})`,
+  );
+
+  ensure(isIsoDate(conflict.fetchedAt.slice(0, 10)), 'ucdp_conflict.fetchedAt must be ISO timestamp');
+  ensure(conflict.sourceTitle.length > 0 && conflict.sourceUrl.length > 0, 'ucdp source metadata must be non-empty');
+  ensure(/^https?:\/\//.test(conflict.sourceUrl), 'ucdp sourceUrl must be absolute');
+  ensure(conflict.version.length > 0, 'ucdp version must be non-empty');
+  ensure(Number.isInteger(conflict.window.fromYear) && Number.isInteger(conflict.window.throughYear), 'ucdp window years must be integers');
+  ensure(
+    conflict.window.fromYear >= 1989 && conflict.window.throughYear >= conflict.window.fromYear,
+    `ucdp window invalid (${conflict.window.fromYear}–${conflict.window.throughYear})`,
+  );
+  ensure(
+    Object.keys(conflict.perCountry).length >= 100,
+    `ucdp conflict country coverage too low (${Object.keys(conflict.perCountry).length} < 100)`,
+  );
+  for (const [iso, entry] of Object.entries(conflict.perCountry)) {
+    ensure(knownIsos.has(iso), `ucdp conflict references unknown iso "${iso}"`);
+    ensure(entry.lastYear >= conflict.window.fromYear && entry.lastYear <= conflict.window.throughYear,
+      `ucdp conflict "${iso}" lastYear out of window (${entry.lastYear})`);
+    ensure(entry.deathsLastYear >= 0 && entry.totalDeathsInWindow >= 0, `ucdp conflict "${iso}" negative deaths`);
+    if (entry.totalDeathsInWindow === 0) {
+      ensure(
+        !entry.active && entry.deathsLastYear === 0,
+        `ucdp conflict "${iso}" zero window deaths but active flag / deaths set`,
+      );
+    } else {
+      ensure(entry.deathsLastYear <= entry.totalDeathsInWindow, `ucdp conflict "${iso}" window deaths inconsistent`);
+    }
+    // active = last-year activity; lastYear* flags mirror the final year exactly.
+    ensure(
+      entry.active ===
+        (entry.deathsLastYear > 0 || entry.lastYearStateBased || entry.lastYearNonState || entry.lastYearOneSided),
+      `ucdp conflict "${iso}" active flag disagrees with last-year signals`,
+    );
+    if (entry.active) {
+      ensure(entry.deathsLastYear > 0 || entry.lastYearStateBased || entry.lastYearNonState || entry.lastYearOneSided,
+        `ucdp conflict "${iso}" active without any last-year signal`);
+    }
+  }
+};
+
 const main = () => {
-  validateTimeline();
   validateSources();
+  validateSourceReferenceParity();
   validateCountries();
   validateRelationships();
   validateIngestArtifacts();
+  validateHistoricalSeriesArtifact();
   validateEnhancementRelease();
+  validatePoliticalRegistries();
 
   if (errors.length > 0) {
     console.error('Dataset validation failed:');
@@ -301,7 +529,7 @@ const main = () => {
   }
 
   console.log(
-    `Dataset validation passed (${geopoliticalDatasetV1.countries.length} countries, ${geopoliticalDatasetV1.relationships.length} relationships, ${geopoliticalDatasetV1.scenarioTimeline.length} periods, release ${enhancementReleaseTelemetry.releaseTag}).`,
+    `Dataset validation passed (${geopoliticalDatasetV1.countries.length} countries, ${geopoliticalDatasetV1.relationships.length} relationships, release ${enhancementReleaseTelemetry.releaseTag}).`,
   );
 };
 

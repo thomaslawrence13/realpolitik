@@ -11,6 +11,7 @@ export interface IndicatorObservation<K extends IndicatorKey = IndicatorKey> {
   indicator: K;
   value: CountryIndicators[K];
   observedAt: string;
+  retrievedAt?: string;
   method: ObservationMethod;
   confidence: number;
 }

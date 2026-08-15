@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import type { EconomicStats, DatasetSource, SimulatedCountry, CountryIndicators } from '../../types';
-import { MetricTelemetryTag, getIndicatorTelemetry } from './shared';
+import type { EconomicStats, DatasetSource, CountryAssessment, CountryIndicators } from '../../types';
+import { MetricProvenanceTag, MetricTelemetryTag, getIndicatorTelemetry } from './shared';
 
 /** Inline source attribution tag used throughout the Statistics tab. */
 export function InlineSourceTag({ sources, ids }: { sources: DatasetSource[]; ids: string[] }) {
@@ -29,7 +29,7 @@ export function InlineSourceTag({ sources, ids }: { sources: DatasetSource[]; id
 interface EconomicStatsSectionProps {
   econ: EconomicStats;
   sources: DatasetSource[];
-  selected: SimulatedCountry;
+  selected: CountryAssessment;
 }
 
 /**
@@ -54,6 +54,7 @@ export function EconomicStatsSection({ econ, sources, selected }: EconomicStatsS
             <strong className="profile-stat-value">${econ.gdpBillionUsd.toLocaleString()}B</strong>
           </div>
           <span className="profile-stat-sub">nominal USD</span>
+          <MetricProvenanceTag entry={econ.provenance?.gdpBillionUsd} sources={sources} />
         </div>
         <div className="profile-stat">
           <span className="profile-stat-label">GDP per capita</span>
@@ -61,6 +62,7 @@ export function EconomicStatsSection({ econ, sources, selected }: EconomicStatsS
             <strong className="profile-stat-value">${econ.gdpPerCapitaUsd.toLocaleString()}</strong>
           </div>
           <span className="profile-stat-sub">nominal USD</span>
+          <MetricProvenanceTag entry={econ.provenance?.gdpPerCapitaUsd} sources={sources} />
         </div>
         <div className="profile-stat">
           <span className="profile-stat-label">GDP growth</span>
@@ -73,6 +75,7 @@ export function EconomicStatsSection({ econ, sources, selected }: EconomicStatsS
             </strong>
           </div>
           <span className="profile-stat-sub">annual</span>
+          <MetricProvenanceTag entry={econ.provenance?.gdpGrowthPct} sources={sources} />
         </div>
         <div className="profile-stat">
           <span className="profile-stat-label">Inflation</span>
@@ -85,6 +88,7 @@ export function EconomicStatsSection({ econ, sources, selected }: EconomicStatsS
             </strong>
           </div>
           <span className="profile-stat-sub">CPI annual</span>
+          <MetricProvenanceTag entry={econ.provenance?.inflationPct} sources={sources} />
         </div>
         <div className="profile-stat">
           <span className="profile-stat-label">Trade / GDP</span>
@@ -92,6 +96,7 @@ export function EconomicStatsSection({ econ, sources, selected }: EconomicStatsS
             <strong className="profile-stat-value">{econ.tradeGdpPct}%</strong>
           </div>
           <span className="profile-stat-sub">openness</span>
+          <MetricProvenanceTag entry={econ.provenance?.tradeGdpPct} sources={sources} />
           <MetricTelemetryTag entry={tradeTelemetry} fallbackLabel="Curated economic snapshot" />
         </div>
       </div>

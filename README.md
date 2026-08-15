@@ -1,29 +1,26 @@
 # realpolitik
 
-Realpolitik is a browser-based prototype for an interactive 2D geopolitical map. The current build focuses on showing estimated alignment likelihoods, escalation risk, transparent assumptions, inspectable country-to-country relationships, and editable scenario shocks rather than claiming deterministic predictions.
+Realpolitik is a browser-based geopolitical statistics dashboard. It tracks 134 states using a versioned, source-attributed dataset of economic, military, diplomatic, and demographic indicators — enriched at runtime with live World Bank series. The UI surfaces observed state (risk stress index, current diplomatic alignment, economic and military snapshots) with **data confidence** (source coverage, recency, evidence class) rather than probabilistic forecasts.
 
-## Current prototype
+## What it is
 
 - Interactive 2D world map rendered in the browser
-- Clickable parameterized countries with a detail panel
-- Versioned country dataset with source attribution, source coverage, and last-updated metadata
+- Clickable parameterized countries with a detail panel (economy, military, relationships, indicator telemetry)
+- Versioned country dataset with source attribution, coverage, and last-updated metadata
 - Relationship graph edges for cooperation, hostility, dependency, and deterrence
-- Scenario year slider with probability-based simulation updates driven by structured country indicators
-- Scenario editor for sanctions, treaty changes, elections, invasions, and coups
-- Baseline-vs-edited comparison with saved scenario history and weight-set presets
-- Filters for alliance network, trade exposure, military treaties, conflicts, sanctions, regime type, and risk level
-- Event feed and methodology panel to show why the model is making each estimate
+- Filters for alliance network, trade exposure, military treaties, conflict pressure, sanctions, regime type, and risk level
+- Risk choropleth built from observed indicators, relationships, and structural vulnerabilities — no model layer
+- Alignment classification read deterministically from current defense pacts, alliance networks, and UN voting records
+- Confidence is the information-quality score (source coverage, completeness, recency, evidence class)
+- Live World Bank enrichment (nominal GDP, GDP per capita, GDP growth, inflation, trade openness, military burden/spend, governance, and unemployment) with diagnostics and staleness surfacing
+- Methodology panel: provenance, ingest telemetry, information-quality scoring, runtime diagnostics
+- Movers panel: observed series deltas when live enrichment updates the static snapshot
 
-## Important framing
+## What it intentionally is not
 
-This project should not claim to be a 100% accurate predictor of future wars. The prototype uses a versioned but still illustrative dataset to demonstrate the product direction:
-
-- outputs are **estimated alignment likelihoods**
-- confidence is shown explicitly
-- assumptions and relationship inputs are visible in the UI
-- source coverage and last-updated timestamps are surfaced
-- saved scenarios keep alternative weight sets and shocks inspectable
-- unparameterized countries remain visible on the map but neutral until a fuller data pipeline exists
+- No probability forecasts, no prediction of future alignment or war, no timeline scrubbing
+- No scenario/shock editors or "what-if" hypotheticals
+- Alignment = observed current posture; confidence = evidence behind the numbers
 
 ## Development
 
@@ -35,133 +32,49 @@ npm run dev
 ## Production build
 
 ```bash
-npm run build
+npm run build   # tsc typecheck + vite build
 ```
 
-## Validation
+## Data pipeline
+
+- `src/data/datasets/v1.ts` (plus v10/v11 enhancements): versioned curated dataset
+- `src/data/pipeline/*` — ingest reconciliation + runtime enrichment adapters
+- `src/data/worldBankClient.ts` — browser-side World Bank client (used only as fallback)
+- `src/lib/worldBankFetch.ts` — runtime-agnostic fetch/selection shared by browser, ingest, and worker
+- `npm run ingest` — re-fetch World Bank artifacts from the public API
+- `npm run validate:dataset` — dataset integrity and release-acceptance gates
+- `npm run freshness:check` — staleness gate (curated layer, ingest manifest, country records)
+
+Observed timestamps are real: API-backed metrics keep the source's selected observation year and
+the separate retrieval timestamp. A 2024/2025 observation retrieved in 2026 is therefore shown as
+2024/2025, not relabeled as current. Curated snapshot providers carry each country record's
+`lastUpdated` stamp rather than re-stamping "today", so staleness telemetry ages honestly.
+
+## Backend runtime (Cloudflare Worker)
+
+A Worker serves the live World Bank state so browsers do not hammer the API directly:
+
+- `GET /api/state` — gzip JSON payload of the latest indicator values (KV-backed), or an empty
+  `refreshedAt: null` payload before the first cron run. The app falls back to a direct fetch then.
+- `GET /api/health` — refresh timestamp + indicator coverage diagnostics.
+- Cron `17 3 * * *` — refreshes all 10 World Bank indicators into KV; on total failure the previous
+  state is kept untouched (never clobbered by empty data).
+
+One-time setup before `npm run deploy`:
 
 ```bash
-npm test
+npx wrangler kv namespace create realpolitik-state
+# paste the returned id into wrangler.jsonc → kv_namespaces[0].id
 ```
 
-`npm test` now runs unit tests and then the production build.
+Local: `npm run worker:dev` (miniflare serves assets + API + local KV).
+CI: `npm run worker:check` typechecks the worker against `@cloudflare/workers-types`.
 
-## Data-backed prototype milestone
+## CI
 
-This phase freezes the Phase 1 UI contract while moving the internals to a more durable product structure:
+- `.github/workflows/ci.yml` — tests, build, worker typecheck, dataset validation, and freshness gate on every push/PR
+- `.github/workflows/data-refresh.yml` — nightly World Bank re-fetch; opens a refresh PR when artifacts change
 
-- versioned dataset delivery under `src/data/datasets`
-- country data/query layer under `src/data`
-- simulation logic isolated from React in `src/simulation.ts`
-- inspectable relationship overlays and source attribution in the UI
-- scenario inputs and saved scenario history layered on top of the same structured data model
+## License
 
-## v11 data enhancement
-
-This release significantly expands the analytical surface of the model:
-
-- **Coverage backfill** — demographics, energy posture, top trade partners and
-  geographic centroids are now populated for the full set of ~150 parameterised
-  states (previously ~45 G20-and-strategic actors).
-- **Six new analytical dimensions** for ~50 major actors:
-  - `cyber` — offensive/defensive capability tier, internet freedom, data-localization posture
-  - `fiscal` — sovereign rating tier, external debt %GDP, FX reserves cushion
-  - `foodWater` — food import dependence, water stress index, arable land per capita
-  - `diplomatic` — UN voting alignment with bloc anchors, defense pacts, IGO memberships
-  - `criticalMinerals` — per-mineral producer / processor / reserves roles with global share
-  - `softPower` — composite reach score, inbound students, language reach
-- **Relationship-graph derivation** — the ~170 hand-curated edges in v1 are
-  augmented at load time with derived edges sourced from top-trade-partner
-  shares, shared defense pacts, IGO memberships, and opposing-bloc anchors.
-  Derived edges are tagged `sourceId="v11-derived"` and ranked below explicit
-  edges in pipeline reconciliation.
-- **Simulation overlays** — the simulation consumes the new dimensions as
-  bounded modifiers: cyber offensive → deterrence; cyber defensive → sanctions
-  damping; fiscal distress / FX cushion → cohesion; food/water stress → cohesion
-  and sanctions exposure; UN voting alignment → bloc-probability tilt; defense
-  pacts → military commitments and deterrence boost.
-- **Seven new event templates** in `src/data/eventLibrary.ts`: systemic cyber
-  attack, semiconductor supply shock, Hormuz/Suez closure, water-stress conflict,
-  frontier-market default cascade, UN bloc-vote realignment, and a coordinated
-  rare-earth/cobalt producer cartel.
-- **Dataset version bumped to `0.11.0`** with telemetry exposed via
-  `datasetTelemetry` for the methodology panel.
-
-## v12 information quality enhancement
-
-- **Information quality scoring for every country** — each record now receives an
-  `informationScore` (0–100) composed of:
-  - source-coverage contribution
-  - dimensional completeness across macro/military + v10/v11 expansions
-  - recency penalties based on `lastUpdated`
-- **Actionable quality telemetry** — `informationQualityTelemetry` surfaces:
-  - average score
-  - stale-country count
-  - high-quality/low-quality counts
-  - top and weakest information cohorts for prioritised data-refresh work
-- **UI integration** — the methodology drawer now renders this telemetry summary
-  and highlights top priority refresh targets directly in-product.
-- **Remediation dashboard cards** — weakest countries are shown with score,
-  source coverage, completeness, staleness age, and top missing dimensions to
-  support triage without leaving the app.
-- **Per-country quality traces** — country profiles now include a computed
-  `dataQuality` payload with per-indicator confidence, staleness flags, and
-  explicit degraded reasons (missing enrichments, low coverage, stale updates).
-- **Dataset version bumped to `0.12.0`**.
-
-## Information quality contract baseline
-
-The quality system is now governed by a versioned contract (`iq-contract-v1.0.0`) with:
-
-- a single scoring version (`iq-score-v2.0.0`) and explicit score weights
-- a shared stale/coverage/confidence threshold definition used by pipeline + UI
-- output inventory documenting which telemetry is static-at-build vs runtime-live
-- KPI targets and regression-budget checks written to `src/data/datasets/quality_report.json`
-
-Generate the machine-readable quality report with:
-
-```bash
-npm run quality:report
-```
-
-## Data Enhancement Pipeline
-
-The project includes an off-main-thread data ingestion and backtesting pipeline to continuously refine the simulation weights based on real-world reference points.
-
-### Ingestion
-
-The ingestion workflow now executes locally and writes three auditable artifacts under `src/data/datasets`:
-
-- `ingested_snapshot.json` — normalized World Bank indicator snapshot used by the pipeline
-- `ingest_manifest.json` — coverage, missingness, and newest-observation metadata per indicator
-- `raw/world_bank_latest.json` — raw provider payload preserved for audit/debugging
-
-Current automated coverage is focused on World Bank series already used by the app: military expenditure, trade openness, GDP growth, inflation, political stability, rule of law, and unemployment.
-
-```bash
-npm run ingest
-```
-
-### Backtesting & Calibration
-
-To measure the simulation engine's accuracy against known historical alignments and calibrate risk/confidence weightings, use the backtesting script:
-
-```bash
-npm run backtest
-```
-
-To regenerate only the deterministic historical fixture used by backtesting:
-
-```bash
-npm run backtest:fixture
-```
-
-To run dataset integrity checks (timeline, country/source references, relationship graph):
-
-```bash
-npm run validate:dataset
-```
-
-### Scenario State
-
-Users can now pin side-by-side scenario comparisons within the right inspector panel to visually identify alignment deltas, risk spikes, and structural shifts caused by user-configured model overrides. Scenarios are exportable/importable securely as independent `.json` blobs to preserve historical snapshots.
+ISC

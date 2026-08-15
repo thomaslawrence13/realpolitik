@@ -1,4 +1,4 @@
-import type { CountryDataQuality, CountryIndicators, CountryProfile, IndicatorTelemetry } from '../../types';
+import type { CountryDataQuality, CountryIndicators, CountryProfile, IndicatorTelemetry, CoverageMetrics } from '../../types';
 import { indicatorQualityRules, indicatorSourcePriority, modelIndicatorKeys } from './rules';
 import { isValidIndicatorValue } from './transformers';
 import type { IndicatorKey, IndicatorObservation } from './types';
@@ -86,9 +86,14 @@ export const enrichCountryWithObservations = (
   const telemetry: IndicatorTelemetry[] = [];
   const degradedReasons: string[] = [];
 
-  let latestTimestamp = toDate(profile.lastUpdated)?.getTime() ?? Date.now();
+  let latestTimestamp = -Infinity;
   let coverageTotal = 0;
   let coveragePresent = 0;
+  let observedCoverage = 0;
+  let freshCoverage = 0;
+  let fallbackCoverage = 0;
+  let staleCoverage = 0;
+  let lowConfidenceCoverage = 0;
 
   for (const indicator of modelIndicatorKeys) {
     const rule = indicatorQualityRules[indicator];
@@ -112,6 +117,7 @@ export const enrichCountryWithObservations = (
     const confidence = normalizeConfidence(selected.confidence);
     const ageDays = daysOld(selected.observedAt);
     const stale = ageDays != null && ageDays > rule.staleAfterDays;
+    const evidenceClass = classifyEvidence(selected.method, stale, confidence, rule.minimumConfidence);
 
     if (stale) {
       degradedReasons.push(
@@ -128,26 +134,47 @@ export const enrichCountryWithObservations = (
       indicator,
       sourceId: selected.sourceId,
       observedAt: selected.observedAt,
+      retrievedAt: selected.retrievedAt,
       confidence,
       stale,
       method: selected.method,
-      evidenceClass: classifyEvidence(selected.method, stale, confidence, rule.minimumConfidence),
+      evidenceClass,
     });
 
-    if (rule.includeInCoverage) coveragePresent += 1;
+    if (rule.includeInCoverage) {
+      coveragePresent += 1;
+      if (!stale) freshCoverage += 1;
+      if (evidenceClass === 'observed') observedCoverage += 1;
+      if (evidenceClass === 'fallback') fallbackCoverage += 1;
+      if (stale) staleCoverage += 1;
+      if (confidence < rule.minimumConfidence) lowConfidenceCoverage += 1;
+    }
 
     const ts = toDate(selected.observedAt)?.getTime();
     if (ts != null && ts > latestTimestamp) latestTimestamp = ts;
   }
 
   const computedSourceCoverage = coverageTotal === 0 ? 0 : Math.round((coveragePresent / coverageTotal) * 100);
-  const computedLastUpdated = new Date(latestTimestamp).toISOString().slice(0, 10);
+  const fallbackTimestamp = toDate(profile.lastUpdated)?.getTime() ?? Date.now();
+  const computedLastUpdated = new Date(Number.isFinite(latestTimestamp) ? latestTimestamp : fallbackTimestamp)
+    .toISOString()
+    .slice(0, 10);
+  const toPct = (count: number) => coverageTotal === 0 ? 0 : Math.round((count / coverageTotal) * 100);
+  const coverage: CoverageMetrics = {
+    valuePct: computedSourceCoverage,
+    observedPct: toPct(observedCoverage),
+    freshPct: toPct(freshCoverage),
+    fallbackPct: toPct(fallbackCoverage),
+    stalePct: toPct(staleCoverage),
+    lowConfidencePct: toPct(lowConfidenceCoverage),
+  };
 
   const dataQuality: CountryDataQuality = {
     computedSourceCoverage,
     computedLastUpdated,
     degradedReasons: dedupeReasons(degradedReasons),
     indicators: telemetry.sort((left, right) => left.indicator.localeCompare(right.indicator)),
+    coverage,
   };
 
   return {

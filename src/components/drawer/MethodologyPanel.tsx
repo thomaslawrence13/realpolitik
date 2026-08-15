@@ -31,6 +31,9 @@ export function MethodologyPanel({
     succeededIndicators: number;
     failedIndicators: number;
     failedCodes: string[];
+    latestObservedYear?: string | null;
+    source?: 'backend' | 'direct';
+    refreshedAt?: string | null;
   } | null;
 }) {
   const priorityCountries = informationQuality.weakestInformationCountries.slice(0, 8);
@@ -71,15 +74,16 @@ export function MethodologyPanel({
     .filter((entry): entry is { version: string; scope: string; detail: string } => Boolean(entry))
     .reverse();
   const methodologyFormulas = [
-    'Tier thresholds: low/medium/high are mapped through pipeline transforms before model scoring.',
+    'Tier thresholds: low/medium/high are mapped through pipeline transforms before assessment scoring.',
     'Cohesion transform = baseline + GDP growth uplift − inflation penalty − unemployment penalty (bounded to 0–100).',
-    'Risk/pressure and confidence are model-derived from indicator stack + relationship dimensions + period offset.',
-    'Historical trend baselines use period means of earlier observations, then compare current period versus that baseline.',
+    'Risk stress index = baseline risk + structural vulnerabilities (external-debt pressure, water stress) + relationship tension (hostility, deterrence), clamped to 8–97.',
+    'Confidence = data quality score: source coverage, dimensional completeness, recency, evidence class, indicator confidence.',
+    'Alignment = deterministic reading of current defense pacts, alliance network, and UN General Assembly voting delta — no probability model.',
   ];
   const knownLimitations = [
     'Observed coverage varies by indicator and country; low-coverage or stale metrics trigger fallback evidence classes.',
     'Some relationship edges are derived rather than directly observed and are tagged lower confidence.',
-    'Simulation outputs are analytical model outputs and should not be interpreted as deterministic forecasts.',
+    'Assessment outputs describe the observed present; they are not forecasts of future alignment or conflict.',
   ];
   const staticRuntimeScoreDelta =
     Math.round(
@@ -101,6 +105,17 @@ export function MethodologyPanel({
         {liveDataDiagnostics && liveDataDiagnostics.failedIndicators > 0 && (
           <p className="methodology-telemetry-line methodology-telemetry-line-tight">
             Live ingest impact: {liveDataDiagnostics.failedIndicators}/{liveDataDiagnostics.totalIndicators} live indicators failed ({liveDataDiagnostics.failedCodes.join(', ')}).
+          </p>
+        )}
+        {liveDataDiagnostics?.source && (
+          <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+            Live path: {liveDataDiagnostics.source === 'backend' ? 'backend /api/state' : 'direct World Bank API'}
+            {liveDataDiagnostics.refreshedAt ? ` · server refresh ${liveDataDiagnostics.refreshedAt.slice(0, 16).replace('T', ' ')} UTC` : ''}
+          </p>
+        )}
+        {liveDataDiagnostics?.latestObservedYear && (
+          <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+            Latest published World Bank observation: {liveDataDiagnostics.latestObservedYear} · retrieval time is tracked separately.
           </p>
         )}
       </section>
@@ -170,7 +185,7 @@ export function MethodologyPanel({
                 <span className="methodology-priority-score">{country.informationScore}</span>
               </header>
               <p>
-                Coverage {country.sourceCoverage}% · Completeness {Math.round(country.completeness * 100)}%
+                Fresh coverage {country.sourceCoverage}% · Completeness {Math.round(country.completeness * 100)}%
                 {country.stale ? ` · ${country.yearsStale}y stale` : ''} · Fallback {country.fallbackIndicatorCount} · Low confidence {country.lowConfidenceIndicatorCount}
               </p>
               {country.gaps.length > 0 && (

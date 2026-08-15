@@ -3,7 +3,7 @@ import type { RelationshipEdge } from '../../types';
 import type { RelationshipObservation } from './types';
 import { tierToScore } from './rules';
 
-const nowIsoDate = () => new Date().toISOString().slice(0, 10);
+const maxIsoDate = (left: string, right: string) => (left >= right ? left : right);
 
 /** Pick the best matching source for an edge from available sources, falling back to the first listed.
  *  Returns 'unknown' only when the edge has no sourceIds at all — callers should treat this as a
@@ -71,13 +71,13 @@ export const buildDerivedRelationshipObservations = (
   edges: RelationshipEdge[],
 ): RelationshipObservation[] => {
   const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
-  const observedAt = new Date().toISOString().slice(0, 10);
   const observations: RelationshipObservation[] = [];
 
   for (const edge of edges) {
     const a = profileById.get(edge.sourceCountryId);
     const b = profileById.get(edge.targetCountryId);
     if (!a || !b) continue;
+    const observedAt = maxIsoDate(a.lastUpdated, b.lastUpdated);
 
     const aConflict = tierScore(a.indicators.conflictPressure);
     const bConflict = tierScore(b.indicators.conflictPressure);
@@ -150,7 +150,6 @@ export const buildTradePartnerDependencyObservations = (
   profiles: CountryProfile[],
   edges: RelationshipEdge[],
 ): RelationshipObservation[] => {
-  const observedAt = nowIsoDate();
   const observations: RelationshipObservation[] = [];
 
   // Restrict observations to country pairs that already have an edge in the graph,
@@ -178,7 +177,7 @@ export const buildTradePartnerDependencyObservations = (
         targetCountryId: partner.countryId,
         dimension: 'dependency',
         value: dependency,
-        observedAt,
+        observedAt: profile.lastUpdated,
         method: 'derived',
         confidence: 0.78,
       });

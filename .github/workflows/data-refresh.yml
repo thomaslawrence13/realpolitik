@@ -1,0 +1,69 @@
+name: data-refresh
+
+on:
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Re-fetch World Bank artifacts
+        run: npm run ingest
+      - name: Re-fetch political registries
+        run: npm run refresh:political
+      - name: Re-fetch UCDP conflict artifact
+        run: npm run refresh:ucdp
+      - name: Verify gate before proposing anything
+        run: npm run validate:dataset && npm run freshness:check
+      - name: Open refresh PR when artifacts changed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { execSync } = require('node:child_process');
+            const changed = execSync('git status --porcelain').toString().trim().split('\n').filter(Boolean);
+            if (changed.length === 0) {
+              console.log('No data artifact changes — nothing to do.');
+              return;
+            }
+            const branch = `pipeline-refresh-${new Date().toISOString().slice(0, 10)}`;
+            execSync('git config user.name "refresh bot"');
+            execSync('git config user.email "actions@users.noreply.github.com"');
+            execSync(`git checkout -b ${branch}`);
+            execSync('git add src/data/');
+            execSync(`git commit -m "data: refresh ingest + registry artifacts"`);
+            execSync(`git push origin ${branch}`);
+            const existing = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: branch,
+              state: 'open',
+            });
+            if (existing.data.length > 0) {
+              console.log(`PR already open for ${branch}.`);
+              return;
+            }
+            await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Data refresh ${new Date().toISOString().slice(0, 10)}`,
+              head: branch,
+              base: 'main',
+              body: `Automated ingest + registry refresh run changed ` +
+                `${changed.length} file(s).\n\n` +
+                `PR authored by scheduled \`data-refresh\` workflow. Review diff for ` +
+                `expected indicator rollover (newest observation), then merge.`,
+            });

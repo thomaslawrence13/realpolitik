@@ -25,7 +25,9 @@ export const indicatorQualityRules: Record<IndicatorKey, IndicatorQualityRule> =
   ideology: { cadence: 'annual', staleAfterDays: 730, minimumConfidence: 0.4, includeInCoverage: false },
   borderDisputes: { cadence: 'quarterly', staleAfterDays: 180, minimumConfidence: 0.45, includeInCoverage: false },
   regimeStability: { cadence: 'annual', staleAfterDays: 1200, minimumConfidence: 0.56, includeInCoverage: true },
-  conflictHistory: { cadence: 'quarterly', staleAfterDays: 120, minimumConfidence: 0.56, includeInCoverage: true },
+  // Finalized UCDP country-year data is annual; current pressure belongs to a
+  // separate candidate-event feed rather than being inferred from final data.
+  conflictHistory: { cadence: 'annual', staleAfterDays: 540, minimumConfidence: 0.56, includeInCoverage: true },
   tradeDependence: { cadence: 'annual', staleAfterDays: 1200, minimumConfidence: 0.56, includeInCoverage: true },
   cohesion: { cadence: 'annual', staleAfterDays: 1200, minimumConfidence: 0.52, includeInCoverage: true },
 };
@@ -33,10 +35,10 @@ export const indicatorQualityRules: Record<IndicatorKey, IndicatorQualityRule> =
 export const indicatorSourcePriority: Record<IndicatorKey, string[]> = {
   militaryTreatyLevel: ['world-bank-wdi', 'iiss-military-balance', 'sipri-milex', 'world-factbook'],
   tradeExposure: ['world-bank-wdi', 'un-comtrade', 'imf-direction-of-trade', 'wto-profile'],
-  regimeStability: ['world-bank-wdi', 'transparency-intl', 'freedom-house', 'vdem'],
+  regimeStability: ['world-bank-wgi', 'transparency-intl', 'freedom-house', 'vdem'],
   cohesion: ['world-bank-wdi', 'imf-direction-of-trade', 'un-comtrade'],
   conflictPressure: ['acled', 'ucdp', 'icg-crisiswatch', 'iiss-military-balance'],
-  conflictHistory: ['acled', 'ucdp', 'icg-crisiswatch', 'iiss-military-balance'],
+  conflictHistory: ['ucdp', 'acled', 'icg-crisiswatch', 'iiss-military-balance'],
   sanctionsExposure: ['csis-sanctions', 'imf-direction-of-trade'],
   tradeDependence: ['un-comtrade', 'imf-direction-of-trade', 'wto-profile', 'world-bank-wdi'],
   ideology: ['transparency-intl', 'vdem', 'freedom-house'],

@@ -1,4 +1,4 @@
-import type { Alignment, MapFillMode, RegimeType, SimulatedCountry } from '../../types';
+import type { Alignment, MapFillMode, RegimeType, CountryAssessment } from '../../types';
 
 // Risk gradient: low (teal) → medium (amber) → high (coral) — tuned for dark ocean.
 export const RISK_LOW = '#2dd4a8';
@@ -176,7 +176,7 @@ export const energyExportsColor = (depPct: number | undefined): string => {
 
 // Demographic pressure score, derived from youth share, aging, and net migration.
 // Higher score = more pressure on stability and labour-market absorption.
-export const demographicPressureScore = (profile: SimulatedCountry['profile']): number | null => {
+export const demographicPressureScore = (profile: CountryAssessment['profile']): number | null => {
   const demo = profile.demographics;
   if (!demo) return null;
   let score = 0;
@@ -191,7 +191,7 @@ export const demographicPressureScore = (profile: SimulatedCountry['profile']): 
 export const DEMO_LOW  = '#0ea5e9';
 export const DEMO_HIGH = '#dc2626';
 
-export const demographicPressureColor = (profile: SimulatedCountry['profile']): string => {
+export const demographicPressureColor = (profile: CountryAssessment['profile']): string => {
   const score = demographicPressureScore(profile);
   if (score == null) return NEUTRAL;
   const t = Math.max(0, Math.min(1, score / 60));
@@ -201,7 +201,7 @@ export const demographicPressureColor = (profile: SimulatedCountry['profile']): 
 export const CYBER_LOW = '#132238';
 export const CYBER_HIGH = '#38bdf8';
 
-export const cyberCapabilityColor = (profile: SimulatedCountry['profile']): string => {
+export const cyberCapabilityColor = (profile: CountryAssessment['profile']): string => {
   if (!profile.cyber) return NEUTRAL;
   const tierScore = { low: 20, medium: 55, high: 90 } as const;
   const score = (tierScore[profile.cyber.offensiveTier] * 0.6) + (tierScore[profile.cyber.defensiveTier] * 0.4);
@@ -248,7 +248,7 @@ export const DEBT_LOW = '#22c55e';
 export const DEBT_MID = '#f59e0b';
 export const DEBT_HIGH = '#ef4444';
 
-export const debtVulnerabilityScore = (profile: SimulatedCountry['profile']): number | null => {
+export const debtVulnerabilityScore = (profile: CountryAssessment['profile']): number | null => {
   const fiscal = profile.fiscal;
   if (!fiscal) return null;
   const ratingBase = fiscal.sovereignRatingTier === 'investment'
@@ -261,7 +261,7 @@ export const debtVulnerabilityScore = (profile: SimulatedCountry['profile']): nu
   return Math.round(Math.min(100, Math.max(0, ratingBase + debtPressure + reserveStress)));
 };
 
-export const debtVulnerabilityColor = (profile: SimulatedCountry['profile']): string => {
+export const debtVulnerabilityColor = (profile: CountryAssessment['profile']): string => {
   const score = debtVulnerabilityScore(profile);
   if (score == null) return NEUTRAL;
   const t = Math.max(0, Math.min(1, score / 100));
@@ -269,13 +269,13 @@ export const debtVulnerabilityColor = (profile: SimulatedCountry['profile']): st
   return lerpColor(DEBT_MID, DEBT_HIGH, (t - 0.5) * 2);
 };
 
-export const sovereignRatingColor: Record<NonNullable<SimulatedCountry['profile']['fiscal']>['sovereignRatingTier'], string> = {
+export const sovereignRatingColor: Record<NonNullable<CountryAssessment['profile']['fiscal']>['sovereignRatingTier'], string> = {
   investment: '#22c55e',
   speculative: '#f59e0b',
   distressed: '#ef4444',
 };
 
-export const criticalMineralIntensityScore = (profile: SimulatedCountry['profile']): number | null => {
+export const criticalMineralIntensityScore = (profile: CountryAssessment['profile']): number | null => {
   const entries = profile.criticalMinerals;
   if (!entries || entries.length === 0) return null;
   const roleWeight = {
@@ -293,7 +293,7 @@ export const criticalMineralIntensityScore = (profile: SimulatedCountry['profile
 export const MINERAL_LOW = '#1f2937';
 export const MINERAL_HIGH = '#eab308';
 
-export const criticalMineralIntensityColor = (profile: SimulatedCountry['profile']): string => {
+export const criticalMineralIntensityColor = (profile: CountryAssessment['profile']): string => {
   const score = criticalMineralIntensityScore(profile);
   if (score == null) return NEUTRAL;
   return lerpColor(MINERAL_LOW, MINERAL_HIGH, score / 100);
@@ -316,13 +316,12 @@ export const defensePactDensityColor = (count: number | undefined): string => {
 };
 
 type FillResolverArgs = {
-  simulated: SimulatedCountry;
-  baseline?: SimulatedCountry;
+  simulated: CountryAssessment;
   alignmentColor: Record<Alignment, string>;
 };
 
 export const resolveFill = (mode: MapFillMode, args: FillResolverArgs): string => {
-  const { simulated, baseline, alignmentColor } = args;
+  const { simulated, alignmentColor } = args;
   if (mode === 'alignment') return alignmentColor[simulated.alignment];
   if (mode === 'risk') return riskColor(simulated.risk);
   if (mode === 'confidence') return confidenceColor(simulated.confidence);
@@ -359,12 +358,5 @@ export const resolveFill = (mode: MapFillMode, args: FillResolverArgs): string =
   if (mode === 'criticalMineralIntensity') return criticalMineralIntensityColor(simulated.profile);
   if (mode === 'softPower') return softPowerColor(simulated.profile.softPower?.reachScore);
   if (mode === 'defensePactDensity') return defensePactDensityColor(simulated.profile.diplomatic?.defensePacts.length);
-  // shift: highlight countries whose risk or alignment diverged from baseline.
-  if (!baseline) return alignmentColor[simulated.alignment];
-  const alignmentChanged = simulated.alignment !== baseline.alignment;
-  const riskGap = simulated.risk - baseline.risk;
-  if (alignmentChanged) return alignmentColor[simulated.alignment];
-  if (Math.abs(riskGap) < 4) return NEUTRAL;
-  return riskGap > 0 ? lerpColor(NEUTRAL, RISK_HIGH, Math.min(1, riskGap / 30))
-    : lerpColor(NEUTRAL, RISK_LOW, Math.min(1, -riskGap / 30));
+  return alignmentColor[simulated.alignment];
 };

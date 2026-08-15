@@ -28,3 +28,23 @@ test('ingested observations preserve per-country observedAt from raw ingest audi
   const tradeObservation = observations.find((row) => row.indicator === 'tradeExposure');
   assert.equal(tradeObservation?.observedAt, '2024-12-31');
 });
+
+test('ingested governance observations retain WGI provenance', () => {
+  const profile = countryProfiles[0]!;
+  const snapshot = {
+    version: '1.5.0-ingested',
+    timestamp: '2026-08-15T12:00:00.000Z',
+    observationYears: {
+      world_bank_political_stability: { [profile.id]: '2024' },
+      world_bank_rule_of_law: { [profile.id]: '2024' },
+    },
+    world_bank_political_stability: { [profile.id]: 0.5 },
+    world_bank_rule_of_law: { [profile.id]: 0.8 },
+  };
+
+  const governance = buildIngestedObservations([profile], snapshot).filter(
+    (observation) => observation.indicator === 'regimeStability',
+  );
+  assert.equal(governance.length, 2);
+  assert.deepEqual(new Set(governance.map((observation) => observation.sourceId)), new Set(['world-bank-wgi']));
+});

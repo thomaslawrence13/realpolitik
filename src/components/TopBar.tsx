@@ -1,20 +1,19 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { IconButton, SvgIcon } from './ui';
 import { formatHudAge, formatHudClock } from '../lib/globalStats';
 
 export type LiveDataStatus = 'loading' | 'live' | 'partial' | 'error';
 
 type Props = {
-  /** Calendar-facing label for the frozen present period (e.g. "2024"). */
+  /** Newest observed data date across all sources (dataset-driven). */
   asOfLabel: string;
-  scenarioName: string;
   datasetVersion: string;
   countryCount: number;
-  /** Countries currently at elevated risk (≥55) in the present snapshot. */
+  /** Countries currently at elevated risk (≥55). */
   elevatedRiskCount: number;
-  /** Median model risk across all simulated countries. */
+  /** Median risk across all assessed countries. */
   medianRisk: number;
-  /** Mean per-country source coverage (0–100). */
+  /** Mean per-country fresh coverage (0–100). */
   meanCoverage: number;
   /** Live World Bank indicator success ratio as 0–100, or null while unknown. */
   liveIndicatorCoveragePct: number | null;
@@ -26,6 +25,7 @@ type Props = {
     succeededIndicators: number;
     failedIndicators: number;
     failedCodes: string[];
+    latestObservedYear?: string | null;
   } | null;
   onRetryLiveData: () => void;
   leftOpen: boolean;
@@ -36,7 +36,7 @@ type Props = {
   onToggleRight: () => void;
   onToggleDrawer: () => void;
   onToggleHelp: () => void;
-  activeEventCount: number;
+  shareUrl: string;
 };
 
 const liveStatusCopy = (
@@ -59,10 +59,14 @@ const liveStatusDetail = (
   liveFetchedAt: string | null,
 ): string => {
   const age = formatHudAge(liveFetchedAt);
-  if (status === 'live') return `World Bank indicators up to date · fetched ${age}`;
+  if (status === 'live') {
+    const observed = diagnostics?.latestObservedYear ? ` · latest published ${diagnostics.latestObservedYear}` : '';
+    return `World Bank API synced${observed} · fetched ${age}`;
+  }
   if (status === 'partial') {
     const failed = diagnostics?.failedIndicators ?? 0;
-    return `${failed} indicator${failed === 1 ? '' : 's'} failed · fetched ${age} · click to retry`;
+    const observed = diagnostics?.latestObservedYear ? ` · latest published ${diagnostics.latestObservedYear}` : '';
+    return `${failed} indicator${failed === 1 ? '' : 's'} failed${observed} · fetched ${age} · click to retry`;
   }
   if (status === 'error') return 'Live data unavailable · using static + ingest · click to retry';
   return 'Fetching World Bank indicators…';
@@ -70,7 +74,6 @@ const liveStatusDetail = (
 
 export const TopBar = memo(function TopBar({
   asOfLabel,
-  scenarioName,
   datasetVersion,
   countryCount,
   elevatedRiskCount,
@@ -89,13 +92,39 @@ export const TopBar = memo(function TopBar({
   onToggleRight,
   onToggleDrawer,
   onToggleHelp,
-  activeEventCount,
+  shareUrl,
 }: Props) {
+  const [shareStatus, setShareStatus] = useState<'idle' | 'done' | 'failed'>('idle');
   const liveLabel = liveStatusCopy(liveDataStatus, liveDataDiagnostics);
   const liveDetail = liveStatusDetail(liveDataStatus, liveDataDiagnostics, liveFetchedAt);
   const canRetry = liveDataStatus === 'error' || liveDataStatus === 'partial';
   const liveCovLabel =
     liveIndicatorCoveragePct == null ? '—' : `${liveIndicatorCoveragePct}%`;
+  const handleShare = async () => {
+    if (!shareUrl) return;
+    try {
+      if ('share' in navigator && typeof navigator.share === 'function') {
+        await navigator.share({ title: 'Realpolitik snapshot', url: shareUrl });
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const input = document.createElement('textarea');
+        input.value = shareUrl;
+        input.setAttribute('readonly', 'true');
+        input.style.position = 'fixed';
+        input.style.opacity = '0';
+        document.body.appendChild(input);
+        input.select();
+        const copied = document.execCommand('copy');
+        input.remove();
+        if (!copied) throw new Error('Clipboard unavailable');
+      }
+      setShareStatus('done');
+    } catch {
+      setShareStatus('failed');
+    }
+    window.setTimeout(() => setShareStatus('idle'), 1800);
+  };
 
   return (
     <header className="topbar">
@@ -132,19 +161,19 @@ export const TopBar = memo(function TopBar({
 
           <span className="live-strip-divider" aria-hidden />
 
-          <div className="live-stat" title="Present analysis period (not scrubbable)">
+          <div className="live-stat" title="Newest observed data point across all country profiles and sources">
             <span className="live-stat-label">As of</span>
             <strong className="live-stat-value">{asOfLabel}</strong>
           </div>
 
-          <div className="live-stat" title="Median model risk across all states">
+          <div className="live-stat" title="Median risk across all states">
             <span className="live-stat-label">Med risk</span>
             <strong className="live-stat-value">{medianRisk}%</strong>
           </div>
 
           <div
             className={`live-stat ${elevatedRiskCount > 0 ? 'live-stat-risk' : ''}`}
-            title="States with risk ≥ 55 in the present snapshot"
+            title="States with risk ≥ 55 in the current snapshot"
           >
             <span className="live-stat-label">Elevated</span>
             <strong className="live-stat-value">{elevatedRiskCount}</strong>
@@ -152,7 +181,7 @@ export const TopBar = memo(function TopBar({
 
           <div
             className="live-stat"
-            title={`Mean source coverage ${meanCoverage}% · live WB series ${liveCovLabel}`}
+            title={`Mean fresh source coverage ${meanCoverage}% · live WB series ${liveCovLabel}`}
           >
             <span className="live-stat-label">Data</span>
             <strong className="live-stat-value">
@@ -172,25 +201,14 @@ export const TopBar = memo(function TopBar({
       </div>
 
       <div className="topbar-section topbar-right">
-        <button
-          type="button"
-          className={`scenario-chip ${drawerOpen ? 'scenario-chip-active' : ''} ${
-            activeEventCount > 0 ? 'scenario-chip-armed' : ''
-          }`}
-          onClick={onToggleDrawer}
-          title="Optional what-if shocks on the live snapshot (secondary to live stats)"
-        >
-          <span className="scenario-chip-kicker">What-if</span>
-          <em className="scenario-chip-name">
-            {scenarioName}
-            {activeEventCount > 0 ? (
-              <span className="scenario-chip-badge">{activeEventCount}</span>
-            ) : null}
-          </em>
-          <SvgIcon.Chevron dir="down" />
-        </button>
         <div className="topbar-actions">
-          <IconButton label="Toggle what-if drawer (\)" active={drawerOpen} onClick={onToggleDrawer}>
+          <IconButton
+            label={shareStatus === 'done' ? 'Share link copied' : shareStatus === 'failed' ? 'Share failed' : 'Copy share link'}
+            onClick={handleShare}
+          >
+            <SvgIcon.Share />
+          </IconButton>
+          <IconButton label="Toggle drawers panel (\)" active={drawerOpen} onClick={onToggleDrawer}>
             <SvgIcon.PanelBottom />
           </IconButton>
           <IconButton label="Toggle inspector (])" active={rightOpen} onClick={onToggleRight}>

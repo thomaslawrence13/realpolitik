@@ -1,20 +1,31 @@
 {
-  "version": "1.1.0",
-  "generatedAt": "2026-08-07T11:21:03.513Z",
+  "version": "1.3.0",
+  "generatedAt": "2026-08-08T22:53:53.561Z",
   "provider": "world-bank-open-data",
   "requestedCountryCount": 134,
   "indicators": [
     {
       "snapshotKey": "world_bank_military_expenditure_pct",
       "code": "MS.MIL.XPND.GD.ZS",
+      "sourceId": "world-bank-wdi",
       "label": "Military expenditure (% of GDP)",
       "coverageCount": 121,
       "missingCountryCount": 13,
       "newestObservation": "2024"
     },
     {
+      "snapshotKey": "world_bank_military_expenditure_usd",
+      "code": "MS.MIL.XPND.CD",
+      "sourceId": "world-bank-wdi",
+      "label": "Military expenditure (current US$)",
+      "coverageCount": 124,
+      "missingCountryCount": 10,
+      "newestObservation": "2024"
+    },
+    {
       "snapshotKey": "world_bank_trade_pct",
       "code": "TG.VAL.TOTL.GD.ZS",
+      "sourceId": "world-bank-wdi",
       "label": "Trade (% of GDP)",
       "coverageCount": 131,
       "missingCountryCount": 3,
@@ -23,7 +34,26 @@
     {
       "snapshotKey": "world_bank_gdp_growth",
       "code": "NY.GDP.MKTP.KD.ZG",
+      "sourceId": "world-bank-wdi",
       "label": "GDP growth (annual %)",
+      "coverageCount": 130,
+      "missingCountryCount": 4,
+      "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "world_bank_gdp_nominal_usd",
+      "code": "NY.GDP.MKTP.CD",
+      "sourceId": "world-bank-wdi",
+      "label": "GDP (current US$)",
+      "coverageCount": 130,
+      "missingCountryCount": 4,
+      "newestObservation": "2025"
+    },
+    {
+      "snapshotKey": "world_bank_gdp_per_capita_usd",
+      "code": "NY.GDP.PCAP.CD",
+      "sourceId": "world-bank-wdi",
+      "label": "GDP per capita (current US$)",
       "coverageCount": 130,
       "missingCountryCount": 4,
       "newestObservation": "2025"
@@ -31,6 +61,7 @@
     {
       "snapshotKey": "world_bank_inflation",
       "code": "FP.CPI.TOTL.ZG",
+      "sourceId": "world-bank-wdi",
       "label": "Inflation, consumer prices (annual %)",
       "coverageCount": 123,
       "missingCountryCount": 11,
@@ -38,23 +69,26 @@
     },
     {
       "snapshotKey": "world_bank_political_stability",
-      "code": "GOV_WGI_PV.EST",
+      "code": "PV.EST",
+      "sourceId": "world-bank-wgi",
       "label": "Political stability and absence of violence",
-      "coverageCount": 133,
-      "missingCountryCount": 1,
+      "coverageCount": 134,
+      "missingCountryCount": 0,
       "newestObservation": "2024"
     },
     {
       "snapshotKey": "world_bank_rule_of_law",
-      "code": "GOV_WGI_RL.EST",
+      "code": "RL.EST",
+      "sourceId": "world-bank-wgi",
       "label": "Rule of law",
-      "coverageCount": 133,
-      "missingCountryCount": 1,
+      "coverageCount": 134,
+      "missingCountryCount": 0,
       "newestObservation": "2024"
     },
     {
       "snapshotKey": "world_bank_unemployment",
       "code": "SL.UEM.TOTL.ZS",
+      "sourceId": "world-bank-wdi",
       "label": "Unemployment, total (% of labour force)",
       "coverageCount": 132,
       "missingCountryCount": 2,

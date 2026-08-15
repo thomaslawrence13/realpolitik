@@ -1,5 +1,6 @@
-import type { CountryProfile, IndicatorTelemetry, SimulatedCountry } from '../types';
+import type { CountryProfile, IndicatorTelemetry, CountryAssessment } from '../types';
 import { INFORMATION_QUALITY_CONTRACT } from '../data/quality/contract';
+import { getCoverageMetrics } from '../lib/coverage';
 
 export type TrustSummary = {
   tone: 'good' | 'warning' | 'bad';
@@ -32,8 +33,9 @@ const getPrimaryTelemetry = (profile: CountryProfile): IndicatorTelemetry | null
 export const summarizeCountryTrust = (profile: CountryProfile): TrustSummary => {
   const primary = getPrimaryTelemetry(profile);
   const degradedReasons = profile.dataQuality?.degradedReasons ?? [];
-  const lowCoverage = profile.sourceCoverage < LOW_COVERAGE;
-  const partialCoverage = profile.sourceCoverage < HIGH_COVERAGE;
+  const coverage = getCoverageMetrics(profile);
+  const lowCoverage = coverage.freshPct < LOW_COVERAGE;
+  const partialCoverage = coverage.freshPct < HIGH_COVERAGE;
   const stale = Boolean(primary?.stale);
   const fallback = primary?.evidenceClass === 'fallback';
   const derived = primary?.evidenceClass === 'derived';
@@ -47,7 +49,7 @@ export const summarizeCountryTrust = (profile: CountryProfile): TrustSummary => 
     return {
       tone: 'bad',
       label: mismatch ? 'Telemetry mismatch' : lowCoverage ? 'Low coverage' : stale ? 'Stale data' : 'Fallback data',
-      detail: degradedReasons[0] ?? `${profile.sourceCoverage}% coverage · updated ${profile.lastUpdated}`,
+      detail: degradedReasons[0] ?? `${coverage.freshPct}% fresh · ${coverage.fallbackPct}% fallback · updated ${profile.lastUpdated}`,
     };
   }
 
@@ -55,7 +57,7 @@ export const summarizeCountryTrust = (profile: CountryProfile): TrustSummary => 
     return {
       tone: 'warning',
       label: partialCoverage ? 'Partial coverage' : derived ? 'Derived signal' : 'Quality notice',
-      detail: degradedReasons[0] ?? `${profile.sourceCoverage}% coverage · updated ${profile.lastUpdated}`,
+      detail: degradedReasons[0] ?? `${coverage.freshPct}% fresh · ${coverage.fallbackPct}% fallback · updated ${profile.lastUpdated}`,
     };
   }
 
@@ -63,8 +65,8 @@ export const summarizeCountryTrust = (profile: CountryProfile): TrustSummary => 
     tone: 'good',
     label: 'Observed data',
     detail: primary
-      ? `${profile.sourceCoverage}% coverage · ${primary.sourceId} · ${primary.observedAt}`
-      : `${profile.sourceCoverage}% coverage · updated ${profile.lastUpdated}`,
+      ? `${coverage.freshPct}% fresh · ${coverage.observedPct}% observed · ${primary.sourceId} · ${primary.observedAt}`
+      : `${coverage.freshPct}% fresh · updated ${profile.lastUpdated}`,
   };
 };
 
@@ -82,7 +84,7 @@ export type GlobalDataWarning = {
   countryExamples: string[];
 };
 
-export const aggregateGlobalDataWarnings = (countries: SimulatedCountry[]): GlobalDataWarning[] => {
+export const aggregateGlobalDataWarnings = (countries: CountryAssessment[]): GlobalDataWarning[] => {
   const warnings = new Map<string, { count: Set<string>; examples: Set<string> }>();
 
   countries.forEach((country) => {

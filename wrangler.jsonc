@@ -1,26 +1,32 @@
 {
-  "name": "realpolitik",
-  "compatibility_date": "2026-05-09",
-  "assets": {
-    "directory": "./dist"
-  },
-  "headers": [
-    {
-      "path": "/*",
-      "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self' https://api.worldbank.org; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline'; base-uri 'self'; form-action 'self'"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        }
-      ]
-    }
-  ]
+	"name": "realpolitik",
+	"main": "worker/index.ts",
+	"compatibility_date": "2026-08-15",
+	"compatibility_flags": ["nodejs_compat"],
+	// One-time setup: `npx wrangler kv namespace create realpolitik-state`, then
+	// paste the returned id here. `wrangler dev --local` works without it.
+	"kv_namespaces": [
+		{
+			"binding": "LIVE_STATE",
+			"id": "5a1d82c270dc445d81ef8cbb4f4a98f1"
+		}
+	],
+	"triggers": {
+		"crons": [
+			"17 3 * * *"
+		]
+	},
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS",
+		"not_found_handling": "single-page-application",
+		"run_worker_first": [
+			"/api/*"
+		]
+	},
+	"observability": {
+		"enabled": true,
+		"logs": { "enabled": true, "head_sampling_rate": 1 },
+		"traces": { "enabled": true, "head_sampling_rate": 0.05 }
+	}
 }

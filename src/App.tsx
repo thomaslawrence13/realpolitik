@@ -1,46 +1,40 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useDeferredValue } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useMapStore } from './store/useMapStore';
 import {
   allianceNetworks,
+  datasetAsOf,
   datasetVersion,
   enhancementReleaseTelemetry,
   ingestTelemetry,
   informationQualityContract,
   informationQualityTelemetry,
   methodologyNotes,
-  scenarioTimeline,
 } from './data/countryData';
-import {
-  getActiveEventsForProfile,
-  getScenarioInputsForProfile,
-  getSimulationWeightSet,
-  simulateCountry,
-  simulationWeightSets,
-} from './simulation';
-import type { Alignment, Filters, ScenarioInputs, SimulatedCountry } from './types';
+import { assessCountry } from './assessment';
+import type { Alignment, CountryAssessment, Filters } from './types';
 import { buildInformationQualityTelemetry } from './data/quality/telemetry';
-import { eventLibrary, eventById } from './data/eventLibrary';
 import { loadPersistedState, savePersistedState } from './lib/persistence';
-import { clearHash, decodeStateFromHash } from './lib/urlState';
-import { useSimulation } from './hooks/useSimulation';
+import { buildShareableUrl, clearHash, decodeStateFromHash } from './lib/urlState';
 import { useLiveSession } from './hooks/useLiveSession';
 import { useAppChrome } from './hooks/useAppChrome';
-import { useScenarios } from './hooks/useScenarios';
 import { useFilteredCountries } from './hooks/useFilteredCountries';
-import { buildEventFeed } from './state/selectors';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TopBar } from './components/TopBar';
 import { LeftRail } from './components/LeftRail';
 import { RightInspector } from './components/RightInspector';
 import { BottomDrawer } from './components/BottomDrawer';
-import type { EventFeedItem } from './components/BottomDrawer';
 import { ShortcutsHelp } from './components/ShortcutsHelp';
-import { UndoToast } from './components/UndoToast';
 import { WelcomeGuide } from './components/WelcomeGuide';
 import { UI_TIMING } from './lib/constants';
 import { buildGlobalLiveSummary } from './lib/globalStats';
 
-const MapCanvas = lazy(() => import('./components/MapCanvas').then((m) => ({ default: m.MapCanvas })));
+const loadMapCanvas = () => import('./components/MapCanvas').then((module) => ({ default: module.MapCanvas }));
+const MapCanvas = lazy(loadMapCanvas);
+
+// The map is the primary visual surface. Start its split-chunk request while
+// the application module is evaluating instead of waiting for React's first
+// render to discover the lazy boundary.
+void loadMapCanvas();
 
 const defaultFilters: Filters = {
   allianceNetwork: 'all',
@@ -52,17 +46,7 @@ const defaultFilters: Filters = {
   riskLevel: 'all',
 };
 
-const weightSetOptions = Object.values(simulationWeightSets);
 const PERSIST_DEBOUNCE_MS = UI_TIMING.persistDebounceMs;
-
-/** Ordered list of all `ScenarioInputs` keys — single source of truth for iteration. */
-export const scenarioInputKeys: (keyof ScenarioInputs)[] = [
-  'sanctionShock',
-  'treatyShift',
-  'electionVolatility',
-  'invasionPressure',
-  'coupRisk',
-];
 
 const alignmentLabel: Record<Alignment, string> = {
   blocA: 'Bloc A',
@@ -78,12 +62,6 @@ const alignmentColor: Record<Alignment, string> = {
   unstable: '#d08cff',
 };
 
-const resolveEventIds = (eventIds: string[]) =>
-  eventIds.flatMap((id) => {
-    const event = eventById.get(id);
-    return event ? [event] : [];
-  });
-
 const persisted = loadPersistedState();
 const fromHash = decodeStateFromHash();
 if (fromHash) clearHash();
@@ -93,17 +71,15 @@ export default function App() {
   const setSelectedCountry = useMapStore((state) => state.setSelectedCountry);
   const filters = useMapStore((state) => state.activeFilters);
   const setFilters = useMapStore((state) => state.setActiveFilters);
-  const setSimulationPayload = useMapStore((state) => state.setSimulationPayload);
-
-  const presentIndex = Math.max(0, scenarioTimeline.length - 1);
-  const asOfLabel = scenarioTimeline[presentIndex] ?? 'Present';
+  const overlayMode = useMapStore((state) => state.overlayMode);
+  const fillMode = useMapStore((state) => state.fillMode);
 
   useEffect(() => {
     useMapStore.setState({
-      currentYear: presentIndex,
       activeFilters: persisted?.filters ?? defaultFilters,
-      selectedCountry:
-        fromHash?.selectedCountry ?? persisted?.selectedCountry ?? 'United States of America',
+      selectedCountry: fromHash?.selectedCountry ?? persisted?.selectedCountry ?? 'United States of America',
+      overlayMode: fromHash?.overlayMode ?? persisted?.overlayMode ?? 'none',
+      fillMode: fromHash?.mapFillMode ?? persisted?.mapFillMode ?? 'risk',
     });
     // one-time hydration from persisted/hash state
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,75 +87,19 @@ export default function App() {
 
   const live = useLiveSession();
   const chrome = useAppChrome(persisted);
-  const scenarios = useScenarios(
-    {
-      scenarioName: fromHash?.scenarioName ?? persisted?.scenarioName,
-      scenarioInputs: fromHash?.scenarioInputs ?? persisted?.scenarioInputs,
-      weightSetKey: fromHash?.weightSetKey ?? persisted?.weightSetKey,
-      savedScenarios: persisted?.savedScenarios,
-      activeEventIds: fromHash?.activeEventIds ?? persisted?.activeEventIds,
-      comparisonScenarioId: persisted?.comparisonScenarioId,
-    },
-    presentIndex,
-    selectedCountry,
-  );
 
-  const deferredScenarioInputs = useDeferredValue(scenarios.scenarioInputs);
-  const deferredWeightSetKey = useDeferredValue(scenarios.weightSetKey);
-  const deferredActiveEventIds = useDeferredValue(scenarios.activeEventIds);
-  const activeEvents = useMemo(() => resolveEventIds(deferredActiveEventIds), [deferredActiveEventIds]);
-  const activeWeightSet = useMemo(
-    () => getSimulationWeightSet(deferredWeightSetKey),
-    [deferredWeightSetKey],
-  );
-
-  useEffect(() => {
-    setSimulationPayload({
-      profiles: live.activeProfiles,
-      scenarioInputs: deferredScenarioInputs,
-      activeEvents,
-      weightSetKey: deferredWeightSetKey,
-    });
-  }, [
-    activeEvents,
-    live.activeProfiles,
-    deferredScenarioInputs,
-    deferredWeightSetKey,
-    setSimulationPayload,
-  ]);
-
-  const {
-    simulated,
-    baselineSimulated,
-    selected,
-    baselineSelected,
-    selectedRiskDelta,
-    selectedConfidenceDelta,
-    sparkline: selectedSparkline,
-  } = useSimulation(
-    live.activeProfiles,
-    activeEvents,
-    deferredScenarioInputs,
-    deferredWeightSetKey,
-    selectedCountry,
-    presentIndex,
-    scenarioTimeline,
+  const simulated = useMemo<CountryAssessment[]>(
+    () => live.activeProfiles.map((profile) => assessCountry(profile)),
+    [live.activeProfiles],
   );
 
   const byName = useMemo(
     () => new Map(simulated.map((entry) => [entry.profile.mapName, entry])),
     [simulated],
   );
-  const baselineByName = useMemo(
-    () => new Map(baselineSimulated.map((entry) => [entry.profile.mapName, entry])),
-    [baselineSimulated],
-  );
-  const selectedProfile = useMemo(
-    () =>
-      live.activeProfiles.find((profile) => profile.mapName === selectedCountry) ??
-      live.activeProfiles[0] ??
-      null,
-    [live.activeProfiles, selectedCountry],
+  const selected = useMemo(
+    () => byName.get(selectedCountry) ?? byName.values().next().value ?? null,
+    [byName, selectedCountry],
   );
 
   const { filtered, visibleNames, railCountries } = useFilteredCountries(
@@ -187,70 +107,6 @@ export default function App() {
     filters,
     chrome.search,
   );
-
-  const selectedActiveEvents = useMemo(
-    () => (selected ? getActiveEventsForProfile(selected.profile, activeEvents) : []),
-    [activeEvents, selected],
-  );
-  const selectedScenarioInputs = useMemo(
-    () =>
-      selected
-        ? getScenarioInputsForProfile(deferredScenarioInputs, activeEvents, selected.profile)
-        : deferredScenarioInputs,
-    [activeEvents, deferredScenarioInputs, selected],
-  );
-  const selectedActiveEventNames = useMemo(
-    () => selectedActiveEvents.map((event) => event.name),
-    [selectedActiveEvents],
-  );
-
-  const eventFeed = useMemo<EventFeedItem[]>(
-    () =>
-      buildEventFeed({
-        filtered,
-        baselineByName,
-        scenarioTimeline,
-        timelineIndex: presentIndex,
-        alignmentLabel,
-      }),
-    [baselineByName, filtered, presentIndex],
-  );
-
-  const comparisonScenario = useMemo(
-    () => scenarios.savedScenarios.find((s) => s.id === scenarios.comparisonScenarioId) ?? null,
-    [scenarios.comparisonScenarioId, scenarios.savedScenarios],
-  );
-
-  const comparisonSelected = useMemo<SimulatedCountry | null>(() => {
-    if (!comparisonScenario || !selectedProfile) return null;
-    const comparisonEvents = resolveEventIds(comparisonScenario.activeEventIds ?? []);
-    const compWeights = getSimulationWeightSet(comparisonScenario.weightSetKey);
-    return simulateCountry(selectedProfile, comparisonScenario.timelineIndex, {
-      scenarioInputs: comparisonScenario.inputs,
-      activeEvents: comparisonEvents,
-      weightSet: compWeights,
-      includeHistory: false,
-    });
-  }, [comparisonScenario, selectedProfile]);
-
-  const comparisonSimulated = useMemo<SimulatedCountry[]>(() => {
-    if (!comparisonScenario || chrome.drawerTab !== 'movers') return [];
-    const comparisonEvents = resolveEventIds(comparisonScenario.activeEventIds ?? []);
-    const compWeights = getSimulationWeightSet(comparisonScenario.weightSetKey);
-    return live.activeProfiles.map((profile) =>
-      simulateCountry(profile, comparisonScenario.timelineIndex, {
-        scenarioInputs: comparisonScenario.inputs,
-        activeEvents: comparisonEvents,
-        weightSet: compWeights,
-        includeHistory: false,
-      }),
-    );
-  }, [live.activeProfiles, comparisonScenario, chrome.drawerTab]);
-
-  const comparisonByName = useMemo(() => {
-    if (comparisonSimulated.length === 0) return null;
-    return new Map(comparisonSimulated.map((entry) => [entry.profile.mapName, entry]));
-  }, [comparisonSimulated]);
 
   const runtimeInformationQuality = useMemo(
     () =>
@@ -262,6 +118,10 @@ export default function App() {
   );
 
   const globalSummary = useMemo(() => buildGlobalLiveSummary(simulated), [simulated]);
+  const shareUrl = useMemo(
+    () => buildShareableUrl({ selectedCountry, overlayMode, mapFillMode: fillMode }),
+    [fillMode, overlayMode, selectedCountry],
+  );
 
   const handleSelectFromMap = useCallback(
     (mapName: string) => {
@@ -281,47 +141,17 @@ export default function App() {
 
   const handleResetFilters = useCallback(() => setFilters(defaultFilters), [setFilters]);
 
-  const moversProps = useMemo(
-    () => ({
-      active: simulated,
-      baselineByName,
-      comparisonByName,
-      comparisonScenarioName: comparisonScenario?.name ?? null,
-      onSelectCountry: handleSelectCountry,
-      alignmentColor,
-      alignmentLabel,
-      staticProfiles: live.staticProfiles,
-      liveProfiles: live.activeProfiles,
-      liveDataStatus: live.liveDataStatus,
-    }),
-    [
-      baselineByName,
-      comparisonByName,
-      comparisonScenario?.name,
-      handleSelectCountry,
-      live.activeProfiles,
-      live.liveDataStatus,
-      live.staticProfiles,
-      simulated,
-    ],
-  );
-
   const persistDebounceRef = useRef<number | null>(null);
   useEffect(() => {
     const snapshot = {
       selectedCountry,
-      scenarioName: scenarios.scenarioName,
-      scenarioInputs: scenarios.scenarioInputs,
-      weightSetKey: scenarios.weightSetKey,
-      activeEventIds: scenarios.activeEventIds,
-      savedScenarios: scenarios.savedScenarios,
       filters,
-      timelineIndex: presentIndex,
+      overlayMode,
+      mapFillMode: fillMode,
       inspectorTab: chrome.inspectorTab,
       drawerTab: chrome.drawerTab,
       drawerOpen: chrome.drawerOpen,
       drawerHeight: chrome.drawerHeight,
-      comparisonScenarioId: scenarios.comparisonScenarioId,
     };
     if (persistDebounceRef.current) window.clearTimeout(persistDebounceRef.current);
     persistDebounceRef.current = window.setTimeout(
@@ -330,14 +160,9 @@ export default function App() {
     );
   }, [
     selectedCountry,
-    scenarios.scenarioName,
-    scenarios.scenarioInputs,
-    scenarios.weightSetKey,
-    scenarios.activeEventIds,
-    scenarios.savedScenarios,
-    scenarios.comparisonScenarioId,
     filters,
-    presentIndex,
+    overlayMode,
+    fillMode,
     chrome.inspectorTab,
     chrome.drawerTab,
     chrome.drawerOpen,
@@ -347,22 +172,21 @@ export default function App() {
   useEffect(() => {
     return () => {
       if (persistDebounceRef.current) window.clearTimeout(persistDebounceRef.current);
-      scenarios.disposeTimers();
       useMapStore.destroy();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!selected || !baselineSelected) {
+  if (!selected) {
     return (
       <div
         className="app-shell"
         role="status"
         aria-live="polite"
         aria-busy="true"
-        aria-label="Loading simulation data"
+        aria-label="Loading country data"
       >
-        Loading simulation...
+        Loading data...
       </div>
     );
   }
@@ -377,8 +201,7 @@ export default function App() {
         style={chrome.shellStyle}
       >
         <TopBar
-          asOfLabel={asOfLabel}
-          scenarioName={scenarios.scenarioName}
+          asOfLabel={datasetAsOf}
           datasetVersion={datasetVersion}
           countryCount={live.activeProfiles.length}
           elevatedRiskCount={globalSummary.elevatedRiskCount}
@@ -397,7 +220,7 @@ export default function App() {
           onToggleRight={chrome.handleToggleRight}
           onToggleDrawer={chrome.handleToggleDrawer}
           onToggleHelp={chrome.handleToggleHelp}
-          activeEventCount={scenarios.activeEventIds.length}
+          shareUrl={shareUrl}
         />
 
         <LeftRail
@@ -421,12 +244,9 @@ export default function App() {
         <Suspense fallback={<div className="map map-fallback" aria-busy>Loading map…</div>}>
           <MapCanvas
             byName={byName}
-            baselineByName={baselineByName}
             visibleNames={visibleNames}
             selectedName={selectedCountry}
             onSelect={handleSelectFromMap}
-            initialOverlayMode={persisted?.overlayMode}
-            initialFillMode={persisted?.mapFillMode}
             alignmentColor={alignmentColor}
             alignmentLabel={alignmentLabel}
           />
@@ -435,23 +255,12 @@ export default function App() {
         <RightInspector
           open={chrome.rightOpen}
           selected={selected}
-          baselineSelected={baselineSelected}
-          riskDelta={selectedRiskDelta}
-          confidenceDelta={selectedConfidenceDelta}
-          scenarioName={scenarios.scenarioName}
-          scenarioInputs={selectedScenarioInputs}
-          activeWeightSet={activeWeightSet}
-          activeEventNames={selectedActiveEventNames}
+          allCountries={simulated}
           alignmentColor={alignmentColor}
           alignmentLabel={alignmentLabel}
           tab={chrome.inspectorTab}
           onTabChange={chrome.setInspectorTab}
           onSelectRelated={handleSelectCountry}
-          comparisonSelected={comparisonSelected}
-          comparisonScenarioName={comparisonScenario?.name ?? null}
-          onClearComparison={scenarios.clearComparison}
-          sparkline={selectedSparkline}
-          allCountries={simulated}
         />
 
         <BottomDrawer
@@ -459,28 +268,6 @@ export default function App() {
           tab={chrome.drawerTab}
           onTabChange={chrome.setDrawerTab}
           onClose={chrome.handleCloseDrawer}
-          scenarioName={scenarios.scenarioName}
-          onScenarioNameChange={scenarios.setScenarioName}
-          scenarioInputs={scenarios.scenarioInputs}
-          onScenarioInputChange={scenarios.handleScenarioInputChange}
-          activeWeightSet={activeWeightSet}
-          weightSetKey={scenarios.weightSetKey}
-          onWeightSetChange={scenarios.setWeightSetKey}
-          weightSets={weightSetOptions}
-          savedScenarios={scenarios.savedScenarios}
-          onSaveScenario={scenarios.saveScenario}
-          onResetScenario={scenarios.resetScenario}
-          onShareScenario={scenarios.shareCurrentScenario}
-          shareStatus={scenarios.shareStatus}
-          onLoadScenario={scenarios.loadScenario}
-          onDeleteScenario={scenarios.deleteScenario}
-          onRenameScenario={scenarios.renameScenario}
-          onExportScenarios={scenarios.exportScenarios}
-          onImportScenarios={scenarios.handleImportClick}
-          importError={scenarios.importError}
-          comparisonScenarioId={scenarios.comparisonScenarioId}
-          onToggleComparison={scenarios.toggleComparison}
-          eventFeed={eventFeed}
           methodologyNotes={methodologyNotes}
           informationQuality={runtimeInformationQuality}
           baselineInformationQuality={informationQualityTelemetry}
@@ -488,45 +275,20 @@ export default function App() {
           ingestTelemetry={ingestTelemetry}
           enhancementReleaseTelemetry={enhancementReleaseTelemetry}
           liveDataDiagnostics={live.liveDataDiagnostics}
-          scenarioTimeline={scenarioTimeline}
-          events={eventLibrary}
-          activeEventIds={scenarios.activeEventIds}
-          onApplyEvent={scenarios.applyEvent}
-          onRemoveEvent={scenarios.removeEvent}
-          onApplyEvents={scenarios.applyEvents}
-          onClearAllEvents={scenarios.clearAllEvents}
           onResizeStart={chrome.handleDrawerResizeStart}
           onResizeStep={chrome.handleDrawerResizeStep}
           onResizeTo={chrome.handleDrawerResizeTo}
-          movers={moversProps}
+          movers={{
+            onSelectCountry: handleSelectCountry,
+            staticProfiles: live.staticProfiles,
+            liveProfiles: live.activeProfiles,
+            liveDataStatus: live.liveDataStatus,
+          }}
           indexCountries={railCountries}
         />
 
-        <input
-          ref={scenarios.fileInputRef}
-          type="file"
-          accept="application/json,.json"
-          style={{ display: 'none' }}
-          onChange={scenarios.handleImportChange}
-        />
-
         <ShortcutsHelp open={chrome.helpOpen} onClose={chrome.handleCloseHelp} />
-        <WelcomeGuide
-          open={chrome.welcomeOpen}
-          onClose={chrome.closeWelcome}
-          onFocusSearch={chrome.handleWelcomeFocusSearch}
-          onOpenScenarioLab={chrome.handleWelcomeOpenScenario}
-          onOpenShortcuts={chrome.handleWelcomeOpenShortcuts}
-        />
-
-        {scenarios.pendingDelete && (
-          <UndoToast
-            message={`Deleted “${scenarios.pendingDelete.name}”`}
-            durationMs={6000}
-            onUndo={scenarios.restoreDeleted}
-            onDismiss={scenarios.dismissPendingDelete}
-          />
-        )}
+        <WelcomeGuide open={chrome.welcomeOpen} onClose={chrome.closeWelcome} onFocusSearch={chrome.handleWelcomeFocusSearch} onOpenMethodology={chrome.handleWelcomeOpenMethodology} onOpenShortcuts={chrome.handleWelcomeOpenShortcuts} />
       </div>
     </ErrorBoundary>
   );

@@ -1,9 +1,10 @@
-import type { SimulatedCountry } from '../types';
+import type { CountryAssessment } from '../types';
+import { getFreshCoverage } from './coverage';
 
 export type GlobalLiveSummary = {
   /** Median model risk across the present simulated set. */
   medianRisk: number;
-  /** Mean of per-country sourceCoverage (0–100). */
+  /** Mean of per-country fresh coverage (0–100). */
   meanCoverage: number;
   /** Count of countries with risk ≥ 55. */
   elevatedRiskCount: number;
@@ -21,7 +22,7 @@ const medianSorted = (sorted: number[]): number => {
 
 /** Aggregate glanceable stats for the live global tracker chrome. */
 export const buildGlobalLiveSummary = (
-  countries: readonly SimulatedCountry[],
+  countries: readonly CountryAssessment[],
 ): GlobalLiveSummary => {
   if (countries.length === 0) {
     return {
@@ -39,7 +40,7 @@ export const buildGlobalLiveSummary = (
   let highRiskCount = 0;
 
   for (const country of countries) {
-    coverageSum += country.profile.sourceCoverage;
+    coverageSum += getFreshCoverage(country.profile);
     if (country.risk >= 55) elevatedRiskCount += 1;
     if (country.risk >= 67) highRiskCount += 1;
   }

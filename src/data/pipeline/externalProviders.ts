@@ -1,4 +1,5 @@
 import type { CountryProfile } from '../../types';
+import { WB_INDICATOR_BY_KEY, type WbIndicatorKey } from '../../lib/worldBankFetch';
 import { iso2ToCountryId } from '../worldBankClient';
 import type { IndicatorObservation } from './types';
 import { toCohesionValue, toMilitaryTier, toRuleOfLawTier, toStabilityTier, toTradeTier } from './transformers';
@@ -7,9 +8,14 @@ export interface IngestedSnapshot {
   version: string;
   timestamp: string;
   countryCountRequested?: number;
+  /** ISO year selected per country and indicator during ingestion. */
+  observationYears?: Partial<Record<SnapshotIndicatorKey, Record<string, string>>>;
   world_bank_military_expenditure_pct?: Record<string, number>;
+  world_bank_military_expenditure_usd?: Record<string, number>;
   world_bank_trade_pct?: Record<string, number>;
   world_bank_gdp_growth?: Record<string, number>;
+  world_bank_gdp_nominal_usd?: Record<string, number>;
+  world_bank_gdp_per_capita_usd?: Record<string, number>;
   world_bank_inflation?: Record<string, number>;
   world_bank_political_stability?: Record<string, number>;
   world_bank_rule_of_law?: Record<string, number>;
@@ -32,31 +38,49 @@ export interface RawWorldBankAuditPayload {
 
 const mapIndicatorCodeToSnapshotKey = {
   'MS.MIL.XPND.GD.ZS': 'world_bank_military_expenditure_pct',
+  'MS.MIL.XPND.CD': 'world_bank_military_expenditure_usd',
   'TG.VAL.TOTL.GD.ZS': 'world_bank_trade_pct',
   'NY.GDP.MKTP.KD.ZG': 'world_bank_gdp_growth',
+  'NY.GDP.MKTP.CD': 'world_bank_gdp_nominal_usd',
+  'NY.GDP.PCAP.CD': 'world_bank_gdp_per_capita_usd',
   'FP.CPI.TOTL.ZG': 'world_bank_inflation',
+  // Accept both the canonical indicator code and the WGI wire code used by
+  // older raw audit artifacts.
+  'PV.EST': 'world_bank_political_stability',
   'GOV_WGI_PV.EST': 'world_bank_political_stability',
+  'RL.EST': 'world_bank_rule_of_law',
   'GOV_WGI_RL.EST': 'world_bank_rule_of_law',
   'SL.UEM.TOTL.ZS': 'world_bank_unemployment',
 } as const satisfies Record<string, keyof IngestedSnapshot>;
 
-type SnapshotIndicatorKey = (typeof mapIndicatorCodeToSnapshotKey)[keyof typeof mapIndicatorCodeToSnapshotKey];
+export type SnapshotIndicatorKey = (typeof mapIndicatorCodeToSnapshotKey)[keyof typeof mapIndicatorCodeToSnapshotKey];
+export type ObservedAtIndex = Record<SnapshotIndicatorKey, Record<string, string>>;
 
 const normalizeObservedAt = (date: string): string => {
   if (/^\d{4}$/.test(date)) return `${date}-12-31`;
   return date.slice(0, 10);
 };
 
-const buildObservedAtIndex = (rawAudit?: RawWorldBankAuditPayload): Record<SnapshotIndicatorKey, Record<string, string>> => {
-  const empty: Record<SnapshotIndicatorKey, Record<string, string>> = {
+export const buildObservedAtIndex = (
+  snapshot: IngestedSnapshot,
+  rawAudit?: RawWorldBankAuditPayload,
+): ObservedAtIndex => {
+  const empty: ObservedAtIndex = {
     world_bank_military_expenditure_pct: {},
+    world_bank_military_expenditure_usd: {},
     world_bank_trade_pct: {},
     world_bank_gdp_growth: {},
+    world_bank_gdp_nominal_usd: {},
+    world_bank_gdp_per_capita_usd: {},
     world_bank_inflation: {},
     world_bank_political_stability: {},
     world_bank_rule_of_law: {},
     world_bank_unemployment: {},
   };
+  for (const indicator of Object.keys(empty) as SnapshotIndicatorKey[]) {
+    Object.assign(empty[indicator], snapshot.observationYears?.[indicator] ?? {});
+  }
+
   if (!rawAudit?.indicators) return empty;
 
   for (const [code, points] of Object.entries(rawAudit.indicators)) {
@@ -80,6 +104,9 @@ const isObservationTooOld = (observedAt: string): boolean => {
   return Date.now() - ts > MAX_INGEST_OBSERVATION_AGE_DAYS * 24 * 60 * 60 * 1000;
 };
 
+const worldBankSourceId = (key: WbIndicatorKey) =>
+  WB_INDICATOR_BY_KEY.get(key)?.provenanceSourceId ?? 'world-bank-wdi';
+
 export const buildIngestedObservations = (
   profiles: CountryProfile[],
   snapshot: IngestedSnapshot,
@@ -87,7 +114,7 @@ export const buildIngestedObservations = (
 ): IndicatorObservation[] => {
   const observations: IndicatorObservation[] = [];
   const fallbackObservedAt = snapshot.timestamp.slice(0, 10);
-  const observedAtByIndicator = buildObservedAtIndex(rawAudit);
+  const observedAtByIndicator = buildObservedAtIndex(snapshot, rawAudit);
 
   for (const profile of profiles) {
     const geo = profile.id;
@@ -101,11 +128,12 @@ export const buildIngestedObservations = (
       if (military !== null && !isObservationTooOld(observedAt)) {
         observations.push({
           providerId: 'wb-military-ingest',
-          sourceId: 'world-bank-wdi',
+          sourceId: worldBankSourceId('militaryExpPct'),
           countryId: profile.id,
           indicator: 'militaryTreatyLevel', // Fallback proxy for treaty level for now
           value: military,
           observedAt,
+          retrievedAt: snapshot.timestamp,
           method: 'snapshot',
           confidence: 0.90, // High confidence for official data
         });
@@ -119,11 +147,12 @@ export const buildIngestedObservations = (
       if (trade !== null && !isObservationTooOld(observedAt)) {
         observations.push({
           providerId: 'wb-trade-ingest',
-          sourceId: 'world-bank-wdi',
+          sourceId: worldBankSourceId('tradePct'),
           countryId: profile.id,
           indicator: 'tradeExposure',
           value: trade,
           observedAt,
+          retrievedAt: snapshot.timestamp,
           method: 'snapshot',
           confidence: 0.88,
         });
@@ -136,11 +165,12 @@ export const buildIngestedObservations = (
     if (stability !== null && !isObservationTooOld(stabilityObservedAt)) {
       observations.push({
         providerId: 'wb-governance-ingest',
-        sourceId: 'world-bank-wdi',
+        sourceId: worldBankSourceId('politicalStability'),
         countryId: profile.id,
         indicator: 'regimeStability',
         value: stability,
         observedAt: stabilityObservedAt,
+        retrievedAt: snapshot.timestamp,
         method: 'snapshot',
         confidence: 0.8,
       });
@@ -152,11 +182,12 @@ export const buildIngestedObservations = (
     if (ruleOfLawTier !== null && !isObservationTooOld(ruleObservedAt)) {
       observations.push({
         providerId: 'wb-governance-ingest',
-        sourceId: 'world-bank-wdi',
+        sourceId: worldBankSourceId('ruleOfLaw'),
         countryId: profile.id,
         indicator: 'regimeStability',
         value: ruleOfLawTier,
         observedAt: ruleObservedAt,
+        retrievedAt: snapshot.timestamp,
         method: 'snapshot',
         confidence: 0.84,
       });
@@ -177,11 +208,12 @@ export const buildIngestedObservations = (
       if (!isObservationTooOld(observedAt)) {
         observations.push({
           providerId: 'wb-cohesion-ingest',
-          sourceId: 'world-bank-wdi',
+          sourceId: worldBankSourceId('gdpGrowth'),
           countryId: profile.id,
           indicator: 'cohesion',
           value: toCohesionValue(profile.indicators.cohesion, gdpGrowth, inflation, unemployment),
           observedAt,
+          retrievedAt: snapshot.timestamp,
           method: 'snapshot',
           confidence: 0.74,
         });

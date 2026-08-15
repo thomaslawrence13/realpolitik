@@ -1,4 +1,5 @@
 import type { CountryProfile } from '../types';
+import { getFreshCoverage } from './coverage';
 
 export type LiveMoverMetric =
   | 'composite'
@@ -54,7 +55,7 @@ export const computeLiveMovers = (
       live.militaryStats && base.militaryStats
         ? round1(live.militaryStats.militaryExpGdpPct - base.militaryStats.militaryExpGdpPct)
         : null;
-    const coverageDelta = Math.round(live.sourceCoverage - base.sourceCoverage);
+    const coverageDelta = Math.round(getFreshCoverage(live) - getFreshCoverage(base));
 
     const compositeScore =
       Math.abs(growthDelta ?? 0) * 2 +

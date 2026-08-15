@@ -1,43 +1,32 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { countryIso2 } from '../src/data/worldBankClient.js';
+import {
+  countryIso2,
+  currentFloorYear,
+  fetchWorldBankPoints,
+  iso2ToCountryId,
+  pickNewestValues,
+  WB_INDICATORS,
+  type IndicatorValues,
+  type WbDataPoint,
+  type WbIndicatorDef,
+} from '../src/lib/worldBankFetch.js';
+import { buildHistoricalSeriesArtifact } from '../src/lib/historicalSeriesArtifact.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_DIR = path.resolve(__dirname, '../src/data/datasets');
 const RAW_DATA_DIR = path.join(DATA_DIR, 'raw');
 
-const WB_API = 'https://api.worldbank.org/v2';
-const isoCodes = Object.values(countryIso2).join(';');
-const isoToCountryId = new Map(Object.entries(countryIso2).map(([countryId, iso]) => [iso, countryId]));
-
-type IndicatorConfig = {
-  snapshotKey:
-    | 'world_bank_military_expenditure_pct'
-    | 'world_bank_trade_pct'
-    | 'world_bank_gdp_growth'
-    | 'world_bank_inflation'
-    | 'world_bank_political_stability'
-    | 'world_bank_rule_of_law'
-    | 'world_bank_unemployment';
-  code: string;
-  label: string;
-  sourceId?: string;
-};
-
-type WorldBankPoint = {
-  country: { id: string; value: string };
-  date: string;
-  value: number | null;
-};
-
-type IndicatorFetchResult = {
-  values: Record<string, number>;
-  rawPoints: WorldBankPoint[];
-  newestObservation: string | null;
-  coverageCount: number;
-  missingCountryCount: number;
+/** The persisted ingest snapshot keys values by country ID (contract with externalProviders.ts). */
+const pickValuesKeyedByCountryId = (values: IndicatorValues): Record<string, number> => {
+  const byId: Record<string, number> = {};
+  for (const [iso, value] of Object.entries(values)) {
+    const countryId = iso2ToCountryId[iso];
+    if (countryId && value !== null && value !== undefined) byId[countryId] = value;
+  }
+  return byId;
 };
 
 type IngestSnapshot = {
@@ -45,12 +34,16 @@ type IngestSnapshot = {
   timestamp: string;
   countryCountRequested: number;
   world_bank_military_expenditure_pct: Record<string, number>;
+  world_bank_military_expenditure_usd: Record<string, number>;
   world_bank_trade_pct: Record<string, number>;
   world_bank_gdp_growth: Record<string, number>;
+  world_bank_gdp_nominal_usd: Record<string, number>;
+  world_bank_gdp_per_capita_usd: Record<string, number>;
   world_bank_inflation: Record<string, number>;
   world_bank_political_stability: Record<string, number>;
   world_bank_rule_of_law: Record<string, number>;
   world_bank_unemployment: Record<string, number>;
+  observationYears: Record<string, Record<string, string>>;
 };
 
 type IngestManifest = {
@@ -59,8 +52,9 @@ type IngestManifest = {
   provider: string;
   requestedCountryCount: number;
   indicators: Array<{
-    snapshotKey: IndicatorConfig['snapshotKey'];
+    snapshotKey: string;
     code: string;
+    sourceId: WbIndicatorDef['provenanceSourceId'];
     label: string;
     coverageCount: number;
     missingCountryCount: number;
@@ -68,153 +62,89 @@ type IngestManifest = {
   }>;
 };
 
-const indicators: IndicatorConfig[] = [
-  {
-    snapshotKey: 'world_bank_military_expenditure_pct',
-    code: 'MS.MIL.XPND.GD.ZS',
-    label: 'Military expenditure (% of GDP)',
-  },
-  {
-    snapshotKey: 'world_bank_trade_pct',
-    code: 'TG.VAL.TOTL.GD.ZS',
-    label: 'Trade (% of GDP)',
-  },
-  {
-    snapshotKey: 'world_bank_gdp_growth',
-    code: 'NY.GDP.MKTP.KD.ZG',
-    label: 'GDP growth (annual %)',
-  },
-  {
-    snapshotKey: 'world_bank_inflation',
-    code: 'FP.CPI.TOTL.ZG',
-    label: 'Inflation, consumer prices (annual %)',
-  },
-  {
-    snapshotKey: 'world_bank_political_stability',
-    code: 'GOV_WGI_PV.EST',
-    label: 'Political stability and absence of violence',
-    sourceId: '3',
-  },
-  {
-    snapshotKey: 'world_bank_rule_of_law',
-    code: 'GOV_WGI_RL.EST',
-    label: 'Rule of law',
-    sourceId: '3',
-  },
-  {
-    snapshotKey: 'world_bank_unemployment',
-    code: 'SL.UEM.TOTL.ZS',
-    label: 'Unemployment, total (% of labour force)',
-  },
-];
-
-const ensureDir = (dirPath: string) => {
-  fs.mkdirSync(dirPath, { recursive: true });
+const SNAPSHOT_KEYS: Record<WbIndicatorDef['key'], keyof IngestSnapshot> = {
+  militaryExpPct: 'world_bank_military_expenditure_pct',
+  militaryExpUsd: 'world_bank_military_expenditure_usd',
+  tradePct: 'world_bank_trade_pct',
+  gdpGrowth: 'world_bank_gdp_growth',
+  gdpNominalUsd: 'world_bank_gdp_nominal_usd',
+  gdpPerCapitaUsd: 'world_bank_gdp_per_capita_usd',
+  inflation: 'world_bank_inflation',
+  politicalStability: 'world_bank_political_stability',
+  ruleOfLaw: 'world_bank_rule_of_law',
+  unemployment: 'world_bank_unemployment',
 };
 
-/** Drop observations older than this — WDI lags 1–3y, but 2014-era rows are too stale to surface. */
-const MAX_OBSERVATION_AGE_YEARS = 6;
-const minAcceptedYear = () => String(new Date().getUTCFullYear() - MAX_OBSERVATION_AGE_YEARS);
+const snapshotKeyForDef = (def: WbIndicatorDef) => SNAPSHOT_KEYS[def.key];
 
-/** Prefer newest non-null annual observation per country (not API row order). */
-const pickNewestValues = (
-  points: WorldBankPoint[],
-): { values: Record<string, number>; newestObservation: string | null } => {
-  const floorYear = minAcceptedYear();
-  const best = new Map<string, { year: string; value: number }>();
-  for (const point of points) {
-    if (point.value === null || point.value === undefined) continue;
-    const iso = point.country.id.toUpperCase();
-    const countryId = isoToCountryId.get(iso);
-    if (!countryId) continue;
-    const year = String(point.date ?? '').slice(0, 4);
-    if (!/^\d{4}$/.test(year) || year < floorYear) continue;
-    const prev = best.get(countryId);
-    if (!prev || year > prev.year) {
-      best.set(countryId, { year, value: point.value });
-    }
-  }
-
-  const values: Record<string, number> = {};
-  let newestObservation: string | null = null;
-  for (const [countryId, row] of best) {
-    values[countryId] = row.value;
-    if (!newestObservation || row.year > newestObservation) {
-      newestObservation = row.year;
-    }
-  }
-  return { values, newestObservation };
+const fetchIndicator = async (
+  def: WbIndicatorDef,
+): Promise<{
+  values: IndicatorValues;
+  rawPoints: WbDataPoint[];
+  newestObservation: string | null;
+  observedYears: Record<string, string>;
+}> => {
+  console.log(`Fetching ${def.code} (${def.label})...`);
+  const rawPoints = await fetchWorldBankPoints(def);
+  const { values, newestObservation, observedYears } = pickNewestValues(rawPoints, currentFloorYear());
+  return { values, rawPoints, newestObservation, observedYears };
 };
-
-async function fetchWbIndicator(
-  indicator: IndicatorConfig,
-): Promise<IndicatorFetchResult> {
-  const sourceParam = indicator.sourceId ? `&source=${indicator.sourceId}` : '';
-  // mrv=10 recovers sparse reporters (conflict zones, small states) that lack the
-  // latest 1–3 years but still publish older WDI observations.
-  const url =
-    `${WB_API}/country/${isoCodes}/indicator/${indicator.code}` +
-    `?format=json&mrv=10&per_page=2000${sourceParam}`;
-
-  console.log(`Fetching ${indicator.code} (${indicator.label})...`);
-  const response = await fetch(url, { cache: 'no-cache' });
-  if (!response.ok) throw new Error(`World Bank API (${indicator.code}): HTTP ${response.status}`);
-
-  const json = (await response.json()) as [unknown, WorldBankPoint[] | null];
-  const points = json[1] ?? [];
-  const { values, newestObservation } = pickNewestValues(points);
-
-  return {
-    values,
-    rawPoints: points,
-    newestObservation,
-    coverageCount: Object.keys(values).length,
-    missingCountryCount: Object.keys(countryIso2).length - Object.keys(values).length,
-  };
-}
 
 async function main() {
   console.log('Starting data ingestion. Reaching out to World Bank APIs...');
 
   try {
-    ensureDir(DATA_DIR);
-    ensureDir(RAW_DATA_DIR);
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.mkdirSync(RAW_DATA_DIR, { recursive: true });
 
     const fetchedAt = new Date().toISOString();
-    const results = await Promise.all(indicators.map(async (indicator) => [indicator, await fetchWbIndicator(indicator)] as const));
+    const results = await Promise.all(
+      WB_INDICATORS.map(async (def) => [def, await fetchIndicator(def)] as const),
+    );
 
     const dataset: IngestSnapshot = {
-      version: '1.4.0-ingested',
+      version: '1.5.0-ingested',
       timestamp: fetchedAt,
       countryCountRequested: Object.keys(countryIso2).length,
       world_bank_military_expenditure_pct: {},
+      world_bank_military_expenditure_usd: {},
       world_bank_trade_pct: {},
       world_bank_gdp_growth: {},
+      world_bank_gdp_nominal_usd: {},
+      world_bank_gdp_per_capita_usd: {},
       world_bank_inflation: {},
       world_bank_political_stability: {},
       world_bank_rule_of_law: {},
       world_bank_unemployment: {},
+      observationYears: {},
     };
 
     const manifest: IngestManifest = {
-      version: '1.1.0',
+      version: '1.3.0',
       generatedAt: fetchedAt,
       provider: 'world-bank-open-data',
       requestedCountryCount: Object.keys(countryIso2).length,
       indicators: [],
     };
 
-    const rawAudit: Record<string, WorldBankPoint[]> = {};
+    const rawAudit: Record<string, WbDataPoint[]> = {};
 
-    for (const [indicator, result] of results) {
-      dataset[indicator.snapshotKey] = result.values;
-      rawAudit[indicator.code] = result.rawPoints;
+    for (const [def, result] of results) {
+      dataset[snapshotKeyForDef(def)] = pickValuesKeyedByCountryId(result.values);
+      dataset.observationYears[snapshotKeyForDef(def)] = Object.fromEntries(
+        Object.entries(result.observedYears)
+          .map(([iso, year]) => [iso2ToCountryId[iso], year] as const)
+          .filter(([countryId]) => Boolean(countryId)),
+      );
+      rawAudit[def.code] = result.rawPoints;
       manifest.indicators.push({
-        snapshotKey: indicator.snapshotKey,
-        code: indicator.code,
-        label: indicator.label,
-        coverageCount: result.coverageCount,
-        missingCountryCount: result.missingCountryCount,
+        snapshotKey: snapshotKeyForDef(def),
+        code: def.code,
+        sourceId: def.provenanceSourceId,
+        label: def.label,
+        coverageCount: Object.keys(result.values).length,
+        missingCountryCount: Object.keys(countryIso2).length - Object.keys(result.values).length,
         newestObservation: result.newestObservation,
       });
     }
@@ -222,14 +152,21 @@ async function main() {
     const snapshotPath = path.join(DATA_DIR, 'ingested_snapshot.json');
     const manifestPath = path.join(DATA_DIR, 'ingest_manifest.json');
     const rawAuditPath = path.join(RAW_DATA_DIR, 'world_bank_latest.json');
+    const historicalPath = path.join(DATA_DIR, 'historical_indicator_series.json');
 
     fs.writeFileSync(snapshotPath, JSON.stringify(dataset, null, 2));
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     fs.writeFileSync(rawAuditPath, JSON.stringify({ fetchedAt, indicators: rawAudit }, null, 2));
 
+    fs.writeFileSync(
+      historicalPath,
+      JSON.stringify(buildHistoricalSeriesArtifact(fetchedAt, rawAudit), null, 2),
+    );
+
     console.log(`Saved normalized snapshot to ${snapshotPath}`);
     console.log(`Saved ingest manifest to ${manifestPath}`);
     console.log(`Saved raw audit payload to ${rawAuditPath}`);
+    console.log(`Saved historical series payload to ${historicalPath}`);
   } catch (error) {
     console.error('Data ingestion failed!', error);
     process.exit(1);

@@ -3,12 +3,10 @@ export type RegimeType = 'democracy' | 'hybrid' | 'authoritarian';
 export type Tier = 'low' | 'medium' | 'high';
 export type RelationshipDimension = 'cooperation' | 'hostility' | 'dependency' | 'deterrence';
 export type OverlayMode = 'none' | RelationshipDimension;
-export type WeightSetKey = 'baseline' | 'hardPower' | 'economicStress';
 export type MapFillMode =
   | 'alignment'
   | 'risk'
   | 'confidence'
-  | 'shift'
   | 'gdpPerCapita'
   | 'gdpGrowth'
   | 'inflation'
@@ -55,7 +53,25 @@ export interface CountryIndicators {
   cohesion: number;
 }
 
-/** Key macroeconomic statistics (~2024 values). */
+export type EvidenceClass = 'observed' | 'estimated' | 'fallback' | 'derived';
+
+/** Field-level evidence metadata for numeric snapshots shown in the inspector. */
+export interface MetricProvenance {
+  sourceId: string;
+  observedAt: string;
+  retrievedAt?: string;
+  evidenceClass: EvidenceClass;
+  confidence?: number;
+}
+
+export type EconomicMetricKey =
+  | 'gdpBillionUsd'
+  | 'gdpGrowthPct'
+  | 'gdpPerCapitaUsd'
+  | 'inflationPct'
+  | 'tradeGdpPct';
+
+/** Key macroeconomic statistics (latest observed values). */
 export interface EconomicStats {
   /** Nominal GDP in billions USD */
   gdpBillionUsd: number;
@@ -67,9 +83,17 @@ export interface EconomicStats {
   inflationPct: number;
   /** Total trade (imports + exports) as % of GDP */
   tradeGdpPct: number;
+  /** Exact source and evidence attached to each displayed metric. */
+  provenance?: Partial<Record<EconomicMetricKey, MetricProvenance>>;
 }
 
-/** Key military statistics (~2024 values). */
+export type MilitaryMetricKey =
+  | 'militaryExpBillionUsd'
+  | 'militaryExpGdpPct'
+  | 'activePersonnelThousands'
+  | 'nuclearArmed';
+
+/** Key military statistics (latest observed values). */
 export interface MilitaryStats {
   /** Defence spending in billions USD */
   militaryExpBillionUsd: number;
@@ -79,9 +103,11 @@ export interface MilitaryStats {
   activePersonnelThousands: number;
   /** Whether the state possesses nuclear weapons */
   nuclearArmed: boolean;
+  /** Exact source and evidence attached to each displayed metric. */
+  provenance?: Partial<Record<MilitaryMetricKey, MetricProvenance>>;
 }
 
-/** Demographic snapshot (~2024 values). */
+/** Demographic snapshot (latest observed values). */
 export interface DemographicStats {
   /** Total population in millions */
   populationMillions: number;
@@ -182,6 +208,14 @@ export interface DiplomaticProfile {
   igoMemberships: string[];
   /** Active treaty review or accession track (optional). */
   pendingAccession?: string[];
+  /** UN General Assembly voting agreement computed from published roll-calls. */
+  unVotesSource?: {
+    sourceTitle: string;
+    sourceUrl: string;
+    retrievedAt: string;
+    sessions: string[];
+    rollCalls: number;
+  };
 }
 
 /** Per-mineral role in critical-supply chains (v11). */
@@ -223,9 +257,12 @@ export interface SoftPowerProfile {
 
 export type HistoricalMetricId =
   | 'gdpGrowth'
+  | 'gdpNominal'
+  | 'gdpPerCapita'
   | 'inflation'
   | 'tradeOpenness'
   | 'militaryBurden'
+  | 'militarySpend'
   | 'unemployment';
 
 export interface HistoricalMetricPoint {
@@ -270,11 +307,11 @@ export interface CountryRecord {
   assumptions: string[];
   sourceIds: string[];
   indicators: CountryIndicators;
-  /** Macroeconomic snapshot (~2024). Present for all parameterised states. */
+  /** Macroeconomic snapshot (latest observed). Present for all parameterised states. */
   economicStats?: EconomicStats;
-  /** Defence / military snapshot (~2024). Present for all parameterised states. */
+  /** Defence / military snapshot (latest observed). Present for all parameterised states. */
   militaryStats?: MilitaryStats;
-  /** Demographic snapshot (~2024). Coverage limited to G20 + key strategic actors in v10. */
+  /** Demographic snapshot. Coverage limited to G20 + key strategic actors in v10. */
   demographics?: DemographicStats;
   /** Energy and critical-resource posture. Coverage limited to major exporters/importers in v10. */
   energy?: EnergyProfile;
@@ -296,6 +333,33 @@ export interface CountryRecord {
   softPower?: SoftPowerProfile;
   /** Historical observed indicator series with provenance metadata. */
   historicalSeries?: HistoricalMetricSeries[];
+  /** US Treasury OFAC sanctions registry summary for this country. */
+  sanctions?: {
+    entryCount: number;
+    programCount: number;
+    topPrograms: string[];
+    sourceTitle: string;
+    sourceUrl: string;
+    retrievedAt: string;
+  };
+  /** UCDP Country-Year organized-violence summary (observed conflict feed). */
+  conflict?: {
+    active: boolean;
+    lastYear: number;
+    lastYearStateBased: boolean;
+    lastYearNonState: boolean;
+    lastYearOneSided: boolean;
+    deathsLastYear: number;
+    deathsPriorYear: number;
+    totalDeathsInWindow: number;
+    stateBased: boolean;
+    nonState: boolean;
+    oneSided: boolean;
+    version: string;
+    sourceTitle: string;
+    sourceUrl: string;
+    retrievedAt: string;
+  };
 }
 
 export interface RelationshipEdge {
@@ -313,7 +377,6 @@ export interface RelationshipEdge {
 export interface DatasetBundle {
   version: string;
   methodologyNotes: string[];
-  scenarioTimeline: string[];
   sources: DatasetSource[];
   countries: CountryRecord[];
   relationships: RelationshipEdge[];
@@ -361,6 +424,7 @@ export interface IndicatorTelemetry {
   indicator: keyof CountryIndicators;
   sourceId: string;
   observedAt: string;
+  retrievedAt?: string;
   confidence: number;
   stale: boolean;
   method: 'api' | 'snapshot' | 'expert-curated' | 'derived';
@@ -372,6 +436,23 @@ export interface CountryDataQuality {
   computedLastUpdated: string;
   degradedReasons: string[];
   indicators: IndicatorTelemetry[];
+  /** Runtime coverage split by evidence and freshness instead of one opaque percentage. */
+  coverage: CoverageMetrics;
+}
+
+export interface CoverageMetrics {
+  /** Any selected value, regardless of evidence quality. */
+  valuePct: number;
+  /** Selected values classified as observed evidence. */
+  observedPct: number;
+  /** Selected values within their freshness SLA. */
+  freshPct: number;
+  /** Selected values classified as fallback evidence. */
+  fallbackPct: number;
+  /** Selected values outside their freshness SLA. */
+  stalePct: number;
+  /** Selected values below the indicator confidence floor. */
+  lowConfidencePct: number;
 }
 
 export interface CountryInformationScore {
@@ -505,22 +586,10 @@ export interface EnhancementReleaseTelemetry {
   releaseAccepted: boolean;
 }
 
-export interface ProbabilitySet {
-  blocA: number;
-  blocB: number;
-  nonAligned: number;
-}
-
 export interface DriverScore {
   label: string;
   value: number;
   direction: 'blocA' | 'blocB' | 'nonAligned' | 'risk' | 'data';
-}
-
-export interface ScenarioSnapshot {
-  label: string;
-  alignment: Alignment;
-  confidence: number;
 }
 
 export interface RelationshipSummary {
@@ -531,92 +600,22 @@ export interface RelationshipSummary {
   tension: number;
 }
 
-export interface ScenarioInputs {
-  sanctionShock: number;
-  treatyShift: number;
-  electionVolatility: number;
-  invasionPressure: number;
-  coupRisk: number;
-}
-
-export interface SimulationWeightSet {
-  key: WeightSetKey;
-  label: string;
-  description: string;
-  alliance: number;
-  sanctions: number;
-  elections: number;
-  invasion: number;
-  coup: number;
-  economic: number;
-}
-
-export interface SimulationOptions {
-  includeHistory?: boolean;
-  /** When true, builds the full ContributionLine explanation for the inspector.
-   *  Defaults to false — skip for map/movers/sparkline computations that don't show breakdowns. */
-  includeExplanation?: boolean;
-  scenarioInputs?: ScenarioInputs;
-  activeEvents?: EventTemplate[];
-  weightSet?: SimulationWeightSet;
-}
-
-export interface ContributionLine {
-  label: string;
-  multiplier?: number;
-  inputValue?: number;
-  contribution: number;
-  note?: string;
-}
-
-export interface RiskExplanation {
-  base: number;
-  components: ContributionLine[];
-  total: number;
-  clamped: number;
-  weightSetLabel: string;
-}
-
-export interface ConfidenceExplanation {
-  topProbability: number;
-  secondProbability: number;
-  margin: number;
-  base: number;
-  components: ContributionLine[];
-  total: number;
-  clamped: number;
-}
-
-export interface ProbabilityExplanation {
-  base: number;
-  components: ContributionLine[];
-  raw: number;
-  rawClamped: number;
-  rawTotal: number;
-  normalized: number;
-}
-
-export interface SimulationExplanation {
-  risk: RiskExplanation;
-  confidence: ConfidenceExplanation;
-  probabilities: {
-    blocA: ProbabilityExplanation;
-    blocB: ProbabilityExplanation;
-    nonAligned: ProbabilityExplanation;
-  };
-}
-
-export interface SimulatedCountry {
+/**
+ * Per-country assessment derived from observed indicators and data quality.
+ * Alignment is a deterministic reading of current diplomatic posture (defense
+ * pacts, UN voting record, regime type) — not a forecast. Confidence is the
+ * information-quality score (source coverage, completeness, recency, evidence).
+ * Risk is a stress index computed from observed indicators and vulnerabilities.
+ */
+export interface CountryAssessment {
   profile: CountryProfile;
   alignment: Alignment;
+  /** Data confidence 0–100: how well-evidenced this country record is. */
   confidence: number;
+  /** Observed stress index 0–100 built from indicators and vulnerabilities. */
   risk: number;
-  probabilities: ProbabilitySet;
   drivers: DriverScore[];
-  history: ScenarioSnapshot[];
   relationshipSummary: RelationshipSummary;
-  /** Only populated when `includeExplanation: true` was passed to `simulateCountry`. */
-  explanation: SimulationExplanation | null;
 }
 
 export interface Filters {
@@ -627,25 +626,4 @@ export interface Filters {
   sanctionsExposure: 'all' | Tier;
   regimeType: 'all' | RegimeType;
   riskLevel: 'all' | Tier;
-}
-
-export interface SavedScenario {
-  id: string;
-  name: string;
-  timelineIndex: number;
-  weightSetKey: WeightSetKey;
-  inputs: ScenarioInputs;
-  activeEventIds?: string[];
-  savedAt?: string;
-}
-
-export type EventCategory = 'military' | 'economic' | 'political' | 'compound';
-
-export interface EventTemplate {
-  id: string;
-  name: string;
-  category: EventCategory;
-  summary: string;
-  inputs: Partial<ScenarioInputs>;
-  regionTags: string[];
 }

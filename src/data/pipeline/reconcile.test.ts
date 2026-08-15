@@ -58,4 +58,8 @@ test('stale or low-confidence observations are marked as fallback evidence', () 
   assert.equal(telemetry?.evidenceClass, 'fallback');
   assert.equal(telemetry?.stale, true);
   assert.ok(enriched.dataQuality.degradedReasons.length > 0);
+  assert.equal(enriched.dataQuality.coverage.valuePct, 13);
+  assert.equal(enriched.dataQuality.coverage.freshPct, 0);
+  assert.equal(enriched.dataQuality.coverage.fallbackPct, 13);
+  assert.equal(enriched.dataQuality.coverage.stalePct, 13);
 });

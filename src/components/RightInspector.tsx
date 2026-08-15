@@ -1,79 +1,53 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import type { Alignment, ScenarioInputs, SimulatedCountry, SimulationWeightSet } from '../types';
-import { getRiskTier } from '../simulation';
-import { BarRow, MetricCard, Segmented } from './ui';
+import type { Alignment, CountryAssessment } from '../types';
+import { getRiskTier } from '../assessment';
+import { MetricCard, Segmented } from './ui';
 import { useMapStore } from '../store/useMapStore';
 import { formatTitle } from './inspectorUtils';
 import {
-  PROBABILITY_KEYS,
-  DeltaHint,
   getDominantRelationshipDimension,
   relationshipTagBackgroundAlpha,
   relationshipTagBorderAlpha,
 } from './inspector/shared';
-import type { SparklineSeries } from './inspector/shared';
 import { EconomicStatsSection } from './inspector/EconomicStatsSection';
 import { MilitaryStatsSection } from './inspector/MilitaryStatsSection';
-import { AnalysisPanel } from './inspector/AnalysisPanel';
-import { ComparisonSection } from './inspector/ComparisonSection';
+import { HistoricalSeriesSection } from './inspector/HistoricalSeriesSection';
+import { PoliticalRegistrySection } from './inspector/PoliticalRegistrySection';
+import { RelationshipEvidenceSection } from './inspector/RelationshipEvidenceSection';
+import { getCoverageMetrics } from '../lib/coverage';
 
-export type InspectorTab = 'snapshot' | 'stats' | 'analysis';
-
-export type { SparklineSeries };
+export type InspectorTab = 'snapshot' | 'stats' | 'history';
 
 type Props = {
   open: boolean;
-  selected: SimulatedCountry;
-  baselineSelected: SimulatedCountry;
-  riskDelta: number;
-  confidenceDelta: number;
-  scenarioName: string;
-  scenarioInputs: ScenarioInputs;
-  activeWeightSet: SimulationWeightSet;
-  activeEventNames: string[];
+  selected: CountryAssessment;
+  allCountries: CountryAssessment[];
   alignmentColor: Record<Alignment, string>;
   alignmentLabel: Record<Alignment, string>;
   tab: InspectorTab;
   onTabChange: (tab: InspectorTab) => void;
   onSelectRelated: (mapName: string) => void;
-  comparisonSelected: SimulatedCountry | null;
-  comparisonScenarioName: string | null;
-  onClearComparison: () => void;
-  sparkline: SparklineSeries | null;
-  allCountries: SimulatedCountry[];
 };
 
-/** Map legacy tab ids from persistence / older sessions onto the denser set. */
+/** Map legacy tab ids from persistence / older sessions onto the current set. */
 export const normalizeInspectorTab = (raw: string | undefined): InspectorTab => {
   if (raw === 'stats') return 'stats';
-  if (raw === 'analysis' || raw === 'drivers') return 'analysis';
-  // overview / relationships / profile / anything else → amalgamated snapshot
+  if (raw === 'history') return 'history';
+  // analysis / drivers / what-if tabs from older sessions → snapshot
   return 'snapshot';
 };
 
 export const RightInspector = memo(function RightInspector({
   open,
   selected,
-  baselineSelected,
-  riskDelta,
-  confidenceDelta,
-  scenarioName,
-  scenarioInputs,
-  activeWeightSet,
-  activeEventNames,
+  allCountries,
   alignmentColor,
   alignmentLabel,
   tab,
   onTabChange,
   onSelectRelated,
-  comparisonSelected,
-  comparisonScenarioName,
-  onClearComparison,
-  sparkline,
-  allCountries,
 }: Props) {
   const hoveredCountry = useMapStore((state) => state.hoveredCountry);
-  const alignmentChanged = selected.alignment !== baselineSelected.alignment;
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const [showDrivers, setShowDrivers] = useState(false);
 
@@ -154,16 +128,10 @@ export const RightInspector = memo(function RightInspector({
             <span>{selected.profile.allianceNetwork}</span>
             <span className="inspector-sep">·</span>
             <span>{formatTitle(selected.profile.regimeType)}</span>
-            {alignmentChanged && (
-              <>
-                <span className="inspector-sep">·</span>
-                <span className="inspector-shift">vs baseline: {alignmentLabel[baselineSelected.alignment]}</span>
-              </>
-            )}
           </p>
         </div>
 
-        {/* Always-visible KPI strip — observed stats first, model scores second */}
+        {/* Always-visible KPI strip — observed stats first, data confidence second */}
         <div className="inspector-kpi-strip" aria-label="At a glance">
           {econ && (
             <div className="inspector-kpi inspector-kpi-observed">
@@ -189,28 +157,28 @@ export const RightInspector = memo(function RightInspector({
           <div className={`inspector-kpi risk-${getRiskTier(selected.risk)}`}>
             <span>Risk</span>
             <strong>{selected.risk}%</strong>
-            <em>
-              <DeltaHint delta={riskDelta} higherIsBetter={false} />
+            <em title="Observed stress index from indicators, relationships, and vulnerabilities">
+              observed stress
             </em>
           </div>
           <div className="inspector-kpi">
             <span>Confidence</span>
             <strong>{selected.confidence}%</strong>
-            <em>
-              <DeltaHint delta={confidenceDelta} higherIsBetter />
-            </em>
+            <em title="Information-quality score: coverage, completeness, recency, evidence">data quality</em>
           </div>
           <div className="inspector-kpi">
-            <span>Coverage</span>
-            <strong>{selected.profile.sourceCoverage}%</strong>
-            <em title="Indicator / source recency">as of {selected.profile.lastUpdated}</em>
+            <span>Fresh coverage</span>
+            <strong>{getCoverageMetrics(selected.profile).freshPct}%</strong>
+            <em title="Selected indicators within freshness SLA">
+              {getCoverageMetrics(selected.profile).observedPct}% observed · {getCoverageMetrics(selected.profile).fallbackPct}% fallback
+            </em>
           </div>
         </div>
         <p className="inspector-asof" title="Observed series may lag the calendar year">
           Data as of <strong>{selected.profile.lastUpdated}</strong>
           {econ ? ' · econ/mil snapshots' : ''}
           {' · '}
-          model scores secondary
+          assessment from observed data
         </p>
       </header>
 
@@ -221,7 +189,7 @@ export const RightInspector = memo(function RightInspector({
           options={[
             { value: 'snapshot', label: 'Snapshot' },
             { value: 'stats', label: 'Full stats' },
-            { value: 'analysis', label: 'What-if' },
+            { value: 'history', label: 'History' },
           ]}
         />
       </div>
@@ -260,23 +228,6 @@ export const RightInspector = memo(function RightInspector({
 
         {activeTab === 'snapshot' && (
           <div className="panel-stack panel-stack-dense">
-            <section className="glance-card">
-              <header>
-                <h3>Alignment mix</h3>
-                <span>{scenarioName}</span>
-              </header>
-              <div className="glance-bars">
-                {PROBABILITY_KEYS.map((key) => (
-                  <BarRow
-                    key={key}
-                    label={alignmentLabel[key]}
-                    value={selected.probabilities[key]}
-                    color={alignmentColor[key]}
-                  />
-                ))}
-              </div>
-            </section>
-
             {(econ || mil) && (
               <section className="glance-card glance-stats-grid">
                 {econ && (
@@ -374,32 +325,7 @@ export const RightInspector = memo(function RightInspector({
               )}
             </section>
 
-            {comparisonSelected && comparisonScenarioName && (
-              <ComparisonSection
-                activeSelected={selected}
-                comparisonSelected={comparisonSelected}
-                comparisonScenarioName={comparisonScenarioName}
-                alignmentColor={alignmentColor}
-                alignmentLabel={alignmentLabel}
-                onClearComparison={onClearComparison}
-              />
-            )}
-
-            {sparkline && sparkline.active.length > 1 && (
-              <section className="glance-card">
-                <header>
-                  <h3>Risk path</h3>
-                  <span>model series</span>
-                </header>
-                <p className="glance-empty">
-                  {sparkline.active[0]}% → {sparkline.active[sparkline.active.length - 1]}%
-                  {sparkline.baseline.length > 1 && (
-                    <> · baseline {sparkline.baseline[0]}% → {sparkline.baseline[sparkline.baseline.length - 1]}%</>
-                  )}
-                  {' '}across {sparkline.active.length} points
-                </p>
-              </section>
-            )}
+            <RelationshipEvidenceSection relationships={topRelationships.map(({ relationship }) => relationship)} />
 
             <button
               type="button"
@@ -462,22 +388,16 @@ export const RightInspector = memo(function RightInspector({
                 selected={selected}
               />
             )}
+            <PoliticalRegistrySection selected={selected} />
             {!econ && !mil && (
               <p className="glance-empty">No detailed economic or military snapshot for this profile.</p>
             )}
           </div>
         )}
-
-        {activeTab === 'analysis' && (
-          <AnalysisPanel
-            selected={selected}
-            scenarioName={scenarioName}
-            scenarioInputs={scenarioInputs}
-            activeWeightSet={activeWeightSet}
-            activeEventNames={activeEventNames}
-            comparisonSelected={comparisonSelected}
-            comparisonScenarioName={comparisonScenarioName}
-          />
+      {activeTab === 'history' && (
+          <div className="panel-stack panel-stack-dense">
+            <HistoricalSeriesSection countryId={selected.profile.id} />
+          </div>
         )}
       </div>
     </aside>

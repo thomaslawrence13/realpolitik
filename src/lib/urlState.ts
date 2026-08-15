@@ -1,32 +1,33 @@
-import type { ScenarioInputs, WeightSetKey } from '../types';
+import type { MapFillMode, OverlayMode } from '../types';
 
-const HASH_PREFIX = '#scenario=';
+const HASH_PREFIX = '#state=';
+const MAX_HASH_LENGTH = 2048;
+const MAX_COUNTRY_NAME_LENGTH = 100;
 
 export interface ShareableState {
-  scenarioName: string;
-  scenarioInputs: ScenarioInputs;
-  weightSetKey: WeightSetKey;
-  activeEventIds: string[];
-  timelineIndex: number;
   selectedCountry: string;
+  overlayMode?: OverlayMode;
+  mapFillMode?: MapFillMode;
 }
+
+const overlayModes: OverlayMode[] = ['none', 'cooperation', 'hostility', 'dependency', 'deterrence'];
+const fillModes: MapFillMode[] = [
+  'alignment', 'risk', 'confidence', 'gdpPerCapita', 'gdpGrowth', 'inflation', 'tradeOpenness',
+  'nuclearArmed', 'militaryBurden', 'regime', 'conflictPressure', 'population', 'medianAge',
+  'energyExports', 'demographicPressure', 'cyberCapability', 'internetFreedom', 'foodImportDependence',
+  'waterStress', 'debtVulnerability', 'sovereignRating', 'unVotingBlocA', 'unVotingBlocB',
+  'criticalMineralIntensity', 'softPower', 'defensePactDensity',
+];
 
 const isShareableState = (value: unknown): value is ShareableState => {
   if (!value || typeof value !== 'object') return false;
   const v = value as Record<string, unknown>;
-  if (typeof v.scenarioName !== 'string') return false;
-  if (typeof v.weightSetKey !== 'string') return false;
-  if (typeof v.timelineIndex !== 'number') return false;
-  if (typeof v.selectedCountry !== 'string') return false;
-  if (!Array.isArray(v.activeEventIds)) return false;
-  if (!v.scenarioInputs || typeof v.scenarioInputs !== 'object') return false;
-  const inputs = v.scenarioInputs as Record<string, unknown>;
   return (
-    typeof inputs.sanctionShock === 'number' &&
-    typeof inputs.treatyShift === 'number' &&
-    typeof inputs.electionVolatility === 'number' &&
-    typeof inputs.invasionPressure === 'number' &&
-    typeof inputs.coupRisk === 'number'
+    typeof v.selectedCountry === 'string' &&
+    v.selectedCountry.length > 0 &&
+    v.selectedCountry.length <= MAX_COUNTRY_NAME_LENGTH &&
+    (v.overlayMode === undefined || overlayModes.includes(v.overlayMode as OverlayMode)) &&
+    (v.mapFillMode === undefined || fillModes.includes(v.mapFillMode as MapFillMode))
   );
 };
 
@@ -54,6 +55,9 @@ export const decodeStateFromHash = (): ShareableState | null => {
   if (typeof window === 'undefined') return null;
   const hash = window.location.hash;
   if (!hash.startsWith(HASH_PREFIX)) return null;
+  // URL fragments are attacker-controlled input. Bound decoding and parsing so
+  // a crafted link cannot force a large base64 allocation on page load.
+  if (hash.length > MAX_HASH_LENGTH) return null;
   const raw = hash.slice(HASH_PREFIX.length);
   try {
     const json = fromBase64(decodeURIComponent(raw));

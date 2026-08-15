@@ -1,8 +1,11 @@
 import { geopoliticalDatasetV1 } from './datasets/v1';
 import { v10Enhancements } from './datasets/v10Enhancements';
 import { v11Enhancements } from './datasets/v11Enhancements';
-import { historicalSeriesByCountryId } from './historicalSeries';
 import ingestManifest from './datasets/ingest_manifest.json';
+import unVotesArtifact from './datasets/un_ga_votes.json';
+import ofacRegistryArtifact from './datasets/ofac_sanctions_registry.json';
+import ucdpConflictArtifact from './datasets/ucdp_conflict.json';
+import { countryIso2 } from '../lib/worldBankFetch';
 import type {
   CountryIndicators,
   IngestIndicatorTelemetry,
@@ -15,6 +18,7 @@ import type {
   IndicatorTelemetry,
   InformationQualityTelemetry,
   RelationshipEdge,
+  CoverageMetrics,
 } from '../types';
 import { INFORMATION_QUALITY_CONTRACT } from './quality/contract';
 import { buildInformationQualityTelemetry } from './quality/telemetry';
@@ -398,28 +402,170 @@ const deriveCountryDataQuality = (country: CountryRecord) => {
   }
   degradedReasons.push(...getDataQualityGaps(country));
 
+  const coverage: CoverageMetrics = {
+    valuePct: country.sourceCoverage,
+    observedPct: 0,
+    freshPct: stale ? 0 : country.sourceCoverage,
+    fallbackPct: stale ? country.sourceCoverage : 0,
+    stalePct: stale ? country.sourceCoverage : 0,
+    lowConfidencePct: country.sourceCoverage < DATA_QUALITY_SOURCE_COVERAGE_THRESHOLD ? 100 - country.sourceCoverage : 0,
+  };
+
   return {
     computedSourceCoverage: country.sourceCoverage,
     computedLastUpdated: country.lastUpdated,
     degradedReasons,
     indicators,
+    coverage,
   };
+};
+
+const DAY_MS = 86_400_000;
+const UN_VOTES_FRESH_DAYS = 420;
+const OFAC_FRESH_DAYS = 120;
+const UN_VOTES_MIN_ROLL_CALLS = 24;
+/** UCDP publishes the OV-CY yearly in mid-year; an artifact older than ~14 months is stale. */
+const UCDP_FRESH_DAYS = 440;
+
+const unVotesPayload = unVotesArtifact as {
+  fetchedAt: string;
+  sourceTitle: string;
+  sourceUrl: string;
+  sessions: string[];
+  perCountry: Record<string, { blocA: number; blocB: number; rollCalls: number }>;
+};
+
+const ofacPayload = ofacRegistryArtifact as {
+  fetchedAt: string;
+  sourceTitle: string;
+  sourceUrl: string;
+  perCountry: Record<string, {
+    entryCount: number;
+    programCount: number;
+    topPrograms: Array<{ program: string; count: number }>;
+  }>;
+};
+
+const ucdpPayload = ucdpConflictArtifact as {
+  fetchedAt: string;
+  sourceTitle: string;
+  sourceUrl: string;
+  version: string;
+  window: { fromYear: number; throughYear: number };
+  perCountry: Record<string, {
+    active: boolean;
+    lastYear: number;
+    lastYearStateBased: boolean;
+    lastYearNonState: boolean;
+    lastYearOneSided: boolean;
+    deathsLastYear: number;
+    deathsPriorYear: number;
+    totalDeathsInWindow: number;
+    stateBased: boolean;
+    nonState: boolean;
+    oneSided: boolean;
+  }>;
+};
+
+const daysSince = (value: string): number => {
+  const diff = Date.now() - Date.parse(value);
+  return Number.isFinite(diff) ? Math.max(0, diff / DAY_MS) : Number.NaN;
+};
+
+const unVotesFresh = daysSince(unVotesPayload.fetchedAt) <= UN_VOTES_FRESH_DAYS;
+const ofacFresh = daysSince(ofacPayload.fetchedAt) <= OFAC_FRESH_DAYS;
+const ucdpFresh = daysSince(ucdpPayload.fetchedAt) <= UCDP_FRESH_DAYS;
+
+/**
+ * Overlay measured political registries onto a profile. Only fresh artifacts
+ * are applied; stale ones leave the curated posture untouched (the honesty
+ * gate flags the artifact instead).
+ */
+const applyPoliticalRegistries = (country: CountryProfile): CountryProfile => {
+  const iso = countryIso2[country.id];
+  if (!iso) return { ...country };
+  let next: CountryProfile = { ...country };
+
+  const votes = unVotesFresh ? unVotesPayload.perCountry[iso] : undefined;
+  if (votes && votes.rollCalls >= UN_VOTES_MIN_ROLL_CALLS) {
+    next = {
+      ...next,
+      diplomatic: {
+        ...(next.diplomatic ?? {
+          unVotingAlignmentBlocA: 50,
+          unVotingAlignmentBlocB: 50,
+          defensePacts: [],
+          igoMemberships: [],
+        }),
+        unVotingAlignmentBlocA: votes.blocA,
+        unVotingAlignmentBlocB: votes.blocB,
+        unVotesSource: {
+          sourceTitle: unVotesPayload.sourceTitle,
+          sourceUrl: unVotesPayload.sourceUrl,
+          retrievedAt: unVotesPayload.fetchedAt.slice(0, 10),
+          sessions: unVotesPayload.sessions,
+          rollCalls: votes.rollCalls,
+        },
+      },
+    };
+  }
+
+  const registry = ofacFresh ? ofacPayload.perCountry[iso] : undefined;
+  if (registry && registry.entryCount > 0) {
+    next = {
+      ...next,
+      sanctions: {
+        entryCount: registry.entryCount,
+        programCount: registry.programCount,
+        topPrograms: registry.topPrograms.map((entry) => entry.program),
+        sourceTitle: ofacPayload.sourceTitle,
+        sourceUrl: ofacPayload.sourceUrl,
+        retrievedAt: ofacPayload.fetchedAt.slice(0, 10),
+      },
+    };
+  }
+
+  const conflict = ucdpFresh ? ucdpPayload.perCountry[iso] : undefined;
+  if (conflict) {
+    next = {
+      ...next,
+      conflict: {
+        active: conflict.active,
+        lastYear: conflict.lastYear,
+        lastYearStateBased: conflict.lastYearStateBased,
+        lastYearNonState: conflict.lastYearNonState,
+        lastYearOneSided: conflict.lastYearOneSided,
+        deathsLastYear: conflict.deathsLastYear,
+        deathsPriorYear: conflict.deathsPriorYear,
+        totalDeathsInWindow: conflict.totalDeathsInWindow,
+        stateBased: conflict.stateBased,
+        nonState: conflict.nonState,
+        oneSided: conflict.oneSided,
+        version: ucdpPayload.version,
+        sourceTitle: ucdpPayload.sourceTitle,
+        sourceUrl: ucdpPayload.sourceUrl,
+        retrievedAt: ucdpPayload.fetchedAt.slice(0, 10),
+      },
+    };
+  }
+
+  return next;
 };
 
 const baseCountries = enhancedCountries
   .map<CountryProfile>((country) => ({
     ...country,
-    historicalSeries: historicalSeriesByCountryId[country.id] ?? [],
     sources: resolveSources(country.sourceIds),
     relationships: buildRelationships(country.id),
     dataQuality: deriveCountryDataQuality(country),
   }))
+  .map(applyPoliticalRegistries)
   .sort((left, right) => left.displayName.localeCompare(right.displayName));
 
 // Bootstrap through the source pipeline with ingest + curated fallbacks so first
 // paint already has high indicator coverage before the live WB fetch returns.
 // Live enrichment in App re-runs the same pipeline with API data on top.
-const countries = enrichProfilesWithSourcePipeline(baseCountries, emptyLiveData());
+export const countries = enrichProfilesWithSourcePipeline(baseCountries, emptyLiveData());
 
 export const datasetVersion = '0.15.0';
 export const methodologyNotes = [
@@ -432,8 +578,23 @@ export const methodologyNotes = [
   'v13 (coverage expansion): adds cyber, fiscal, food/water, diplomatic, critical-mineral and soft-power dimensions for 88 additional countries, bringing strategic-dimension coverage to all 134 parameterised states.',
   'v14 (coverage refresh): refreshes selected v10/v11 country enrichments with 2025–2026 snapshots, tightens reconciliation confidence floors, and introduces explicit release acceptance criteria for coverage, recency, confidence, and relationship completeness.',
   'v15 (coverage density): World Bank ingest uses a 10-year MRV window with newest-year selection; curated economic/military stats fill remaining gaps (Taiwan, sparse reporters); conflict/sanctions reaffirmations stay fresh; live + ingest series merge into economic/military snapshots.',
+  'v15.1 (API coverage): nominal GDP, GDP per capita, and SIPRI-backed current-USD military expenditure now come from the shared World Bank API catalog in browser, ingest, and Worker paths; history stores the published series and displayed dates distinguish observation year from retrieval time.',
+  'v15.2 (conflict evidence): finalized UCDP organized-violence observations feed historical severity through explicit fatality thresholds; current pressure remains separate for future candidate-event data, and zero-event rows do not imply an absence of broader geopolitical tension.',
 ];
-export const scenarioTimeline = dataset.scenarioTimeline;
+/**
+ * Newest observed data point across all country profiles and dataset sources.
+ * Drives the "As of" HUD label — always reflects the dataset, never a hardcoded
+ * simulated year.
+ */
+export const datasetAsOf = (() => {
+  const stamps = countries
+    .map((country) => country.lastUpdated)
+    .concat(dataset.sources.map((source) => source.accessedOn))
+    .filter((value) => !Number.isNaN(new Date(value).getTime()));
+  const latest = stamps.sort((left, right) => right.localeCompare(left))[0];
+  return latest ?? 'Unknown';
+})();
+
 export const countryProfiles = countries;
 export const allianceNetworks = Array.from(new Set(countries.map((country) => country.allianceNetwork))).sort();
 

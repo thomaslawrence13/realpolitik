@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-07T11:21:47.322Z",
+  "generatedAt": "2026-08-15T18:27:09.346Z",
   "contract": {
     "contractVersion": "iq-contract-v1.0.0",
     "scoringVersion": "iq-score-v2.0.0",
@@ -44,11 +44,11 @@
     }
   },
   "trendableAggregates": {
-    "averageInformationScore": 93.4,
+    "averageInformationScore": 93.9,
     "lowQualityCount": 0,
-    "staleCountryCount": 4,
+    "staleCountryCount": 5,
     "highQualityCount": 134,
-    "ingestAverageCoveragePct": 96.3,
+    "ingestAverageCoveragePct": 96.2,
     "ingestMissingCountriesByWeakestIndicator": [
       {
         "snapshotKey": "world_bank_military_expenditure_pct",
@@ -61,96 +61,91 @@
         "newestObservation": "2025"
       },
       {
-        "snapshotKey": "world_bank_gdp_growth",
-        "missingCountryCount": 4,
-        "newestObservation": "2025"
+        "snapshotKey": "world_bank_military_expenditure_usd",
+        "missingCountryCount": 10,
+        "newestObservation": "2024"
       },
       {
-        "snapshotKey": "world_bank_trade_pct",
-        "missingCountryCount": 3,
+        "snapshotKey": "world_bank_gdp_nominal_usd",
+        "missingCountryCount": 4,
         "newestObservation": "2025"
       }
     ]
   },
   "baseline": {
-    "staticAverageInformationScore": 93.4,
-    "runtimeAverageInformationScore": 93.4,
+    "staticAverageInformationScore": 93.9,
+    "runtimeAverageInformationScore": 93.9,
     "staticRuntimeScoreDelta": 0
   },
   "weakestCountries": [
     {
-      "countryId": "cuba",
-      "displayName": "Cuba",
-      "informationScore": 89,
+      "countryId": "venezuela",
+      "displayName": "Venezuela",
+      "informationScore": 88,
       "staleIndicatorCount": 1,
       "fallbackIndicatorCount": 1,
       "lowConfidenceIndicatorCount": 0,
       "remediationDrivers": [
         "Refresh 1 stale indicator exceeding freshness SLA.",
         "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "tradeExposure from world-bank-wdi is stale (2045d old, SLA 1200d)."
+        "militaryTreatyLevel from world-bank-wdi is stale (1322d old, SLA 1200d)."
       ]
-    },
-    {
-      "countryId": "taiwan",
-      "displayName": "Taiwan",
-      "informationScore": 90,
-      "staleIndicatorCount": 0,
-      "fallbackIndicatorCount": 0,
-      "lowConfidenceIndicatorCount": 0,
-      "remediationDrivers": []
     },
     {
       "countryId": "sudan",
       "displayName": "Sudan",
-      "informationScore": 90,
+      "informationScore": 88,
       "staleIndicatorCount": 1,
       "fallbackIndicatorCount": 1,
       "lowConfidenceIndicatorCount": 0,
       "remediationDrivers": [
         "Refresh 1 stale indicator exceeding freshness SLA.",
         "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "militaryTreatyLevel from world-bank-wdi is stale (1680d old, SLA 1200d)."
+        "militaryTreatyLevel from world-bank-wdi is stale (2052d old, SLA 1200d)."
       ]
     },
     {
       "countryId": "qatar",
       "displayName": "Qatar",
-      "informationScore": 90,
+      "informationScore": 88,
       "staleIndicatorCount": 1,
       "fallbackIndicatorCount": 1,
       "lowConfidenceIndicatorCount": 0,
       "remediationDrivers": [
         "Refresh 1 stale indicator exceeding freshness SLA.",
         "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "militaryTreatyLevel from world-bank-wdi is stale (1315d old, SLA 1200d)."
+        "militaryTreatyLevel from world-bank-wdi is stale (1687d old, SLA 1200d)."
+      ]
+    },
+    {
+      "countryId": "libya",
+      "displayName": "Libya",
+      "informationScore": 88,
+      "staleIndicatorCount": 1,
+      "fallbackIndicatorCount": 1,
+      "lowConfidenceIndicatorCount": 0,
+      "remediationDrivers": [
+        "Refresh 1 stale indicator exceeding freshness SLA.",
+        "Replace 1 fallback indicator with observed or higher-confidence evidence.",
+        "militaryTreatyLevel from world-bank-wdi is stale (1322d old, SLA 1200d)."
       ]
     },
     {
       "countryId": "afghanistan",
       "displayName": "Afghanistan",
-      "informationScore": 90,
+      "informationScore": 88,
       "staleIndicatorCount": 1,
       "fallbackIndicatorCount": 1,
       "lowConfidenceIndicatorCount": 0,
       "remediationDrivers": [
         "Refresh 1 stale indicator exceeding freshness SLA.",
         "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "militaryTreatyLevel from world-bank-wdi is stale (1680d old, SLA 1200d)."
+        "militaryTreatyLevel from world-bank-wdi is stale (2052d old, SLA 1200d)."
       ]
     },
     {
-      "countryId": "yemen",
-      "displayName": "Yemen",
-      "informationScore": 92,
-      "staleIndicatorCount": 0,
-      "fallbackIndicatorCount": 0,
-      "lowConfidenceIndicatorCount": 0,
-      "remediationDrivers": []
-    },
-    {
-      "countryId": "syria",
-      "displayName": "Syria",
+      "countryId": "taiwan",
+      "displayName": "Taiwan",
       "informationScore": 92,
       "staleIndicatorCount": 0,
       "fallbackIndicatorCount": 0,
@@ -183,6 +178,15 @@
       "fallbackIndicatorCount": 0,
       "lowConfidenceIndicatorCount": 0,
       "remediationDrivers": []
+    },
+    {
+      "countryId": "iceland",
+      "displayName": "Iceland",
+      "informationScore": 92,
+      "staleIndicatorCount": 0,
+      "fallbackIndicatorCount": 0,
+      "lowConfidenceIndicatorCount": 0,
+      "remediationDrivers": []
     }
   ],
   "kpiStatus": {
@@ -208,8 +212,8 @@
     "status": {
       "v10CoveragePct": 100,
       "v11CoveragePct": 100,
-      "averageInformationScore": 93.4,
-      "staleCountryCount": 4,
+      "averageInformationScore": 93.9,
+      "staleCountryCount": 5,
       "indicatorConfidenceFloorBreaches": 0,
       "averageRelationshipsPerCountry": 61.5,
       "isolatedCountries": 0,

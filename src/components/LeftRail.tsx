@@ -1,15 +1,16 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent, MutableRefObject } from 'react';
-import type { Alignment, Filters, RegimeType, SimulatedCountry, Tier } from '../types';
+import type { Alignment, Filters, RegimeType, CountryAssessment, Tier } from '../types';
 import { Segmented, SvgIcon } from './ui';
 import { summarizeCountryTrust, TrustTag, aggregateGlobalDataWarnings } from './provenance';
-import { getRiskTier } from '../simulation';
+import { getRiskTier } from '../assessment';
+import { getFreshCoverage } from '../lib/coverage';
 
 type Props = {
   open: boolean;
   search: string;
   onSearchChange: (value: string) => void;
-  countries: SimulatedCountry[];
+  countries: CountryAssessment[];
   totalCount: number;
   selectedName: string;
   onSelect: (name: string) => void;
@@ -41,7 +42,7 @@ type SortMode = 'riskDesc' | 'confidenceDesc' | 'coverageDesc' | 'nameAsc';
 type GroupMode = 'none' | 'region' | 'alignment' | 'risk';
 
 const sortOptions: ReadonlyArray<{ value: SortMode; label: string }> = [
-  { value: 'coverageDesc', label: 'Coverage' },
+  { value: 'coverageDesc', label: 'Fresh coverage' },
   { value: 'riskDesc', label: 'Pressure' },
   { value: 'confidenceDesc', label: 'Confidence' },
   { value: 'nameAsc', label: 'Name' },
@@ -136,7 +137,7 @@ export const LeftRail = memo(function LeftRail({
     const next = [...countries];
     if (sortMode === 'coverageDesc') {
       next.sort((a, b) => {
-        const delta = b.profile.sourceCoverage - a.profile.sourceCoverage;
+        const delta = getFreshCoverage(b.profile) - getFreshCoverage(a.profile);
         return delta !== 0 ? delta : a.profile.displayName.localeCompare(b.profile.displayName);
       });
       return next;
@@ -478,7 +479,7 @@ export const LeftRail = memo(function LeftRail({
                         aria-selected={isSelected}
                         className={`country-item country-item-dense ${isSelected ? 'country-item-active' : ''}`}
                         onClick={() => onSelect(country.profile.mapName)}
-                        title={`${country.profile.displayName} · ${alignmentLabel[country.alignment]} · risk ${country.risk}% · conf ${country.confidence}% · cov ${country.profile.sourceCoverage}%`}
+                        title={`${country.profile.displayName} · ${alignmentLabel[country.alignment]} · risk ${country.risk}% · conf ${country.confidence}% · fresh ${getFreshCoverage(country.profile)}%`}
                       >
                         <span
                           className="country-align-dot"
@@ -502,7 +503,7 @@ export const LeftRail = memo(function LeftRail({
                         </span>
                         <span className="country-metric country-metric-muted">{country.confidence}</span>
                         <span className="country-metric country-metric-muted">
-                          {country.profile.sourceCoverage}
+                          {getFreshCoverage(country.profile)}
                         </span>
                       </button>
                     );

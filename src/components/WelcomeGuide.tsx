@@ -5,7 +5,7 @@ type Props = {
   open: boolean;
   onClose: () => void;
   onFocusSearch: () => void;
-  onOpenScenarioLab: () => void;
+  onOpenMethodology: () => void;
   onOpenShortcuts: () => void;
 };
 
@@ -13,7 +13,7 @@ export function WelcomeGuide({
   open,
   onClose,
   onFocusSearch,
-  onOpenScenarioLab,
+  onOpenMethodology,
   onOpenShortcuts,
 }: Props) {
   const closeRef = useRef<HTMLButtonElement | null>(null);
@@ -62,10 +62,10 @@ export function WelcomeGuide({
               </button>
             </article>
             <article className="welcome-tip">
-              <strong>Explore analysis tools</strong>
-              <p>Open the Analysis panel to apply hypothetical shocks, tune model weights, and compare modeled outcomes — clearly labeled as model-derived.</p>
-              <button type="button" className="btn btn-ghost btn-sm" onClick={onOpenScenarioLab}>
-                Open analysis tools
+              <strong>Inspect the methodology</strong>
+              <p>Open the Methodology panel to see data provenance, live-ingest diagnostics, information-quality scoring, and source reconciliation for every figure.</p>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={onOpenMethodology}>
+                Open methodology
               </button>
             </article>
             <article className="welcome-tip">
