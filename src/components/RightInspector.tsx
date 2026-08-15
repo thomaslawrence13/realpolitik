@@ -1,7 +1,7 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import type { Alignment, CountryAssessment } from '../types';
 import { getRiskTier } from '../assessment';
-import { MetricCard, Segmented } from './ui';
+import { Segmented } from './ui';
 import { useMapStore } from '../store/useMapStore';
 import { formatTitle } from './inspectorUtils';
 import {
@@ -15,6 +15,8 @@ import { HistoricalSeriesSection } from './inspector/HistoricalSeriesSection';
 import { PoliticalRegistrySection } from './inspector/PoliticalRegistrySection';
 import { RelationshipEvidenceSection } from './inspector/RelationshipEvidenceSection';
 import { getCoverageMetrics } from '../lib/coverage';
+import { buildCountryBrief } from './inspector/insights';
+import { StrategicStatsSection } from './inspector/StrategicStatsSection';
 
 export type InspectorTab = 'snapshot' | 'stats' | 'history';
 
@@ -49,7 +51,6 @@ export const RightInspector = memo(function RightInspector({
 }: Props) {
   const hoveredCountry = useMapStore((state) => state.hoveredCountry);
   const bodyRef = useRef<HTMLDivElement | null>(null);
-  const [showDrivers, setShowDrivers] = useState(false);
 
   const activeTab = normalizeInspectorTab(tab);
 
@@ -60,7 +61,7 @@ export const RightInspector = memo(function RightInspector({
         dominant: getDominantRelationshipDimension(relationship),
       }))
       .sort((a, b) => b.relationship.tension - a.relationship.tension)
-      .slice(0, 6);
+      .slice(0, 4);
   }, [selected.profile.relationships]);
 
   const hoveredPeer = useMemo(
@@ -92,11 +93,12 @@ export const RightInspector = memo(function RightInspector({
 
   const econ = selected.profile.economicStats;
   const mil = selected.profile.militaryStats;
+  const coverage = useMemo(() => getCoverageMetrics(selected.profile), [selected.profile]);
+  const brief = useMemo(() => buildCountryBrief(selected), [selected]);
 
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     bodyRef.current?.scrollTo({ top: 0, behavior: prefersReduced ? 'instant' : 'smooth' });
-    setShowDrivers(false);
   }, [selected.profile.id]);
 
   return (
@@ -133,46 +135,36 @@ export const RightInspector = memo(function RightInspector({
 
         {/* Always-visible KPI strip — observed stats first, data confidence second */}
         <div className="inspector-kpi-strip" aria-label="At a glance">
-          {econ && (
-            <div className="inspector-kpi inspector-kpi-observed">
-              <span>GDP/cap</span>
-              <strong>
-                {econ.gdpPerCapitaUsd >= 1000
-                  ? `$${(econ.gdpPerCapitaUsd / 1000).toFixed(1)}k`
-                  : `$${Math.round(econ.gdpPerCapitaUsd)}`}
-              </strong>
-              <em>
-                growth {econ.gdpGrowthPct >= 0 ? '+' : ''}
-                {econ.gdpGrowthPct.toFixed(1)}%
-              </em>
-            </div>
-          )}
-          {mil && (
-            <div className="inspector-kpi inspector-kpi-observed">
-              <span>Defence</span>
-              <strong>{mil.militaryExpGdpPct}%</strong>
-              <em>of GDP · ${mil.militaryExpBillionUsd.toLocaleString()}B</em>
-            </div>
-          )}
           <div className={`inspector-kpi risk-${getRiskTier(selected.risk)}`}>
             <span>Risk</span>
             <strong>{selected.risk}%</strong>
-            <em title="Observed stress index from indicators, relationships, and vulnerabilities">
-              observed stress
-            </em>
+            <em>{getRiskTier(selected.risk)} stress</em>
           </div>
           <div className="inspector-kpi">
             <span>Confidence</span>
             <strong>{selected.confidence}%</strong>
-            <em title="Information-quality score: coverage, completeness, recency, evidence">data quality</em>
+            <em>data quality</em>
           </div>
           <div className="inspector-kpi">
-            <span>Fresh coverage</span>
-            <strong>{getCoverageMetrics(selected.profile).freshPct}%</strong>
-            <em title="Selected indicators within freshness SLA">
-              {getCoverageMetrics(selected.profile).observedPct}% observed · {getCoverageMetrics(selected.profile).fallbackPct}% fallback
-            </em>
+            <span>Fresh</span>
+            <strong>{coverage.freshPct}%</strong>
+            <em>{coverage.observedPct}% observed</em>
           </div>
+          {econ ? (
+            <div className="inspector-kpi inspector-kpi-observed">
+              <span>Growth</span>
+              <strong data-tone={econ.gdpGrowthPct >= 0 ? 'positive' : 'negative'}>
+                {econ.gdpGrowthPct > 0 ? '+' : ''}{econ.gdpGrowthPct.toFixed(1)}%
+              </strong>
+              <em>annual GDP</em>
+            </div>
+          ) : (
+            <div className="inspector-kpi">
+              <span>Coverage</span>
+              <strong>{coverage.valuePct}%</strong>
+              <em>{coverage.fallbackPct}% fallback</em>
+            </div>
+          )}
         </div>
         <p className="inspector-asof" title="Observed series may lag the calendar year">
           Data as of <strong>{selected.profile.lastUpdated}</strong>
@@ -228,147 +220,88 @@ export const RightInspector = memo(function RightInspector({
 
         {activeTab === 'snapshot' && (
           <div className="panel-stack panel-stack-dense">
-            {(econ || mil) && (
-              <section className="glance-card glance-stats-grid">
-                {econ && (
-                  <div className="glance-stat-block">
-                    <h3>Economy</h3>
-                    <dl>
-                      <div>
-                        <dt>GDP</dt>
-                        <dd>${econ.gdpBillionUsd.toLocaleString()}B</dd>
-                      </div>
-                      <div>
-                        <dt>Growth</dt>
-                        <dd>
-                          {econ.gdpGrowthPct >= 0 ? '+' : ''}
-                          {econ.gdpGrowthPct.toFixed(1)}%
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>Inflation</dt>
-                        <dd>{econ.inflationPct.toFixed(1)}%</dd>
-                      </div>
-                      <div>
-                        <dt>Trade/GDP</dt>
-                        <dd>{econ.tradeGdpPct.toFixed(0)}%</dd>
-                      </div>
-                    </dl>
-                  </div>
-                )}
-                {mil && (
-                  <div className="glance-stat-block">
-                    <h3>Military</h3>
-                    <dl>
-                      <div>
-                        <dt>Spend</dt>
-                        <dd>${mil.militaryExpBillionUsd.toLocaleString()}B</dd>
-                      </div>
-                      <div>
-                        <dt>% GDP</dt>
-                        <dd>{mil.militaryExpGdpPct}%</dd>
-                      </div>
-                      <div>
-                        <dt>Active</dt>
-                        <dd>
-                          {mil.activePersonnelThousands > 0
-                            ? `${mil.activePersonnelThousands.toLocaleString()}k`
-                            : '—'}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>Nuclear</dt>
-                        <dd>{mil.nuclearArmed ? 'Yes' : 'No'}</dd>
-                      </div>
-                    </dl>
-                  </div>
-                )}
-              </section>
-            )}
-
-            <section className="glance-card">
+            <section className={`glance-card assessment-brief assessment-brief-${brief.tone}`}>
               <header>
-                <h3>Top relationships</h3>
+                <h3>Current assessment</h3>
+                <span className="assessment-status">{brief.tone} risk</span>
+              </header>
+              <strong className="assessment-headline">{brief.headline}</strong>
+              <p className="assessment-summary">{brief.summary}</p>
+              <div className="assessment-insight-grid" aria-label="Priority signals">
+                {brief.insights.map((insight) => (
+                  <article className="assessment-insight" data-tone={insight.tone} key={insight.label}>
+                    <span>{insight.label}</span>
+                    <strong>{insight.value}</strong>
+                    <p>{insight.detail}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="glance-card assessment-drivers">
+              <header>
+                <div>
+                  <h3>Assessment drivers</h3>
+                  <p className="section-caption">Largest contributions to the current reading.</p>
+                </div>
+                <span>score / 100</span>
+              </header>
+              <ol className="assessment-driver-list">
+                {selected.drivers.slice(0, 5).map((driver) => (
+                  <li key={driver.label} data-direction={driver.direction}>
+                    <div className="assessment-driver-copy">
+                      <strong>{driver.label}</strong>
+                      <span>{driver.value}</span>
+                    </div>
+                    <div className="assessment-driver-track" aria-hidden>
+                      <i style={{ width: `${Math.max(3, Math.min(100, driver.value))}%` }} />
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+
+            <section className="glance-card priority-relationships">
+              <header>
+                <div>
+                  <h3>Priority relationships</h3>
+                  <p className="section-caption">Highest bilateral tension first. Select a country to pivot.</p>
+                </div>
                 <span>{selected.profile.relationships.length} edges</span>
               </header>
               {topRelationships.length === 0 ? (
                 <p className="glance-empty">No parameterized edges for this country.</p>
               ) : (
-                <ul className="glance-rel-list">
+                <ul className="glance-rel-list glance-rel-list-impact">
                   {topRelationships.map(({ relationship, dominant }) => (
-                      <li key={relationship.mapName}>
-                        <button
-                          type="button"
-                          className="glance-rel-row"
-                          onClick={() => onSelectRelated(relationship.mapName)}
+                    <li key={relationship.mapName}>
+                      <button type="button" className="glance-rel-row" onClick={() => onSelectRelated(relationship.mapName)}>
+                        <span
+                          className="glance-rel-tag"
+                          style={{
+                            color: dominant.color,
+                            borderColor: `${dominant.color}${relationshipTagBorderAlpha}`,
+                            background: `${dominant.color}${relationshipTagBackgroundAlpha}`,
+                          }}
                         >
-                          <span
-                            className="glance-rel-tag"
-                            style={{
-                              color: dominant.color,
-                              borderColor: `${dominant.color}${relationshipTagBorderAlpha}`,
-                              background: `${dominant.color}${relationshipTagBackgroundAlpha}`,
-                            }}
-                          >
-                            {dominant.shortLabel}
-                          </span>
+                          {dominant.shortLabel}
+                        </span>
+                        <span className="glance-rel-country">
                           <strong>{relationship.displayName}</strong>
-                          <span className="glance-rel-metrics">
-                            <em title="Tension">{relationship.tension}</em>
-                            <em title="Hostility">{relationship.hostility}</em>
-                            <em title="Cooperation">{relationship.cooperation}</em>
-                          </span>
-                        </button>
-                      </li>
-                    ))}
+                          <span>Coop {relationship.cooperation} · Host {relationship.hostility} · Dep {relationship.dependency}</span>
+                        </span>
+                        <span className="relationship-pressure" title={`Bilateral tension ${relationship.tension}/100`}>
+                          <i><b style={{ width: `${relationship.tension}%` }} /></i>
+                          <em>{relationship.tension}</em>
+                        </span>
+                      </button>
+                    </li>
+                  ))}
                 </ul>
               )}
             </section>
 
             <RelationshipEvidenceSection relationships={topRelationships.map(({ relationship }) => relationship)} />
-
-            <button
-              type="button"
-              className="disclosure-toggle"
-              onClick={() => setShowDrivers((v) => !v)}
-              aria-expanded={showDrivers}
-            >
-              {showDrivers ? 'Hide' : 'Show'} indicator drivers
-            </button>
-            {showDrivers && (
-              <div className="metric-grid metric-grid-dense">
-                <MetricCard
-                  label="Trade exposure"
-                  value={formatTitle(selected.profile.indicators.tradeExposure)}
-                  tone="low"
-                />
-                <MetricCard
-                  label="Military treaty"
-                  value={formatTitle(selected.profile.indicators.militaryTreatyLevel)}
-                  tone="low"
-                />
-                <MetricCard
-                  label="Conflict pressure"
-                  value={formatTitle(selected.profile.indicators.conflictPressure)}
-                  tone={selected.profile.indicators.conflictPressure === 'high' ? 'high' : 'low'}
-                />
-                <MetricCard
-                  label="Sanctions"
-                  value={formatTitle(selected.profile.indicators.sanctionsExposure)}
-                  tone={selected.profile.indicators.sanctionsExposure === 'high' ? 'high' : 'low'}
-                />
-                <MetricCard
-                  label="Regime stability"
-                  value={formatTitle(selected.profile.indicators.regimeStability)}
-                  tone="low"
-                />
-                <MetricCard
-                  label="Cohesion"
-                  value={`${selected.profile.indicators.cohesion}`}
-                  tone="low"
-                />
-              </div>
-            )}
           </div>
         )}
 
@@ -388,6 +321,7 @@ export const RightInspector = memo(function RightInspector({
                 selected={selected}
               />
             )}
+            <StrategicStatsSection profile={selected.profile} />
             <PoliticalRegistrySection selected={selected} />
             {!econ && !mil && (
               <p className="glance-empty">No detailed economic or military snapshot for this profile.</p>
