@@ -29,3 +29,39 @@ test('aggregateOfacByCountry attributes entries via program countries', () => {
   // Row 4 has no country-tagged program.
   assert.equal(perCountry.SD, undefined);
 });
+
+/**
+ * OFAC renames programmes, and an unrecognised code is dropped rather than
+ * flagged — so a country under heavy sanctions reads as having none. Syria's
+ * listings moved to PAARSSR-EO13894 and went missing entirely under the bare
+ * "SYRIA" prefix; these codes are pinned so the next rename fails a test
+ * instead of quietly emptying a country.
+ */
+test('renamed country programmes still map to their country', () => {
+  const renamed = [
+    '10,"DAMASCUS TRADING",-0- ,"PAARSSR-EO13894",-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ',
+    '11,"BAGHDAD FUND",-0- ,"IRAQ2",-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ',
+    '12,"YANGON GROUP",-0- ,"BURMA-EO14014",-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ',
+    '13,"KINSHASA MINING",-0- ,"DRCONGO",-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ',
+    '14,"GUARD CORPS UNIT",-0- ,"IRGC",-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ',
+    '15,"MOSCOW BANK",-0- ,"CAATSA - RUSSIA",-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ',
+  ].join('\n');
+
+  const perCountry = aggregateOfacByCountry(parseSdnCsv(renamed));
+  assert.equal(perCountry.SY?.entryCount, 1);
+  assert.equal(perCountry.IQ?.entryCount, 1);
+  assert.equal(perCountry.MM?.entryCount, 1);
+  assert.equal(perCountry.CD?.entryCount, 1);
+  assert.equal(perCountry.IR?.entryCount, 1);
+  assert.equal(perCountry.RU?.entryCount, 1);
+});
+
+test('thematic programmes are never attributed to a country', () => {
+  // These designate conduct wherever it occurs. Mapping them would turn a US
+  // counter-terrorism or narcotics listing into a claim about a country.
+  const thematic = ['SDGT', 'SDNTK', 'NPWMD', 'GLOMAG', 'TCO', 'FTO', 'CYBER2', 'BALKANS']
+    .map((program, index) => `${20 + index},"ENTITY ${index}",-0- ,"${program}",-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- ,-0- `)
+    .join('\n');
+
+  assert.deepEqual(aggregateOfacByCountry(parseSdnCsv(thematic)), {});
+});

@@ -1,0 +1,39 @@
+{
+  "fetchedAt": "2026-08-15T21:59:15.350Z",
+  "sourceTitle": "FAOSTAT Suite of Food Security Indicators",
+  "sourceUrl": "https://www.fao.org/faostat/en/#data/FS",
+  "indicators": [
+    {
+      "key": "dietaryEnergyAdequacyPct",
+      "label": "Dietary energy supply adequacy",
+      "unit": "%"
+    },
+    {
+      "key": "basicDrinkingWaterPct",
+      "label": "Using at least basic drinking water",
+      "unit": "%"
+    },
+    {
+      "key": "basicSanitationPct",
+      "label": "Using at least basic sanitation",
+      "unit": "%"
+    },
+    {
+      "key": "undernourishmentPct",
+      "label": "Prevalence of undernourishment",
+      "unit": "%"
+    },
+    {
+      "key": "moderateOrSevereFoodInsecurityPct",
+      "label": "Moderate or severe food insecurity",
+      "unit": "%"
+    },
+    {
+      "key": "severeFoodInsecurityPct",
+      "label": "Severe food insecurity",
+      "unit": "%"
+    }
+  ],
+  "countryCount": 132,
+  "newestPeriodEndYear": 2025
+}

@@ -22,14 +22,33 @@
 
 import unVotesArtifact from './datasets/un_ga_votes.json';
 import ofacRegistryArtifact from './datasets/ofac_sanctions_registry.json';
+import unscRegistryArtifact from './datasets/unsc_sanctions_registry.json';
+import euRegistryArtifact from './datasets/eu_sanctions_registry.json';
 import ucdpConflictArtifact from './datasets/ucdp_conflict.json';
+import unhcrDisplacementArtifact from './datasets/unhcr_displacement.json';
+import faoFoodSecurityMetaJson from './datasets/fao_food_security_meta.json';
+import bisFinancialArtifact from './datasets/bis_financial.json';
 import historicalSeriesMetaJson from './datasets/historical_series_meta.json';
 import type { UnVotesArtifact } from '../lib/unVotes';
 import type { OfacSummary } from '../lib/ofacSdn';
+import type { UnscArtifact } from '../lib/unscSanctions';
+import type { EuSanctionsArtifact } from '../lib/euSanctions';
 import type { UcdpArtifact } from '../lib/ucdp';
+import type { UnhcrArtifact } from '../lib/unhcrDisplacement';
+import type { FaoFoodSecurityMeta } from '../lib/faoFoodSecurity';
+import type { BisArtifact } from '../lib/bisFinancial';
 import type { HistoricalSeriesMeta } from '../lib/historicalSeriesArtifact';
 
-export type ArtifactId = 'unga-votes' | 'ofac-sdn' | 'ucdp-organized-violence' | 'world-bank-history';
+export type ArtifactId =
+  | 'unga-votes'
+  | 'ofac-sdn'
+  | 'unsc-consolidated'
+  | 'eu-financial-sanctions'
+  | 'ucdp-organized-violence'
+  | 'unhcr-displacement'
+  | 'fao-food-security'
+  | 'bis-financial'
+  | 'world-bank-history';
 
 /**
  * `fresh` — inside budget. `aging` — past the warning tip, still served.
@@ -88,7 +107,18 @@ const DAY_MS = 86_400_000;
 
 const unVotes = unVotesArtifact as UnVotesArtifact;
 const ofacRegistry = ofacRegistryArtifact as OfacSummary;
+const unscRegistry = unscRegistryArtifact as UnscArtifact;
+const euRegistry = euRegistryArtifact as EuSanctionsArtifact;
 const ucdpConflict = ucdpConflictArtifact as UcdpArtifact;
+const unhcrDisplacement = unhcrDisplacementArtifact as UnhcrArtifact;
+/**
+ * Read through the sidecar, not the payload: the ~115 KB of per-country values
+ * is code-split behind `data/foodSecurity.ts` and must not be pulled into the
+ * eager bundle just to date the artifact. `validateDataset` checks the sidecar
+ * against the full artifact.
+ */
+const faoFoodSecurity = faoFoodSecurityMetaJson as unknown as FaoFoodSecurityMeta;
+const bisFinancial = bisFinancialArtifact as unknown as BisArtifact;
 /**
  * The history payload itself is code-split and loads only when a reader opens
  * a chart, so the register reads its committed sidecar summary instead —
@@ -104,7 +134,12 @@ const historicalSeries = historicalSeriesMetaJson as unknown as HistoricalSeries
 export const artifactPayloads = {
   'unga-votes': unVotes,
   'ofac-sdn': ofacRegistry,
+  'unsc-consolidated': unscRegistry,
+  'eu-financial-sanctions': euRegistry,
   'ucdp-organized-violence': ucdpConflict,
+  'unhcr-displacement': unhcrDisplacement,
+  'fao-food-security': faoFoodSecurity,
+  'bis-financial': bisFinancial,
   'world-bank-history': historicalSeries,
 } as const;
 
@@ -137,6 +172,47 @@ export const ARTIFACT_REGISTER: Record<ArtifactId, ArtifactDescriptor> = {
     budgetDays: 120,
     warnAfterDays: 60,
   },
+  'unsc-consolidated': {
+    id: 'unsc-consolidated',
+    title: 'UN Security Council Consolidated List',
+    publisher: 'United Nations Security Council',
+    path: 'src/data/datasets/unsc_sanctions_registry.json',
+    // Deliberately no descriptor, for the same reason as OFAC: this populates a
+    // reader-facing registry, not indicator provenance. `sanctionsExposure`
+    // stays curated, and minting a descriptor here would inflate the source
+    // count with a feed the model does not consume.
+    sourceId: null,
+    route: 'build-artifact',
+    role: 'Listings under each country-directed UN sanctions regime, from the published Consolidated List.',
+    boundary:
+      'Multilateral legal listings aggregated by regime — not a country-risk score, not a measure of a ' +
+      'population, and not the full text of the measures. Thematic regimes (Al-Qaida/ISIL) have no country ' +
+      'subject and are held out of country attribution. The sanctionsExposure indicator remains curated.',
+    refreshCommand: 'npm run refresh:unsc',
+    // The Council amends the list continuously and regenerates the XML daily,
+    // so a listing set months old is genuinely out of date as legal evidence.
+    budgetDays: 120,
+    warnAfterDays: 60,
+  },
+  'eu-financial-sanctions': {
+    id: 'eu-financial-sanctions',
+    title: 'EU Consolidated Financial Sanctions List',
+    publisher: 'European Commission / DG FISMA',
+    path: 'src/data/datasets/eu_sanctions_registry.json',
+    sourceId: null,
+    route: 'build-artifact',
+    role: 'Designated persons by citizenship and entities by registered address, with their programme mix.',
+    boundary:
+      'Attributed by the identity of the designated party, not by programme — EU programmes are named for ' +
+      'the situation including its victim, so programme attribution would credit Ukraine with measures ' +
+      'taken over Russian actions. The financial list is narrower than all EU restrictive measures, and ' +
+      'this is not a country-risk score; sanctionsExposure remains curated.',
+    refreshCommand: 'npm run refresh:eu-sanctions',
+    // The Council amends the list as measures change and republishes the export
+    // continuously, so stale legal evidence goes wrong quickly.
+    budgetDays: 120,
+    warnAfterDays: 60,
+  },
   'ucdp-organized-violence': {
     id: 'ucdp-organized-violence',
     title: 'UCDP organized violence, country-year',
@@ -153,6 +229,61 @@ export const ARTIFACT_REGISTER: Record<ArtifactId, ArtifactDescriptor> = {
     // staleness point, with the warning tip a full quarter earlier.
     budgetDays: 440,
     warnAfterDays: 240,
+  },
+  'unhcr-displacement': {
+    id: 'unhcr-displacement',
+    title: 'UNHCR displacement populations',
+    publisher: 'UNHCR',
+    path: 'src/data/datasets/unhcr_displacement.json',
+    sourceId: null,
+    route: 'build-artifact',
+    role: 'Refugees by origin and by country of asylum, internally displaced and stateless populations.',
+    boundary:
+      'UNHCR mandate only — Palestine refugees under UNRWA are excluded, and IDP counts exist only where ' +
+      'UNHCR monitors. A country absent from this artifact is unreported, not displacement-free. Origin and ' +
+      'asylum figures are separate facts and are never summed.',
+    refreshCommand: 'npm run refresh:displacement',
+    // UNHCR publishes a completed year mid-way through the following one, so a
+    // year-plus budget matches the real release cadence rather than inviting a
+    // refresh that cannot return anything newer.
+    budgetDays: 400,
+    warnAfterDays: 270,
+  },
+  'fao-food-security': {
+    id: 'fao-food-security',
+    title: 'FAOSTAT food security indicators',
+    publisher: 'Food and Agriculture Organization',
+    path: 'src/data/datasets/fao_food_security.json',
+    sourceId: null,
+    route: 'build-artifact',
+    role: 'Undernourishment, food insecurity, dietary energy adequacy, drinking water and sanitation.',
+    boundary:
+      'Most prevalences are published as three-year averages, and the period label travels with each ' +
+      'value rather than being collapsed to a single year. Values carry FAO’s official / estimated / ' +
+      'imputed status; an imputed prevalence is a model output, not a measurement. This is observed ' +
+      'evidence beside the curated food and water profile, not a replacement for it.',
+    refreshCommand: 'npm run refresh:fao',
+    // FAO releases the suite annually, usually in July alongside SOFI.
+    budgetDays: 400,
+    warnAfterDays: 270,
+  },
+  'bis-financial': {
+    id: 'bis-financial',
+    title: 'BIS financial vulnerability indicators',
+    publisher: 'Bank for International Settlements',
+    path: 'src/data/datasets/bis_financial.json',
+    sourceId: null,
+    route: 'build-artifact',
+    role: 'Credit-to-GDP gap and ratio, debt service ratios and central bank policy rates.',
+    boundary:
+      'BIS reports these for around 45 mostly advanced and large emerging economies — a country absent ' +
+      'here is unreported, not financially sound. The credit-to-GDP gap is a deviation from an HP-filter ' +
+      'trend that is re-estimated each release, so historical values revise; it is the Basel III buffer ' +
+      'guide, not a crisis forecast.',
+    refreshCommand: 'npm run refresh:bis',
+    // BIS publishes credit statistics quarterly, roughly a quarter in arrears.
+    budgetDays: 180,
+    warnAfterDays: 100,
   },
   'world-bank-history': {
     id: 'world-bank-history',
@@ -192,6 +323,24 @@ const artifactFacts: Record<
     vintage: null,
     countryCount: Object.keys(ofacRegistry.perCountry).length,
   },
+  'unsc-consolidated': {
+    fetchedAt: unscRegistry.fetchedAt,
+    coverage: `${unscRegistry.listingTotal.toLocaleString('en-US')} listings · ${
+      unscRegistry.countryRegimeCount
+    } country regimes · ${Object.keys(unscRegistry.perCountry).length} mapped countries`,
+    // The UN's own generation stamp, not our retrieval time: it is the vintage
+    // of the law, and it can be older than the download.
+    vintage: unscRegistry.generatedAt ? `list generated ${unscRegistry.generatedAt.slice(0, 10)}` : null,
+    countryCount: Object.keys(unscRegistry.perCountry).length,
+  },
+  'eu-financial-sanctions': {
+    fetchedAt: euRegistry.fetchedAt,
+    coverage: `${euRegistry.listingTotal.toLocaleString('en-US')} designations · ${
+      Object.keys(euRegistry.perCountry).length
+    } attributed countries · ${euRegistry.unattributedTotal.toLocaleString('en-US')} unattributed`,
+    vintage: euRegistry.generatedAt ? `list generated ${euRegistry.generatedAt.slice(0, 10)}` : null,
+    countryCount: Object.keys(euRegistry.perCountry).length,
+  },
   'ucdp-organized-violence': {
     fetchedAt: ucdpConflict.fetchedAt,
     coverage: `${Object.keys(ucdpConflict.perCountry).length} countries · ${
@@ -199,6 +348,26 @@ const artifactFacts: Record<
     }–${ucdpConflict.window.throughYear}`,
     vintage: `v${ucdpConflict.version}`,
     countryCount: Object.keys(ucdpConflict.perCountry).length,
+  },
+  'unhcr-displacement': {
+    fetchedAt: unhcrDisplacement.fetchedAt,
+    coverage: `${Object.keys(unhcrDisplacement.perCountry).length} tracked countries · ${
+      unhcrDisplacement.originCountryCount
+    } origin / ${unhcrDisplacement.asylumCountryCount} asylum reporters`,
+    vintage: `reference year ${unhcrDisplacement.referenceYear}`,
+    countryCount: Object.keys(unhcrDisplacement.perCountry).length,
+  },
+  'fao-food-security': {
+    fetchedAt: faoFoodSecurity.fetchedAt,
+    coverage: `${faoFoodSecurity.indicators.length} indicators · ${faoFoodSecurity.countryCount} countries`,
+    vintage: `newest period ends ${faoFoodSecurity.newestPeriodEndYear}`,
+    countryCount: faoFoodSecurity.countryCount,
+  },
+  'bis-financial': {
+    fetchedAt: bisFinancial.fetchedAt,
+    coverage: `${bisFinancial.series.length} series · ${bisFinancial.countryCount} reporting countries`,
+    vintage: null,
+    countryCount: bisFinancial.countryCount,
   },
   'world-bank-history': {
     fetchedAt: historicalSeries.fetchedAt,

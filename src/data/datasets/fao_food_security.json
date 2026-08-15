@@ -1,0 +1,4457 @@
+{
+  "fetchedAt": "2026-08-15T21:59:15.350Z",
+  "sourceTitle": "FAOSTAT Suite of Food Security Indicators",
+  "sourceUrl": "https://www.fao.org/faostat/en/#data/FS",
+  "indicators": [
+    {
+      "key": "dietaryEnergyAdequacyPct",
+      "label": "Dietary energy supply adequacy",
+      "unit": "%"
+    },
+    {
+      "key": "basicDrinkingWaterPct",
+      "label": "Using at least basic drinking water",
+      "unit": "%"
+    },
+    {
+      "key": "basicSanitationPct",
+      "label": "Using at least basic sanitation",
+      "unit": "%"
+    },
+    {
+      "key": "undernourishmentPct",
+      "label": "Prevalence of undernourishment",
+      "unit": "%"
+    },
+    {
+      "key": "moderateOrSevereFoodInsecurityPct",
+      "label": "Moderate or severe food insecurity",
+      "unit": "%"
+    },
+    {
+      "key": "severeFoodInsecurityPct",
+      "label": "Severe food insecurity",
+      "unit": "%"
+    }
+  ],
+  "countryCount": 132,
+  "newestPeriodEndYear": 2025,
+  "perCountry": {
+    "AF": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 108,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 27.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 30.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 77.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 81,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 54,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "AL": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 131,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 5.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 8.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 31.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 95,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "DZ": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 147,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.6,
+        "period": "2017-2019",
+        "periodEndYear": 2019,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 4.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 17.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 92,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 86,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "AO": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 111,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 17.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 16.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 75.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 68,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 50,
+        "period": "2022",
+        "periodEndYear": 2022,
+        "status": "international estimate"
+      }
+    },
+    "AR": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 138,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 11,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 31.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 99,
+        "period": "2016",
+        "periodEndYear": 2016,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 95,
+        "period": "2016",
+        "periodEndYear": 2016,
+        "status": "international estimate"
+      }
+    },
+    "AM": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 130,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 3.1,
+        "period": "2008-2010",
+        "periodEndYear": 2010,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.8,
+        "period": "2018-2020",
+        "periodEndYear": 2020,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 7.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 94,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "AU": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 142,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 4.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 15.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "AT": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 150,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 4.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "AZ": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 137,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 3.1,
+        "period": "2005-2007",
+        "periodEndYear": 2007,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 14.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "BH": {
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "BD": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 115,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 8.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 26.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 68,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "BY": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 140,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.6,
+        "period": "2006-2008",
+        "periodEndYear": 2008,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "BE": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 156,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 9.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "BO": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 102,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 19.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 29.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 93,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 72,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "BA": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 140,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.8,
+        "period": "2002-2004",
+        "periodEndYear": 2004,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 8.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 96,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 95,
+        "period": "2018",
+        "periodEndYear": 2018,
+        "status": "international estimate"
+      }
+    },
+    "BW": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 115,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 18.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 20.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 52,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 92,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 72,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "BR": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 138,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.7,
+        "period": "2022-2024",
+        "periodEndYear": 2024,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 9.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 92,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "BN": {
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "BG": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 123,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.6,
+        "period": "2019-2021",
+        "periodEndYear": 2021,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 10.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 86,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "BF": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 124,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 11.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 7.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 41.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 50,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 32,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "KH": {
+      "undernourishmentPct": {
+        "value": 4.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 2.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 36.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 83,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 83,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "CM": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 126,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 4.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 23.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 60.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 71,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 47,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "CA": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 143,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 10.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "CL": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 124,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.6,
+        "period": "2019-2021",
+        "periodEndYear": 2021,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 3.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 16,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "CN": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 142,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.9,
+        "period": "2008-2010",
+        "periodEndYear": 2010,
+        "status": "estimated"
+      }
+    },
+    "CO": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 131,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 4.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 5.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 28,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 97,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 97,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "CR": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 123,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.6,
+        "period": "2011-2013",
+        "periodEndYear": 2013,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 2.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 13.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "CI": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 130,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 11.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 7.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 37.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 77,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 40,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "HR": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 141,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.7,
+        "period": "2005-2007",
+        "periodEndYear": 2007,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 4.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 96,
+        "period": "2021",
+        "periodEndYear": 2021,
+        "status": "international estimate"
+      }
+    },
+    "CU": {
+      "undernourishmentPct": {
+        "value": 3.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 95,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 95,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "CY": {
+      "undernourishmentPct": {
+        "value": 3,
+        "period": "2006-2008",
+        "periodEndYear": 2008,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 1.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "CZ": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 136,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 9.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "KP": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 84,
+        "period": "2017-2019",
+        "periodEndYear": 2019,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 47,
+        "period": "2017-2019",
+        "periodEndYear": 2019,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 94,
+        "period": "2023",
+        "periodEndYear": 2023,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 85,
+        "period": "2023",
+        "periodEndYear": 2023,
+        "status": "international estimate"
+      }
+    },
+    "CD": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 97,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 39.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 43.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 81.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 36,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 16,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "DK": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 147,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 6.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "DO": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 140,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.8,
+        "period": "2022-2024",
+        "periodEndYear": 2024,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 16.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 41.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 90,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "EC": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 113,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 10.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 11,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 31.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 92,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 91,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "EG": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 134,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 8.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 11.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 29.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 97,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 97,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "EE": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 131,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.9,
+        "period": "2003-2005",
+        "periodEndYear": 2005,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 13.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "ET": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 113,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 19.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 16.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 60.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 56,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 10,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "FI": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 132,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 2.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 13.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "FR": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 141,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 3.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 9.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "GE": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 124,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.7,
+        "period": "2022-2024",
+        "periodEndYear": 2024,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 5.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 22.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 97,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 91,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "DE": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 142,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 4.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "GH": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 136,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 6.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 8.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 43.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 90,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 32,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "GR": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 134,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 7.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "GT": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 127,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 12.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 22.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 49,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 93,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 71,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "HU": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 142,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.5,
+        "period": "2004-2006",
+        "periodEndYear": 2006,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 4.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 16.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "IS": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 141,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 7.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "IN": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 116,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 9.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 96,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 83,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "ID": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 126,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 6.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.5,
+        "period": "2018-2020",
+        "periodEndYear": 2020,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 4.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 89,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 88,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "IR": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 120,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 6.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 4.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 37.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 90,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "IQ": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 118,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 13.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "IE": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 157,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 3.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 6.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 97,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 90,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "IL": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 163,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 8.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "IT": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 150,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 1.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "JP": {
+      "severeFoodInsecurityPct": {
+        "value": 1.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 6.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "JO": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 111,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 12.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 96,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "KZ": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 134,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.5,
+        "period": "2019-2021",
+        "periodEndYear": 2021,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 1.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "KE": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 94,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 34.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 26.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 71.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 66,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 41,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "KW": {
+      "severeFoodInsecurityPct": {
+        "value": 3.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 9.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "KG": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 118,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 4.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 7.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 95,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "LA": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 109,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 10,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 5.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 34.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 96,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 89,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "LV": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 138,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.5,
+        "period": "2003-2005",
+        "periodEndYear": 2005,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 11.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 92,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "LB": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 119,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 11.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 10.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 44.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 93,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "LY": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 116,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 18.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 15.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 31.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 96,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 88,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "LT": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 135,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 6.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 96,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "LU": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 137,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 2.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "MG": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 89,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 41.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 16.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 61.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 55,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 15,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "MY": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 123,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.7,
+        "period": "2019-2021",
+        "periodEndYear": 2021,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 5.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 15.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 96,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "ML": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 126,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 12.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 2.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 20.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 86,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 48,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "MX": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 137,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 3.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 2.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 16.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 93,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "MN": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 131,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.5,
+        "period": "2021-2023",
+        "periodEndYear": 2023,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 4.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 86,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 74,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "ME": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 149,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 3,
+        "period": "2005-2007",
+        "periodEndYear": 2007,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "MA": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 139,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 6.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 92,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 88,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "MZ": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 102,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 22.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 67,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 39,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "MM": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 123,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 4.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 7.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 31.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 86,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 74,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "NP": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 129,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 5.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 12.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 35,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 94,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 86,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "NL": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 135,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 3.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 8.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "NZ": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 130,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 4.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 17.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "NE": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 123,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 12.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 7.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 50.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 53,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 16,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "NG": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 109,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 22.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 26.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 76.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 82,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 48,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "MK": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 141,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.6,
+        "period": "2011-2013",
+        "periodEndYear": 2013,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 9.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "NO": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 135,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 7.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "OM": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 122,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 7.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 93,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "PK": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 113,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 16.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 5.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 22.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 91,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 72,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "PA": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 134,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 4.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 95,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 89,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "PG": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 96,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 30.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 27,
+        "period": "2018-2020",
+        "periodEndYear": 2020,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 57.3,
+        "period": "2018-2020",
+        "periodEndYear": 2020,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 53,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 24,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "PY": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 131,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 4.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 25.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 96,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "PE": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 123,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 5.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 3.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 33.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 96,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 79,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "PH": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 129,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 3.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 3.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 32.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 96,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 87,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "PL": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 151,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 2.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 90,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "PT": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 145,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 2.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 11,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "QA": {
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "KR": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 138,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.5,
+        "period": "2003-2005",
+        "periodEndYear": 2005,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 5.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "MD": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 123,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.7,
+        "period": "2015-2017",
+        "periodEndYear": 2017,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 26.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 93,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 87,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "RO": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 149,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 5.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 15.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 90,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "RU": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 145,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.7,
+        "period": "2002-2004",
+        "periodEndYear": 2004,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.6,
+        "period": "2017-2019",
+        "periodEndYear": 2019,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 2.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 97,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 92,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "RW": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 109,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 22.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 61,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 81,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "SA": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 147,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.7,
+        "period": "2013-2015",
+        "periodEndYear": 2015,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "SN": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 123,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 5.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 3.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 27.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 88,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 62,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "RS": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 157,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 3,
+        "period": "2003-2005",
+        "periodEndYear": 2005,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 6.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 95,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "SG": {
+      "severeFoodInsecurityPct": {
+        "value": 3.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 10.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "SK": {
+      "severeFoodInsecurityPct": {
+        "value": 1.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 7.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "SI": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 130,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 7.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "SO": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 80,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 56.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 75,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 44,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "ZA": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 111,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 11.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 8.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 20.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 90,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 77,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "SS": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 108,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 19.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 62.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 88.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 40,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 14,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "ES": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 136,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 7.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "LK": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 119,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 4.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 10.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 90,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 95,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "SD": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 118,
+        "period": "2020-2022",
+        "periodEndYear": 2022,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 10.9,
+        "period": "2020-2022",
+        "periodEndYear": 2022,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 65,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 66,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "SE": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 133,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 3.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 7.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "CH": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 133,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 2.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "SY": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 94,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 40.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 94,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 96,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "TJ": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 121,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 4.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 24,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 89,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 96,
+        "period": "2023",
+        "periodEndYear": 2023,
+        "status": "international estimate"
+      }
+    },
+    "TH": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 114,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 5.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 4.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "TN": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 145,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 7.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 24.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 97,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "TR": {
+      "undernourishmentPct": {
+        "value": 3.1,
+        "period": "2008-2010",
+        "periodEndYear": 2010,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 96,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "TM": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 123,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 4.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "UG": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 109,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 20.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 12.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 51.6,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 63,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 24,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "UA": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 108,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 10.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 5.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 32,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 94,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "AE": {
+      "undernourishmentPct": {
+        "value": 2.5,
+        "period": "2019-2021",
+        "periodEndYear": 2021,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 0.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 4.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "GB": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 137,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 7.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "TZ": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 115,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 19.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 22.9,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 57,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 65,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 37,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "US": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 154,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 10.7,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "UY": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 134,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.6,
+        "period": "2003-2005",
+        "periodEndYear": 2005,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 2.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 15.5,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "official"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 100,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "UZ": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 142,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 2.6,
+        "period": "2010-2012",
+        "periodEndYear": 2012,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 97,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 96,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "VE": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 118,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 5.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 93,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 98,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "VN": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 131,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 6.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 1.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 9.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 99,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 95,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "YE": {
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 74.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 75,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 63,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "ZM": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 93,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 41,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 17.2,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 45.8,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 73,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 38,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    },
+    "ZW": {
+      "dietaryEnergyAdequacyPct": {
+        "value": 107,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "undernourishmentPct": {
+        "value": 18.4,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "severeFoodInsecurityPct": {
+        "value": 25.3,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "moderateOrSevereFoodInsecurityPct": {
+        "value": 70.1,
+        "period": "2023-2025",
+        "periodEndYear": 2025,
+        "status": "estimated"
+      },
+      "basicDrinkingWaterPct": {
+        "value": 67,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      },
+      "basicSanitationPct": {
+        "value": 35,
+        "period": "2024",
+        "periodEndYear": 2024,
+        "status": "international estimate"
+      }
+    }
+  }
+}

@@ -1,0 +1,226 @@
+{
+  "fetchedAt": "2026-08-15T21:29:57.430Z",
+  "generatedAt": "2026-08-14T23:00:04.744Z",
+  "sourceTitle": "United Nations Security Council Consolidated List",
+  "sourceUrl": "https://main.un.org/securitycouncil/en/content/un-sc-consolidated-list",
+  "listingTotal": 1011,
+  "individualTotal": 736,
+  "entityTotal": 275,
+  "countryRegimeCount": 13,
+  "thematicRegimes": [
+    {
+      "regime": "Al-Qaida",
+      "listingCount": 336
+    }
+  ],
+  "perCountry": {
+    "CD": {
+      "listingCount": 61,
+      "individualCount": 50,
+      "entityCount": 11,
+      "regimes": [
+        {
+          "regime": "DRC",
+          "label": "Democratic Republic of the Congo (1533)",
+          "listingCount": 61,
+          "individualCount": 50,
+          "entityCount": 11,
+          "newestListedOn": "2026-07-14"
+        }
+      ],
+      "newestListedOn": "2026-07-14"
+    },
+    "CF": {
+      "listingCount": 15,
+      "individualCount": 14,
+      "entityCount": 1,
+      "regimes": [
+        {
+          "regime": "CAR",
+          "label": "Central African Republic (2127)",
+          "listingCount": 15,
+          "individualCount": 14,
+          "entityCount": 1,
+          "newestListedOn": "2021-12-21"
+        }
+      ],
+      "newestListedOn": "2021-12-21"
+    },
+    "GW": {
+      "listingCount": 10,
+      "individualCount": 10,
+      "entityCount": 0,
+      "regimes": [
+        {
+          "regime": "GB",
+          "label": "Guinea-Bissau (2048)",
+          "listingCount": 10,
+          "individualCount": 10,
+          "entityCount": 0,
+          "newestListedOn": "2012-07-18"
+        }
+      ],
+      "newestListedOn": "2012-07-18"
+    },
+    "HT": {
+      "listingCount": 11,
+      "individualCount": 9,
+      "entityCount": 2,
+      "regimes": [
+        {
+          "regime": "Haiti",
+          "label": "Haiti (2653)",
+          "listingCount": 11,
+          "individualCount": 9,
+          "entityCount": 2,
+          "newestListedOn": "2025-10-17"
+        }
+      ],
+      "newestListedOn": "2025-10-17"
+    },
+    "IQ": {
+      "listingCount": 75,
+      "individualCount": 65,
+      "entityCount": 10,
+      "regimes": [
+        {
+          "regime": "Iraq",
+          "label": "Iraq (1518)",
+          "listingCount": 75,
+          "individualCount": 65,
+          "entityCount": 10,
+          "newestListedOn": "2006-05-12"
+        }
+      ],
+      "newestListedOn": "2006-05-12"
+    },
+    "IR": {
+      "listingCount": 121,
+      "individualCount": 43,
+      "entityCount": 78,
+      "regimes": [
+        {
+          "regime": "Iran",
+          "label": "Iran (2231)",
+          "listingCount": 121,
+          "individualCount": 43,
+          "entityCount": 78,
+          "newestListedOn": "2012-12-20"
+        }
+      ],
+      "newestListedOn": "2012-12-20"
+    },
+    "KP": {
+      "listingCount": 155,
+      "individualCount": 80,
+      "entityCount": 75,
+      "regimes": [
+        {
+          "regime": "DPRK",
+          "label": "Democratic People's Republic of Korea (1718)",
+          "listingCount": 155,
+          "individualCount": 80,
+          "entityCount": 75,
+          "newestListedOn": "2018-03-30"
+        }
+      ],
+      "newestListedOn": "2018-03-30"
+    },
+    "LY": {
+      "listingCount": 31,
+      "individualCount": 28,
+      "entityCount": 3,
+      "regimes": [
+        {
+          "regime": "Libya",
+          "label": "Libya (1970)",
+          "listingCount": 31,
+          "individualCount": 28,
+          "entityCount": 3,
+          "newestListedOn": "2026-07-22"
+        }
+      ],
+      "newestListedOn": "2026-07-22"
+    },
+    "SD": {
+      "listingCount": 13,
+      "individualCount": 13,
+      "entityCount": 0,
+      "regimes": [
+        {
+          "regime": "Sudan",
+          "label": "Sudan (1591)",
+          "listingCount": 13,
+          "individualCount": 13,
+          "entityCount": 0,
+          "newestListedOn": "2026-04-28"
+        }
+      ],
+      "newestListedOn": "2026-04-28"
+    },
+    "SO": {
+      "listingCount": 24,
+      "individualCount": 23,
+      "entityCount": 1,
+      "regimes": [
+        {
+          "regime": "Somalia",
+          "label": "Somalia (751)",
+          "listingCount": 24,
+          "individualCount": 23,
+          "entityCount": 1,
+          "newestListedOn": "2024-05-21"
+        }
+      ],
+      "newestListedOn": "2024-05-21"
+    },
+    "SS": {
+      "listingCount": 8,
+      "individualCount": 8,
+      "entityCount": 0,
+      "regimes": [
+        {
+          "regime": "SouthSudan",
+          "label": "South Sudan (2206)",
+          "listingCount": 8,
+          "individualCount": 8,
+          "entityCount": 0,
+          "newestListedOn": "2018-07-13"
+        }
+      ],
+      "newestListedOn": "2018-07-13"
+    },
+    "AF": {
+      "listingCount": 140,
+      "individualCount": 135,
+      "entityCount": 5,
+      "regimes": [
+        {
+          "regime": "Taliban",
+          "label": "Afghanistan / Taliban (1988)",
+          "listingCount": 140,
+          "individualCount": 135,
+          "entityCount": 5,
+          "newestListedOn": "2015-11-02"
+        }
+      ],
+      "newestListedOn": "2015-11-02"
+    },
+    "YE": {
+      "listingCount": 11,
+      "individualCount": 10,
+      "entityCount": 1,
+      "regimes": [
+        {
+          "regime": "Yemen",
+          "label": "Yemen (2140)",
+          "listingCount": 11,
+          "individualCount": 10,
+          "entityCount": 1,
+          "newestListedOn": "2022-10-04"
+        }
+      ],
+      "newestListedOn": "2022-10-04"
+    }
+  }
+}

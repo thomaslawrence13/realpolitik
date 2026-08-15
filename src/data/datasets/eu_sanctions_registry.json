@@ -1,0 +1,2196 @@
+{
+  "fetchedAt": "2026-08-15T21:48:43.331Z",
+  "generatedAt": "2026-08-05T16:47:04.449+02:00",
+  "sourceTitle": "EU Consolidated Financial Sanctions List",
+  "sourceUrl": "https://finance.ec.europa.eu/eu-and-world/sanctions-restrictive-measures/overview-sanctions-and-related-resources_en",
+  "listingTotal": 6234,
+  "personTotal": 4462,
+  "enterpriseTotal": 1772,
+  "unattributedTotal": 2027,
+  "unLinkedTotal": 87,
+  "perCountry": {
+    "IQ": {
+      "listingCount": 97,
+      "personCount": 90,
+      "enterpriseCount": 7,
+      "programmes": [
+        {
+          "programme": "IRQ",
+          "label": "Iraq",
+          "listingCount": 69
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 26
+        },
+        {
+          "programme": "UNLI",
+          "label": "UNLI",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2026-03-26"
+    },
+    "SA": {
+      "listingCount": 17,
+      "personCount": 16,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 15
+        },
+        {
+          "programme": "TERR",
+          "label": "Terrorism",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2018-06-18"
+    },
+    "LB": {
+      "listingCount": 13,
+      "personCount": 10,
+      "enterpriseCount": 3,
+      "programmes": [
+        {
+          "programme": "SYR",
+          "label": "Syria",
+          "listingCount": 3
+        },
+        {
+          "programme": "HAM",
+          "label": "HAM",
+          "listingCount": 3
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 2
+        },
+        {
+          "programme": "LBY",
+          "label": "Libya",
+          "listingCount": 2
+        },
+        {
+          "programme": "TERR",
+          "label": "Terrorism",
+          "listingCount": 1
+        },
+        {
+          "programme": "IRQ",
+          "label": "Iraq",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-06-23"
+    },
+    "PH": {
+      "listingCount": 18,
+      "personCount": 16,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 18
+        }
+      ],
+      "newestDesignation": "2018-08-23"
+    },
+    "AF": {
+      "listingCount": 154,
+      "personCount": 140,
+      "enterpriseCount": 14,
+      "programmes": [
+        {
+          "programme": "AFG",
+          "label": "Afghanistan",
+          "listingCount": 126
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 22
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 5
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-09-29"
+    },
+    "PK": {
+      "listingCount": 51,
+      "personCount": 34,
+      "enterpriseCount": 17,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 29
+        },
+        {
+          "programme": "AFG",
+          "label": "Afghanistan",
+          "listingCount": 20
+        },
+        {
+          "programme": "EUAQ",
+          "label": "EU autonomous Al-Qaida measures",
+          "listingCount": 1
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-12-15"
+    },
+    "LY": {
+      "listingCount": 35,
+      "personCount": 26,
+      "enterpriseCount": 9,
+      "programmes": [
+        {
+          "programme": "LBY",
+          "label": "Libya",
+          "listingCount": 17
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 14
+        },
+        {
+          "programme": "PRK",
+          "label": "Korea, Dem. People's Rep.",
+          "listingCount": 2
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 1
+        },
+        {
+          "programme": "SYR",
+          "label": "Syria",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2024-01-22"
+    },
+    "NE": {
+      "listingCount": 2,
+      "personCount": 0,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2014-06-02"
+    },
+    "ML": {
+      "listingCount": 21,
+      "personCount": 15,
+      "enterpriseCount": 6,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 17
+        },
+        {
+          "programme": "MLI",
+          "label": "MLI",
+          "listingCount": 3
+        },
+        {
+          "programme": "EUAQ",
+          "label": "EU autonomous Al-Qaida measures",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2022-06-20"
+    },
+    "MR": {
+      "listingCount": 5,
+      "personCount": 4,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 4
+        },
+        {
+          "programme": "EUAQ",
+          "label": "EU autonomous Al-Qaida measures",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2022-06-20"
+    },
+    "DZ": {
+      "listingCount": 24,
+      "personCount": 20,
+      "enterpriseCount": 4,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 22
+        },
+        {
+          "programme": "EUAQ",
+          "label": "EU autonomous Al-Qaida measures",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2018-10-15"
+    },
+    "TN": {
+      "listingCount": 51,
+      "personCount": 49,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "TUN",
+          "label": "Tunisia — misappropriation of state funds",
+          "listingCount": 27
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 24
+        }
+      ],
+      "newestDesignation": "2021-12-29"
+    },
+    "MA": {
+      "listingCount": 11,
+      "personCount": 9,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 11
+        }
+      ],
+      "newestDesignation": "2019-08-14"
+    },
+    "KW": {
+      "listingCount": 9,
+      "personCount": 8,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 9
+        }
+      ],
+      "newestDesignation": "2014-09-23"
+    },
+    "AE": {
+      "listingCount": 41,
+      "personCount": 3,
+      "enterpriseCount": 38,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 25
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 7
+        },
+        {
+          "programme": "SDNZ",
+          "label": "Sudan",
+          "listingCount": 3
+        },
+        {
+          "programme": "AFG",
+          "label": "Afghanistan",
+          "listingCount": 2
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 1
+        },
+        {
+          "programme": "IRQ",
+          "label": "Iraq",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-07-23"
+    },
+    "US": {
+      "listingCount": 18,
+      "personCount": 13,
+      "enterpriseCount": 5,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 11
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 2
+        },
+        {
+          "programme": "SOM",
+          "label": "Somalia",
+          "listingCount": 1
+        },
+        {
+          "programme": "TERR",
+          "label": "Terrorism",
+          "listingCount": 1
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 1
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-12-15"
+    },
+    "EG": {
+      "listingCount": 16,
+      "personCount": 15,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 14
+        },
+        {
+          "programme": "LBY",
+          "label": "Libya",
+          "listingCount": 1
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-09-29"
+    },
+    "TZ": {
+      "listingCount": 4,
+      "personCount": 3,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 2
+        },
+        {
+          "programme": "EUAQ",
+          "label": "EU autonomous Al-Qaida measures",
+          "listingCount": 1
+        },
+        {
+          "programme": "COD",
+          "label": "Congo, Dem. Rep.",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2023-07-28"
+    },
+    "YE": {
+      "listingCount": 23,
+      "personCount": 21,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 13
+        },
+        {
+          "programme": "YEM",
+          "label": "YEM",
+          "listingCount": 8
+        },
+        {
+          "programme": "IRQ",
+          "label": "Iraq",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2022-10-04"
+    },
+    "PS": {
+      "listingCount": 14,
+      "personCount": 11,
+      "enterpriseCount": 3,
+      "programmes": [
+        {
+          "programme": "HAM",
+          "label": "HAM",
+          "listingCount": 5
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 5
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 4
+        }
+      ],
+      "newestDesignation": "2024-07-15"
+    },
+    "SO": {
+      "listingCount": 18,
+      "personCount": 18,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "SOM",
+          "label": "Somalia",
+          "listingCount": 16
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2024-05-21"
+    },
+    "CN": {
+      "listingCount": 52,
+      "personCount": 12,
+      "enterpriseCount": 40,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 29
+        },
+        {
+          "programme": "PRK",
+          "label": "Korea, Dem. People's Rep.",
+          "listingCount": 7
+        },
+        {
+          "programme": "CYB",
+          "label": "Cyber-attacks",
+          "listingCount": 7
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 5
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 2
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-07-23"
+    },
+    "JO": {
+      "listingCount": 16,
+      "personCount": 13,
+      "enterpriseCount": 3,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 7
+        },
+        {
+          "programme": "IRQ",
+          "label": "Iraq",
+          "listingCount": 5
+        },
+        {
+          "programme": "HAM",
+          "label": "HAM",
+          "listingCount": 2
+        },
+        {
+          "programme": "LBY",
+          "label": "Libya",
+          "listingCount": 1
+        },
+        {
+          "programme": "EUAQ",
+          "label": "EU autonomous Al-Qaida measures",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2024-06-28"
+    },
+    "QA": {
+      "listingCount": 8,
+      "personCount": 8,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "AFG",
+          "label": "Afghanistan",
+          "listingCount": 4
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 4
+        }
+      ],
+      "newestDesignation": "2015-09-21"
+    },
+    "GB": {
+      "listingCount": 29,
+      "personCount": 15,
+      "enterpriseCount": 14,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 11
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 7
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 4
+        },
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 4
+        },
+        {
+          "programme": "IRQ",
+          "label": "Iraq",
+          "listingCount": 2
+        },
+        {
+          "programme": "LBY",
+          "label": "Libya",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-03-16"
+    },
+    "IT": {
+      "listingCount": 10,
+      "personCount": 9,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 9
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-09-29"
+    },
+    "BE": {
+      "listingCount": 4,
+      "personCount": 3,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "COD",
+          "label": "Congo, Dem. Rep.",
+          "listingCount": 2
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 1
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-09-29"
+    },
+    "DE": {
+      "listingCount": 14,
+      "personCount": 12,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 6
+        },
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 3
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 2
+        },
+        {
+          "programme": "COD",
+          "label": "Congo, Dem. Rep.",
+          "listingCount": 1
+        },
+        {
+          "programme": "EUAQ",
+          "label": "EU autonomous Al-Qaida measures",
+          "listingCount": 1
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-09-29"
+    },
+    "BD": {
+      "listingCount": 2,
+      "personCount": 0,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2002-11-21"
+    },
+    "SD": {
+      "listingCount": 44,
+      "personCount": 35,
+      "enterpriseCount": 9,
+      "programmes": [
+        {
+          "programme": "SDNZ",
+          "label": "Sudan",
+          "listingCount": 22
+        },
+        {
+          "programme": "SDN",
+          "label": "SDN",
+          "listingCount": 9
+        },
+        {
+          "programme": "CAF",
+          "label": "Central African Republic",
+          "listingCount": 4
+        },
+        {
+          "programme": "SSD",
+          "label": "SSD",
+          "listingCount": 3
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 2
+        },
+        {
+          "programme": "UNLI",
+          "label": "UNLI",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2026-03-05"
+    },
+    "ID": {
+      "listingCount": 27,
+      "personCount": 24,
+      "enterpriseCount": 3,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 26
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-09-29"
+    },
+    "MY": {
+      "listingCount": 7,
+      "personCount": 2,
+      "enterpriseCount": 5,
+      "programmes": [
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 5
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2025-09-29"
+    },
+    "IN": {
+      "listingCount": 6,
+      "personCount": 3,
+      "enterpriseCount": 3,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 5
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-07-23"
+    },
+    "FR": {
+      "listingCount": 15,
+      "personCount": 15,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 7
+        },
+        {
+          "programme": "EUAQ",
+          "label": "EU autonomous Al-Qaida measures",
+          "listingCount": 4
+        },
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 2
+        },
+        {
+          "programme": "TUN",
+          "label": "Tunisia — misappropriation of state funds",
+          "listingCount": 1
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-03-16"
+    },
+    "KE": {
+      "listingCount": 5,
+      "personCount": 4,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "SOM",
+          "label": "Somalia",
+          "listingCount": 4
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2024-05-21"
+    },
+    "CH": {
+      "listingCount": 11,
+      "personCount": 8,
+      "enterpriseCount": 3,
+      "programmes": [
+        {
+          "programme": "IRQ",
+          "label": "Iraq",
+          "listingCount": 6
+        },
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 2
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 2
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-12-15"
+    },
+    "AL": {
+      "listingCount": 1,
+      "personCount": 0,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": null
+    },
+    "LI": {
+      "listingCount": 1,
+      "personCount": 0,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "IRQ",
+          "label": "Iraq",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": null
+    },
+    "ET": {
+      "listingCount": 2,
+      "personCount": 1,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 1
+        },
+        {
+          "programme": "SOM",
+          "label": "Somalia",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2011-07-28"
+    },
+    "SY": {
+      "listingCount": 150,
+      "personCount": 110,
+      "enterpriseCount": 40,
+      "programmes": [
+        {
+          "programme": "SYR",
+          "label": "Syria",
+          "listingCount": 84
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 44
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 8
+        },
+        {
+          "programme": "IRQ",
+          "label": "Iraq",
+          "listingCount": 6
+        },
+        {
+          "programme": "CHEM",
+          "label": "Chemical weapons",
+          "listingCount": 5
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2025-06-23"
+    },
+    "BA": {
+      "listingCount": 4,
+      "personCount": 1,
+      "enterpriseCount": 3,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 4
+        }
+      ],
+      "newestDesignation": "2016-02-29"
+    },
+    "NL": {
+      "listingCount": 2,
+      "personCount": 1,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 1
+        },
+        {
+          "programme": "CAF",
+          "label": "Central African Republic",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2015-08-20"
+    },
+    "KM": {
+      "listingCount": 1,
+      "personCount": 0,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": null
+    },
+    "CD": {
+      "listingCount": 59,
+      "personCount": 52,
+      "enterpriseCount": 7,
+      "programmes": [
+        {
+          "programme": "COD",
+          "label": "Congo, Dem. Rep.",
+          "listingCount": 54
+        },
+        {
+          "programme": "CAF",
+          "label": "Central African Republic",
+          "listingCount": 2
+        },
+        {
+          "programme": "PRK",
+          "label": "Korea, Dem. People's Rep.",
+          "listingCount": 2
+        },
+        {
+          "programme": "UNLI",
+          "label": "UNLI",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-03-30"
+    },
+    "UG": {
+      "listingCount": 14,
+      "personCount": 12,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "COD",
+          "label": "Congo, Dem. Rep.",
+          "listingCount": 9
+        },
+        {
+          "programme": "CAF",
+          "label": "Central African Republic",
+          "listingCount": 2
+        },
+        {
+          "programme": "SSD",
+          "label": "SSD",
+          "listingCount": 1
+        },
+        {
+          "programme": "EUAQ",
+          "label": "EU autonomous Al-Qaida measures",
+          "listingCount": 1
+        },
+        {
+          "programme": "UNLI",
+          "label": "UNLI",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-03-30"
+    },
+    "RW": {
+      "listingCount": 25,
+      "personCount": 24,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "COD",
+          "label": "Congo, Dem. Rep.",
+          "listingCount": 25
+        }
+      ],
+      "newestDesignation": "2025-03-17"
+    },
+    "BY": {
+      "listingCount": 322,
+      "personCount": 257,
+      "enterpriseCount": 65,
+      "programmes": [
+        {
+          "programme": "BLR",
+          "label": "Belarus",
+          "listingCount": 254
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 65
+        },
+        {
+          "programme": "PRK",
+          "label": "Korea, Dem. People's Rep.",
+          "listingCount": 1
+        },
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 1
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-07-23"
+    },
+    "NO": {
+      "listingCount": 2,
+      "personCount": 2,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2014-09-23"
+    },
+    "IR": {
+      "listingCount": 539,
+      "personCount": 281,
+      "enterpriseCount": 258,
+      "programmes": [
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 498
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 20
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 7
+        },
+        {
+          "programme": "SYR",
+          "label": "Syria",
+          "listingCount": 4
+        },
+        {
+          "programme": "TERR",
+          "label": "Terrorism",
+          "listingCount": 4
+        },
+        {
+          "programme": "AFG",
+          "label": "Afghanistan",
+          "listingCount": 3
+        }
+      ],
+      "newestDesignation": "2026-06-08"
+    },
+    "TR": {
+      "listingCount": 19,
+      "personCount": 11,
+      "enterpriseCount": 8,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 6
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 3
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 2
+        },
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 2
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 2
+        },
+        {
+          "programme": "SYR",
+          "label": "Syria",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-07-15"
+    },
+    "KP": {
+      "listingCount": 176,
+      "personCount": 100,
+      "enterpriseCount": 76,
+      "programmes": [
+        {
+          "programme": "PRK",
+          "label": "Korea, Dem. People's Rep.",
+          "listingCount": 165
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 7
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 3
+        },
+        {
+          "programme": "CYB",
+          "label": "Cyber-attacks",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-10-23"
+    },
+    "BF": {
+      "listingCount": 2,
+      "personCount": 2,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "GIN",
+          "label": "GIN",
+          "listingCount": 1
+        },
+        {
+          "programme": "EUAQ",
+          "label": "EU autonomous Al-Qaida measures",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2022-06-20"
+    },
+    "GN": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "GIN",
+          "label": "GIN",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2021-08-05"
+    },
+    "SE": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "SOM",
+          "label": "Somalia",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2010-04-12"
+    },
+    "OM": {
+      "listingCount": 4,
+      "personCount": 2,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "LBY",
+          "label": "Libya",
+          "listingCount": 2
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 1
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-07-23"
+    },
+    "RU": {
+      "listingCount": 1893,
+      "personCount": 1134,
+      "enterpriseCount": 759,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1601
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 94
+        },
+        {
+          "programme": "RUS",
+          "label": "Russia — destabilising actions",
+          "listingCount": 68
+        },
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 57
+        },
+        {
+          "programme": "CHEM",
+          "label": "Chemical weapons",
+          "listingCount": 18
+        },
+        {
+          "programme": "CYB",
+          "label": "Cyber-attacks",
+          "listingCount": 15
+        }
+      ],
+      "newestDesignation": "2026-07-23"
+    },
+    "UZ": {
+      "listingCount": 5,
+      "personCount": 3,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 3
+        },
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 1
+        },
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-04-23"
+    },
+    "UA": {
+      "listingCount": 93,
+      "personCount": 61,
+      "enterpriseCount": 32,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 87
+        },
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 4
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2026-07-23"
+    },
+    "NG": {
+      "listingCount": 3,
+      "personCount": 1,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 3
+        }
+      ],
+      "newestDesignation": "2014-06-26"
+    },
+    "CF": {
+      "listingCount": 18,
+      "personCount": 16,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "CAF",
+          "label": "Central African Republic",
+          "listingCount": 14
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 4
+        }
+      ],
+      "newestDesignation": "2023-07-20"
+    },
+    "SS": {
+      "listingCount": 8,
+      "personCount": 8,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 4
+        },
+        {
+          "programme": "SSD",
+          "label": "SSD",
+          "listingCount": 3
+        },
+        {
+          "programme": "CAF",
+          "label": "Central African Republic",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2023-07-20"
+    },
+    "SN": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2014-09-23"
+    },
+    "GE": {
+      "listingCount": 4,
+      "personCount": 3,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 2
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        },
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2024-12-16"
+    },
+    "TJ": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2016-02-29"
+    },
+    "MM": {
+      "listingCount": 115,
+      "personCount": 94,
+      "enterpriseCount": 21,
+      "programmes": [
+        {
+          "programme": "MMR",
+          "label": "Myanmar/Burma",
+          "listingCount": 112
+        },
+        {
+          "programme": "PRK",
+          "label": "Korea, Dem. People's Rep.",
+          "listingCount": 2
+        },
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2024-10-29"
+    },
+    "CA": {
+      "listingCount": 4,
+      "personCount": 4,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "CHEM",
+          "label": "Chemical weapons",
+          "listingCount": 2
+        },
+        {
+          "programme": "TERR",
+          "label": "Terrorism",
+          "listingCount": 1
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-12-15"
+    },
+    "AU": {
+      "listingCount": 2,
+      "personCount": 2,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "TERR",
+          "label": "Terrorism",
+          "listingCount": 1
+        },
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-07-15"
+    },
+    "TD": {
+      "listingCount": 2,
+      "personCount": 2,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "CAF",
+          "label": "Central African Republic",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2020-04-20"
+    },
+    "VN": {
+      "listingCount": 3,
+      "personCount": 2,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "PRK",
+          "label": "Korea, Dem. People's Rep.",
+          "listingCount": 2
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-12-15"
+    },
+    "VG": {
+      "listingCount": 1,
+      "personCount": 0,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "PRK",
+          "label": "Korea, Dem. People's Rep.",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2016-11-30"
+    },
+    "TT": {
+      "listingCount": 2,
+      "personCount": 2,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "TAQA",
+          "label": "Al-Qaida and ISIL/Da’esh",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2021-11-23"
+    },
+    "MH": {
+      "listingCount": 1,
+      "personCount": 0,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "PRK",
+          "label": "Korea, Dem. People's Rep.",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2018-03-30"
+    },
+    "PA": {
+      "listingCount": 1,
+      "personCount": 0,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "PRK",
+          "label": "Korea, Dem. People's Rep.",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2018-03-30"
+    },
+    "SG": {
+      "listingCount": 5,
+      "personCount": 1,
+      "enterpriseCount": 4,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 3
+        },
+        {
+          "programme": "PRK",
+          "label": "Korea, Dem. People's Rep.",
+          "listingCount": 1
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-07-23"
+    },
+    "ER": {
+      "listingCount": 3,
+      "personCount": 2,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "LBY",
+          "label": "Libya",
+          "listingCount": 2
+        },
+        {
+          "programme": "PRK",
+          "label": "Korea, Dem. People's Rep.",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2022-04-21"
+    },
+    "KN": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "SYR",
+          "label": "Syria",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2020-02-17"
+    },
+    "CG": {
+      "listingCount": 3,
+      "personCount": 3,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "COD",
+          "label": "Congo, Dem. Rep.",
+          "listingCount": 2
+        },
+        {
+          "programme": "CAF",
+          "label": "Central African Republic",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2024-07-26"
+    },
+    "VE": {
+      "listingCount": 18,
+      "personCount": 17,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "VEN",
+          "label": "Venezuela",
+          "listingCount": 17
+        },
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-09-29"
+    },
+    "KZ": {
+      "listingCount": 2,
+      "personCount": 0,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "LBY",
+          "label": "Libya",
+          "listingCount": 1
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-04-23"
+    },
+    "NI": {
+      "listingCount": 18,
+      "personCount": 15,
+      "enterpriseCount": 3,
+      "programmes": [
+        {
+          "programme": "NIC",
+          "label": "Nicaragua",
+          "listingCount": 18
+        }
+      ],
+      "newestDesignation": "2022-01-10"
+    },
+    "AM": {
+      "listingCount": 3,
+      "personCount": 3,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 3
+        }
+      ],
+      "newestDesignation": "2023-02-25"
+    },
+    "FI": {
+      "listingCount": 4,
+      "personCount": 4,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 4
+        }
+      ],
+      "newestDesignation": "2023-12-18"
+    },
+    "CY": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2022-04-08"
+    },
+    "CS": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "BLR",
+          "label": "Belarus",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2022-06-03"
+    },
+    "HR": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2022-06-03"
+    },
+    "RS": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2022-06-03"
+    },
+    "HT": {
+      "listingCount": 15,
+      "personCount": 13,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "HTI",
+          "label": "HTI",
+          "listingCount": 13
+        },
+        {
+          "programme": "UNLI",
+          "label": "UNLI",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2025-07-15"
+    },
+    "IL": {
+      "listingCount": 15,
+      "personCount": 14,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "HR",
+          "label": "Global human rights",
+          "listingCount": 9
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 4
+        },
+        {
+          "programme": "MDA",
+          "label": "Moldova",
+          "listingCount": 1
+        },
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-05-20"
+    },
+    "MD": {
+      "listingCount": 28,
+      "personCount": 27,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "MDA",
+          "label": "Moldova",
+          "listingCount": 21
+        },
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 5
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2025-07-15"
+    },
+    "RO": {
+      "listingCount": 3,
+      "personCount": 3,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "MDA",
+          "label": "Moldova",
+          "listingCount": 3
+        }
+      ],
+      "newestDesignation": "2024-02-22"
+    },
+    "SI": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2023-12-18"
+    },
+    "GT": {
+      "listingCount": 8,
+      "personCount": 8,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "GTM",
+          "label": "GTM",
+          "listingCount": 8
+        }
+      ],
+      "newestDesignation": "2025-06-12"
+    },
+    "CZ": {
+      "listingCount": 4,
+      "personCount": 2,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 3
+        },
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-05-20"
+    },
+    "LV": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2024-06-24"
+    },
+    "BI": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "COD",
+          "label": "Congo, Dem. Rep.",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2024-07-26"
+    },
+    "CI": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2024-12-16"
+    },
+    "HK": {
+      "listingCount": 4,
+      "personCount": 0,
+      "enterpriseCount": 4,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 4
+        }
+      ],
+      "newestDesignation": "2025-10-23"
+    },
+    "EE": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-05-20"
+    },
+    "TG": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-05-20"
+    },
+    "CM": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-06-26"
+    },
+    "AZ": {
+      "listingCount": 4,
+      "personCount": 3,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 4
+        }
+      ],
+      "newestDesignation": "2025-12-15"
+    },
+    "MU": {
+      "listingCount": 2,
+      "personCount": 0,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2025-07-19"
+    },
+    "KY": {
+      "listingCount": 1,
+      "personCount": 0,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-09-29"
+    },
+    "BH": {
+      "listingCount": 1,
+      "personCount": 0,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "IRN",
+          "label": "Iran",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-09-29"
+    },
+    "KG": {
+      "listingCount": 3,
+      "personCount": 0,
+      "enterpriseCount": 3,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 3
+        }
+      ],
+      "newestDesignation": "2026-04-23"
+    },
+    "AN": {
+      "listingCount": 1,
+      "personCount": 0,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2025-10-23"
+    },
+    "BZ": {
+      "listingCount": 2,
+      "personCount": 0,
+      "enterpriseCount": 2,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 2
+        }
+      ],
+      "newestDesignation": "2026-04-23"
+    },
+    "ME": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-01-29"
+    },
+    "HN": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-01-29"
+    },
+    "SC": {
+      "listingCount": 1,
+      "personCount": 0,
+      "enterpriseCount": 1,
+      "programmes": [
+        {
+          "programme": "UKR",
+          "label": "Ukraine's territorial integrity",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-04-23"
+    },
+    "LT": {
+      "listingCount": 1,
+      "personCount": 1,
+      "enterpriseCount": 0,
+      "programmes": [
+        {
+          "programme": "RUSDA",
+          "label": "Russia — hybrid/destabilising activities",
+          "listingCount": 1
+        }
+      ],
+      "newestDesignation": "2026-03-16"
+    }
+  }
+}

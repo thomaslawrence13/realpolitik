@@ -11,10 +11,16 @@ import ingestedSnapshot from '../src/data/datasets/ingested_snapshot.json';
 import imfWeoSnapshot from '../src/data/datasets/imf_weo_snapshot.json';
 import historicalIndicatorSeries from '../src/data/datasets/historical_indicator_series.json';
 import historicalSeriesMeta from '../src/data/datasets/historical_series_meta.json';
-import rawWorldBankLatest from '../src/data/datasets/raw/world_bank_latest.json';
 import unGaVotes from '../src/data/datasets/un_ga_votes.json';
 import ofacSanctions from '../src/data/datasets/ofac_sanctions_registry.json';
+import unscSanctions from '../src/data/datasets/unsc_sanctions_registry.json';
+import euSanctions from '../src/data/datasets/eu_sanctions_registry.json';
 import ucdpConflict from '../src/data/datasets/ucdp_conflict.json';
+import unhcrDisplacement from '../src/data/datasets/unhcr_displacement.json';
+import faoFoodSecurity from '../src/data/datasets/fao_food_security.json';
+import faoFoodSecurityMeta from '../src/data/datasets/fao_food_security_meta.json';
+import bisFinancial from '../src/data/datasets/bis_financial.json';
+import qualityHistory from '../src/data/datasets/quality_history.json';
 import { indicatorSourcePriority, relationshipDimensionSourcePriority } from '../src/data/pipeline/rules.js';
 import {
   countryIso2,
@@ -30,6 +36,9 @@ import {
 } from '../src/lib/historicalSeriesArtifact.js';
 import { SOURCE_REGISTRY } from '../src/data/sourceRegistry.js';
 import { ARTIFACT_IDS, describeArtifacts } from '../src/data/artifactRegistry.js';
+import { QUALITY_HISTORY_LIMIT, readQualityHistory } from '../src/lib/qualityHistory.js';
+import { summarizeFaoArtifact, type FaoFoodSecurityArtifact } from '../src/lib/faoFoodSecurity.js';
+import { RAW_AUDIT_FILENAME, readRawAudit } from '../src/lib/rawAudit.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -122,12 +131,19 @@ const validateProvenanceRegistryParity = () => {
       `source "${sourceId}" is in SOURCE_REGISTRY but missing from the dataset registry`,
     );
   }
+  // Publisher names are now a hard gate rather than a warning. As a warning it
+  // sat in the output of every validation run for long enough to become
+  // scenery — four sources drifted between an abbreviation and a full name, and
+  // a reader comparing "UCDP" on a country card with "Uppsala Conflict Data
+  // Program" in the methodology drawer has no way to tell they are one source.
+  // `sourceRegistry.ts` is the authority: it is what the provenance copy reads.
   for (const source of geopoliticalDatasetV1.sources) {
     const descriptor = SOURCE_REGISTRY[source.id];
     if (!descriptor) continue;
-    ensureWarn(
+    ensure(
       descriptor.publisher === source.publisher,
-      `source "${source.id}" publisher differs between registries ("${source.publisher}" vs "${descriptor.publisher}")`,
+      `source "${source.id}" publisher differs between registries ("${source.publisher}" in v1.ts vs ` +
+        `"${descriptor.publisher}" in sourceRegistry.ts) — sourceRegistry.ts is the authority`,
     );
   }
 
@@ -167,7 +183,12 @@ const validateArtifactRegister = () => {
   const artifactFetchedAt: Record<string, string> = {
     'unga-votes': unGaVotes.fetchedAt,
     'ofac-sdn': ofacSanctions.fetchedAt,
+    'unsc-consolidated': unscSanctions.fetchedAt,
+    'eu-financial-sanctions': euSanctions.fetchedAt,
     'ucdp-organized-violence': ucdpConflict.fetchedAt,
+    'unhcr-displacement': unhcrDisplacement.fetchedAt,
+    'fao-food-security': faoFoodSecurityMeta.fetchedAt,
+    'bis-financial': bisFinancial.fetchedAt,
     'world-bank-history': (historicalIndicatorSeries as { fetchedAt: string }).fetchedAt,
   };
 
@@ -241,6 +262,122 @@ const validateArtifactRegister = () => {
   ensure(
     registerById.get('unga-votes')?.countryCount === Object.keys(unGaVotes.perCountry).length,
     'artifact register UNGA country count disagrees with the artifact',
+  );
+  ensure(
+    registerById.get('unsc-consolidated')?.countryCount === Object.keys(unscSanctions.perCountry).length,
+    'artifact register UN SC country count disagrees with the artifact',
+  );
+  ensure(
+    registerById.get('unhcr-displacement')?.countryCount === Object.keys(unhcrDisplacement.perCountry).length,
+    'artifact register UNHCR country count disagrees with the artifact',
+  );
+  ensure(
+    faoFoodSecurity.countryCount === Object.keys(faoFoodSecurity.perCountry).length,
+    'FAOSTAT countryCount disagrees with its own perCountry map',
+  );
+  // The register reads the sidecar rather than the ~115 KB payload, so the two
+  // must be regenerated together — the same parity rule the historical series
+  // sidecar carries.
+  {
+    const summary = summarizeFaoArtifact(faoFoodSecurity as unknown as FaoFoodSecurityArtifact);
+    ensure(
+      faoFoodSecurityMeta.fetchedAt === summary.fetchedAt,
+      `fao_food_security_meta.json stamp ${faoFoodSecurityMeta.fetchedAt} disagrees with the artifact ` +
+        `(${summary.fetchedAt}) — run npm run refresh:fao`,
+    );
+    ensure(
+      faoFoodSecurityMeta.countryCount === summary.countryCount &&
+        faoFoodSecurityMeta.newestPeriodEndYear === summary.newestPeriodEndYear,
+      `fao_food_security_meta.json coverage (${faoFoodSecurityMeta.countryCount} countries / newest ` +
+        `${faoFoodSecurityMeta.newestPeriodEndYear}) disagrees with the artifact (${summary.countryCount} / ` +
+        `${summary.newestPeriodEndYear})`,
+    );
+    ensure(
+      faoFoodSecurityMeta.indicators.map((indicator) => indicator.key).join(',') ===
+        summary.indicators.map((indicator) => indicator.key).join(','),
+      'fao_food_security_meta.json indicator list disagrees with the artifact',
+    );
+  }
+  // FAO periods are three-year averages as often as single years. The label is
+  // the honesty mechanism, so an empty or non-year period must fail rather than
+  // reach the UI where it would read as an unlabelled current figure.
+  for (const [iso, summary] of Object.entries(faoFoodSecurity.perCountry)) {
+    for (const [key, observation] of Object.entries(summary)) {
+      ensure(
+        /\d{4}/.test(observation.period),
+        `FAOSTAT ${iso}/${key} has no reference period ("${observation.period}")`,
+      );
+      ensure(
+        Number.isFinite(observation.value),
+        `FAOSTAT ${iso}/${key} value is not finite`,
+      );
+    }
+  }
+
+  // The UN SC list is aggregated by regime, so its country buckets must never
+  // add up to more than the list itself — a mapping bug that double-counted a
+  // listing across regimes would otherwise look like a larger sanctions
+  // footprint rather than an arithmetic error.
+  const unscAttributed = Object.values(unscSanctions.perCountry).reduce(
+    (sum, row) => sum + row.listingCount,
+    0,
+  );
+  const unscThematic = unscSanctions.thematicRegimes.reduce((sum, row) => sum + row.listingCount, 0);
+  ensure(
+    unscAttributed + unscThematic === unscSanctions.listingTotal,
+    `UN SC listings do not reconcile: ${unscAttributed} attributed + ${unscThematic} thematic ` +
+      `!= ${unscSanctions.listingTotal} total`,
+  );
+  ensure(
+    unscSanctions.individualTotal + unscSanctions.entityTotal === unscSanctions.listingTotal,
+    'UN SC individual + entity totals do not equal the listing total',
+  );
+
+  ensure(
+    registerById.get('eu-financial-sanctions')?.countryCount === Object.keys(euSanctions.perCountry).length,
+    'artifact register EU country count disagrees with the artifact',
+  );
+  ensure(
+    euSanctions.personTotal + euSanctions.enterpriseTotal === euSanctions.listingTotal,
+    'EU person + entity totals do not equal the designation total',
+  );
+  // EU designations are attributed per country of citizenship or registration,
+  // so the per-country buckets legitimately exceed the list size (dual
+  // nationals, multi-country entities). What must hold is that no country
+  // exceeds the total, and that unattributed designations are accounted for
+  // rather than quietly dropped.
+  ensure(
+    Object.values(euSanctions.perCountry).every((row) => row.listingCount <= euSanctions.listingTotal),
+    'an EU country bucket exceeds the total designation count',
+  );
+  ensure(
+    euSanctions.unattributedTotal >= 0 && euSanctions.unattributedTotal < euSanctions.listingTotal,
+    `EU unattributed total ${euSanctions.unattributedTotal} is not a subset of ${euSanctions.listingTotal} designations`,
+  );
+};
+
+/**
+ * The retained quality series is only useful if it is actually a series: one
+ * entry per day, in order, within the retention limit. A duplicated day would
+ * make a single busy CI day look like a week of movement.
+ */
+const validateQualityHistory = () => {
+  const history = readQualityHistory(qualityHistory);
+  ensure(history.entries.length > 0, 'quality_history.json is empty — run npm run quality:report');
+  ensure(
+    history.entries.length <= QUALITY_HISTORY_LIMIT,
+    `quality history holds ${history.entries.length} entries, past the ${QUALITY_HISTORY_LIMIT} retention limit`,
+  );
+
+  const days = history.entries.map((entry) => entry.day);
+  ensure(new Set(days).size === days.length, 'quality history contains duplicate days');
+  ensure(
+    days.every((day) => isIsoDate(day)),
+    'quality history entries must be stamped with ISO days',
+  );
+  ensure(
+    days.every((day, index) => index === 0 || days[index - 1]! < day),
+    'quality history entries are not in ascending day order',
   );
 };
 
@@ -363,7 +500,11 @@ const validateIngestArtifacts = () => {
   const manifest = ingestManifest as IngestManifest;
   const snapshot = ingestedSnapshot as IngestedSnapshot;
   const weo = imfWeoSnapshot as IngestedSnapshot;
-  const raw = rawWorldBankLatest as RawWorldBankAudit;
+  // The audit payload is committed gzipped (~250 KB instead of 6.4 MB), so it
+  // is read and decompressed here rather than statically imported.
+  const raw = readRawAudit<RawWorldBankPoint>(
+    path.resolve(fileURLToPath(import.meta.url), '../../src/data/datasets/raw', RAW_AUDIT_FILENAME),
+  ) as RawWorldBankAudit;
 
   ensure(isIsoDate(manifest.generatedAt.slice(0, 10)), 'ingest_manifest.generatedAt must be ISO timestamp');
   ensure(isIsoDate(snapshot.timestamp.slice(0, 10)), 'ingested_snapshot.timestamp must be ISO timestamp');
@@ -770,6 +911,7 @@ const main = () => {
   validateRelationships();
   validateIngestArtifacts();
   validateHistoricalSeriesArtifact();
+  validateQualityHistory();
   validateEnhancementRelease();
   validatePoliticalRegistries();
 

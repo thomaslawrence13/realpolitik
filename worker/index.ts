@@ -207,6 +207,92 @@ const normalizePayload = (value: unknown): LiveStatePayload | null => {
   };
 };
 
+/**
+ * How long the daily cron may go without a successful write before the state
+ * is treated as stale. Two missed runs, not one: a single failed refresh is
+ * routine (upstream rate limiting), two in a row means the schedule itself is
+ * not firing.
+ */
+const STATE_STALE_AFTER_HOURS = 50;
+
+export type BackendHealthStatus = 'healthy' | 'degraded' | 'stale' | 'empty' | 'unconfigured';
+
+export interface BackendHealthReport {
+  status: BackendHealthStatus;
+  /** Kept for compatibility with the existing HUD check. */
+  ok: boolean;
+  refreshedAt: string | null;
+  /** Hours since the last successful refresh, or null when never refreshed. */
+  stateAgeHours: number | null;
+  /** False when the KV namespace is not bound — the silent misconfiguration. */
+  kvBound: boolean;
+  /** One-line operator-facing explanation of the status. */
+  reason: string;
+  coverage: LiveStatePayload['diagnostics'];
+}
+
+/**
+ * Assess backend health from the stored state.
+ *
+ * `ok: true` on its own could not distinguish a healthy backend from one whose
+ * cron stopped firing three weeks ago — the state keeps being served, so
+ * nothing looks wrong until someone notices the numbers never move. The
+ * statuses below separate the failure modes an operator would act on
+ * differently:
+ *
+ *   - `unconfigured` — the KV binding is missing. Deployment problem.
+ *   - `empty`        — bound, but no refresh has ever succeeded. Cron never ran.
+ *   - `stale`        — refreshes stopped. Schedule or upstream is broken.
+ *   - `degraded`     — refreshing, but some indicators are failing.
+ *   - `healthy`      — refreshing, all indicators present.
+ *
+ * `now` is injectable so the assessment is not clock-bound in tests.
+ */
+export const assessBackendHealth = (
+  payload: LiveStatePayload,
+  options: { now?: number; kvBound?: boolean } = {},
+): BackendHealthReport => {
+  const now = options.now ?? Date.now();
+  const kvBound = options.kvBound ?? true;
+  const coverage = payload.diagnostics;
+
+  const refreshedMs = payload.refreshedAt ? Date.parse(payload.refreshedAt) : Number.NaN;
+  const stateAgeHours = Number.isFinite(refreshedMs)
+    ? Math.max(0, Math.round(((now - refreshedMs) / 3_600_000) * 10) / 10)
+    : null;
+
+  const report = (status: BackendHealthStatus, reason: string): BackendHealthReport => ({
+    status,
+    ok: status === 'healthy' || status === 'degraded',
+    refreshedAt: payload.refreshedAt,
+    stateAgeHours,
+    kvBound,
+    reason,
+    coverage,
+  });
+
+  if (!kvBound) {
+    return report('unconfigured', 'LIVE_STATE KV namespace is not bound — check the Worker configuration.');
+  }
+  if (payload.refreshedAt === null || coverage.succeededIndicators === 0) {
+    return report('empty', 'No successful refresh recorded yet — the client falls back to a direct API fetch.');
+  }
+  if (stateAgeHours !== null && stateAgeHours > STATE_STALE_AFTER_HOURS) {
+    return report(
+      'stale',
+      `Last refresh was ${stateAgeHours}h ago, past the ${STATE_STALE_AFTER_HOURS}h budget — the daily cron may not be firing.`,
+    );
+  }
+  if (coverage.failedIndicators > 0) {
+    return report(
+      'degraded',
+      `Serving last-good state with ${coverage.failedIndicators} of ${coverage.totalIndicators} indicators failing` +
+        `${coverage.failedCodes.length > 0 ? ` (${coverage.failedCodes.join(', ')})` : ''}.`,
+    );
+  }
+  return report('healthy', `All ${coverage.totalIndicators} indicators refreshed ${stateAgeHours ?? 0}h ago.`);
+};
+
 const readState = async (env: Pick<Env, 'LIVE_STATE'>): Promise<LiveStatePayload> => {
   const raw = await env.LIVE_STATE.get(KV_STATE_KEY);
   if (!raw) return emptyPayload();
@@ -274,17 +360,18 @@ export const handleApiRequest = async (
   }
 
   if (url.pathname === '/api/health') {
-    const payload = await readState(env);
+    // An unbound namespace throws on read rather than returning empty, so the
+    // binding is probed here and reported as `unconfigured` — the failure an
+    // operator most needs named, and the one an empty payload would disguise
+    // as "no refresh yet".
+    const kvBound = typeof env.LIVE_STATE?.get === 'function';
+    const payload = kvBound ? await readState(env) : emptyPayload();
     const headers = apiHeaders(payload);
     if (request.headers.get('if-none-match') === headers.get('etag')) {
       return new Response(null, { status: 304, headers });
     }
     if (request.method === 'HEAD') return new Response(null, { headers });
-    return new Response(JSON.stringify({
-      ok: payload.refreshedAt !== null && payload.diagnostics.succeededIndicators > 0,
-      refreshedAt: payload.refreshedAt,
-      coverage: payload.diagnostics,
-    }), { headers });
+    return new Response(JSON.stringify(assessBackendHealth(payload, { kvBound })), { headers });
   }
 
   return new Response(JSON.stringify({ error: 'Not found' }), {

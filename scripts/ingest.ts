@@ -15,6 +15,7 @@ import {
   summarizeHistoricalSeriesArtifact,
 } from '../src/lib/historicalSeriesArtifact.js';
 import type { WbDataPoint, WbIndicatorCode } from '../src/lib/worldBankFetch.js';
+import { RAW_AUDIT_FILENAME, writeRawAudit } from '../src/lib/rawAudit.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -404,7 +405,7 @@ async function main() {
     const snapshotPath = path.join(DATA_DIR, 'ingested_snapshot.json');
     const weoSnapshotPath = path.join(DATA_DIR, 'imf_weo_snapshot.json');
     const manifestPath = path.join(DATA_DIR, 'ingest_manifest.json');
-    const rawAuditPath = path.join(RAW_DATA_DIR, 'world_bank_latest.json');
+    const rawAuditPath = path.join(RAW_DATA_DIR, RAW_AUDIT_FILENAME);
     const historicalSeriesPath = path.join(DATA_DIR, 'historical_indicator_series.json');
     const historicalSeriesMetaPath = path.join(DATA_DIR, 'historical_series_meta.json');
     const historicalSeries = buildHistoricalSeriesArtifact(
@@ -415,7 +416,7 @@ async function main() {
     fs.writeFileSync(snapshotPath, JSON.stringify(dataset, null, 2));
     fs.writeFileSync(weoSnapshotPath, JSON.stringify(weo.snapshot, null, 2));
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-    fs.writeFileSync(rawAuditPath, JSON.stringify({ fetchedAt, indicators: rawAudit }, null, 2));
+    writeRawAudit(rawAuditPath, { fetchedAt, indicators: rawAudit });
     fs.writeFileSync(historicalSeriesPath, JSON.stringify(historicalSeries, null, 2));
     // Sidecar for the artifact register: age and reach without the payload.
     fs.writeFileSync(
