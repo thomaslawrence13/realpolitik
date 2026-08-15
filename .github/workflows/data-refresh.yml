@@ -29,8 +29,18 @@ jobs:
         run: npm run refresh:unvotes
       - name: Re-fetch OFAC SDN registry
         run: npm run refresh:ofac
+      - name: Re-fetch UN Security Council consolidated list
+        run: npm run refresh:unsc
+      - name: Re-fetch EU consolidated financial sanctions
+        run: npm run refresh:eu-sanctions
       - name: Re-fetch UCDP conflict artifact
         run: npm run refresh:ucdp
+      - name: Re-fetch UNHCR displacement artifact
+        run: npm run refresh:displacement
+      - name: Re-fetch FAOSTAT food security artifact
+        run: npm run refresh:fao
+      - name: Re-fetch BIS financial indicators
+        run: npm run refresh:bis
       - name: Report operational artifact register
         run: npm run artifacts:status
       - name: Verify gate before proposing anything

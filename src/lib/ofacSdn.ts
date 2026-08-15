@@ -23,13 +23,36 @@ export interface OfacSummary {
   perCountry: Record<string, OfacCountrySummary>;
 }
 
-/** Program-name prefixes that identify a sanctions program targeting one country. */
+/**
+ * Program-name prefixes that identify a sanctions program targeting one country.
+ *
+ * OFAC renames and retires programme codes as authorities change, and a code
+ * this list does not recognise is silently dropped from country attribution —
+ * so a stale entry here reads as "no US sanctions" rather than as a mapping
+ * gap. Syria is the cautionary case: its listings moved to `PAARSSR-EO13894`
+ * and the bare `SYRIA` prefix stopped matching anything at all, leaving one of
+ * the most heavily sanctioned countries in the dataset showing nothing.
+ *
+ * Thematic programmes are deliberately absent. SDGT, SDNTK, NPWMD, GLOMAG,
+ * TCO, FTO, CYBER2/4, ILLICIT-DRUGS and ELECTION designate conduct wherever it
+ * occurs; attributing them to the designee's country would turn a US
+ * counter-terrorism listing into a claim about that country. `BALKANS` is
+ * excluded for the same reason in reverse — it names a region, not a state.
+ */
 const COUNTRY_PROGRAM_PREFIXES: Array<[string, string]> = [
   ['RUSSIA', 'RU'],
+  // Russia-specific statutory programmes that do not start with "RUSSIA".
+  ['CAATSA - RUSSIA', 'RU'],
+  ['MAGNIT', 'RU'],
   ['UKRAINE', 'UA'],
   ['IRAN', 'IR'],
+  // Iran's Revolutionary Guard and the Iran Freedom and Counter-Proliferation
+  // Act are Iran programmes under names that do not begin with "IRAN".
+  ['IRGC', 'IR'],
+  ['IFCA', 'IR'],
   ['CUBA', 'CU'],
   ['SYRIA', 'SY'],
+  ['PAARSSR', 'SY'],
   ['VENEZUELA', 'VE'],
   ['BELARUS', 'BY'],
   ['ZIMBABWE', 'ZW'],
@@ -46,6 +69,9 @@ const COUNTRY_PROGRAM_PREFIXES: Array<[string, string]> = [
   ['BURUNDI', 'BI'],
   ['CAR', 'CF'],
   ['HAITI', 'HT'],
+  ['IRAQ', 'IQ'],
+  ['BURMA', 'MM'],
+  ['DRCONGO', 'CD'],
 ];
 
 const programIso = (program: string): string | undefined => {

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { WB_INDICATORS, type WbIndicatorCode } from '../src/lib/worldBankFetch';
-import { handleApiRequest, mergeLiveStatePayload, type LiveStatePayload } from './index';
+import { assessBackendHealth, handleApiRequest, mergeLiveStatePayload, type LiveStatePayload } from './index';
 
 const bucket = (value: number, retrievedAt: string) => ({
   latestYear: '2025',
@@ -86,4 +86,100 @@ test('state API supports conditional requests and hardened response headers', as
     apiEnv(payload({ 'NY.GDP.MKTP.KD.ZG': bucket(3.1, '2026-08-08T00:00:00.000Z') })),
   );
   assert.equal(conditional?.status, 304);
+});
+
+/**
+ * Health assessment. The failure this exists to catch is a backend that keeps
+ * answering `ok: true` while its cron has not fired in weeks — the state is
+ * still served, so nothing looks wrong until someone notices the numbers never
+ * move.
+ */
+const allIndicators = (): Partial<LiveStatePayload['indicators']> =>
+  Object.fromEntries(
+    WB_INDICATORS.map((def) => [def.code, bucket(1, '2026-08-08T00:00:00.000Z')]),
+  ) as Partial<LiveStatePayload['indicators']>;
+
+const AT = Date.parse('2026-08-08T00:00:00.000Z');
+const hoursAfter = (hours: number) => AT + hours * 3_600_000;
+
+test('a fully refreshed recent state is healthy', () => {
+  const report = assessBackendHealth(payload(allIndicators()), { now: hoursAfter(3) });
+
+  assert.equal(report.status, 'healthy');
+  assert.equal(report.ok, true);
+  assert.equal(report.stateAgeHours, 3);
+  assert.equal(report.kvBound, true);
+});
+
+test('a partially failing refresh is degraded but still serving', () => {
+  const report = assessBackendHealth(
+    payload({ 'NY.GDP.MKTP.KD.ZG': bucket(3.1, '2026-08-08T00:00:00.000Z') }),
+    { now: hoursAfter(2) },
+  );
+
+  assert.equal(report.status, 'degraded');
+  // Degraded still counts as ok: last-good data is being served.
+  assert.equal(report.ok, true);
+  assert.match(report.reason, /indicators failing/);
+});
+
+test('a state older than two missed cron runs is stale, not merely old', () => {
+  // One missed daily run is routine; this is past two.
+  const report = assessBackendHealth(payload(allIndicators()), { now: hoursAfter(60) });
+
+  assert.equal(report.status, 'stale');
+  assert.equal(report.ok, false);
+  assert.equal(report.stateAgeHours, 60);
+  assert.match(report.reason, /cron may not be firing/);
+});
+
+test('one missed refresh does not trip the stale threshold', () => {
+  const report = assessBackendHealth(payload(allIndicators()), { now: hoursAfter(30) });
+  assert.equal(report.status, 'healthy');
+});
+
+test('an unbound KV namespace reports unconfigured, not empty', () => {
+  const report = assessBackendHealth(payload(allIndicators()), { now: hoursAfter(1), kvBound: false });
+
+  // A deployment problem must not be disguised as "no refresh yet".
+  assert.equal(report.status, 'unconfigured');
+  assert.equal(report.ok, false);
+  assert.match(report.reason, /not bound/);
+});
+
+test('a never-refreshed state reports empty with a null age', () => {
+  const never: LiveStatePayload = {
+    ...payload({}),
+    refreshedAt: null,
+    diagnostics: {
+      totalIndicators: WB_INDICATORS.length,
+      succeededIndicators: 0,
+      failedIndicators: WB_INDICATORS.length,
+      failedCodes: [],
+    },
+  };
+  const report = assessBackendHealth(never, { now: hoursAfter(5) });
+
+  assert.equal(report.status, 'empty');
+  assert.equal(report.stateAgeHours, null);
+  assert.match(report.reason, /falls back to a direct API fetch/);
+});
+
+test('the health endpoint serves the assessment and flags a missing binding', async () => {
+  const healthy = await handleApiRequest(
+    new Request('https://example.com/api/health'),
+    apiEnv(payload(allIndicators())),
+  );
+  assert.equal(healthy?.status, 200);
+  const body = (await healthy?.json()) as { status: string; kvBound: boolean; reason: string };
+  assert.equal(body.kvBound, true);
+  assert.ok(['healthy', 'stale'].includes(body.status));
+
+  const unbound = await handleApiRequest(
+    new Request('https://example.com/api/health'),
+    { LIVE_STATE: undefined } as unknown as Pick<Env, 'LIVE_STATE'>,
+  );
+  const unboundBody = (await unbound?.json()) as { status: string; kvBound: boolean };
+  assert.equal(unboundBody.status, 'unconfigured');
+  assert.equal(unboundBody.kvBound, false);
 });

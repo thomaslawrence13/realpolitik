@@ -20,6 +20,18 @@ import {
   ARTIFACT_STATUS_LABEL,
   buildArtifactRegisterTelemetry,
 } from '../../data/artifactRegistry';
+import qualityHistoryJson from '../../data/datasets/quality_history.json';
+import { readQualityHistory, summarizeQualityTrend } from '../../lib/qualityHistory';
+
+/**
+ * Committed by `npm run quality:report`, so the trend a reader sees is the one
+ * the last validated build recorded rather than a number computed in the
+ * browser from a single snapshot.
+ */
+const qualityTrend = summarizeQualityTrend(readQualityHistory(qualityHistoryJson));
+
+/** `+3` / `-4` / `0` — the sign carries the meaning, so it is always shown. */
+const signedDelta = (value: number): string => (value > 0 ? `+${value}` : `${value}`);
 
 const ACCESS_LABEL: Record<SourceAccess, string> = {
   'live-api': 'Live API',
@@ -235,6 +247,21 @@ export function MethodologyPanel({
         </p>
         <p className="methodology-telemetry-line methodology-telemetry-line-tight">
           Targets → Avg ≥ {informationQuality.kpiTargets.minimumAverageInformationScore} · Low-quality ≤ {informationQuality.kpiTargets.maximumLowQualityCountries} · Stale ≤ {informationQuality.kpiTargets.maximumStaleCountries}
+        </p>
+        {/*
+          Direction of travel, not just today's level. Without it a reader
+          cannot tell a score of 94 that has been climbing from one that has
+          been sliding, and the two call for opposite responses.
+        */}
+        <p className="methodology-telemetry-line methodology-telemetry-line-tight">
+          {qualityTrend.sincePrevious && qualityTrend.previousDay
+            ? `Since ${qualityTrend.previousDay}: score ${signedDelta(
+                qualityTrend.sincePrevious.averageInformationScore,
+              )} · stale records ${signedDelta(
+                qualityTrend.sincePrevious.staleCountryCount,
+              )} · ingest coverage ${signedDelta(qualityTrend.sincePrevious.ingestAverageCoveragePct)}pp`
+            : 'Trend: no prior quality entry retained yet — the series starts at the next refresh.'}
+          {qualityTrend.entryCount > 1 ? ` · ${qualityTrend.entryCount} entries retained` : ''}
         </p>
         <div className="methodology-priority-targets">
           <strong className="methodology-priority-label">Priority refresh targets:</strong>{' '}

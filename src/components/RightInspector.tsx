@@ -13,6 +13,9 @@ import { EconomicStatsSection } from './inspector/EconomicStatsSection';
 import { MilitaryStatsSection } from './inspector/MilitaryStatsSection';
 import { HistoricalSeriesSection } from './inspector/HistoricalSeriesSection';
 import { PoliticalRegistrySection } from './inspector/PoliticalRegistrySection';
+import { DisplacementSection } from './inspector/DisplacementSection';
+import { FoodSecuritySection } from './inspector/FoodSecuritySection';
+import { FinancialVulnerabilitySection } from './inspector/FinancialVulnerabilitySection';
 import { RelationshipEvidenceSection } from './inspector/RelationshipEvidenceSection';
 import { getCoverageMetrics } from '../lib/coverage';
 import { buildCountryBrief } from './inspector/insights';
@@ -345,6 +348,9 @@ export const RightInspector = memo(function RightInspector({
             <StrategicStatsSection profile={selected.profile} />
             <DataQualitySection selected={selected} />
             <PoliticalRegistrySection selected={selected} />
+            <DisplacementSection selected={selected} />
+            <FinancialVulnerabilitySection selected={selected} />
+            <FoodSecuritySection countryId={selected.profile.id} />
             {!econ && !mil && (
               <p className="glance-empty">No detailed economic or military snapshot for this profile.</p>
             )}

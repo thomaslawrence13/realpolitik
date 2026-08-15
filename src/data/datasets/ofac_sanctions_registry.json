@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-08-08T18:52:18.465Z",
+  "fetchedAt": "2026-08-15T21:41:52.707Z",
   "sourceTitle": "US Treasury OFAC Specially Designated Nationals (SDN) list",
   "sourceUrl": "https://ofac.treasury.gov/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists",
   "entryTotal": 19199,
@@ -23,8 +23,8 @@
       ]
     },
     "IR": {
-      "entryCount": 2469,
-      "programCount": 23,
+      "entryCount": 2707,
+      "programCount": 24,
       "topPrograms": [
         {
           "program": "IRAN-EO13902",
@@ -39,24 +39,24 @@
           "count": 470
         },
         {
+          "program": "IFSR",
+          "count": 431
+        },
+        {
+          "program": "IRGC",
+          "count": 288
+        },
+        {
+          "program": "NPWMD",
+          "count": 231
+        },
+        {
           "program": "IRAN-HR",
           "count": 222
         },
         {
-          "program": "IFSR",
-          "count": 215
-        },
-        {
-          "program": "NPWMD",
-          "count": 163
-        },
-        {
-          "program": "IRAN-EO13876",
-          "count": 115
-        },
-        {
-          "program": "IRGC",
-          "count": 66
+          "program": "SDGT",
+          "count": 216
         }
       ]
     },
@@ -74,6 +74,54 @@
         },
         {
           "program": "FTO",
+          "count": 1
+        }
+      ]
+    },
+    "IQ": {
+      "entryCount": 168,
+      "programCount": 6,
+      "topPrograms": [
+        {
+          "program": "IRAQ2",
+          "count": 155
+        },
+        {
+          "program": "IRAQ3",
+          "count": 13
+        },
+        {
+          "program": "SDGT",
+          "count": 5
+        },
+        {
+          "program": "IRGC",
+          "count": 2
+        },
+        {
+          "program": "FTO",
+          "count": 2
+        },
+        {
+          "program": "IFSR",
+          "count": 1
+        }
+      ]
+    },
+    "CD": {
+      "entryCount": 100,
+      "programCount": 3,
+      "topPrograms": [
+        {
+          "program": "DRCONGO",
+          "count": 100
+        },
+        {
+          "program": "FTO",
+          "count": 1
+        },
+        {
+          "program": "SDGT",
           "count": 1
         }
       ]
@@ -139,8 +187,8 @@
       ]
     },
     "RU": {
-      "entryCount": 6357,
-      "programCount": 29,
+      "entryCount": 6491,
+      "programCount": 30,
       "topPrograms": [
         {
           "program": "RUSSIA-EO14024",
@@ -151,28 +199,28 @@
           "count": 518
         },
         {
+          "program": "CAATSA - RUSSIA",
+          "count": 81
+        },
+        {
+          "program": "MAGNIT",
+          "count": 64
+        },
+        {
           "program": "UKRAINE-EO13661",
           "count": 57
         },
         {
-          "program": "PEESA-EO14039",
-          "count": 26
-        },
-        {
-          "program": "UKRAINE-EO13660",
-          "count": 18
-        },
-        {
           "program": "NPWMD",
-          "count": 17
+          "count": 37
         },
         {
           "program": "CYBER2",
-          "count": 13
+          "count": 32
         },
         {
-          "program": "SDGT",
-          "count": 10
+          "program": "CYBER4",
+          "count": 27
         }
       ]
     },
@@ -186,6 +234,32 @@
         },
         {
           "program": "SDGT",
+          "count": 1
+        }
+      ]
+    },
+    "SY": {
+      "entryCount": 174,
+      "programCount": 5,
+      "topPrograms": [
+        {
+          "program": "PAARSSR-EO13894",
+          "count": 174
+        },
+        {
+          "program": "SDGT",
+          "count": 1
+        },
+        {
+          "program": "IRGC",
+          "count": 1
+        },
+        {
+          "program": "IFSR",
+          "count": 1
+        },
+        {
+          "program": "IRAN-HR",
           "count": 1
         }
       ]
@@ -317,6 +391,32 @@
         {
           "program": "GLOMAG",
           "count": 1
+        }
+      ]
+    },
+    "MM": {
+      "entryCount": 153,
+      "programCount": 5,
+      "topPrograms": [
+        {
+          "program": "BURMA-EO14014",
+          "count": 153
+        },
+        {
+          "program": "TCO",
+          "count": 10
+        },
+        {
+          "program": "CYBER4",
+          "count": 8
+        },
+        {
+          "program": "DPRK",
+          "count": 4
+        },
+        {
+          "program": "GLOMAG",
+          "count": 3
         }
       ]
     },

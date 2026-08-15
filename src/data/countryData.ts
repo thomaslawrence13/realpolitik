@@ -8,6 +8,7 @@ import {
   type ArtifactId,
 } from './artifactRegistry';
 import { countryIso2 } from '../lib/worldBankFetch';
+import { creditGapBand, CREDIT_GAP_BAND_LABEL } from '../lib/bisFinancial';
 import type {
   CountryIndicators,
   IngestIndicatorTelemetry,
@@ -426,7 +427,11 @@ const UN_VOTES_MIN_ROLL_CALLS = 24;
 
 const unVotesPayload = artifactPayloads['unga-votes'];
 const ofacPayload = artifactPayloads['ofac-sdn'];
+const unscPayload = artifactPayloads['unsc-consolidated'];
+const euSanctionsPayload = artifactPayloads['eu-financial-sanctions'];
 const ucdpPayload = artifactPayloads['ucdp-organized-violence'];
+const unhcrPayload = artifactPayloads['unhcr-displacement'];
+const bisPayload = artifactPayloads['bis-financial'];
 
 /**
  * Artifact age, budgets and status all come from the operational artifact
@@ -442,7 +447,11 @@ const artifactWithinBudget = (id: ArtifactId): boolean =>
 
 const unVotesFresh = artifactWithinBudget('unga-votes');
 const ofacFresh = artifactWithinBudget('ofac-sdn');
+const unscFresh = artifactWithinBudget('unsc-consolidated');
+const euSanctionsFresh = artifactWithinBudget('eu-financial-sanctions');
 const ucdpFresh = artifactWithinBudget('ucdp-organized-violence');
+const unhcrFresh = artifactWithinBudget('unhcr-displacement');
+const bisFresh = artifactWithinBudget('bis-financial');
 
 /**
  * Overlay measured political registries onto a profile. Only fresh artifacts
@@ -493,6 +502,52 @@ const applyPoliticalRegistries = (country: CountryProfile): CountryProfile => {
     };
   }
 
+  // The UN list is applied independently of OFAC: a country can be under
+  // multilateral measures without US designations, or the reverse, and
+  // collapsing the two would hide exactly that distinction.
+  const unsc = unscFresh ? unscPayload.perCountry[iso] : undefined;
+  if (unsc && unsc.listingCount > 0) {
+    next = {
+      ...next,
+      unscSanctions: {
+        listingCount: unsc.listingCount,
+        individualCount: unsc.individualCount,
+        entityCount: unsc.entityCount,
+        regimes: unsc.regimes.map((regime) => ({
+          regime: regime.regime,
+          label: regime.label,
+          listingCount: regime.listingCount,
+          newestListedOn: regime.newestListedOn,
+        })),
+        newestListedOn: unsc.newestListedOn,
+        listGeneratedOn: unscPayload.generatedAt ? unscPayload.generatedAt.slice(0, 10) : null,
+        sourceTitle: unscPayload.sourceTitle,
+        sourceUrl: unscPayload.sourceUrl,
+        retrievedAt: unscPayload.fetchedAt.slice(0, 10),
+      },
+    };
+  }
+
+  const euSanctions = euSanctionsFresh ? euSanctionsPayload.perCountry[iso] : undefined;
+  if (euSanctions && euSanctions.listingCount > 0) {
+    next = {
+      ...next,
+      euSanctions: {
+        listingCount: euSanctions.listingCount,
+        personCount: euSanctions.personCount,
+        enterpriseCount: euSanctions.enterpriseCount,
+        programmes: euSanctions.programmes.map((programme) => ({ ...programme })),
+        newestDesignation: euSanctions.newestDesignation,
+        listGeneratedOn: euSanctionsPayload.generatedAt
+          ? euSanctionsPayload.generatedAt.slice(0, 10)
+          : null,
+        sourceTitle: euSanctionsPayload.sourceTitle,
+        sourceUrl: euSanctionsPayload.sourceUrl,
+        retrievedAt: euSanctionsPayload.fetchedAt.slice(0, 10),
+      },
+    };
+  }
+
   const conflict = ucdpFresh ? ucdpPayload.perCountry[iso] : undefined;
   if (conflict) {
     next = {
@@ -515,6 +570,54 @@ const applyPoliticalRegistries = (country: CountryProfile): CountryProfile => {
         retrievedAt: ucdpPayload.fetchedAt.slice(0, 10),
       },
     };
+  }
+
+  const displacement = unhcrFresh ? unhcrPayload.perCountry[iso] : undefined;
+  if (displacement) {
+    next = {
+      ...next,
+      displacement: {
+        ...displacement,
+        referenceYear: unhcrPayload.referenceYear,
+        sourceTitle: unhcrPayload.sourceTitle,
+        sourceUrl: unhcrPayload.sourceUrl,
+        retrievedAt: unhcrPayload.fetchedAt.slice(0, 10),
+      },
+    };
+  }
+
+  const bis = bisFresh ? bisPayload.perCountry[iso] : undefined;
+  if (bis) {
+    const observations = bisPayload.series
+      .map((series) => {
+        const observation = bis[series.key];
+        if (!observation) return null;
+        return {
+          key: series.key,
+          label: series.label,
+          unit: series.unit,
+          value: observation.value,
+          period: observation.period,
+          note: series.note,
+        };
+      })
+      .filter((observation) => observation !== null);
+
+    if (observations.length > 0) {
+      const gap = bis.creditToGdpGap;
+      next = {
+        ...next,
+        bisFinancial: {
+          observations,
+          // The band is the Basel III buffer guide's own reading, computed only
+          // when BIS actually reports a gap for this country.
+          creditGapBand: gap ? CREDIT_GAP_BAND_LABEL[creditGapBand(gap.value)] : null,
+          sourceTitle: bisPayload.sourceTitle,
+          sourceUrl: bisPayload.sourceUrl,
+          retrievedAt: bisPayload.fetchedAt.slice(0, 10),
+        },
+      };
+    }
   }
 
   return next;
@@ -549,6 +652,9 @@ export const methodologyNotes = [
   'v15.1 (API coverage): nominal GDP, GDP per capita, and SIPRI-backed current-USD military expenditure now come from the shared World Bank API catalog in browser, ingest, and Worker paths; history stores the published series and displayed dates distinguish observation year from retrieval time.',
   'v15.2 (conflict evidence): finalized UCDP organized-violence observations feed historical severity through explicit fatality thresholds; current pressure remains separate for future candidate-event data, and zero-event rows do not imply an absence of broader geopolitical tension.',
   'v15.3 (artifact provenance): an operational artifact register dates UNGA, OFAC, UCDP and World Bank history against per-artifact refresh budgets, and the same rows drive the runtime overlay gate, the release view and the CI freshness check. World Bank governance series are credited to WGI rather than WDI under a validation gate, and conflict pressure and sanctions exposure are labelled curated wherever an official artifact sits beside them.',
+  'v15.4 (multilateral evidence): the UN Security Council Consolidated List is wired beside the US OFAC SDN list — listings are attributed only to the country each sanctions regime concerns, thematic regimes are reported globally rather than assigned to a country, and the two legal scopes are never summed. UNHCR adds an observed displacement layer that keeps people displaced from a country separate from people it hosts. Both are registry evidence: sanctionsExposure and conflictPressure remain curated. Quality reports now append a retained daily series, so coverage and staleness can be read as a trend rather than a snapshot.',
+  'v15.5 (three authorities, one basis each): the EU Consolidated Financial Sanctions list joins the UN and US lists, attributed by the identity of the designated party rather than by programme — EU programmes are named for the situation including its victim, so programme attribution would credit Ukraine with measures taken over Russian actions. A cross-list view reports how many distinct authorities have acted and on what basis, and deliberately publishes no combined total: the lists overlap and their denominators differ. FAOSTAT adds observed food and water security beside the curated profile, carrying FAO reference periods and official/estimated/imputed status rather than collapsing three-year averages into a single year.',
+  'v15.6 (financial vulnerability and operational honesty): BIS credit-to-GDP gaps, debt service ratios and policy rates add observed financial stress for the ~50 economies BIS reports on — absence means unreported, not sound, and the gap is labelled with the Basel III buffer guide rather than a risk verdict of ours. The raw World Bank audit payload is committed gzipped (6.4 MB to 225 KB) with the same content. Backend health now separates unconfigured, empty, stale and degraded states, so a cron that silently stopped firing is reported instead of being served as healthy.',
 ];
 /**
  * Newest observed data point across all country profiles and dataset sources.

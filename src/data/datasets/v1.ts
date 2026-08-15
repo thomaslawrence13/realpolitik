@@ -50,21 +50,21 @@ export const geopoliticalDatasetV1: DatasetBundle = {
     {
       id: 'ucdp',
       title: 'Armed Conflict Dataset',
-      publisher: 'UCDP',
+      publisher: 'Uppsala Conflict Data Program',
       url: 'https://ucdp.uu.se/downloads/',
       accessedOn: '2026-05-10',
     },
     {
       id: 'imf-direction-of-trade',
       title: 'Direction of Trade Statistics',
-      publisher: 'IMF',
+      publisher: 'International Monetary Fund',
       url: 'https://data.imf.org/?sk=9D6028D4-F14A-464C-A2F2-59B2CD424B85',
       accessedOn: '2026-05-10',
     },
     {
       id: 'wto-profile',
       title: 'Trade Profiles',
-      publisher: 'WTO',
+      publisher: 'World Trade Organization',
       url: 'https://www.wto.org/english/res_e/statis_e/daily_update_e/trade_profiles_e.htm',
       accessedOn: '2026-05-10',
     },
@@ -120,7 +120,7 @@ export const geopoliticalDatasetV1: DatasetBundle = {
     {
       id: 'world-factbook',
       title: 'The World Factbook',
-      publisher: 'Central Intelligence Agency',
+      publisher: 'U.S. Central Intelligence Agency',
       url: 'https://www.cia.gov/the-world-factbook/',
       accessedOn: '2026-05-10',
     },

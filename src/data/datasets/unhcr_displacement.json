@@ -1,0 +1,1066 @@
+{
+  "fetchedAt": "2026-08-15T21:34:05.058Z",
+  "referenceYear": 2025,
+  "sourceTitle": "UNHCR Refugee Data Finder (2025)",
+  "sourceUrl": "https://www.unhcr.org/refugee-statistics/",
+  "originCountryCount": 209,
+  "asylumCountryCount": 178,
+  "perCountry": {
+    "AF": {
+      "refugeesFromCountry": 2671560,
+      "asylumSeekersFromCountry": 270007,
+      "refugeesHosted": 20869,
+      "asylumSeekersHosted": 382,
+      "idps": 3199023,
+      "stateless": 0
+    },
+    "AL": {
+      "refugeesFromCountry": 21447,
+      "asylumSeekersFromCountry": 7643,
+      "refugeesHosted": 4673,
+      "asylumSeekersHosted": 11,
+      "idps": 0,
+      "stateless": 0
+    },
+    "DZ": {
+      "refugeesFromCountry": 9174,
+      "asylumSeekersFromCountry": 12949,
+      "refugeesHosted": 180575,
+      "asylumSeekersHosted": 3690,
+      "idps": 0,
+      "stateless": 0
+    },
+    "AO": {
+      "refugeesFromCountry": 13433,
+      "asylumSeekersFromCountry": 16983,
+      "refugeesHosted": 25396,
+      "asylumSeekersHosted": 30261,
+      "idps": 0,
+      "stateless": 0
+    },
+    "EG": {
+      "refugeesFromCountry": 23763,
+      "asylumSeekersFromCountry": 46292,
+      "refugeesHosted": 220033,
+      "asylumSeekersHosted": 878268,
+      "idps": 0,
+      "stateless": 0
+    },
+    "AR": {
+      "refugeesFromCountry": 542,
+      "asylumSeekersFromCountry": 4621,
+      "refugeesHosted": 4941,
+      "asylumSeekersHosted": 3941,
+      "idps": 0,
+      "stateless": 0
+    },
+    "AM": {
+      "refugeesFromCountry": 15578,
+      "asylumSeekersFromCountry": 14216,
+      "refugeesHosted": 123087,
+      "asylumSeekersHosted": 998,
+      "idps": 0,
+      "stateless": 0
+    },
+    "AU": {
+      "refugeesFromCountry": 41,
+      "asylumSeekersFromCountry": 31,
+      "refugeesHosted": 33415,
+      "asylumSeekersHosted": 82925,
+      "idps": 0,
+      "stateless": 0
+    },
+    "AT": {
+      "refugeesFromCountry": 33,
+      "asylumSeekersFromCountry": 16,
+      "refugeesHosted": 286651,
+      "asylumSeekersHosted": 22014,
+      "idps": 0,
+      "stateless": 0
+    },
+    "AZ": {
+      "refugeesFromCountry": 130983,
+      "asylumSeekersFromCountry": 6242,
+      "refugeesHosted": 6389,
+      "asylumSeekersHosted": 199,
+      "idps": 657155,
+      "stateless": 0
+    },
+    "BH": {
+      "refugeesFromCountry": 267,
+      "asylumSeekersFromCountry": 130,
+      "refugeesHosted": 240,
+      "asylumSeekersHosted": 122,
+      "idps": 0,
+      "stateless": 0
+    },
+    "BE": {
+      "refugeesFromCountry": 113,
+      "asylumSeekersFromCountry": 69,
+      "refugeesHosted": 186393,
+      "asylumSeekersHosted": 58725,
+      "idps": 0,
+      "stateless": 0
+    },
+    "BD": {
+      "refugeesFromCountry": 31862,
+      "asylumSeekersFromCountry": 92441,
+      "refugeesHosted": 1178038,
+      "asylumSeekersHosted": 67,
+      "idps": 0,
+      "stateless": 0
+    },
+    "BF": {
+      "refugeesFromCountry": 351209,
+      "asylumSeekersFromCountry": 69817,
+      "refugeesHosted": 40996,
+      "asylumSeekersHosted": 1957,
+      "idps": 2062534,
+      "stateless": 0
+    },
+    "BY": {
+      "refugeesFromCountry": 19462,
+      "asylumSeekersFromCountry": 8119,
+      "refugeesHosted": 40794,
+      "asylumSeekersHosted": 1470,
+      "idps": 0,
+      "stateless": 0
+    },
+    "BO": {
+      "refugeesFromCountry": 710,
+      "asylumSeekersFromCountry": 6747,
+      "refugeesHosted": 1147,
+      "asylumSeekersHosted": 0,
+      "idps": 0,
+      "stateless": 0
+    },
+    "BW": {
+      "refugeesFromCountry": 384,
+      "asylumSeekersFromCountry": 789,
+      "refugeesHosted": 847,
+      "asylumSeekersHosted": 21,
+      "idps": 0,
+      "stateless": 0
+    },
+    "BR": {
+      "refugeesFromCountry": 6306,
+      "asylumSeekersFromCountry": 66672,
+      "refugeesHosted": 278966,
+      "asylumSeekersHosted": 119651,
+      "idps": 0,
+      "stateless": 0
+    },
+    "BN": {
+      "refugeesFromCountry": 5,
+      "asylumSeekersFromCountry": 170,
+      "refugeesHosted": 0,
+      "asylumSeekersHosted": 0,
+      "idps": 0,
+      "stateless": 0
+    },
+    "BA": {
+      "refugeesFromCountry": 24653,
+      "asylumSeekersFromCountry": 712,
+      "refugeesHosted": 586,
+      "asylumSeekersHosted": 164,
+      "idps": 94796,
+      "stateless": 0
+    },
+    "BG": {
+      "refugeesFromCountry": 533,
+      "asylumSeekersFromCountry": 290,
+      "refugeesHosted": 105596,
+      "asylumSeekersHosted": 1317,
+      "idps": 0,
+      "stateless": 0
+    },
+    "KH": {
+      "refugeesFromCountry": 11332,
+      "asylumSeekersFromCountry": 1646,
+      "refugeesHosted": 23,
+      "asylumSeekersHosted": 5,
+      "idps": 517555,
+      "stateless": 0
+    },
+    "CA": {
+      "refugeesFromCountry": 360,
+      "asylumSeekersFromCountry": 215,
+      "refugeesHosted": 416028,
+      "asylumSeekersHosted": 314475,
+      "idps": 0,
+      "stateless": 0
+    },
+    "CN": {
+      "refugeesFromCountry": 153962,
+      "asylumSeekersFromCountry": 99716,
+      "refugeesHosted": 230,
+      "asylumSeekersHosted": 482,
+      "idps": 0,
+      "stateless": 0
+    },
+    "CL": {
+      "refugeesFromCountry": 5358,
+      "asylumSeekersFromCountry": 23057,
+      "refugeesHosted": 2631,
+      "asylumSeekersHosted": 9561,
+      "idps": 0,
+      "stateless": 0
+    },
+    "CM": {
+      "refugeesFromCountry": 140366,
+      "asylumSeekersFromCountry": 37991,
+      "refugeesHosted": 408613,
+      "asylumSeekersHosted": 18553,
+      "idps": 1004257,
+      "stateless": 0
+    },
+    "CD": {
+      "refugeesFromCountry": 1176489,
+      "asylumSeekersFromCountry": 168421,
+      "refugeesHosted": 503732,
+      "asylumSeekersHosted": 100112,
+      "idps": 5669479,
+      "stateless": 0
+    },
+    "CO": {
+      "refugeesFromCountry": 79669,
+      "asylumSeekersFromCountry": 303273,
+      "refugeesHosted": 1464,
+      "asylumSeekersHosted": 17421,
+      "idps": 7157716,
+      "stateless": 0
+    },
+    "CR": {
+      "refugeesFromCountry": 367,
+      "asylumSeekersFromCountry": 1820,
+      "refugeesHosted": 36395,
+      "asylumSeekersHosted": 178212,
+      "idps": 0,
+      "stateless": 0
+    },
+    "CU": {
+      "refugeesFromCountry": 29395,
+      "asylumSeekersFromCountry": 288050,
+      "refugeesHosted": 115,
+      "asylumSeekersHosted": 40,
+      "idps": 0,
+      "stateless": 0
+    },
+    "CY": {
+      "refugeesFromCountry": 15,
+      "asylumSeekersFromCountry": 10,
+      "refugeesHosted": 48207,
+      "asylumSeekersHosted": 23162,
+      "idps": 0,
+      "stateless": 0
+    },
+    "CZ": {
+      "refugeesFromCountry": 794,
+      "asylumSeekersFromCountry": 158,
+      "refugeesHosted": 395559,
+      "asylumSeekersHosted": 993,
+      "idps": 0,
+      "stateless": 0
+    },
+    "DK": {
+      "refugeesFromCountry": 21,
+      "asylumSeekersFromCountry": 50,
+      "refugeesHosted": 95007,
+      "asylumSeekersHosted": 2738,
+      "idps": 0,
+      "stateless": 0
+    },
+    "DO": {
+      "refugeesFromCountry": 1240,
+      "asylumSeekersFromCountry": 20783,
+      "refugeesHosted": 20,
+      "asylumSeekersHosted": 1029,
+      "idps": 0,
+      "stateless": 0
+    },
+    "EC": {
+      "refugeesFromCountry": 5723,
+      "asylumSeekersFromCountry": 122060,
+      "refugeesHosted": 26428,
+      "asylumSeekersHosted": 8571,
+      "idps": 0,
+      "stateless": 0
+    },
+    "EE": {
+      "refugeesFromCountry": 86,
+      "asylumSeekersFromCountry": 52,
+      "refugeesHosted": 41299,
+      "asylumSeekersHosted": 321,
+      "idps": 0,
+      "stateless": 0
+    },
+    "ET": {
+      "refugeesFromCountry": 164215,
+      "asylumSeekersFromCountry": 148616,
+      "refugeesHosted": 1010466,
+      "asylumSeekersHosted": 112987,
+      "idps": 2378000,
+      "stateless": 0
+    },
+    "FI": {
+      "refugeesFromCountry": 5,
+      "asylumSeekersFromCountry": 15,
+      "refugeesHosted": 102544,
+      "asylumSeekersHosted": 1879,
+      "idps": 0,
+      "stateless": 0
+    },
+    "FR": {
+      "refugeesFromCountry": 166,
+      "asylumSeekersFromCountry": 455,
+      "refugeesHosted": 788419,
+      "asylumSeekersHosted": 85227,
+      "idps": 0,
+      "stateless": 0
+    },
+    "GB": {
+      "refugeesFromCountry": 517,
+      "asylumSeekersFromCountry": 496,
+      "refugeesHosted": 581072,
+      "asylumSeekersHosted": 144747,
+      "idps": 0,
+      "stateless": 0
+    },
+    "GE": {
+      "refugeesFromCountry": 17302,
+      "asylumSeekersFromCountry": 28902,
+      "refugeesHosted": 26522,
+      "asylumSeekersHosted": 288,
+      "idps": 300439,
+      "stateless": 0
+    },
+    "DE": {
+      "refugeesFromCountry": 327,
+      "asylumSeekersFromCountry": 626,
+      "refugeesHosted": 2655191,
+      "asylumSeekersHosted": 297503,
+      "idps": 0,
+      "stateless": 0
+    },
+    "GH": {
+      "refugeesFromCountry": 16030,
+      "asylumSeekersFromCountry": 22470,
+      "refugeesHosted": 21050,
+      "asylumSeekersHosted": 475,
+      "idps": 0,
+      "stateless": 0
+    },
+    "GR": {
+      "refugeesFromCountry": 94,
+      "asylumSeekersFromCountry": 121,
+      "refugeesHosted": 134563,
+      "asylumSeekersHosted": 31928,
+      "idps": 0,
+      "stateless": 0
+    },
+    "GT": {
+      "refugeesFromCountry": 34994,
+      "asylumSeekersFromCountry": 138420,
+      "refugeesHosted": 1586,
+      "asylumSeekersHosted": 4088,
+      "idps": 573000,
+      "stateless": 0
+    },
+    "HR": {
+      "refugeesFromCountry": 17207,
+      "asylumSeekersFromCountry": 43,
+      "refugeesHosted": 29748,
+      "asylumSeekersHosted": 434,
+      "idps": 0,
+      "stateless": 0
+    },
+    "HU": {
+      "refugeesFromCountry": 2055,
+      "asylumSeekersFromCountry": 899,
+      "refugeesHosted": 71332,
+      "asylumSeekersHosted": 42,
+      "idps": 0,
+      "stateless": 0
+    },
+    "IS": {
+      "refugeesFromCountry": 0,
+      "asylumSeekersFromCountry": 5,
+      "refugeesHosted": 8459,
+      "asylumSeekersHosted": 660,
+      "idps": 0,
+      "stateless": 0
+    },
+    "CI": {
+      "refugeesFromCountry": 32506,
+      "asylumSeekersFromCountry": 24238,
+      "refugeesHosted": 74630,
+      "asylumSeekersHosted": 8177,
+      "idps": 0,
+      "stateless": 0
+    },
+    "IN": {
+      "refugeesFromCountry": 42610,
+      "asylumSeekersFromCountry": 181121,
+      "refugeesHosted": 238643,
+      "asylumSeekersHosted": 15075,
+      "idps": 0,
+      "stateless": 0
+    },
+    "ID": {
+      "refugeesFromCountry": 9215,
+      "asylumSeekersFromCountry": 8205,
+      "refugeesHosted": 7374,
+      "asylumSeekersHosted": 4697,
+      "idps": 0,
+      "stateless": 0
+    },
+    "IE": {
+      "refugeesFromCountry": 69,
+      "asylumSeekersFromCountry": 330,
+      "refugeesHosted": 137869,
+      "asylumSeekersHosted": 33728,
+      "idps": 0,
+      "stateless": 0
+    },
+    "IR": {
+      "refugeesFromCountry": 157912,
+      "asylumSeekersFromCountry": 49263,
+      "refugeesHosted": 770514,
+      "asylumSeekersHosted": 0,
+      "idps": 0,
+      "stateless": 0
+    },
+    "IQ": {
+      "refugeesFromCountry": 270671,
+      "asylumSeekersFromCountry": 96887,
+      "refugeesHosted": 322345,
+      "asylumSeekersHosted": 23366,
+      "idps": 997334,
+      "stateless": 0
+    },
+    "IL": {
+      "refugeesFromCountry": 1265,
+      "asylumSeekersFromCountry": 897,
+      "refugeesHosted": 1274,
+      "asylumSeekersHosted": 29682,
+      "idps": 0,
+      "stateless": 0
+    },
+    "IT": {
+      "refugeesFromCountry": 266,
+      "asylumSeekersFromCountry": 575,
+      "refugeesHosted": 192914,
+      "asylumSeekersHosted": 234144,
+      "idps": 0,
+      "stateless": 0
+    },
+    "JO": {
+      "refugeesFromCountry": 5471,
+      "asylumSeekersFromCountry": 10736,
+      "refugeesHosted": 436226,
+      "asylumSeekersHosted": 8068,
+      "idps": 0,
+      "stateless": 0
+    },
+    "JP": {
+      "refugeesFromCountry": 56,
+      "asylumSeekersFromCountry": 91,
+      "refugeesHosted": 42450,
+      "asylumSeekersHosted": 22647,
+      "idps": 0,
+      "stateless": 0
+    },
+    "KZ": {
+      "refugeesFromCountry": 4144,
+      "asylumSeekersFromCountry": 6611,
+      "refugeesHosted": 4377,
+      "asylumSeekersHosted": 163,
+      "idps": 0,
+      "stateless": 0
+    },
+    "KE": {
+      "refugeesFromCountry": 13325,
+      "asylumSeekersFromCountry": 7773,
+      "refugeesHosted": 617125,
+      "asylumSeekersHosted": 218646,
+      "idps": 0,
+      "stateless": 0
+    },
+    "KG": {
+      "refugeesFromCountry": 3337,
+      "asylumSeekersFromCountry": 8072,
+      "refugeesHosted": 1150,
+      "asylumSeekersHosted": 1981,
+      "idps": 0,
+      "stateless": 0
+    },
+    "KR": {
+      "refugeesFromCountry": 117,
+      "asylumSeekersFromCountry": 630,
+      "refugeesHosted": 4407,
+      "asylumSeekersHosted": 39106,
+      "idps": 0,
+      "stateless": 0
+    },
+    "KP": {
+      "refugeesFromCountry": 263,
+      "asylumSeekersFromCountry": 45,
+      "refugeesHosted": 0,
+      "asylumSeekersHosted": 0,
+      "idps": 0,
+      "stateless": 0
+    },
+    "KW": {
+      "refugeesFromCountry": 3369,
+      "asylumSeekersFromCountry": 2148,
+      "refugeesHosted": 386,
+      "asylumSeekersHosted": 611,
+      "idps": 0,
+      "stateless": 0
+    },
+    "LA": {
+      "refugeesFromCountry": 6489,
+      "asylumSeekersFromCountry": 466,
+      "refugeesHosted": 0,
+      "asylumSeekersHosted": 0,
+      "idps": 0,
+      "stateless": 0
+    },
+    "LY": {
+      "refugeesFromCountry": 17161,
+      "asylumSeekersFromCountry": 3802,
+      "refugeesHosted": 552523,
+      "asylumSeekersHosted": 105954,
+      "idps": 32791,
+      "stateless": 0
+    },
+    "LB": {
+      "refugeesFromCountry": 9568,
+      "asylumSeekersFromCountry": 8798,
+      "refugeesHosted": 535168,
+      "asylumSeekersHosted": 7617,
+      "idps": 64417,
+      "stateless": 0
+    },
+    "LK": {
+      "refugeesFromCountry": 148369,
+      "asylumSeekersFromCountry": 33564,
+      "refugeesHosted": 213,
+      "asylumSeekersHosted": 271,
+      "idps": 4099,
+      "stateless": 0
+    },
+    "LT": {
+      "refugeesFromCountry": 101,
+      "asylumSeekersFromCountry": 78,
+      "refugeesHosted": 54381,
+      "asylumSeekersHosted": 156,
+      "idps": 0,
+      "stateless": 0
+    },
+    "LU": {
+      "refugeesFromCountry": 20,
+      "asylumSeekersFromCountry": 0,
+      "refugeesHosted": 10284,
+      "asylumSeekersHosted": 3050,
+      "idps": 0,
+      "stateless": 0
+    },
+    "LV": {
+      "refugeesFromCountry": 189,
+      "asylumSeekersFromCountry": 91,
+      "refugeesHosted": 32454,
+      "asylumSeekersHosted": 487,
+      "idps": 0,
+      "stateless": 0
+    },
+    "MG": {
+      "refugeesFromCountry": 637,
+      "asylumSeekersFromCountry": 362,
+      "refugeesHosted": 87,
+      "asylumSeekersHosted": 1279,
+      "idps": 0,
+      "stateless": 0
+    },
+    "MK": {
+      "refugeesFromCountry": 1886,
+      "asylumSeekersFromCountry": 1332,
+      "refugeesHosted": 20822,
+      "asylumSeekersHosted": 38,
+      "idps": 0,
+      "stateless": 0
+    },
+    "MD": {
+      "refugeesFromCountry": 5846,
+      "asylumSeekersFromCountry": 3022,
+      "refugeesHosted": 149324,
+      "asylumSeekersHosted": 594,
+      "idps": 0,
+      "stateless": 0
+    },
+    "MX": {
+      "refugeesFromCountry": 41307,
+      "asylumSeekersFromCountry": 236810,
+      "refugeesHosted": 152002,
+      "asylumSeekersHosted": 173532,
+      "idps": 262411,
+      "stateless": 0
+    },
+    "ML": {
+      "refugeesFromCountry": 519738,
+      "asylumSeekersFromCountry": 23629,
+      "refugeesHosted": 286715,
+      "asylumSeekersHosted": 322,
+      "idps": 414524,
+      "stateless": 0
+    },
+    "MY": {
+      "refugeesFromCountry": 2477,
+      "asylumSeekersFromCountry": 5511,
+      "refugeesHosted": 150164,
+      "asylumSeekersHosted": 63011,
+      "idps": 0,
+      "stateless": 0
+    },
+    "ME": {
+      "refugeesFromCountry": 696,
+      "asylumSeekersFromCountry": 165,
+      "refugeesHosted": 12269,
+      "asylumSeekersHosted": 175,
+      "idps": 0,
+      "stateless": 0
+    },
+    "MN": {
+      "refugeesFromCountry": 2403,
+      "asylumSeekersFromCountry": 3679,
+      "refugeesHosted": 11,
+      "asylumSeekersHosted": 15,
+      "idps": 0,
+      "stateless": 0
+    },
+    "MA": {
+      "refugeesFromCountry": 10400,
+      "asylumSeekersFromCountry": 22120,
+      "refugeesHosted": 7304,
+      "asylumSeekersHosted": 15033,
+      "idps": 0,
+      "stateless": 0
+    },
+    "MZ": {
+      "refugeesFromCountry": 119,
+      "asylumSeekersFromCountry": 7207,
+      "refugeesHosted": 5105,
+      "asylumSeekersHosted": 18972,
+      "idps": 461745,
+      "stateless": 0
+    },
+    "MM": {
+      "refugeesFromCountry": 1524378,
+      "asylumSeekersFromCountry": 67824,
+      "refugeesHosted": 0,
+      "asylumSeekersHosted": 0,
+      "idps": 3628840,
+      "stateless": 0
+    },
+    "NP": {
+      "refugeesFromCountry": 8019,
+      "asylumSeekersFromCountry": 14564,
+      "refugeesHosted": 19613,
+      "asylumSeekersHosted": 302,
+      "idps": 0,
+      "stateless": 0
+    },
+    "NL": {
+      "refugeesFromCountry": 159,
+      "asylumSeekersFromCountry": 179,
+      "refugeesHosted": 283935,
+      "asylumSeekersHosted": 49662,
+      "idps": 0,
+      "stateless": 0
+    },
+    "NE": {
+      "refugeesFromCountry": 85591,
+      "asylumSeekersFromCountry": 21662,
+      "refugeesHosted": 385986,
+      "asylumSeekersHosted": 50004,
+      "idps": 459585,
+      "stateless": 0
+    },
+    "NG": {
+      "refugeesFromCountry": 478150,
+      "asylumSeekersFromCountry": 56176,
+      "refugeesHosted": 123848,
+      "asylumSeekersHosted": 18192,
+      "idps": 3544519,
+      "stateless": 0
+    },
+    "NO": {
+      "refugeesFromCountry": 20,
+      "asylumSeekersFromCountry": 32,
+      "refugeesHosted": 124006,
+      "asylumSeekersHosted": 6280,
+      "idps": 0,
+      "stateless": 0
+    },
+    "NZ": {
+      "refugeesFromCountry": 58,
+      "asylumSeekersFromCountry": 43,
+      "refugeesHosted": 2148,
+      "asylumSeekersHosted": 4584,
+      "idps": 0,
+      "stateless": 0
+    },
+    "OM": {
+      "refugeesFromCountry": 133,
+      "asylumSeekersFromCountry": 43,
+      "refugeesHosted": 289,
+      "asylumSeekersHosted": 414,
+      "idps": 0,
+      "stateless": 0
+    },
+    "PK": {
+      "refugeesFromCountry": 90497,
+      "asylumSeekersFromCountry": 65066,
+      "refugeesHosted": 1159038,
+      "asylumSeekersHosted": 119502,
+      "idps": 0,
+      "stateless": 0
+    },
+    "PA": {
+      "refugeesFromCountry": 375,
+      "asylumSeekersFromCountry": 2993,
+      "refugeesHosted": 2694,
+      "asylumSeekersHosted": 4129,
+      "idps": 0,
+      "stateless": 0
+    },
+    "PY": {
+      "refugeesFromCountry": 162,
+      "asylumSeekersFromCountry": 2398,
+      "refugeesHosted": 4621,
+      "asylumSeekersHosted": 1659,
+      "idps": 0,
+      "stateless": 0
+    },
+    "PE": {
+      "refugeesFromCountry": 7885,
+      "asylumSeekersFromCountry": 113900,
+      "refugeesHosted": 6788,
+      "asylumSeekersHosted": 556770,
+      "idps": 0,
+      "stateless": 0
+    },
+    "PH": {
+      "refugeesFromCountry": 807,
+      "asylumSeekersFromCountry": 6088,
+      "refugeesHosted": 1032,
+      "asylumSeekersHosted": 942,
+      "idps": 43500,
+      "stateless": 0
+    },
+    "PG": {
+      "refugeesFromCountry": 644,
+      "asylumSeekersFromCountry": 1227,
+      "refugeesHosted": 7727,
+      "asylumSeekersHosted": 3121,
+      "idps": 70124,
+      "stateless": 0
+    },
+    "PL": {
+      "refugeesFromCountry": 1368,
+      "asylumSeekersFromCountry": 407,
+      "refugeesHosted": 990469,
+      "asylumSeekersHosted": 13848,
+      "idps": 0,
+      "stateless": 0
+    },
+    "PT": {
+      "refugeesFromCountry": 109,
+      "asylumSeekersFromCountry": 376,
+      "refugeesHosted": 70349,
+      "asylumSeekersHosted": 8595,
+      "idps": 0,
+      "stateless": 0
+    },
+    "QA": {
+      "refugeesFromCountry": 73,
+      "asylumSeekersFromCountry": 28,
+      "refugeesHosted": 195,
+      "asylumSeekersHosted": 153,
+      "idps": 0,
+      "stateless": 0
+    },
+    "RO": {
+      "refugeesFromCountry": 3130,
+      "asylumSeekersFromCountry": 7877,
+      "refugeesHosted": 206671,
+      "asylumSeekersHosted": 316,
+      "idps": 0,
+      "stateless": 0
+    },
+    "ZA": {
+      "refugeesFromCountry": 1319,
+      "asylumSeekersFromCountry": 2575,
+      "refugeesHosted": 55177,
+      "asylumSeekersHosted": 82358,
+      "idps": 0,
+      "stateless": 0
+    },
+    "RU": {
+      "refugeesFromCountry": 99360,
+      "asylumSeekersFromCountry": 88310,
+      "refugeesHosted": 11811,
+      "asylumSeekersHosted": 976,
+      "idps": 0,
+      "stateless": 0
+    },
+    "RW": {
+      "refugeesFromCountry": 244415,
+      "asylumSeekersFromCountry": 20214,
+      "refugeesHosted": 115794,
+      "asylumSeekersHosted": 15251,
+      "idps": 0,
+      "stateless": 0
+    },
+    "SA": {
+      "refugeesFromCountry": 2368,
+      "asylumSeekersFromCountry": 385,
+      "refugeesHosted": 448,
+      "asylumSeekersHosted": 3907,
+      "idps": 0,
+      "stateless": 0
+    },
+    "SN": {
+      "refugeesFromCountry": 13028,
+      "asylumSeekersFromCountry": 38978,
+      "refugeesHosted": 17259,
+      "asylumSeekersHosted": 1538,
+      "idps": 0,
+      "stateless": 0
+    },
+    "SG": {
+      "refugeesFromCountry": 43,
+      "asylumSeekersFromCountry": 212,
+      "refugeesHosted": 0,
+      "asylumSeekersHosted": 0,
+      "idps": 0,
+      "stateless": 0
+    },
+    "SO": {
+      "refugeesFromCountry": 892037,
+      "asylumSeekersFromCountry": 236271,
+      "refugeesHosted": 20967,
+      "asylumSeekersHosted": 25702,
+      "idps": 3347408,
+      "stateless": 0
+    },
+    "ES": {
+      "refugeesFromCountry": 186,
+      "asylumSeekersFromCountry": 713,
+      "refugeesHosted": 511079,
+      "asylumSeekersHosted": 248715,
+      "idps": 0,
+      "stateless": 0
+    },
+    "RS": {
+      "refugeesFromCountry": 29665,
+      "asylumSeekersFromCountry": 3695,
+      "refugeesHosted": 40863,
+      "asylumSeekersHosted": 134,
+      "idps": 209453,
+      "stateless": 0
+    },
+    "VN": {
+      "refugeesFromCountry": 20636,
+      "asylumSeekersFromCountry": 19253,
+      "refugeesHosted": 13,
+      "asylumSeekersHosted": 0,
+      "idps": 0,
+      "stateless": 0
+    },
+    "SS": {
+      "refugeesFromCountry": 2386499,
+      "asylumSeekersFromCountry": 123984,
+      "refugeesHosted": 601818,
+      "asylumSeekersHosted": 3246,
+      "idps": 1277527,
+      "stateless": 0
+    },
+    "SD": {
+      "refugeesFromCountry": 2820737,
+      "asylumSeekersFromCountry": 940297,
+      "refugeesHosted": 809816,
+      "asylumSeekersHosted": 50147,
+      "idps": 9139309,
+      "stateless": 0
+    },
+    "SK": {
+      "refugeesFromCountry": 625,
+      "asylumSeekersFromCountry": 91,
+      "refugeesHosted": 140885,
+      "asylumSeekersHosted": 16,
+      "idps": 0,
+      "stateless": 0
+    },
+    "SI": {
+      "refugeesFromCountry": 12,
+      "asylumSeekersFromCountry": 103,
+      "refugeesHosted": 12513,
+      "asylumSeekersHosted": 722,
+      "idps": 0,
+      "stateless": 0
+    },
+    "SE": {
+      "refugeesFromCountry": 128,
+      "asylumSeekersFromCountry": 195,
+      "refugeesHosted": 144116,
+      "asylumSeekersHosted": 4661,
+      "idps": 0,
+      "stateless": 0
+    },
+    "CH": {
+      "refugeesFromCountry": 6,
+      "asylumSeekersFromCountry": 33,
+      "refugeesHosted": 208287,
+      "asylumSeekersHosted": 17039,
+      "idps": 0,
+      "stateless": 0
+    },
+    "SY": {
+      "refugeesFromCountry": 4865764,
+      "asylumSeekersFromCountry": 154355,
+      "refugeesHosted": 9885,
+      "asylumSeekersHosted": 4144,
+      "idps": 5542227,
+      "stateless": 0
+    },
+    "TZ": {
+      "refugeesFromCountry": 1592,
+      "asylumSeekersFromCountry": 2777,
+      "refugeesHosted": 171142,
+      "asylumSeekersHosted": 43262,
+      "idps": 0,
+      "stateless": 0
+    },
+    "TH": {
+      "refugeesFromCountry": 327,
+      "asylumSeekersFromCountry": 2656,
+      "refugeesHosted": 84017,
+      "asylumSeekersHosted": 2880,
+      "idps": 0,
+      "stateless": 0
+    },
+    "TJ": {
+      "refugeesFromCountry": 4163,
+      "asylumSeekersFromCountry": 6420,
+      "refugeesHosted": 8620,
+      "asylumSeekersHosted": 3238,
+      "idps": 0,
+      "stateless": 0
+    },
+    "TM": {
+      "refugeesFromCountry": 1864,
+      "asylumSeekersFromCountry": 1663,
+      "refugeesHosted": 9,
+      "asylumSeekersHosted": 0,
+      "idps": 0,
+      "stateless": 0
+    },
+    "TN": {
+      "refugeesFromCountry": 3711,
+      "asylumSeekersFromCountry": 10338,
+      "refugeesHosted": 2386,
+      "asylumSeekersHosted": 5523,
+      "idps": 0,
+      "stateless": 0
+    },
+    "TR": {
+      "refugeesFromCountry": 149405,
+      "asylumSeekersFromCountry": 117576,
+      "refugeesHosted": 2390414,
+      "asylumSeekersHosted": 102497,
+      "idps": 0,
+      "stateless": 0
+    },
+    "AE": {
+      "refugeesFromCountry": 252,
+      "asylumSeekersFromCountry": 45,
+      "refugeesHosted": 1377,
+      "asylumSeekersHosted": 6257,
+      "idps": 0,
+      "stateless": 0
+    },
+    "UG": {
+      "refugeesFromCountry": 12792,
+      "asylumSeekersFromCountry": 11401,
+      "refugeesHosted": 1936719,
+      "asylumSeekersHosted": 35249,
+      "idps": 0,
+      "stateless": 0
+    },
+    "UA": {
+      "refugeesFromCountry": 5224131,
+      "asylumSeekersFromCountry": 26583,
+      "refugeesHosted": 2370,
+      "asylumSeekersHosted": 443,
+      "idps": 3712000,
+      "stateless": 0
+    },
+    "UY": {
+      "refugeesFromCountry": 126,
+      "asylumSeekersFromCountry": 536,
+      "refugeesHosted": 3195,
+      "asylumSeekersHosted": 27288,
+      "idps": 0,
+      "stateless": 0
+    },
+    "US": {
+      "refugeesFromCountry": 3667,
+      "asylumSeekersFromCountry": 3779,
+      "refugeesHosted": 457647,
+      "asylumSeekersHosted": 3718945,
+      "idps": 0,
+      "stateless": 0
+    },
+    "UZ": {
+      "refugeesFromCountry": 5164,
+      "asylumSeekersFromCountry": 17404,
+      "refugeesHosted": 5,
+      "asylumSeekersHosted": 0,
+      "idps": 0,
+      "stateless": 0
+    },
+    "VE": {
+      "refugeesFromCountry": 417010,
+      "asylumSeekersFromCountry": 1181156,
+      "refugeesHosted": 14333,
+      "asylumSeekersHosted": 1577,
+      "idps": 0,
+      "stateless": 0
+    },
+    "YE": {
+      "refugeesFromCountry": 57327,
+      "asylumSeekersFromCountry": 25860,
+      "refugeesHosted": 49107,
+      "asylumSeekersHosted": 14642,
+      "idps": 4795983,
+      "stateless": 0
+    },
+    "ZM": {
+      "refugeesFromCountry": 346,
+      "asylumSeekersFromCountry": 546,
+      "refugeesHosted": 83225,
+      "asylumSeekersHosted": 12906,
+      "idps": 0,
+      "stateless": 0
+    },
+    "ZW": {
+      "refugeesFromCountry": 6632,
+      "asylumSeekersFromCountry": 6373,
+      "refugeesHosted": 8570,
+      "asylumSeekersHosted": 9495,
+      "idps": 0,
+      "stateless": 0
+    }
+  }
+}

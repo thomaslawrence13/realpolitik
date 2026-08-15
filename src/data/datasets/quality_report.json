@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T18:38:33.902Z",
+  "generatedAt": "2026-08-15T23:09:31.566Z",
   "contract": {
     "contractVersion": "iq-contract-v1.0.0",
     "scoringVersion": "iq-score-v2.0.0",
@@ -225,6 +225,20 @@
       "meetsRelationshipCompleteness": true
     },
     "releaseAccepted": true
+  },
+  "trend": {
+    "previousDay": null,
+    "firstDay": "2026-08-15",
+    "entryCount": 1,
+    "sincePrevious": null,
+    "sinceFirst": null
+  },
+  "artifactRegister": {
+    "artifactCount": 9,
+    "freshCount": 9,
+    "agingCount": 0,
+    "staleCount": 0,
+    "allWithinBudget": true
   },
   "regressionBudgetBreaches": []
 }

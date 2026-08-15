@@ -1,0 +1,778 @@
+{
+  "fetchedAt": "2026-08-15T22:45:31.768Z",
+  "sourceTitle": "BIS Statistics — credit, debt service and policy rates",
+  "sourceUrl": "https://data.bis.org/",
+  "series": [
+    {
+      "key": "creditToGdpGap",
+      "label": "Credit-to-GDP gap",
+      "unit": "pp",
+      "note": "Deviation from an HP-filter trend that is re-estimated each release; historical values revise."
+    },
+    {
+      "key": "creditToGdpRatio",
+      "label": "Credit-to-GDP ratio",
+      "unit": "%",
+      "note": "Private non-financial sector credit from all lenders, including cross-border."
+    },
+    {
+      "key": "debtServiceRatio",
+      "label": "Debt service ratio",
+      "unit": "% of income",
+      "note": "Interest plus amortisation as a share of income, private non-financial sector."
+    },
+    {
+      "key": "policyRate",
+      "label": "Central bank policy rate",
+      "unit": "%",
+      "note": "Headline policy rate; not a measure of overall financial conditions."
+    }
+  ],
+  "countryCount": 50,
+  "perCountry": {
+    "KR": {
+      "creditToGdpGap": {
+        "value": -8.0122,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 198.99923648074,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 19.6,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 2.75,
+        "period": "2026-07"
+      }
+    },
+    "CA": {
+      "creditToGdpGap": {
+        "value": -15.2549,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 218.89991105192,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 25.4,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 2.25,
+        "period": "2026-07"
+      }
+    },
+    "PT": {
+      "creditToGdpGap": {
+        "value": -27.0458,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 128.13005311875,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 12.2,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 3.25,
+        "period": "1998-12"
+      }
+    },
+    "CH": {
+      "creditToGdpGap": {
+        "value": -17.0378,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 251.90177749745,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 19.7,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 0,
+        "period": "2026-07"
+      }
+    },
+    "GR": {
+      "creditToGdpGap": {
+        "value": -18.5776,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 97.40964008607,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 3.75,
+        "period": "2000-12"
+      }
+    },
+    "MY": {
+      "creditToGdpGap": {
+        "value": -3.4803,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 158.42879693512,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 15.5,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 2.75,
+        "period": "2026-07"
+      }
+    },
+    "SE": {
+      "creditToGdpGap": {
+        "value": -38.4691,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 228.92804271647,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 24.6,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 1.75,
+        "period": "2026-07"
+      }
+    },
+    "CO": {
+      "creditToGdpGap": {
+        "value": -8.5097,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 54.367900443459,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 12,
+        "period": "2026-07"
+      }
+    },
+    "DK": {
+      "creditToGdpGap": {
+        "value": -18.4439,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 224.91195878241,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 24.2,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 1.85,
+        "period": "2026-07"
+      }
+    },
+    "ID": {
+      "creditToGdpGap": {
+        "value": -0.5487,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 40.578024310601,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 4.4,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 5.75,
+        "period": "2026-06"
+      }
+    },
+    "BE": {
+      "creditToGdpGap": {
+        "value": -30.6485,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 174.73777027227,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 16.6,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 4.5,
+        "period": "1998-12"
+      }
+    },
+    "MX": {
+      "creditToGdpGap": {
+        "value": -2.9538,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 38.716543636928,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 5.4,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 6.5,
+        "period": "2026-07"
+      }
+    },
+    "SA": {
+      "creditToGdpGap": {
+        "value": 6.9949,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 77.579088392857,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 4.25,
+        "period": "2026-06"
+      }
+    },
+    "CN": {
+      "creditToGdpGap": {
+        "value": -7.6881,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 200.78763850685,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 18.8,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 3,
+        "period": "2026-06"
+      }
+    },
+    "AT": {
+      "creditToGdpGap": {
+        "value": -16.718,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 125.51057358124,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 3,
+        "period": "1998-12"
+      }
+    },
+    "HU": {
+      "creditToGdpGap": {
+        "value": -7.2482,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 90.859322424504,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 11.8,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 5.75,
+        "period": "2026-07"
+      }
+    },
+    "JP": {
+      "creditToGdpGap": {
+        "value": 6.7837,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 175.05996747126,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 15.5,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 1,
+        "period": "2026-07"
+      }
+    },
+    "AU": {
+      "creditToGdpGap": {
+        "value": -9.9276,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 176.11172283276,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 20.1,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 4.35,
+        "period": "2026-06"
+      }
+    },
+    "NO": {
+      "creditToGdpGap": {
+        "value": -13.5746,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 222.64796427281,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 28.1,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 4.25,
+        "period": "2026-06"
+      }
+    },
+    "DE": {
+      "creditToGdpGap": {
+        "value": -3.9645,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 136.69936348409,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 12.2,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 3,
+        "period": "1998-12"
+      }
+    },
+    "TH": {
+      "creditToGdpGap": {
+        "value": -16.1155,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 155.96665657483,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 13.5,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 1,
+        "period": "2026-07"
+      }
+    },
+    "FI": {
+      "creditToGdpGap": {
+        "value": -18.0143,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 177.41169761557,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 18.3,
+        "period": "2025-Q4"
+      }
+    },
+    "IL": {
+      "creditToGdpGap": {
+        "value": 3.5961,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 115.89840000371,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 3.5,
+        "period": "2026-07"
+      }
+    },
+    "NL": {
+      "creditToGdpGap": {
+        "value": -52.4791,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 260.0351037851,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 25.9,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 2.75,
+        "period": "1998-12"
+      }
+    },
+    "ZA": {
+      "creditToGdpGap": {
+        "value": -5.1672,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 66.645715857965,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 8.3,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 7,
+        "period": "2026-07"
+      }
+    },
+    "CZ": {
+      "creditToGdpGap": {
+        "value": -4.0614,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 85.157208017845,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 9,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 3.75,
+        "period": "2026-07"
+      }
+    },
+    "AR": {
+      "creditToGdpGap": {
+        "value": 4.9646,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 28.85521426271,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 29,
+        "period": "2025-06"
+      }
+    },
+    "SG": {
+      "creditToGdpGap": {
+        "value": -19.7575,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 171.187004244,
+        "period": "2025-Q4"
+      }
+    },
+    "US": {
+      "creditToGdpGap": {
+        "value": -11.5378,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 140.25005140258,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 14.1,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 3.625,
+        "period": "2026-07"
+      }
+    },
+    "ES": {
+      "creditToGdpGap": {
+        "value": -26.7769,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 119.34573766916,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 11.8,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 3,
+        "period": "1998-12"
+      }
+    },
+    "IE": {
+      "creditToGdpGap": {
+        "value": -82.0886,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 116.15168325754,
+        "period": "2025-Q4"
+      }
+    },
+    "PL": {
+      "creditToGdpGap": {
+        "value": -16.8492,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 56.808505724158,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 6.3,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 3.75,
+        "period": "2026-07"
+      }
+    },
+    "GB": {
+      "creditToGdpGap": {
+        "value": -17.8211,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 132.58083521304,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 13.1,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 3.75,
+        "period": "2026-07"
+      }
+    },
+    "NZ": {
+      "creditToGdpGap": {
+        "value": -7.7181,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 161.17589565929,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 2.5,
+        "period": "2026-07"
+      }
+    },
+    "TR": {
+      "creditToGdpGap": {
+        "value": -26.9071,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 48.97901760584,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 26.9,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 37,
+        "period": "2026-07"
+      }
+    },
+    "FR": {
+      "creditToGdpGap": {
+        "value": -15.109,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 215.43413521292,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 20.8,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 3,
+        "period": "1998-12"
+      }
+    },
+    "IN": {
+      "creditToGdpGap": {
+        "value": 1.7416,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 102.33186311281,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 12.2,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 5.25,
+        "period": "2026-06"
+      }
+    },
+    "BR": {
+      "creditToGdpGap": {
+        "value": 1.7865,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 93.038898721926,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 29.2,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 14.25,
+        "period": "2026-07"
+      }
+    },
+    "LU": {
+      "creditToGdpGap": {
+        "value": -69.5087,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 420.00935927455,
+        "period": "2025-Q4"
+      }
+    },
+    "RU": {
+      "creditToGdpGap": {
+        "value": -6.4163,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 106.06924143713,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 21,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 14,
+        "period": "2026-07"
+      }
+    },
+    "CL": {
+      "creditToGdpGap": {
+        "value": -22.1499,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 130.54537577568,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 4.5,
+        "period": "2026-07"
+      }
+    },
+    "IT": {
+      "creditToGdpGap": {
+        "value": -14.4395,
+        "period": "2025-Q4"
+      },
+      "creditToGdpRatio": {
+        "value": 94.301384096118,
+        "period": "2025-Q4"
+      },
+      "debtServiceRatio": {
+        "value": 9.2,
+        "period": "2025-Q4"
+      },
+      "policyRate": {
+        "value": 3,
+        "period": "1998-12"
+      }
+    },
+    "MA": {
+      "policyRate": {
+        "value": 2.25,
+        "period": "2026-05"
+      }
+    },
+    "MK": {
+      "policyRate": {
+        "value": 4.25,
+        "period": "2026-07"
+      }
+    },
+    "KW": {
+      "policyRate": {
+        "value": 3.5,
+        "period": "2026-07"
+      }
+    },
+    "IS": {
+      "policyRate": {
+        "value": 7.75,
+        "period": "2026-07"
+      }
+    },
+    "PH": {
+      "policyRate": {
+        "value": 4.75,
+        "period": "2026-07"
+      }
+    },
+    "PE": {
+      "policyRate": {
+        "value": 4.25,
+        "period": "2026-07"
+      }
+    },
+    "RS": {
+      "policyRate": {
+        "value": 5.75,
+        "period": "2026-07"
+      }
+    },
+    "RO": {
+      "policyRate": {
+        "value": 6.5,
+        "period": "2026-07"
+      }
+    }
+  }
+}

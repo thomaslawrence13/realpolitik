@@ -117,6 +117,44 @@ npm run quality:report
 ```bash
 npm run artifacts:status
 ```
+Each `quality:report` run appends one dated entry to `src/data/datasets/quality_history.json` (one entry per day, 180 retained), so coverage and staleness can be read as a trend rather than a single snapshot. The report's `trend` block and the methodology drawer both read that series.
+
+### 5. Official Registry Artifacts
+Refresh the committed evidence artifacts. Each is registry evidence displayed beside the model indicators — none of them replaces the curated `sanctionsExposure` or `conflictPressure` tiers:
+```bash
+npm run refresh:political      # all of the below
+npm run refresh:unvotes        # UN General Assembly recorded votes
+npm run refresh:unsc           # UN Security Council Consolidated List
+npm run refresh:ofac           # US Treasury OFAC SDN list
+npm run refresh:eu-sanctions   # EU Consolidated Financial Sanctions List
+npm run refresh:ucdp           # UCDP organized violence, country-year
+npm run refresh:displacement   # UNHCR refugee, asylum and IDP populations
+npm run refresh:fao            # FAOSTAT food security and water indicators
+npm run refresh:bis            # BIS credit gaps, debt service ratios, policy rates
+```
+
+**Three sanctions authorities, three attribution bases.** UN, US and EU measures are separate legal instruments and their counts are never summed — a combined figure would imply an authority no single list carries, and would double-count the EU designations that implement UN listings. Each list is attributed differently, and the UI says which:
+
+| Authority | Attributed by | Why |
+| --- | --- | --- |
+| UN Security Council | sanctions **regime** | Regimes are named for the situation whose actors are designated. |
+| US Treasury (OFAC) | **programme** | Programmes name their target country. |
+| European Union | **identity** of the designated party | EU programmes are named for the situation *including its victim* — `UKR` covers measures over Russian actions, so programme attribution would credit Ukraine with ~3,000 listings. |
+
+UNHCR figures keep people displaced *from* a country apart from those it hosts. FAOSTAT values carry FAO's own reference period (usually a three-year average) and its official/estimated/imputed status, and are code-split so they load only when a country panel is opened. BIS covers roughly 50 of the 134 tracked countries — an absent country is unreported, not financially sound.
+
+The raw World Bank audit payload (`raw/world_bank_latest.json.gz`) keeps every observation the ingest saw, so a disputed number can be traced to the response it came from. It is committed gzipped — 225 KB rather than 6.4 MB — and read only by Node scripts, never by the app.
+
+### 6. Backend Health
+`GET /api/health` reports a status rather than a bare boolean, because a backend whose cron stopped firing keeps serving its last state and looks fine:
+
+| Status | Meaning |
+| --- | --- |
+| `healthy` | Refreshing, all indicators present. |
+| `degraded` | Serving last-good state, some indicators failing. |
+| `stale` | No refresh in over 50h — two missed cron runs; the schedule is likely broken. |
+| `empty` | Bound, but no refresh has ever succeeded; the client falls back to a direct API fetch. |
+| `unconfigured` | The `LIVE_STATE` KV namespace is not bound — a deployment problem. |
 
 ---
 

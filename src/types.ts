@@ -365,6 +365,81 @@ export interface CountryRecord {
     sourceUrl: string;
     retrievedAt: string;
   };
+  /**
+   * UN Security Council Consolidated List — multilateral sanctions listings
+   * under the regimes that concern this country. Kept separate from
+   * `sanctions` (US OFAC) because the two are different legal instruments and
+   * merging their counts would imply an authority neither one carries.
+   */
+  unscSanctions?: {
+    listingCount: number;
+    individualCount: number;
+    entityCount: number;
+    regimes: Array<{ regime: string; label: string; listingCount: number; newestListedOn: string | null }>;
+    /** Most recent designation date across this country's regimes. */
+    newestListedOn: string | null;
+    /** The UN's own `dateGenerated` stamp on the published list. */
+    listGeneratedOn: string | null;
+    sourceTitle: string;
+    sourceUrl: string;
+    retrievedAt: string;
+  };
+  /**
+   * EU Consolidated Financial Sanctions. Attributed by the identity of the
+   * designated party (citizenship for persons, registered address for
+   * entities) rather than by programme — see `lib/euSanctions.ts` for why
+   * programme attribution would misreport Ukraine.
+   */
+  euSanctions?: {
+    listingCount: number;
+    personCount: number;
+    enterpriseCount: number;
+    programmes: Array<{ programme: string; label: string; listingCount: number }>;
+    newestDesignation: string | null;
+    /** The EU's own export stamp on the published list. */
+    listGeneratedOn: string | null;
+    sourceTitle: string;
+    sourceUrl: string;
+    retrievedAt: string;
+  };
+  /**
+   * UNHCR displacement populations. Origin and asylum figures are kept as
+   * separate fields, never a single total: producing displacement and hosting
+   * it are opposite positions that a combined number would hide.
+   */
+  displacement?: {
+    refugeesFromCountry: number;
+    asylumSeekersFromCountry: number;
+    refugeesHosted: number;
+    asylumSeekersHosted: number;
+    idps: number;
+    stateless: number;
+    /** Reference year of the figures — a completed year, not a nowcast. */
+    referenceYear: number;
+    sourceTitle: string;
+    sourceUrl: string;
+    retrievedAt: string;
+  };
+  /**
+   * BIS financial vulnerability indicators. Present only for the ~50 tracked
+   * countries BIS reports on; absence means unreported, never "sound".
+   */
+  bisFinancial?: {
+    observations: Array<{
+      key: string;
+      label: string;
+      unit: string;
+      value: number;
+      /** BIS period label, e.g. `2025-Q4`. */
+      period: string;
+      note: string;
+    }>;
+    /** Basel buffer-guide reading of the credit-to-GDP gap, when reported. */
+    creditGapBand: string | null;
+    sourceTitle: string;
+    sourceUrl: string;
+    retrievedAt: string;
+  };
   /** UCDP Country-Year organized-violence summary (observed conflict feed). */
   conflict?: {
     active: boolean;
