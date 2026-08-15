@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef } from 'react';
+import { lazy, memo, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { Alignment, CountryAssessment } from '../types';
 import { getRiskTier } from '../assessment';
 import { Segmented } from './ui';
@@ -20,8 +20,13 @@ import { StrategicStatsSection } from './inspector/StrategicStatsSection';
 import { buildCountryBenchmarks } from './inspector/benchmarks';
 import { PeerBenchmarkSection } from './inspector/PeerBenchmarkSection';
 import { DataQualitySection } from './inspector/DataQualitySection';
+import { chooseComparisonPeer } from './inspector/comparison';
 
-export type InspectorTab = 'snapshot' | 'stats' | 'history';
+const CountryComparisonSection = lazy(() => import('./inspector/CountryComparisonSection').then((module) => ({
+  default: module.CountryComparisonSection,
+})));
+
+export type InspectorTab = 'snapshot' | 'stats' | 'history' | 'compare';
 
 type Props = {
   open: boolean;
@@ -38,6 +43,7 @@ type Props = {
 export const normalizeInspectorTab = (raw: string | undefined): InspectorTab => {
   if (raw === 'stats') return 'stats';
   if (raw === 'history') return 'history';
+  if (raw === 'compare') return 'compare';
   // analysis / drivers / what-if tabs from older sessions → snapshot
   return 'snapshot';
 };
@@ -54,6 +60,7 @@ export const RightInspector = memo(function RightInspector({
 }: Props) {
   const hoveredCountry = useMapStore((state) => state.hoveredCountry);
   const bodyRef = useRef<HTMLDivElement | null>(null);
+  const [comparisonSelection, setComparisonSelection] = useState<{ countryId: string; peerId: string } | null>(null);
 
   const activeTab = normalizeInspectorTab(tab);
 
@@ -99,6 +106,13 @@ export const RightInspector = memo(function RightInspector({
   const coverage = useMemo(() => getCoverageMetrics(selected.profile), [selected.profile]);
   const brief = useMemo(() => buildCountryBrief(selected), [selected]);
   const benchmarks = useMemo(() => buildCountryBenchmarks(selected, allCountries), [allCountries, selected]);
+  const defaultComparisonPeer = useMemo(() => chooseComparisonPeer(selected, allCountries), [allCountries, selected]);
+  const comparisonPeer = useMemo(() => {
+    const requestedPeerId = comparisonSelection?.countryId === selected.profile.id
+      ? comparisonSelection.peerId
+      : defaultComparisonPeer?.profile.id;
+    return allCountries.find((country) => country.profile.id === requestedPeerId) ?? defaultComparisonPeer;
+  }, [allCountries, comparisonSelection, defaultComparisonPeer, selected.profile.id]);
 
   useEffect(() => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -186,12 +200,13 @@ export const RightInspector = memo(function RightInspector({
             { value: 'snapshot', label: 'Snapshot' },
             { value: 'stats', label: 'Full stats' },
             { value: 'history', label: 'History' },
+            { value: 'compare', label: 'Compare' },
           ]}
         />
       </div>
 
       <div className="inspector-body inspector-body-dense" ref={bodyRef}>
-        {bilateral && (
+        {bilateral && activeTab !== 'compare' && (
           <section className="glance-card glance-bilateral">
             <header>
               <h3>
@@ -335,10 +350,27 @@ export const RightInspector = memo(function RightInspector({
             )}
           </div>
         )}
-      {activeTab === 'history' && (
+        {activeTab === 'history' && (
           <div className="panel-stack panel-stack-dense">
             <HistoricalSeriesSection countryId={selected.profile.id} />
           </div>
+        )}
+        {activeTab === 'compare' && comparisonPeer && (
+          <Suspense fallback={<div className="profile-section" aria-live="polite"><p className="glance-empty">Loading comparison workspace…</p></div>}>
+            <CountryComparisonSection
+              selected={selected}
+              peer={comparisonPeer}
+              allCountries={allCountries}
+              alignmentColor={alignmentColor}
+              alignmentLabel={alignmentLabel}
+              suggested={comparisonSelection?.countryId !== selected.profile.id || comparisonSelection.peerId !== comparisonPeer.profile.id}
+              onPeerChange={(peerId) => setComparisonSelection({ countryId: selected.profile.id, peerId })}
+              onInspectPeer={() => {
+                onSelectRelated(comparisonPeer.profile.mapName);
+                onTabChange('snapshot');
+              }}
+            />
+          </Suspense>
         )}
       </div>
     </aside>

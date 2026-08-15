@@ -60,7 +60,7 @@ test('savePersistedState/loadPersistedState round-trips valid state', () => {
     },
     overlayMode: 'none',
     mapFillMode: 'alignment',
-    inspectorTab: 'stats',
+    inspectorTab: 'compare',
     drawerTab: 'methodology',
     drawerOpen: true,
     drawerHeight: 320,
