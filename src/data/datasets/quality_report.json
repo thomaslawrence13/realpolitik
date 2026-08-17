@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15T23:09:31.566Z",
+  "generatedAt": "2026-08-17T02:45:59.781Z",
   "contract": {
     "contractVersion": "iq-contract-v1.0.0",
     "scoringVersion": "iq-score-v2.0.0",
@@ -88,7 +88,7 @@
       "remediationDrivers": [
         "Refresh 1 stale indicator exceeding freshness SLA.",
         "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "cohesion from imf-weo is stale (5706d old, SLA 1200d)."
+        "cohesion from imf-weo is stale (5708d old, SLA 1200d)."
       ]
     },
     {
@@ -101,7 +101,7 @@
       "remediationDrivers": [
         "Refresh 1 stale indicator exceeding freshness SLA.",
         "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "tradeExposure from world-bank-wdi is stale (2053d old, SLA 1200d)."
+        "tradeExposure from world-bank-wdi is stale (2055d old, SLA 1200d)."
       ]
     },
     {
@@ -114,7 +114,7 @@
       "remediationDrivers": [
         "Refresh 1 stale indicator exceeding freshness SLA.",
         "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "militaryTreatyLevel from world-bank-wdi is stale (1688d old, SLA 1200d)."
+        "militaryTreatyLevel from world-bank-wdi is stale (1690d old, SLA 1200d)."
       ]
     },
     {
@@ -127,7 +127,7 @@
       "remediationDrivers": [
         "Refresh 1 stale indicator exceeding freshness SLA.",
         "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "militaryTreatyLevel from world-bank-wdi is stale (1323d old, SLA 1200d)."
+        "militaryTreatyLevel from world-bank-wdi is stale (1325d old, SLA 1200d)."
       ]
     },
     {
@@ -140,7 +140,7 @@
       "remediationDrivers": [
         "Refresh 1 stale indicator exceeding freshness SLA.",
         "Replace 1 fallback indicator with observed or higher-confidence evidence.",
-        "militaryTreatyLevel from world-bank-wdi is stale (1688d old, SLA 1200d)."
+        "militaryTreatyLevel from world-bank-wdi is stale (1690d old, SLA 1200d)."
       ]
     },
     {
@@ -227,11 +227,23 @@
     "releaseAccepted": true
   },
   "trend": {
-    "previousDay": null,
+    "previousDay": "2026-08-15",
     "firstDay": "2026-08-15",
-    "entryCount": 1,
-    "sincePrevious": null,
-    "sinceFirst": null
+    "entryCount": 2,
+    "sincePrevious": {
+      "averageInformationScore": 0,
+      "lowQualityCount": 0,
+      "staleCountryCount": 0,
+      "highQualityCount": 0,
+      "ingestAverageCoveragePct": 0
+    },
+    "sinceFirst": {
+      "averageInformationScore": 0,
+      "lowQualityCount": 0,
+      "staleCountryCount": 0,
+      "highQualityCount": 0,
+      "ingestAverageCoveragePct": 0
+    }
   },
   "artifactRegister": {
     "artifactCount": 9,
