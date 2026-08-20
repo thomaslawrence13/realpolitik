@@ -1,8 +1,8 @@
 {
-  "fetchedAt": "2026-08-15T21:41:52.707Z",
+  "fetchedAt": "2026-08-20T02:43:29.140Z",
   "sourceTitle": "US Treasury OFAC Specially Designated Nationals (SDN) list",
   "sourceUrl": "https://ofac.treasury.gov/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists",
-  "entryTotal": 19199,
+  "entryTotal": 19202,
   "perCountry": {
     "CU": {
       "entryCount": 143,
@@ -291,12 +291,12 @@
       ]
     },
     "VE": {
-      "entryCount": 408,
+      "entryCount": 409,
       "programCount": 7,
       "topPrograms": [
         {
           "program": "VENEZUELA-EO13850",
-          "count": 175
+          "count": 176
         },
         {
           "program": "VENEZUELA",
