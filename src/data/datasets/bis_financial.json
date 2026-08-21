@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-08-15T22:45:31.768Z",
+  "fetchedAt": "2026-08-21T02:46:01.954Z",
   "sourceTitle": "BIS Statistics — credit, debt service and policy rates",
   "sourceUrl": "https://data.bis.org/",
   "series": [
@@ -249,7 +249,7 @@
       },
       "policyRate": {
         "value": 4.25,
-        "period": "2026-06"
+        "period": "2026-07"
       }
     },
     "CN": {
@@ -335,7 +335,7 @@
       },
       "policyRate": {
         "value": 4.35,
-        "period": "2026-06"
+        "period": "2026-07"
       }
     },
     "NO": {
@@ -353,7 +353,7 @@
       },
       "policyRate": {
         "value": 4.25,
-        "period": "2026-06"
+        "period": "2026-07"
       }
     },
     "DE": {
@@ -726,12 +726,6 @@
         "period": "1998-12"
       }
     },
-    "MA": {
-      "policyRate": {
-        "value": 2.25,
-        "period": "2026-05"
-      }
-    },
     "MK": {
       "policyRate": {
         "value": 4.25,
@@ -744,15 +738,15 @@
         "period": "2026-07"
       }
     },
+    "MA": {
+      "policyRate": {
+        "value": 2.25,
+        "period": "2026-05"
+      }
+    },
     "IS": {
       "policyRate": {
         "value": 7.75,
-        "period": "2026-07"
-      }
-    },
-    "PH": {
-      "policyRate": {
-        "value": 4.75,
         "period": "2026-07"
       }
     },
@@ -762,15 +756,21 @@
         "period": "2026-07"
       }
     },
-    "RS": {
+    "PH": {
       "policyRate": {
-        "value": 5.75,
+        "value": 4.75,
         "period": "2026-07"
       }
     },
     "RO": {
       "policyRate": {
         "value": 6.5,
+        "period": "2026-07"
+      }
+    },
+    "RS": {
+      "policyRate": {
+        "value": 5.75,
         "period": "2026-07"
       }
     }
