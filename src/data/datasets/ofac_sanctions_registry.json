@@ -1,20 +1,20 @@
 {
-  "fetchedAt": "2026-08-15T21:41:52.707Z",
+  "fetchedAt": "2026-08-22T02:41:04.122Z",
   "sourceTitle": "US Treasury OFAC Specially Designated Nationals (SDN) list",
   "sourceUrl": "https://ofac.treasury.gov/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists",
-  "entryTotal": 19199,
+  "entryTotal": 19249,
   "perCountry": {
     "CU": {
-      "entryCount": 143,
+      "entryCount": 155,
       "programCount": 3,
       "topPrograms": [
         {
-          "program": "CUBA",
-          "count": 77
+          "program": "CUBA-EO14404",
+          "count": 80
         },
         {
-          "program": "CUBA-EO14404",
-          "count": 68
+          "program": "CUBA",
+          "count": 77
         },
         {
           "program": "GLOMAG",
@@ -23,7 +23,7 @@
       ]
     },
     "IR": {
-      "entryCount": 2707,
+      "entryCount": 2708,
       "programCount": 24,
       "topPrograms": [
         {
@@ -40,11 +40,11 @@
         },
         {
           "program": "IFSR",
-          "count": 431
+          "count": 432
         },
         {
           "program": "IRGC",
-          "count": 288
+          "count": 289
         },
         {
           "program": "NPWMD",
@@ -56,7 +56,7 @@
         },
         {
           "program": "SDGT",
-          "count": 216
+          "count": 217
         }
       ]
     },
@@ -291,12 +291,12 @@
       ]
     },
     "VE": {
-      "entryCount": 408,
+      "entryCount": 409,
       "programCount": 7,
       "topPrograms": [
         {
           "program": "VENEZUELA-EO13850",
-          "count": 175
+          "count": 176
         },
         {
           "program": "VENEZUELA",
